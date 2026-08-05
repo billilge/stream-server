@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.member.MemberRepository;
 import kr.ac.kookmin.stream.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
