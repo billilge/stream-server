@@ -10,6 +10,7 @@ include(
     "core:domain:internal",
     "core:domain:welfare",
     "core:domain:auth",
+    "core:domain:member",
     "gateway:auth",
     "gateway:logging",
     "infrastructure:db",
