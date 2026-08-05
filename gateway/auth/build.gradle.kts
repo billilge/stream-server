@@ -14,13 +14,8 @@ dependencies {
     runtimeOnly(libs.jjwtImpl)
     runtimeOnly(libs.jjwtJackson)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springBootStarterSecurityTest)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }

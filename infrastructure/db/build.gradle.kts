@@ -13,12 +13,7 @@ dependencies {
     implementation(libs.flywayMysql)
     runtimeOnly(libs.mysqlConnectorJ)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterDataJpaTest)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }

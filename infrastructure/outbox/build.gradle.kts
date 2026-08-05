@@ -11,12 +11,7 @@ dependencies {
     implementation(libs.springContext)
     implementation(libs.springBootStarterDataJpa)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterDataJpaTest)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }

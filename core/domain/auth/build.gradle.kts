@@ -11,12 +11,7 @@ dependencies {
     implementation(libs.springContext)
     implementation(libs.springTx)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.junitJupiter)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }

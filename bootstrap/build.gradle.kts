@@ -20,17 +20,12 @@ dependencies {
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterActuator)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(platform(libs.springModulithBom))
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springModulithStarterTest)
     testImplementation(libs.springModulithDocs)
     testImplementation(libs.archunitJunit5)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
     testRuntimeOnly(libs.junitPlatformLauncher)
     // infrastructure:db가 끌어오는 JPA 자동구성이 DataSource를 요구하므로 테스트 전용 인메모리 DB로 컨텍스트 로딩을 지원
     testRuntimeOnly(libs.h2)
