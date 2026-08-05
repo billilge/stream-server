@@ -15,7 +15,6 @@ class MemberInternalService implements MemberService {
 
     private final MemberRepository memberRepository;
 
-    @Transactional
     public Member getById(Long id) {
         return memberRepository.findById(id)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
