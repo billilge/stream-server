@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-class MemberInternalService implements MemberService {
+class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
 

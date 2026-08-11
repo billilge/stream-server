@@ -22,7 +22,7 @@ api/
 └── app-api                        # 학생 앱 (STUDENT)
 core/
 ├── common                         # ErrorCode/BusinessException, PrincipalProvider 등 공유 커널
-└── domain/{도메인}                 # {Domain}Service(공개) / {Domain}InternalService(internal)
+└── domain/{도메인}                 # {Domain}Service(공개) / {Domain}ServiceImpl(internal)
 gateway/
 ├── auth                           # Spring Security, JWT
 └── logging                        # MDC 필터, access log

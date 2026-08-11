@@ -41,7 +41,7 @@ type: 제목 - #PR번호
 ```
 feat: 사물함 신청 API 추가
 fix: 대여 반납일 검증 누락 수정
-refactor: RentalInternalService 재고 검증 분리
+refactor: RentalServiceImpl 재고 검증 분리
 docs: 아키텍처 컨벤션 문서 추가
 chore: spring-boot 버전 4.1.0으로 업그레이드
 ```

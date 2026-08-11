@@ -134,12 +134,12 @@ rental 도메인 예시:
 ├── RentalRepository              // 공개 인터페이스 (아웃바운드 포트, infrastructure:db가 구현)
 ├── RentalErrorCode               // 도메인 에러 코드 (api의 Swagger 문서화가 참조 → 공개)
 └── internal/
-    └── RentalInternalService     // RentalService 구현체 (감춰짐), 그 외 내부 협력 객체
+    └── RentalServiceImpl         // RentalService 구현체 (감춰짐), 그 외 내부 협력 객체
 ```
 
 - 다른 모듈은 최상위 공개 타입만 참조한다. `internal` 외부 참조는 `verify()`가 차단한다.
 - **Repository/Client 인터페이스는 `infrastructure:*`가 구현해야 하므로 `internal`이 아니라 공개(최상위)에 둔다.** 진입점(`{Domain}Service`)과 아웃바운드 포트(`{Domain}Repository`/`{Domain}Client`)는 공개, 그 구현·로직은 비공개.
-- 소비 측은 공개 인터페이스를 주입받고, Spring이 런타임에 `{Domain}InternalService`를 연결한다.
+- 소비 측은 공개 인터페이스를 주입받고, Spring이 런타임에 `{Domain}ServiceImpl`를 연결한다.
 - 도메인 `internal` 내부 패키지 구조는 각 도메인이 자유롭게 설계한다.
 
 ### 4-4. 검증 테스트
@@ -172,7 +172,7 @@ class ModularityTests {
 Presentation   Controller, Request/Response, UseCase         → api:* 모듈
       ↓
 Business       {Domain}Service (공개 인터페이스)               → core:domain:{도메인} (최상위)
-               {Domain}InternalService (구현체)               → core:domain:{도메인} (internal)
+               {Domain}ServiceImpl (구현체)                   → core:domain:{도메인} (internal)
       ↓
 Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:domain:{도메인} (최상위)
                  └ 구현: {Domain}RepositoryImpl / {Domain}JpaRepository → infrastructure:db
@@ -186,8 +186,8 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 3. 레이어를 건너뛰는 참조를 금지한다 — Presentation은 Data Access를 직접 참조하지 않고 Business를 거친다.
 4. 동일 레이어 간 참조를 금지한다.
 
-- Implement Layer가 없으므로 **Business가 Data Access를 직접 참조한다** — `{Domain}InternalService`가 `{Domain}Repository`를 직접 사용한다.
-- 비즈니스 규칙 검증 등은 `{Domain}InternalService` 또는 `internal` 패키지의 별도 협력 객체에 둔다.
+- Implement Layer가 없으므로 **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
+- 비즈니스 규칙 검증 등은 `{Domain}ServiceImpl` 또는 `internal` 패키지의 별도 협력 객체에 둔다.
 - 도메인 객체는 `core:domain`에 `record`(불변)로 두되 JPA 어노테이션을 갖지 않는다. JPA Entity는 `infrastructure:db`에 둔다.
 
 ---
@@ -214,7 +214,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 
 ```
 발행 (예: event 도메인, 자기 트랜잭션 내)
-  EventInternalService → outboxWriter.record(event)          // core:common 포트
+  EventServiceImpl → outboxWriter.record(event)              // core:common 포트
       ↓ 같은 트랜잭션에서 outbox 테이블에 저장 (원 비즈니스 쓰기와 원자적)
 릴레이 (infrastructure:outbox)
   OutboxRelay(@Scheduled 폴러) → 미발행 레코드 조회

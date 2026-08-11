@@ -17,7 +17,7 @@
 | Presentation | 응답 객체 | `{Domain}{Action}Response` | `api:{client}-api` |
 | Presentation | 교차 도메인 조합 | `{Feature}UseCase` | `api:{client}-api` |
 | Business | 공개 진입점 인터페이스 | `{Domain}Service` | `core:domain:{도메인}` (최상위) |
-| Business | 구현체 | `{Domain}InternalService` | `core:domain:{도메인}` (`internal`) |
+| Business | 구현체 | `{Domain}ServiceImpl` | `core:domain:{도메인}` (`internal`) |
 | Data Access | Repository 인터페이스 | `{Domain}Repository` | `core:domain:{도메인}` (최상위, 공개) |
 | Data Access | Repository 구현체 | `{Domain}RepositoryImpl` | `infrastructure:db` |
 | Data Access | JPA Repository | `{Domain}JpaRepository` | `infrastructure:db` |
@@ -216,9 +216,9 @@ public class RentalRepositoryImpl implements RentalRepository {
 
 ### 2-7. Business Layer (Service)
 
-- `{Domain}Service`는 공개 인터페이스(최상위), `{Domain}InternalService`는 구현체(`internal`). 외부에 숨기기 위해 **package-private 클래스**로 선언한다(package-private `@Service`도 빈 등록됨).
-- Implement Layer가 없으므로 **`{Domain}InternalService`가 `{Domain}Repository`를 직접 참조**한다.
-- 비즈니스 규칙 검증은 `{Domain}InternalService`(또는 internal 협력 객체)에서 하고 `BusinessException`을 던진다.
+- `{Domain}Service`는 공개 인터페이스(최상위), `{Domain}ServiceImpl`는 구현체(`internal`). 외부에 숨기기 위해 **package-private 클래스**로 선언한다(package-private `@Service`도 빈 등록됨).
+- Implement Layer가 없으므로 **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
+- 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 internal 협력 객체)에서 하고 `BusinessException`을 던진다.
 - 트랜잭션 경계는 Service 메서드에. 조회 전용은 `@Transactional(readOnly = true)`, 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절).
 
 ```java
@@ -232,11 +232,11 @@ public interface RentalService {
 ```java
 // core:domain:rental/internal (감춰짐)
 @Service
-class RentalInternalService implements RentalService {
+class RentalServiceImpl implements RentalService {
 
     private final RentalRepository rentalRepository;
 
-    RentalInternalService(RentalRepository rentalRepository) {
+    RentalServiceImpl(RentalRepository rentalRepository) {
         this.rentalRepository = rentalRepository;
     }
 
@@ -360,4 +360,4 @@ public record RentalApplyRequest(
 ```
 
 - 검증 실패 시 `MethodArgumentNotValidException` → `GlobalExceptionHandler`가 `CommonErrorCode.INVALID_INPUT`(400)으로 응답(`error-handling.md` 4절).
-- 형식을 넘는 비즈니스 규칙 검증(재고, 중복 신청, 정원 등)은 `{Domain}InternalService`에서 `BusinessException`으로 처리한다.
+- 형식을 넘는 비즈니스 규칙 검증(재고, 중복 신청, 정원 등)은 `{Domain}ServiceImpl`에서 `BusinessException`으로 처리한다.
