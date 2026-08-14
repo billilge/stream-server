@@ -61,7 +61,25 @@ root
 - 대여·행사·사물함은 각각 **자체 신청 프로세스**를 갖는다. 공통 `application` 도메인으로 묶지 않는다 — 신청 흐름이 도메인마다 달라 중복을 감수하고 경계를 지키는 쪽을 택한다.
 - `infrastructure:outbox`는 여러 도메인이 공유하는 아웃박스 릴레이만 담고, 특정 도메인 타입을 알지 않는다(`core:common.event`의 이벤트 타입만 참조).
 
-### 2-1. 프레젠테이션 레이어 분리 축 — 클라이언트 기준
+### 2-1. 모듈 그룹별 책임 & 경계
+
+다섯 그룹은 **"무엇이 바뀌면 이 모듈이 바뀌는가(변경 축)"**가 서로 다르다는 기준으로 나눈다. 축이 같은 코드는 한 그룹에, 다른 코드는 다른 그룹에 둔다.
+
+| 그룹 | 변경 축 | 담는 것 | 담지 않는 것 |
+| --- | --- | --- | --- |
+| `bootstrap` | 조립·기동 방식 | `@Modulithic` 메인, 최종 빈 조립, 스케줄링 활성화, 실행 설정, `bootJar` | 비즈니스 로직, 도메인 규칙 |
+| `api:*` | 클라이언트 요구(요청/응답 형태) | Controller, Request/Response DTO, 교차 도메인 `UseCase` | 비즈니스 규칙, 영속화, 보안 정책 구현 |
+| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입 | 특정 도메인 개념(`{Domain}Id` 등), Spring·JPA·web·security |
+| `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith |
+| `gateway:*` | 횡단관심사 정책 | 인증/인가(`auth`), 요청 추적·access log(`logging`) | 도메인 규칙, 영속화 |
+| `infrastructure:*` | 외부 기술(구현 세부) | `{Domain}Repository`/`{Domain}Client` 구현, JPA Entity·Flyway(`db`), 외부 API 어댑터(`client`), 아웃박스 릴레이(`outbox`) | 비즈니스 규칙, 도메인 진입점 |
+
+- **의존 방향이 곧 책임 경계**다. 화살표는 항상 안쪽(`core`)을 향하고 `core`는 바깥(api·gateway·infrastructure)을 모른다(3절). 그래서 도메인 규칙은 기술·클라이언트가 바뀌어도 그대로다.
+- **인터페이스는 소유자(`core:domain`)에, 구현은 기술 소유자(`infrastructure:*`)에** 둔다. `{Domain}Repository`/`{Domain}Client`는 도메인이 정의하고 인프라가 구현하는 아웃바운드 포트다(4-3절, 5절).
+- **`core`·`core:domain`은 코드 없는 빈 컨테이너**다(59줄). 실제 코드는 리프 모듈(`core:common`, `core:domain:{도메인}`)에만 둔다. 그룹 노드는 Gradle 경계를 긋기 위한 뼈대일 뿐이다.
+- 그룹별 허용 의존성 전체 목록은 7절 표에서 확인한다.
+
+### 2-2. 프레젠테이션 레이어 분리 축 — 클라이언트 기준
 
 `api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) 단위 패키지**로 가른다.
 
@@ -77,6 +95,35 @@ api/
 └── app-api                 # STUDENT /v1/app/**
     └── {basePackage}.{팀}
 ```
+
+구체 예시 — `core` 팀이 auth·member 두 도메인을 소유하고, `rental` 팀이 대여를 소유하며, admin·app 양쪽에 각자의 컨트롤러를 두는 모습:
+
+```
+api/
+├── common-api
+│   └── {basePackage}                      # SecurityConfig(role→URL), WebMvcConfig, ApiResponse, GlobalExceptionHandler
+├── admin-api
+│   └── {basePackage}
+│       ├── core                           # core 팀 (auth·member)
+│       │   ├── AdminMemberController       #   운영진 회원 관리
+│       │   └── AdminMemberResponse
+│       └── rental                          # rental 팀
+│           ├── AdminRentalController       #   대여 승인·반납 처리
+│           └── AdminRentalApproveRequest
+└── app-api
+    └── {basePackage}
+        ├── core                           # core 팀 (auth·member)
+        │   ├── AppAuthController           #   로그인/토큰
+        │   └── AppMemberController         #   내 정보
+        └── rental                          # rental 팀
+            ├── AppRentalController         #   대여 신청
+            └── AppRentalApplyRequest
+```
+
+- 한 팀 패키지(`core`, `rental`)의 파일은 그 팀만 건드린다 — admin·app에 흩어져 있어도 소유는 팀 단위다.
+- `core` 팀처럼 **여러 도메인(auth·member)을 한 팀이 묶을 수 있다.** 팀 패키지명은 도메인명과 1:1일 필요가 없다.
+- 컨트롤러는 접두사(`Admin`/`App`)로 클라이언트를 구분하고, 각 도메인의 공개 `{Domain}Service`(또는 교차 도메인 시 `UseCase`)만 호출한다(5절·6-1절).
+- 팀이 겹쳐 충돌하는 지점은 `common-api`의 보안·라우팅·공통 응답뿐이다 — 이 파일들만 변경 시 팀 간 조율이 필요하다.
 
 ---
 
