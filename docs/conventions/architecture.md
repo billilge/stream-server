@@ -61,6 +61,23 @@ root
 - 대여·행사·사물함은 각각 **자체 신청 프로세스**를 갖는다. 공통 `application` 도메인으로 묶지 않는다 — 신청 흐름이 도메인마다 달라 중복을 감수하고 경계를 지키는 쪽을 택한다.
 - `infrastructure:outbox`는 여러 도메인이 공유하는 아웃박스 릴레이만 담고, 특정 도메인 타입을 알지 않는다(`core:common.event`의 이벤트 타입만 참조).
 
+### 2-1. 프레젠테이션 레이어 분리 축 — 클라이언트 기준
+
+`api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) 단위 패키지**로 가른다.
+
+- `admin-api`·`app-api` 내부를 **팀(bounded context) 단위 패키지**로 나눠 팀별 파일이 서로 겹치지 않게 한다. 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다.
+- 여러 팀이 같은 파일을 편집하는 지점은 **보안 설정(role→URL)·라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다.
+- admin 별도 배포가 필요해지면 `admin-api` + 필요한 도메인을 조립하는 bootstrap을 추가한다(현재는 단일 bootstrap).
+
+```
+api/
+├── common-api              # 여러 팀이 공유하는 유일한 지점 (보안·라우팅·응답/예외)
+├── admin-api               # ADMIN /v1/admin/**
+│   └── {basePackage}.{팀}       # 팀(bounded context) 패키지 = 소유 단위
+└── app-api                 # STUDENT /v1/app/**
+    └── {basePackage}.{팀}
+```
+
 ---
 
 ## 3. 모듈 간 의존 방향
