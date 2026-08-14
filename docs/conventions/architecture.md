@@ -230,7 +230,7 @@ class ModularityTests {
 
 ## 5. 레이어 구조 & 규칙
 
-이 프로젝트는 **Implement Layer를 두지 않는다.** 3개 레이어로 구성한다.
+이 프로젝트는 3개 레이어로 구성한다.
 
 ```
 Presentation   Controller, Request/Response, UseCase         → api:* 모듈
@@ -250,7 +250,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 3. 레이어를 건너뛰는 참조를 금지한다 — Presentation은 Data Access를 직접 참조하지 않고 Business를 거친다.
 4. 동일 레이어 간 참조를 금지한다.
 
-- Implement Layer가 없으므로 **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
+- **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
 - 비즈니스 규칙 검증 등은 `{Domain}ServiceImpl` 또는 `internal` 패키지의 별도 협력 객체에 둔다.
 - 도메인 객체는 `core:domain`에 `record`(불변)로 두되 JPA 어노테이션을 갖지 않는다. JPA Entity는 `infrastructure:db`에 둔다.
 
