@@ -35,22 +35,27 @@ gh api "repos/{owner}/{repo}/pulls?state=open&per_page=100" \
 ## Step 2 — 리뷰 코멘트 수집
 
 세 종류의 코멘트를 모두 REST로 모은다. 한 종류라도 빠뜨리지 않는다.
-**본문(`body`)을 통째로 뽑지 않는다** — CodeRabbit 등 봇 리뷰는 한 코멘트가 100KB를 넘기도 한다(`<details>`, HTML 주석, "Prompt for AI Agents", `consolidated_sites` 블록). 아래처럼 `<details>` 이전만 취하고 굵은 제목(`**...**`) + 첫 심각도 줄만 축약해서 뽑는다.
+**본문(`body`)을 통째로 뽑지 않는다** — CodeRabbit 등 봇 리뷰는 한 코멘트가 100KB를 넘기도 한다(`<details>`, HTML 주석, "Prompt for AI Agents", `consolidated_sites` 블록). 아래처럼 `<details>` 이전만 취하고 굵은 제목(`**...**`) + 심각도 줄만 축약해서 뽑는다.
+**봇 본문은 빈 줄·HTML 주석(`<!-- -->`)으로 시작하는 경우가 많으므로 `split("\n")[0]`처럼 첫 줄을 그대로 쓰지 않는다** — 빈 줄·주석 줄을 건너뛴 첫 줄을 잡고, 심각도는 줄 위치와 무관하게 키워드로 따로 찾는다.
 
 ```bash
 # (1) 코드 라인에 달린 인라인 리뷰 코멘트 (핵심)
 gh api "repos/{owner}/{repo}/pulls/{번호}/comments" --paginate \
   --jq '.[] | "\(.path):\(.line // "outdated") @\(.user.login)\n  " +
         (.body | split("<details>")[0]
-         | (capture("\\*\\*(?<h>[^*\\n]+)\\*\\*").h // .[0:200]))'
+         | ((capture("\\*\\*(?<h>[^*\\n]+)\\*\\*").h
+             // ([split("\n")[] | select(test("\\S") and (test("^\\s*<!--")|not))][0] // "")[0:200])
+            + ((capture("(?<s>[^\\n]*(Critical|Major|Minor|Trivial)[^\\n]*)").s | " | " + .) // "")))'
 
 # (2) 리뷰 요약 코멘트 (Approve/Request changes 시 본문)
 gh api "repos/{owner}/{repo}/pulls/{번호}/reviews" --paginate \
-  --jq '.[] | select(.body != "") | "@\(.user.login) [\(.state)] " + (.body | split("<details>")[0] | split("\n")[0])'
+  --jq '.[] | select(.body != "") | "@\(.user.login) [\(.state)] " +
+        ([.body | split("<details>")[0] | split("\n")[] | select(test("\\S") and (test("^\\s*<!--")|not))][0] // "")'
 
 # (3) PR 전체에 달린 일반 코멘트 (issue 코멘트)
 gh api "repos/{owner}/{repo}/issues/{번호}/comments" --paginate \
-  --jq '.[] | "@\(.user.login): " + (.body | split("\n")[0])'
+  --jq '.[] | "@\(.user.login): " +
+        ([.body | split("<details>")[0] | split("\n")[] | select(test("\\S") and (test("^\\s*<!--")|not))][0] // "")'
 ```
 
 - 코멘트가 하나도 없으면 그 사실을 알리고 종료한다.
