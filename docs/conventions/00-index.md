@@ -42,7 +42,7 @@ api/
 core/
 ├── common                      # ErrorCode/BusinessException/ErrorStatus, PrincipalProvider/Role/Department,
 │                               # PageResult/CursorSliceResult, OutboxWriter, common.event (shared module)
-└── domain/{member,rental,event,locker,fee,notice}
+└── domain/{auth,member,event,welfare,internal}
                                 # {Domain}Service(공개)/{Domain}ServiceImpl(internal)/
                                 # {Domain}Repository·{Domain}Client(공개)/{Domain}ErrorCode
 gateway/
