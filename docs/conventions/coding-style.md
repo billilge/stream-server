@@ -2,17 +2,17 @@
 
 > 이 문서는 클래스 네이밍, 도메인/DTO/Command/Entity/Repository/Service/UseCase 작성 패턴, Validation 규칙을 다룬다.
 > 실제 코드 생성/리뷰 시 참조한다. 모듈 배치·레이어 규칙은 `architecture.md`, 예외는 `error-handling.md`를 함께 본다.
-> 예시 도메인은 `member`(학생 회원)·`rental`(대여)을 사용한다.
+> 예시 도메인은 `member`(학생 회원, `core:domain:member`)를 사용한다.
 
 ---
 
 ## 1. 네이밍 컨벤션
 
-이 프로젝트는 Implement Layer(Reader/Appender/… )를 두지 않는다. Business는 공개 인터페이스 + `internal` 구현체로 구성한다.
+Business는 공개 인터페이스 + `internal` 구현체로 구성한다.
 
 | 레이어 | 역할 | 네이밍 | 위치 |
 | --- | --- | --- | --- |
-| Presentation | HTTP 요청 처리 | `{Domain}Controller` | `api:{client}-api` |
+| Presentation | HTTP 요청 처리 | `{Client}{Domain}Controller` (예: `AppMemberController`, `AdminMemberController`) | `api:{client}-api` |
 | Presentation | 요청 객체 | `{Domain}{Action}Request` | `api:{client}-api` |
 | Presentation | 응답 객체 | `{Domain}{Action}Response` | `api:{client}-api` |
 | Presentation | 교차 도메인 조합 | `{Feature}UseCase` | `api:{client}-api` |
@@ -48,27 +48,28 @@ public record Member(
 - Request DTO를 Service로 그대로 넘기지 않는다. `toCommand()`로 Command(`core:domain`)로 변환한다.
 
 ```java
-// api:app-api
-public record RentalApplyRequest(
-    Long itemId,
-    LocalDate returnDate
+// api:admin-api
+public record MemberRegisterRequest(
+    String studentNo,
+    String name
 ) {
-    public RentalApplyCommand toCommand() {
-        return new RentalApplyCommand(itemId, returnDate);
+    public MemberRegisterCommand toCommand() {
+        return new MemberRegisterCommand(studentNo, name);
     }
 }
 
-public record RentalApplyResponse(
-    Long applicationId,
-    String status
+public record MemberResponse(
+    Long memberId,
+    String studentNo,
+    String name
 ) {
-    public static RentalApplyResponse from(Rental rental) {
-        return new RentalApplyResponse(rental.id(), rental.status().name());
+    public static MemberResponse from(Member member) {
+        return new MemberResponse(member.id(), member.studentNo(), member.name());
     }
 }
 
-// core:domain:rental
-public record RentalApplyCommand(Long itemId, LocalDate returnDate) {}
+// core:domain:member
+public record MemberRegisterCommand(String studentNo, String name) {}
 ```
 
 **공통 응답 래퍼 (`ApiResponse`, `api:common-api`)** — `private` 생성자 + 정적 팩토리.
@@ -174,7 +175,7 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
 ```java
 @JdbcTypeCode(SqlTypes.JSON)
 @Column(columnDefinition = "json")
-private RentalPolicy policy;
+private MemberProfile profile;   // record VO를 JSON 컬럼으로
 ```
 
 ### 2-6. Repository
@@ -182,34 +183,42 @@ private RentalPolicy policy;
 - `core:domain`에 인터페이스만 공개로 선언하고, 부재는 `Optional`로 표현한다.
 
 ```java
-// core:domain:rental (공개)
-public interface RentalRepository {
-    Optional<Rental> findById(Long id);
-    Rental save(Rental rental);
+// core:domain:member (공개)
+public interface MemberRepository {
+    Optional<Member> findById(Long id);
+    boolean existsByStudentNo(String studentNo);
+    Member save(Member member);
 }
 ```
 
 ```java
 // infrastructure:db
-public interface RentalJpaRepository extends JpaRepository<RentalJpaEntity, Long> {}
+public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long> {
+    boolean existsByStudentNo(String studentNo);
+}
 
 @Repository
-public class RentalRepositoryImpl implements RentalRepository {
+public class MemberRepositoryImpl implements MemberRepository {
 
-    private final RentalJpaRepository rentalJpaRepository;
+    private final MemberJpaRepository memberJpaRepository;
 
-    public RentalRepositoryImpl(RentalJpaRepository rentalJpaRepository) {
-        this.rentalJpaRepository = rentalJpaRepository;
+    public MemberRepositoryImpl(MemberJpaRepository memberJpaRepository) {
+        this.memberJpaRepository = memberJpaRepository;
     }
 
     @Override
-    public Optional<Rental> findById(Long id) {
-        return rentalJpaRepository.findById(id).map(RentalJpaEntity::toDomain);
+    public Optional<Member> findById(Long id) {
+        return memberJpaRepository.findById(id).map(MemberJpaEntity::toDomain);
     }
 
     @Override
-    public Rental save(Rental rental) {
-        return rentalJpaRepository.save(new RentalJpaEntity(rental)).toDomain();
+    public boolean existsByStudentNo(String studentNo) {
+        return memberJpaRepository.existsByStudentNo(studentNo);
+    }
+
+    @Override
+    public Member save(Member member) {
+        return memberJpaRepository.save(new MemberJpaEntity(member)).toDomain();
     }
 }
 ```
@@ -217,42 +226,45 @@ public class RentalRepositoryImpl implements RentalRepository {
 ### 2-7. Business Layer (Service)
 
 - `{Domain}Service`는 공개 인터페이스(최상위), `{Domain}ServiceImpl`는 구현체(`internal`). 외부에 숨기기 위해 **package-private 클래스**로 선언한다(package-private `@Service`도 빈 등록됨).
-- Implement Layer가 없으므로 **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
+- **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
 - 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 internal 협력 객체)에서 하고 `BusinessException`을 던진다.
 - 트랜잭션 경계는 Service 메서드에. 조회 전용은 `@Transactional(readOnly = true)`, 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절).
 
 ```java
-// core:domain:rental (최상위)
-public interface RentalService {
-    Rental apply(Long memberId, RentalApplyCommand command);
-    Rental read(Long id);
+// core:domain:member (최상위)
+public interface MemberService {
+    Member register(MemberRegisterCommand command);
+    Member getById(Long id);
 }
 ```
 
 ```java
-// core:domain:rental/internal (감춰짐)
+// core:domain:member/internal (감춰짐)
 @Service
-class RentalServiceImpl implements RentalService {
+class MemberServiceImpl implements MemberService {
 
-    private final RentalRepository rentalRepository;
+    private final MemberRepository memberRepository;
 
-    RentalServiceImpl(RentalRepository rentalRepository) {
-        this.rentalRepository = rentalRepository;
+    MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
     }
 
     @Override
     @Transactional
-    public Rental apply(Long memberId, RentalApplyCommand command) {
-        // 재고/중복 신청 등 비즈니스 규칙 검증 후 BusinessException
-        Rental rental = Rental.newApplication(memberId, command.itemId(), command.returnDate());
-        return rentalRepository.save(rental);
+    public Member register(MemberRegisterCommand command) {
+        // 학번 중복 등 비즈니스 규칙 검증 후 BusinessException
+        if (memberRepository.existsByStudentNo(command.studentNo())) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+        Member member = Member.register(command.studentNo(), command.name());
+        return memberRepository.save(member);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Rental read(Long id) {
-        return rentalRepository.findById(id)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+    public Member getById(Long id) {
+        return memberRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
 ```
@@ -260,26 +272,44 @@ class RentalServiceImpl implements RentalService {
 ### 2-8. Controller
 
 - role 전용 `ApiUser`(`config-and-auth.md`)와 `{Domain}Service`를 주입받는다. 단일 도메인 흐름은 Controller가 직접 처리한다.
+- 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 팀 패키지에 둔다(`architecture.md` 2-2절).
 
 ```java
-// api:app-api
+// api:admin-api — 운영진 회원 등록
 @RestController
-@RequestMapping("/v1/app/rentals")
-public class RentalController {
+@RequestMapping("/v1/admin/members")
+public class AdminMemberController {
 
-    private final RentalService rentalService;
+    private final MemberService memberService;
 
-    public RentalController(RentalService rentalService) {
-        this.rentalService = rentalService;
+    public AdminMemberController(MemberService memberService) {
+        this.memberService = memberService;
     }
 
     @PostMapping
-    public ApiResponse<RentalApplyResponse> apply(
-        StudentApiUser apiUser,
-        @Valid @RequestBody RentalApplyRequest request
-    ) {
-        Rental rental = rentalService.apply(apiUser.userId(), request.toCommand());
-        return ApiResponse.success(RentalApplyResponse.from(rental));
+    public ApiResponse<MemberResponse> register(@Valid @RequestBody MemberRegisterRequest request) {
+        Member member = memberService.register(request.toCommand());
+        return ApiResponse.success(MemberResponse.from(member));
+    }
+}
+```
+
+```java
+// api:app-api — 학생 내 정보 조회
+@RestController
+@RequestMapping("/v1/app/members")
+public class AppMemberController {
+
+    private final MemberService memberService;
+
+    public AppMemberController(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<MemberResponse> me(StudentApiUser apiUser) {
+        Member member = memberService.getById(apiUser.userId());
+        return ApiResponse.success(MemberResponse.from(member));
     }
 }
 ```
@@ -345,19 +375,20 @@ public class EventApplicationUseCase {
 - 메시지는 한글.
 
 ```java
-public record RentalApplyRequest(
-    @NotNull(message = "대여 물품을 선택해 주세요.")
-    Long itemId,
+public record MemberRegisterRequest(
+    @NotBlank(message = "학번을 입력해 주세요.")
+    @Pattern(regexp = "^\\d{8}$", message = "학번은 숫자 8자리여야 합니다.")
+    String studentNo,
 
-    @NotNull(message = "반납 예정일을 입력해 주세요.")
-    @Future(message = "반납 예정일은 미래 날짜여야 합니다.")
-    LocalDate returnDate
+    @NotBlank(message = "이름을 입력해 주세요.")
+    @Size(max = 20, message = "이름은 20자 이하로 입력해 주세요.")
+    String name
 ) {
-    public RentalApplyCommand toCommand() {
-        return new RentalApplyCommand(itemId, returnDate);
+    public MemberRegisterCommand toCommand() {
+        return new MemberRegisterCommand(studentNo, name);
     }
 }
 ```
 
 - 검증 실패 시 `MethodArgumentNotValidException` → `GlobalExceptionHandler`가 `CommonErrorCode.INVALID_INPUT`(400)으로 응답(`error-handling.md` 4절).
-- 형식을 넘는 비즈니스 규칙 검증(재고, 중복 신청, 정원 등)은 `{Domain}ServiceImpl`에서 `BusinessException`으로 처리한다.
+- 형식을 넘는 비즈니스 규칙 검증(학번 중복, 재고, 정원 등)은 `{Domain}ServiceImpl`에서 `BusinessException`으로 처리한다.

@@ -3,7 +3,7 @@
 > 소프트웨어융합대학 학생회 플랫폼(단일 학생회)의 모듈 구성, 모듈 간 의존 방향, 도메인 내부 경계, 레이어 규칙, 도메인 간 통신을 다룬다.
 > 학생은 대여·행사 신청·사물함 신청·회비 납부 등을, 운영진(부서별 관리자)은 관리를 수행한다.
 > 설계/리뷰, 새 모듈·도메인 추가 시 참조한다. 클래스 작성은 `coding-style.md`, 예외는 `error-handling.md`, 인증/권한은 `config-and-auth.md`, DB는 `flyway-migration.md`를 함께 본다.
-> `{basePackage}`는 프로젝트 루트 패키지, `{도메인}`은 도메인 이름(예: `member`, `rental`, `event`, `locker`)의 자리표시자다.
+> `{basePackage}`는 프로젝트 루트 패키지, `{도메인}`은 도메인 이름(예: `member`, `event`, `welfare`)의 자리표시자다.
 
 ---
 
@@ -41,12 +41,11 @@ root
 │   │   │                 #   OutboxWriter(아웃박스 쓰기 포트)
 │   │   └── (common.event)#   크로스 도메인 이벤트 타입 (DomainEvent 마커 + 구체 이벤트)
 │   └── domain/           # (빈 컨테이너 — 코드 없음)
+│       ├── auth/         #   인증 (로그인·토큰 발급 흐름)
 │       ├── member/       #   학생 회원
-│       ├── rental/       #   물품 대여 (자체 신청 프로세스)
-│       ├── event/        #   행사 신청 (자체 신청 프로세스)
-│       ├── locker/       #   사물함 신청 (자체 신청 프로세스)
-│       ├── fee/          #   회비
-│       └── notice/       #   공지
+│       ├── event/        #   행사 신청·사물함 신청·아카이빙 (행사·사물함은 각각 자체 신청 프로세스)
+│       ├── welfare/      #   물품 대여·회비·공지 (대여는 자체 신청 프로세스)
+│       └── internal/     #   학생회 내부 운영 (운영진·부서 관리 등 어드민 전용)
 ├── gateway/              # 횡단관심사 그룹
 │   ├── auth/             # 인증/인가 (Spring Security, JWT, DepartmentAccessChecker). config-and-auth.md 참조
 │   └── logging/          # MDC 기반 요청 추적. logging.md 참조
@@ -58,8 +57,72 @@ root
 
 - `core`·`core:domain`은 **코드 없는 빈 컨테이너**다. 실제 코드는 리프 모듈에만 둔다.
 - 도메인은 팀/기능 단위로 `core:domain:{도메인}` 리프 모듈로 추가한다. 도메인 모듈끼리는 Gradle 의존을 선언하지 않는다.
-- 대여·행사·사물함은 각각 **자체 신청 프로세스**를 갖는다. 공통 `application` 도메인으로 묶지 않는다 — 신청 흐름이 도메인마다 달라 중복을 감수하고 경계를 지키는 쪽을 택한다.
+- 대여(`welfare`)·행사·사물함(`event`)은 각각 **자체 신청 프로세스**를 갖는다. 공통 `application` 도메인으로 묶지 않는다 — 신청 흐름이 기능마다 달라 중복을 감수하고 경계를 지키는 쪽을 택한다.
 - `infrastructure:outbox`는 여러 도메인이 공유하는 아웃박스 릴레이만 담고, 특정 도메인 타입을 알지 않는다(`core:common.event`의 이벤트 타입만 참조).
+
+### 2-1. 모듈 그룹별 책임 & 경계
+
+다섯 그룹은 **"무엇이 바뀌면 이 모듈이 바뀌는가(변경 축)"**가 서로 다르다는 기준으로 나눈다. 축이 같은 코드는 한 그룹에, 다른 코드는 다른 그룹에 둔다.
+
+| 그룹 | 변경 축 | 담는 것 | 담지 않는 것 |
+| --- | --- | --- | --- |
+| `bootstrap` | 조립·기동 방식 | `@Modulithic` 메인, 최종 빈 조립, 스케줄링 활성화, 실행 설정, `bootJar` | 비즈니스 로직, 도메인 규칙 |
+| `api:*` | 클라이언트 요구(요청/응답 형태) | Controller, Request/Response DTO, 교차 도메인 `UseCase` | 비즈니스 규칙, 영속화, 보안 정책 구현 |
+| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입 | 특정 도메인 개념(`{Domain}Id` 등), Spring·JPA·web·security |
+| `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith |
+| `gateway:*` | 횡단관심사 정책 | 인증/인가(`auth`), 요청 추적·access log(`logging`) | 도메인 규칙, 영속화 |
+| `infrastructure:*` | 외부 기술(구현 세부) | `{Domain}Repository`/`{Domain}Client` 구현, JPA Entity·Flyway(`db`), 외부 API 어댑터(`client`), 아웃박스 릴레이(`outbox`) | 비즈니스 규칙, 도메인 진입점 |
+
+- **의존 방향이 곧 책임 경계**다. 화살표는 항상 안쪽(`core`)을 향하고 `core`는 바깥(api·gateway·infrastructure)을 모른다(3절). 그래서 도메인 규칙은 기술·클라이언트가 바뀌어도 그대로다.
+- **인터페이스는 소유자(`core:domain`)에, 구현은 기술 소유자(`infrastructure:*`)에** 둔다. `{Domain}Repository`/`{Domain}Client`는 도메인이 정의하고 인프라가 구현하는 아웃바운드 포트다(4-3절, 5절).
+- **`core`·`core:domain`은 코드 없는 빈 컨테이너**다(59줄). 실제 코드는 리프 모듈(`core:common`, `core:domain:{도메인}`)에만 둔다. 그룹 노드는 Gradle 경계를 긋기 위한 뼈대일 뿐이다.
+- 그룹별 허용 의존성 전체 목록은 7절 표에서 확인한다.
+
+### 2-2. 프레젠테이션 레이어 분리 축 — 클라이언트 기준
+
+`api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) 단위 패키지**로 가른다.
+
+- `admin-api`·`app-api` 내부를 **팀(bounded context) 단위 패키지**로 나눠 팀별 파일이 서로 겹치지 않게 한다. 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다.
+- 여러 팀이 같은 파일을 편집하는 지점은 **보안 설정(role→URL)·라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다.
+- admin 별도 배포가 필요해지면 `admin-api` + 필요한 도메인을 조립하는 bootstrap을 추가한다(현재는 단일 bootstrap).
+
+```
+api/
+├── common-api              # 여러 팀이 공유하는 유일한 지점 (보안·라우팅·응답/예외)
+├── admin-api               # ADMIN /v1/admin/**
+│   └── {basePackage}.{팀}       # 팀(bounded context) 패키지 = 소유 단위
+└── app-api                 # STUDENT /v1/app/**
+    └── {basePackage}.{팀}
+```
+
+팀은 `core`(auth·member)·`event`·`internal`·`welfare` 넷이다. 구체 예시 — `core` 팀이 auth·member 두 도메인을 소유하고, `welfare` 팀이 대여·회비·공지를 소유하며, admin·app 양쪽에 각자의 컨트롤러를 두는 모습:
+
+```
+api/
+├── common-api
+│   └── {basePackage}                      # SecurityConfig(role→URL), WebMvcConfig, ApiResponse, GlobalExceptionHandler
+├── admin-api
+│   └── {basePackage}
+│       ├── core                           # core 팀 (auth·member)
+│       │   ├── AdminMemberController       #   운영진 회원 관리
+│       │   └── AdminMemberResponse
+│       └── welfare                         # welfare 팀 (대여·회비·공지)
+│           ├── AdminRentalController       #   대여 승인·반납 처리
+│           └── AdminRentalApproveRequest
+└── app-api
+    └── {basePackage}
+        ├── core                           # core 팀 (auth·member)
+        │   ├── AppAuthController           #   로그인/토큰
+        │   └── AppMemberController         #   내 정보
+        └── welfare                         # welfare 팀 (대여·회비·공지)
+            ├── AppRentalController         #   대여 신청
+            └── AppRentalApplyRequest
+```
+
+- 한 팀 패키지(`core`, `welfare`)의 파일은 그 팀만 건드린다 — admin·app에 흩어져 있어도 소유는 팀 단위다.
+- `core` 팀처럼 **여러 도메인(auth·member)을 한 팀이 묶을 수 있다.** 팀 패키지명은 도메인명과 1:1일 필요가 없다.
+- 컨트롤러는 접두사(`Admin`/`App`)로 클라이언트를 구분하고, 각 도메인의 공개 `{Domain}Service`(또는 교차 도메인 시 `UseCase`)만 호출한다(5절·6-1절).
+- 팀이 겹쳐 충돌하는 지점은 `common-api`의 보안·라우팅·공통 응답뿐이다 — 이 파일들만 변경 시 팀 간 조율이 필요하다.
 
 ---
 
@@ -114,8 +177,8 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 - **Gradle 경로와 Java 패키지는 별개다.** 도메인은 Gradle 상 `:core:domain:{도메인}`이지만 패키지는 루트 직속 형제로 둔다.
 
 ```
-{basePackage}.{도메인}             // ✅ 예: {basePackage}.rental  (:core:domain:rental)
-{basePackage}.core.domain.rental  // ❌ Gradle 경로를 반영하면 domain이 한 모듈로 뭉쳐 경계가 안 걸림
+{basePackage}.{도메인}             // ✅ 예: {basePackage}.member  (:core:domain:member)
+{basePackage}.core.domain.member  // ❌ Gradle 경로를 반영하면 domain이 한 모듈로 뭉쳐 경계가 안 걸림
 ```
 
 - `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(어노테이션 없이 순수 Java 유지).
@@ -125,16 +188,16 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 
 공개 타입을 모듈 **최상위 패키지**에, 내부 구현을 **`internal` 하위 패키지**에 둔다. Modulith가 최상위를 공개 API로, 하위 패키지를 내부로 간주한다. (`api`/`spi` 같은 named interface 패키지는 두지 않는다.)
 
-rental 도메인 예시:
+member 도메인 예시:
 
 ```
-{basePackage}.rental
-├── RentalService                 // 공개 인터페이스 (진입점)
-├── Rental, RentalApplyCommand    // 경계를 넘는 도메인 객체 / Command (record)
-├── RentalRepository              // 공개 인터페이스 (아웃바운드 포트, infrastructure:db가 구현)
-├── RentalErrorCode               // 도메인 에러 코드 (api의 Swagger 문서화가 참조 → 공개)
+{basePackage}.member
+├── MemberService                 // 공개 인터페이스 (진입점)
+├── Member, MemberRegisterCommand // 경계를 넘는 도메인 객체 / Command (record)
+├── MemberRepository              // 공개 인터페이스 (아웃바운드 포트, infrastructure:db가 구현)
+├── MemberErrorCode               // 도메인 에러 코드 (api의 Swagger 문서화가 참조 → 공개)
 └── internal/
-    └── RentalServiceImpl         // RentalService 구현체 (감춰짐), 그 외 내부 협력 객체
+    └── MemberServiceImpl         // MemberService 구현체 (감춰짐), 그 외 내부 협력 객체
 ```
 
 - 다른 모듈은 최상위 공개 타입만 참조한다. `internal` 외부 참조는 `verify()`가 차단한다.
@@ -166,7 +229,7 @@ class ModularityTests {
 
 ## 5. 레이어 구조 & 규칙
 
-이 프로젝트는 **Implement Layer를 두지 않는다.** 3개 레이어로 구성한다.
+이 프로젝트는 3개 레이어로 구성한다.
 
 ```
 Presentation   Controller, Request/Response, UseCase         → api:* 모듈
@@ -186,7 +249,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 3. 레이어를 건너뛰는 참조를 금지한다 — Presentation은 Data Access를 직접 참조하지 않고 Business를 거친다.
 4. 동일 레이어 간 참조를 금지한다.
 
-- Implement Layer가 없으므로 **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
+- **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
 - 비즈니스 규칙 검증 등은 `{Domain}ServiceImpl` 또는 `internal` 패키지의 별도 협력 객체에 둔다.
 - 도메인 객체는 `core:domain`에 `record`(불변)로 두되 JPA 어노테이션을 갖지 않는다. JPA Entity는 `infrastructure:db`에 둔다.
 
@@ -220,7 +283,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
   OutboxRelay(@Scheduled 폴러) → 미발행 레코드 조회
       → applicationEventPublisher.publishEvent(event)        // 인프로세스 재발행
       → 전달 성공 시 발행 완료 마킹, 실패 시 다음 폴에서 재시도
-구독 (예: notice 도메인)
+구독 (예: welfare 도메인 — 공지/알림 반영)
   @TransactionalEventListener void on(EventApplicationConfirmed e)  // spring-tx, Modulith 의존 없음
 ```
 
