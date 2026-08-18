@@ -5,12 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -19,10 +17,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtProvider jwtProvider;
-    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public static JwtAuthFilter of(JwtProvider jwtProvider, HandlerExceptionResolver handlerExceptionResolver) {
-        return new JwtAuthFilter(jwtProvider, handlerExceptionResolver);
+    public static JwtAuthFilter of(JwtProvider jwtProvider) {
+        return new JwtAuthFilter(jwtProvider);
     }
 
     @Override
@@ -32,19 +29,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         FilterChain filterChain
     ) throws ServletException, IOException {
         String token = resolveToken(request);
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
+        if (token != null) {
             SecurityContextHolder.getContext().setAuthentication(UserAuthentication.from(jwtProvider.parse(token)));
-        } catch (BusinessException e) {
-            SecurityContextHolder.clearContext();
-            handlerExceptionResolver.resolveException(request, response, null, e);
-            return;
         }
-
         filterChain.doFilter(request, response);
     }
 

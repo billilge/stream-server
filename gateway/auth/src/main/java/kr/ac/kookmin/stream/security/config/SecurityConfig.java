@@ -6,7 +6,6 @@ import kr.ac.kookmin.stream.security.handler.RestAuthenticationEntryPoint;
 import kr.ac.kookmin.stream.security.jwt.JwtAuthFilter;
 import kr.ac.kookmin.stream.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,8 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -33,9 +31,6 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
-    @Qualifier("handlerExceptionResolver")
-    private final HandlerExceptionResolver handlerExceptionResolver;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -51,9 +46,8 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler))
-            .addFilterBefore(
-                JwtAuthFilter.of(jwtProvider, handlerExceptionResolver),
-                UsernamePasswordAuthenticationFilter.class)
+            // ExceptionTranslationFilter 뒤에 두어야 필터가 던진 인증 예외가 EntryPoint로 넘어간다
+            .addFilterBefore(JwtAuthFilter.of(jwtProvider), AuthorizationFilter.class)
             .build();
     }
 }

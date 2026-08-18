@@ -405,11 +405,9 @@ public class UserAuthentication extends AbstractAuthenticationToken {
 
 ```java
 // gateway:auth — HandlerExceptionResolver 빈이 여럿이라 이름으로 지목
-@Configuration
+@Component
 @RequiredArgsConstructor
-public class SecurityConfig {
-
-    private final JwtProvider jwtProvider;
+public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Qualifier("handlerExceptionResolver")
     private final HandlerExceptionResolver handlerExceptionResolver;

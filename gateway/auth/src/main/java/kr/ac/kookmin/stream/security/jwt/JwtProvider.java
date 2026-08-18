@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
-import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.Role;
 import org.springframework.stereotype.Component;
@@ -62,7 +60,7 @@ public class JwtProvider {
                 toEnumSet(claims, COUNCIL_CLAIM, CouncilDepartment.class)
             );
         } catch (JwtException | IllegalArgumentException e) {
-            throw new BusinessException(CommonErrorCode.UNAUTHORIZED);
+            throw new InvalidTokenException(e);
         }
     }
 
