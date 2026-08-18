@@ -20,13 +20,6 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private static final String[] PERMIT_ALL_PATHS = {
-        "/actuator/health",
-        "/swagger-ui/**",
-        "/swagger-ui.html",
-        "/v3/api-docs/**"
-    };
-
     private final JwtProvider jwtProvider;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
@@ -39,7 +32,7 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(request -> request
-                .requestMatchers(PERMIT_ALL_PATHS).permitAll()
+                .requestMatchers(PublicEndpoints.allPatterns()).permitAll()
                 .requestMatchers("/v1/admin/**").hasAuthority(Role.ADMIN.name())
                 .requestMatchers("/v1/app/**").hasAuthority(Role.STUDENT.name())
                 .anyRequest().authenticated())
