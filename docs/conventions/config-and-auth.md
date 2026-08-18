@@ -133,13 +133,10 @@ Controller / UseCase            — 부서 단위 인가는 DepartmentAccessChec
 ```java
 // gateway:auth — DepartmentAccessChecker.java
 @Component
+@RequiredArgsConstructor
 public class DepartmentAccessChecker {
 
     private final PrincipalProvider principalProvider;
-
-    public DepartmentAccessChecker(PrincipalProvider principalProvider) {
-        this.principalProvider = principalProvider;
-    }
 
     // 요구 부서 권한이 없으면 403
     public void requireDepartment(Department required) {
@@ -153,15 +150,11 @@ public class DepartmentAccessChecker {
 ```java
 // api:admin-api — 사물함 승인은 복지부만
 @Component
+@RequiredArgsConstructor
 public class LockerApprovalUseCase {
 
     private final DepartmentAccessChecker departmentAccessChecker;
     private final LockerService lockerService;
-
-    public LockerApprovalUseCase(DepartmentAccessChecker departmentAccessChecker, LockerService lockerService) {
-        this.departmentAccessChecker = departmentAccessChecker;
-        this.lockerService = lockerService;
-    }
 
     public void approve(Long userId, Long applicationId) {
         departmentAccessChecker.requireDepartment(Department.WELFARE);
