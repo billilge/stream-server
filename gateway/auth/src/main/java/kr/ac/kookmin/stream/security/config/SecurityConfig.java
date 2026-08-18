@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.common.ErrorCode;
 import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.security.jwt.JwtAuthFilter;
 import kr.ac.kookmin.stream.security.jwt.JwtProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private static final String[] PERMIT_ALL_PATHS = {
@@ -31,15 +33,9 @@ public class SecurityConfig {
     };
 
     private final JwtProvider jwtProvider;
-    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public SecurityConfig(
-        JwtProvider jwtProvider,
-        @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver
-    ) {
-        this.jwtProvider = jwtProvider;
-        this.handlerExceptionResolver = handlerExceptionResolver;
-    }
+    @Qualifier("handlerExceptionResolver")
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

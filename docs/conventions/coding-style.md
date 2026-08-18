@@ -387,7 +387,7 @@ public class UserAuthentication extends AbstractAuthenticationToken {
 
 ### 2-11. Lombok
 
-루트 `build.gradle.kts`에서 전 모듈에 적용된다. 모듈별 `build.gradle.kts`에 다시 선언하지 않는다.
+루트 `build.gradle.kts`에서 전 모듈에 적용된다. 모듈별 `build.gradle.kts`에 다시 선언하지 않는다. 동작 설정은 루트 `lombok.config`에 둔다.
 
 | 어노테이션 | 용도 |
 | --- | --- |
@@ -400,9 +400,27 @@ public class UserAuthentication extends AbstractAuthenticationToken {
 
 - `@Data`·`@Setter`는 쓰지 않는다. 객체는 불변을 기본으로 하고, 상태 변경은 의도가 드러나는 메서드(`entity.delete()` 등)로 표현한다.
 - `record`에는 Lombok을 붙이지 않는다. 접근자·`equals`/`hashCode`가 이미 제공된다.
-- **다음 두 경우는 Lombok 대신 생성자를 직접 쓴다.**
-  - 주입받은 값으로 다른 필드를 초기화해야 할 때 — 예: `JwtProperties`로 `SecretKey`를 만드는 `JwtProvider`
-  - 생성자 파라미터에 `@Qualifier` 같은 어노테이션이 필요할 때 — Lombok은 기본 설정에서 이를 복사하지 않는다
+- 스프링 빈의 생성자 주입은 **항상 `@RequiredArgsConstructor`**로 한다. 생성자를 직접 쓰는 경우는 하나뿐이다 — 주입받은 값으로 다른 필드를 초기화해야 할 때. 예: `JwtProperties`로 `SecretKey`를 만드는 `JwtProvider`.
+- 주입할 빈을 지목해야 하면 **필드에** `@Qualifier`를 붙인다. 루트 `lombok.config`의 `lombok.copyableAnnotations`가 이를 생성자 파라미터로 복사한다.
+
+```java
+// gateway:auth — HandlerExceptionResolver 빈이 여럿이라 이름으로 지목
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
+
+    @Qualifier("handlerExceptionResolver")
+    private final HandlerExceptionResolver handlerExceptionResolver;
+}
+```
+
+```properties
+# lombok.config (루트)
+config.stopBubbling = true
+lombok.copyableAnnotations += org.springframework.beans.factory.annotation.Qualifier
+```
 
 ---
 
