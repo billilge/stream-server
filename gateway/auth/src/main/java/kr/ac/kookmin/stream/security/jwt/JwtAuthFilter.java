@@ -6,10 +6,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import kr.ac.kookmin.stream.common.BusinessException;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -18,9 +21,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public JwtAuthFilter(JwtProvider jwtProvider, HandlerExceptionResolver handlerExceptionResolver) {
-        this.jwtProvider = jwtProvider;
-        this.handlerExceptionResolver = handlerExceptionResolver;
+    public static JwtAuthFilter of(JwtProvider jwtProvider, HandlerExceptionResolver handlerExceptionResolver) {
+        return new JwtAuthFilter(jwtProvider, handlerExceptionResolver);
     }
 
     @Override
@@ -36,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            SecurityContextHolder.getContext().setAuthentication(new UserAuthentication(jwtProvider.parse(token)));
+            SecurityContextHolder.getContext().setAuthentication(UserAuthentication.from(jwtProvider.parse(token)));
         } catch (BusinessException e) {
             SecurityContextHolder.clearContext();
             handlerExceptionResolver.resolveException(request, response, null, e);

@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint((req, res, e) -> delegate(req, res, CommonErrorCode.UNAUTHORIZED))
                 .accessDeniedHandler((req, res, e) -> delegate(req, res, CommonErrorCode.FORBIDDEN)))
             .addFilterBefore(
-                new JwtAuthFilter(jwtProvider, handlerExceptionResolver),
+                JwtAuthFilter.of(jwtProvider, handlerExceptionResolver),
                 UsernamePasswordAuthenticationFilter.class)
             .build();
     }
