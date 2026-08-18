@@ -1,11 +1,8 @@
 package kr.ac.kookmin.stream.security.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.CommonErrorCode;
-import kr.ac.kookmin.stream.common.ErrorCode;
 import kr.ac.kookmin.stream.common.Role;
+import kr.ac.kookmin.stream.security.handler.RestAccessDeniedHandler;
+import kr.ac.kookmin.stream.security.handler.RestAuthenticationEntryPoint;
 import kr.ac.kookmin.stream.security.jwt.JwtAuthFilter;
 import kr.ac.kookmin.stream.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +30,8 @@ public class SecurityConfig {
     };
 
     private final JwtProvider jwtProvider;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
     @Qualifier("handlerExceptionResolver")
     private final HandlerExceptionResolver handlerExceptionResolver;
@@ -50,15 +49,11 @@ public class SecurityConfig {
                 .requestMatchers("/v1/app/**").hasAuthority(Role.STUDENT.name())
                 .anyRequest().authenticated())
             .exceptionHandling(exception -> exception
-                .authenticationEntryPoint((req, res, e) -> delegate(req, res, CommonErrorCode.UNAUTHORIZED))
-                .accessDeniedHandler((req, res, e) -> delegate(req, res, CommonErrorCode.FORBIDDEN)))
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler))
             .addFilterBefore(
                 JwtAuthFilter.of(jwtProvider, handlerExceptionResolver),
                 UsernamePasswordAuthenticationFilter.class)
             .build();
-    }
-
-    private void delegate(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode) {
-        handlerExceptionResolver.resolveException(request, response, null, new BusinessException(errorCode));
     }
 }
