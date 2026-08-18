@@ -124,7 +124,7 @@ public record PageResult<T>(List<T> content, int page, int size, long totalCount
 
 ### 2-5. JPA Entity
 
-- `infrastructure:db`에 선언한다. 도메인 객체를 받는 생성자와 `toDomain()`을 제공하고, 용도에 맞는 Base Entity를 상속한다. JPA용 `protected` 기본 생성자를 둔다.
+- `infrastructure:db`에 선언한다. 도메인 객체를 받는 정적 팩토리 `from(...)`과 `toDomain()`을 제공하고, 용도에 맞는 Base Entity를 상속한다. JPA용 기본 생성자는 `@NoArgsConstructor(access = AccessLevel.PROTECTED)`로 둔다(2-10·2-11절).
 
 **Base Entity 선택 기준** (`infrastructure:db` 공통 패키지)
 
@@ -143,6 +143,7 @@ public record PageResult<T>(List<T> content, int page, int size, long totalCount
 // infrastructure:db
 @Entity
 @Table(name = "members")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)   // JPA
 public class MemberJpaEntity extends BaseSoftDeleteEntity {
 
     @Id
@@ -152,12 +153,14 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     private String studentNo;
     private String name;
 
-    protected MemberJpaEntity() {}   // JPA
-
-    public MemberJpaEntity(Member member) {
+    private MemberJpaEntity(Member member) {
         this.id = member.id();
         this.studentNo = member.studentNo();
         this.name = member.name();
+    }
+
+    public static MemberJpaEntity from(Member member) {
+        return new MemberJpaEntity(member);
     }
 
     public Member toDomain() {
@@ -198,13 +201,10 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 }
 
 @Repository
+@RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberRepository {
 
     private final MemberJpaRepository memberJpaRepository;
-
-    public MemberRepositoryImpl(MemberJpaRepository memberJpaRepository) {
-        this.memberJpaRepository = memberJpaRepository;
-    }
 
     @Override
     public Optional<Member> findById(Long id) {
@@ -218,7 +218,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public Member save(Member member) {
-        return memberJpaRepository.save(new MemberJpaEntity(member)).toDomain();
+        return memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain();
     }
 }
 ```
@@ -241,13 +241,10 @@ public interface MemberService {
 ```java
 // core:domain:member/internal (감춰짐)
 @Service
+@RequiredArgsConstructor
 class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-
-    MemberServiceImpl(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
 
     @Override
     @Transactional
@@ -278,13 +275,10 @@ class MemberServiceImpl implements MemberService {
 // api:admin-api — 운영진 회원 등록
 @RestController
 @RequestMapping("/v1/admin/members")
+@RequiredArgsConstructor
 public class AdminMemberController {
 
     private final MemberService memberService;
-
-    public AdminMemberController(MemberService memberService) {
-        this.memberService = memberService;
-    }
 
     @PostMapping
     public ApiResponse<MemberResponse> register(@Valid @RequestBody MemberRegisterRequest request) {
@@ -298,13 +292,10 @@ public class AdminMemberController {
 // api:app-api — 학생 내 정보 조회
 @RestController
 @RequestMapping("/v1/app/members")
+@RequiredArgsConstructor
 public class AppMemberController {
 
     private final MemberService memberService;
-
-    public AppMemberController(MemberService memberService) {
-        this.memberService = memberService;
-    }
 
     @GetMapping("/me")
     public ApiResponse<MemberResponse> me(StudentApiUser apiUser) {
@@ -322,17 +313,12 @@ public class AppMemberController {
 ```java
 // api:admin-api — 조회 조합 (운영진 대시보드)
 @Component
+@RequiredArgsConstructor
 public class AdminDashboardUseCase {
 
     private final MemberService memberService;
     private final EventService eventService;
     private final NoticeService noticeService;
-
-    public AdminDashboardUseCase(MemberService memberService, EventService eventService, NoticeService noticeService) {
-        this.memberService = memberService;
-        this.eventService = eventService;
-        this.noticeService = noticeService;
-    }
 
     @Transactional(readOnly = true)
     public AdminDashboardResponse getDashboard() {
@@ -347,15 +333,11 @@ public class AdminDashboardUseCase {
 ```java
 // api:app-api — 원자적 쓰기 오케스트레이션 (유료 행사 신청)
 @Component
+@RequiredArgsConstructor
 public class EventApplicationUseCase {
 
     private final EventService eventService;
     private final FeeService feeService;
-
-    public EventApplicationUseCase(EventService eventService, FeeService feeService) {
-        this.eventService = eventService;
-        this.feeService = feeService;
-    }
 
     @Transactional  // 정원 차감 + 회비 반영을 원자적으로
     public EventApplicationResponse apply(Long memberId, EventApplyCommand command) {
@@ -365,6 +347,62 @@ public class EventApplicationUseCase {
     }
 }
 ```
+
+### 2-10. 객체 생성 — 정적 팩토리 메서드
+
+객체는 `new`로 직접 만들지 않고 정적 팩토리 메서드로 생성한다. 생성자는 `private`(JPA처럼 프레임워크가 요구하면 `protected`)으로 감춘다.
+
+| 이름 | 쓰임 | 예 |
+| --- | --- | --- |
+| `from` | 다른 타입 하나를 받아 변환 | `MemberResponse.from(member)`, `MemberJpaEntity.from(member)` |
+| `of` | 값 여러 개를 받아 조합 | `JwtAuthFilter.of(jwtProvider, handlerExceptionResolver)` |
+| `create` | 새로 만든다는 의미를 드러낼 때 | `Member.create(studentNo, name)` |
+
+```java
+// gateway:auth
+@Getter
+@Accessors(fluent = true)
+public class UserAuthentication extends AbstractAuthenticationToken {
+
+    private final Long userId;
+
+    private UserAuthentication(JwtPayload payload) {
+        super(toAuthorities(payload));
+        this.userId = payload.userId();
+        setAuthenticated(true);
+    }
+
+    public static UserAuthentication from(JwtPayload payload) {
+        return new UserAuthentication(payload);
+    }
+}
+```
+
+- 이름이 생성 의도를 드러내므로, 인자 목록만으로는 구분되지 않는 여러 생성 경로를 표현할 수 있다.
+- 생성자를 감추면 호출부가 `new`로 우회할 수 없어 생성 경로가 하나로 모인다.
+- **예외** — 아래는 `new`를 그대로 쓴다.
+  - `record`(도메인 객체·Command·Request/Response): 표준 생성자를 쓴다. 단 타입 변환이 끼면 `from(...)`/`toCommand()`를 둔다(2-2·2-3절).
+  - 예외 클래스: `throw new BusinessException(...)`.
+  - 스프링이 생성·주입하는 빈: 애초에 직접 생성하지 않는다(2-11절).
+
+### 2-11. Lombok
+
+루트 `build.gradle.kts`에서 전 모듈에 적용된다. 모듈별 `build.gradle.kts`에 다시 선언하지 않는다.
+
+| 어노테이션 | 용도 |
+| --- | --- |
+| `@Getter` | 필드 접근자. 클래스 단위로 붙인다 |
+| `@Accessors(fluent = true)` | `getXxx()` 대신 `xxx()` 접근자. `record`와 표기를 맞출 때 (`CommonErrorCode`, `UserAuthentication`) |
+| `@RequiredArgsConstructor` | 스프링 빈(`@Service`/`@Repository`/`@Component`/`@RestController`)의 생성자 주입 |
+| `@RequiredArgsConstructor(access = AccessLevel.PRIVATE)` | 정적 팩토리(2-10절)와 짝지어 생성자를 감출 때 |
+| `@NoArgsConstructor(access = AccessLevel.PROTECTED)` | JPA Entity의 기본 생성자 |
+| `@AllArgsConstructor` | 필드를 갖는 enum (`{Domain}ErrorCode`) |
+
+- `@Data`·`@Setter`는 쓰지 않는다. 객체는 불변을 기본으로 하고, 상태 변경은 의도가 드러나는 메서드(`entity.delete()` 등)로 표현한다.
+- `record`에는 Lombok을 붙이지 않는다. 접근자·`equals`/`hashCode`가 이미 제공된다.
+- **다음 두 경우는 Lombok 대신 생성자를 직접 쓴다.**
+  - 주입받은 값으로 다른 필드를 초기화해야 할 때 — 예: `JwtProperties`로 `SecretKey`를 만드는 `JwtProvider`
+  - 생성자 파라미터에 `@Qualifier` 같은 어노테이션이 필요할 때 — Lombok은 기본 설정에서 이를 복사하지 않는다
 
 ---
 
