@@ -47,7 +47,7 @@ root
 │       ├── welfare/      #   물품 대여·회비·공지 (대여는 자체 신청 프로세스)
 │       └── internal/     #   학생회 내부 운영 (운영진·부서 관리 등 어드민 전용)
 ├── gateway/              # 횡단관심사 그룹
-│   ├── auth/             # 인증/인가 (Spring Security, JWT, DepartmentAccessChecker). config-and-auth.md 참조
+│   ├── auth/             # 인증/인가 (SecurityConfig(role→URL), JWT, DepartmentAccessChecker). config-and-auth.md 참조
 │   └── logging/          # MDC 기반 요청 추적. logging.md 참조
 └── infrastructure/       # 기술 구현 (아웃바운드 어댑터)
     ├── db/               # JPA Entity, Repository 구현체, Flyway 마이그레이션 (MySQL)
@@ -83,12 +83,12 @@ root
 `api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) 단위 패키지**로 가른다.
 
 - `admin-api`·`app-api` 내부를 **팀(bounded context) 단위 패키지**로 나눠 팀별 파일이 서로 겹치지 않게 한다. 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다.
-- 여러 팀이 같은 파일을 편집하는 지점은 **보안 설정(role→URL)·라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다.
+- 여러 팀이 같은 파일을 편집하는 지점은 **라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다. 보안 설정(`SecurityConfig`의 role→URL 인가)은 `gateway:auth`가 소유한다.
 - admin 별도 배포가 필요해지면 `admin-api` + 필요한 도메인을 조립하는 bootstrap을 추가한다(현재는 단일 bootstrap).
 
 ```
 api/
-├── common-api              # 여러 팀이 공유하는 유일한 지점 (보안·라우팅·응답/예외)
+├── common-api              # 여러 팀이 공유하는 유일한 지점 (라우팅·응답/예외)
 ├── admin-api               # ADMIN /v1/admin/**
 │   └── {basePackage}.{팀}       # 팀(bounded context) 패키지 = 소유 단위
 └── app-api                 # STUDENT /v1/app/**
@@ -100,7 +100,7 @@ api/
 ```
 api/
 ├── common-api
-│   └── {basePackage}                      # SecurityConfig(role→URL), WebMvcConfig, ApiResponse, GlobalExceptionHandler
+│   └── {basePackage}                      # WebMvcConfig, ApiResponse, GlobalExceptionHandler
 ├── admin-api
 │   └── {basePackage}
 │       ├── core                           # core 팀 (auth·member)
@@ -122,7 +122,7 @@ api/
 - 한 팀 패키지(`core`, `welfare`)의 파일은 그 팀만 건드린다 — admin·app에 흩어져 있어도 소유는 팀 단위다.
 - `core` 팀처럼 **여러 도메인(auth·member)을 한 팀이 묶을 수 있다.** 팀 패키지명은 도메인명과 1:1일 필요가 없다.
 - 컨트롤러는 접두사(`Admin`/`App`)로 클라이언트를 구분하고, 각 도메인의 공개 `{Domain}Service`(또는 교차 도메인 시 `UseCase`)만 호출한다(5절·6-1절).
-- 팀이 겹쳐 충돌하는 지점은 `common-api`의 보안·라우팅·공통 응답뿐이다 — 이 파일들만 변경 시 팀 간 조율이 필요하다.
+- 팀이 겹쳐 충돌하는 지점은 `common-api`의 라우팅·공통 응답과 `gateway:auth`의 `SecurityConfig`뿐이다 — 이 파일들만 변경 시 팀 간 조율이 필요하다.
 
 ---
 
