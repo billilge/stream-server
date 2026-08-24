@@ -1,5 +1,8 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 plugins {
     alias(libs.plugins.springBoot) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 allprojects {
@@ -13,6 +16,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "com.diffplug.spotless")
 
     // Java 21 (LTS) baseline — docs/conventions/architecture.md §1
     extensions.configure<JavaPluginExtension> {
@@ -32,5 +36,12 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    extensions.configure<SpotlessExtension> {
+        java {
+            // AOSP 프로파일 — 들여쓰기 4칸, 한 줄 100자
+            googleJavaFormat().aosp()
+        }
     }
 }
