@@ -24,6 +24,10 @@ public enum PublicEndpoints {
         "/v3/api-docs/**"
     ));
 
+    private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())
+        .flatMap(endpoints -> endpoints.pathPatterns.stream())
+        .toList();
+
     private final List<String> patterns;
     private final List<PathPattern> pathPatterns;
 
@@ -41,8 +45,7 @@ public enum PublicEndpoints {
 
     public static boolean isPublic(String path) {
         PathContainer pathContainer = PathContainer.parsePath(path);
-        return Arrays.stream(values())
-            .flatMap(endpoints -> endpoints.pathPatterns.stream())
+        return ALL_PATH_PATTERNS.stream()
             .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
     }
 }
