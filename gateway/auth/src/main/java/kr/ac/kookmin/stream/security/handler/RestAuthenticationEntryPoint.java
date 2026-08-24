@@ -11,9 +11,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-/**
- * 인증되지 않은 요청(401). 로그인 페이지로 리다이렉트하는 기본 동작 대신 공통 에러 응답으로 내보낸다.
- */
+/** 인증되지 않은 요청(401). 로그인 페이지로 리다이렉트하는 기본 동작 대신 공통 에러 응답으로 내보낸다. */
 @Component
 @RequiredArgsConstructor
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -23,11 +21,10 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        AuthenticationException authenticationException
-    ) {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authenticationException) {
         handlerExceptionResolver.resolveException(
-            request, response, null, new BusinessException(CommonErrorCode.UNAUTHORIZED));
+                request, response, null, new BusinessException(CommonErrorCode.UNAUTHORIZED));
     }
 }

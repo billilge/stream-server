@@ -11,5 +11,4 @@ public class StreamServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(StreamServerApplication.class, args);
     }
-
 }
