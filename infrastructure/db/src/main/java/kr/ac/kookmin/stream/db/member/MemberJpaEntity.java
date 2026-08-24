@@ -22,10 +22,14 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     private String studentNo;
     private String name;
 
-    public MemberJpaEntity(Member member) {
+    private MemberJpaEntity(Member member) {
         this.id = member.id();
         this.studentNo = member.studentNo();
         this.name = member.name();
+    }
+
+    public static MemberJpaEntity from(Member member) {
+        return new MemberJpaEntity(member);
     }
 
     public Member toDomain() {

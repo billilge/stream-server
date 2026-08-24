@@ -53,5 +53,6 @@ infrastructure/
 
 - 커밋: `type: 제목` (한글, 마침표 없음). type은 `feat`/`fix`/`refactor`/`docs`/`test`/`chore`/`init`
 - 작업 단위별로 커밋을 나눈다
+- 커밋 메시지·PR 본문에 `Co-Authored-By: Claude ...`, `Claude-Session: ...` 등 AI 트레일러를 넣지 않는다
 - 브랜치: `{type}/#{이슈번호}-{작업내용}`
 - PR 제목: `[{Type}/#{이슈번호}] {설명}`, Squash Merge 기본, `main` 직접 push 금지

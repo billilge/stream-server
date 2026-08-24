@@ -1,0 +1,6 @@
+# 테스트 클래스패스가 gateway:auth의 동명 파일을 가린다.
+# 실제 값은 환경변수로 주입되므로 테스트에서는 더미 값을 쓴다.
+jwt:
+  secret-key: test-secret-key-must-be-at-least-32-bytes-long
+  issuer: stream-server
+  access-token-expiry: 3600000

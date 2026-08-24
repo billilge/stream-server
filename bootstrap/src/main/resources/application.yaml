@@ -1,3 +1,6 @@
 spring:
   application:
     name: stream-server
+  config:
+    import:
+      - classpath:application-gateway-auth.yml

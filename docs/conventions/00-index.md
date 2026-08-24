@@ -12,7 +12,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 | 문서 | 다루는 내용 | 언제 참조하는가 |
 | --- | --- | --- |
 | [`architecture.md`](./architecture.md) | 모듈 구조, 의존 방향, Modulith 경계 규칙, 레이어, 도메인 간 통신(UseCase·이벤트·아웃박스) | 새 모듈/도메인 설계, 의존성 리뷰 |
-| [`coding-style.md`](./coding-style.md) | 네이밍, 도메인 객체(record)/DTO/Command/Entity/Repository/Service/UseCase 패턴, Validation | 실제 코드 작성/리뷰 |
+| [`coding-style.md`](./coding-style.md) | 네이밍, 도메인 객체(record)/DTO/Command/Entity/Repository/Service/UseCase 패턴, 정적 팩토리·Lombok, Validation | 실제 코드 작성/리뷰 |
 | [`error-handling.md`](./error-handling.md) | `ErrorCode`/`BusinessException`, `GlobalExceptionHandler`, `@ApiErrorCode` Swagger 문서화 | 에러 코드 추가, 예외 처리 |
 | [`config-and-auth.md`](./config-and-auth.md) | 설정 바인딩, 2계층 권한 모델(role + 부서), `PrincipalProvider`, `DepartmentAccessChecker` | 설정값 추가, 인증·인가 작업 |
 | [`logging.md`](./logging.md) | MDC 요청 추적, `MdcFilter`/`LoggingFilter`, 로그 레벨, JSON 로깅 | 로깅 코드, MDC 필드 추가 |
@@ -28,6 +28,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 - "A 도메인 변화에 B가 반응" → `architecture.md` 6-2절 (이벤트 + 아웃박스)
 - "부서 권한으로 승인 제한" → `config-and-auth.md` 4-4절 (`DepartmentAccessChecker`)
 - "soft delete 컬럼 인덱스/유니크" → `flyway-migration.md` 3-4절
+- "객체를 어떻게 생성하지 / Lombok 어디까지" → `coding-style.md` 2-10·2-11절
 - "에러 코드 추가" → `error-handling.md`
 - "도메인 내부 구현 숨기기" → `architecture.md` 4-3절 (최상위 공개 / `internal`)
 
