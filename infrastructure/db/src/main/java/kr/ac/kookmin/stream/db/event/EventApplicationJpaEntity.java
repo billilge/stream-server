@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
@@ -16,7 +17,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "event_applications")
+@Table(
+    name = "event_applications",
+    indexes = {
+        @Index(name = "idx_event_applications_event_id_member_id", columnList = "event_id, member_id"),
+        @Index(name = "idx_event_applications_member_id", columnList = "member_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventApplicationJpaEntity extends BaseTimeEntity {
 

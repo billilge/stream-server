@@ -6,13 +6,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.internal.domain.config.domain.AdminConfigValue;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "admin_config_values")
+@Table(
+    name = "admin_config_values",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_admin_config_values_config_key", columnNames = {"config_key"})
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AdminConfigValueJpaEntity extends BaseTimeEntity {
 

@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberTermAgreement;
@@ -16,7 +17,15 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "member_term_agreements")
+@Table(
+    name = "member_term_agreements",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_member_term_agreements_member_id_term_type",
+            columnNames = {"member_id", "term_type"}
+        )
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberTermAgreementJpaEntity extends BaseTimeEntity {
 

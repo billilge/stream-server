@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseCreatedTimeEntity;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
@@ -12,7 +13,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "locker_applications")
+@Table(
+    name = "locker_applications",
+    indexes = {
+        @Index(name = "idx_locker_applications_locker_period_id_locker_id", columnList = "locker_period_id, locker_id"),
+        @Index(name = "idx_locker_applications_member_id", columnList = "member_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
 

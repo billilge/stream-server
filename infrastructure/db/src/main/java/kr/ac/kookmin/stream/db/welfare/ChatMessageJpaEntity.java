@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseCreatedTimeEntity;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatMessage;
@@ -12,7 +13,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "chat_messages")
+@Table(
+    name = "chat_messages",
+    indexes = {
+        @Index(name = "idx_chat_messages_member_id", columnList = "member_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessageJpaEntity extends BaseCreatedTimeEntity {
 

@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseCreatedTimeEntity;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -15,7 +16,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "rental_status_worker_logs")
+@Table(
+    name = "rental_status_worker_logs",
+    indexes = {
+        @Index(name = "idx_rental_status_worker_logs_rental_history_id", columnList = "rental_history_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RentalStatusWorkerLogJpaEntity extends BaseCreatedTimeEntity {
 

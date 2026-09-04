@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.util.List;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
@@ -15,7 +16,12 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "event_application_answers")
+@Table(
+    name = "event_application_answers",
+    indexes = {
+        @Index(name = "idx_event_application_answers_event_application_id", columnList = "event_application_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventApplicationAnswerJpaEntity extends BaseTimeEntity {
 

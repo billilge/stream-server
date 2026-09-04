@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.util.List;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
@@ -18,7 +19,12 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "notices")
+@Table(
+    name = "notices",
+    indexes = {
+        @Index(name = "idx_notices_category_is_deleted", columnList = "category, is_deleted")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NoticeJpaEntity extends BaseSoftDeleteEntity {
 

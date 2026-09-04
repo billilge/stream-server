@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
@@ -12,7 +13,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "archive_related_links")
+@Table(
+    name = "archive_related_links",
+    indexes = {
+        @Index(name = "idx_archive_related_links_archive_id", columnList = "archive_id")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArchiveRelatedLinkJpaEntity extends BaseTimeEntity {
 

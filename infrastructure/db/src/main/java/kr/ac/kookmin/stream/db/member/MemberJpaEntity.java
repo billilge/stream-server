@@ -17,6 +17,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
+// uk_members_active_student_id(V1)는 generated column active_student_id에 걸려 있다.
+// Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberJpaEntity extends BaseSoftDeleteEntity {
