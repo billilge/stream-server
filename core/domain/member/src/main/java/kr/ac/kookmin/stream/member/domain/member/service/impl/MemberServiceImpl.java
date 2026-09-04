@@ -1,10 +1,10 @@
-package kr.ac.kookmin.stream.member.internal;
+package kr.ac.kookmin.stream.member.domain.member.service.impl;
 
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.member.Member;
-import kr.ac.kookmin.stream.member.MemberErrorCode;
-import kr.ac.kookmin.stream.member.MemberRepository;
-import kr.ac.kookmin.stream.member.MemberService;
+import kr.ac.kookmin.stream.member.domain.member.domain.Member;
+import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
+import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
+import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

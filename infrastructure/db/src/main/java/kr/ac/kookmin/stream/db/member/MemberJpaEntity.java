@@ -6,7 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
-import kr.ac.kookmin.stream.member.Member;
+import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -19,13 +19,13 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String studentNo;
+    private String studentId;
     private String name;
 
     private MemberJpaEntity(Member member) {
-        this.id = member.id();
-        this.studentNo = member.studentNo();
-        this.name = member.name();
+        this.id = member.getId();
+        this.studentId = member.getStudentId();
+        this.name = member.getName();
     }
 
     public static MemberJpaEntity from(Member member) {
@@ -33,6 +33,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Member toDomain() {
-        return new Member(id, studentNo, name);
+        return Member.of(id, studentId, name);
     }
 }

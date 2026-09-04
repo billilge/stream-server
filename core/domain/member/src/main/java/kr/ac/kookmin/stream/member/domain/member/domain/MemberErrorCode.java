@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.member;
+package kr.ac.kookmin.stream.member.domain.member.domain;
 
 import kr.ac.kookmin.stream.common.ErrorCode;
 import kr.ac.kookmin.stream.common.ErrorStatus;
