@@ -21,7 +21,7 @@
 - Spring Boot 4.1.0은 최소 Java 17을 요구하며 Java 26까지 호환되고 Spring Framework 7.0.8 이상을 필요로 한다. Java 21은 가상 스레드 등 JVM 기능을 위해 권장되는 버전이다.
 - 버전은 루트 `gradle/libs.versions.toml`(버전 카탈로그)에서 단일 관리한다. 모듈별 `build.gradle.kts`에 버전을 하드코딩하지 않는다.
 - Spring Boot 플러그인과 `bootJar`는 **`bootstrap` 모듈에서만** 활성화한다. 나머지는 라이브러리로 두고 Boot BOM을 `platform`으로 가져온다.
-- Spring Modulith는 경계 검증(`verify()`) 목적으로만 쓰며, `spring-modulith-core`는 **`bootstrap`의 test scope에만** 둔다. 이벤트 처리에는 Modulith를 쓰지 않는다(6-2절).
+- Spring Modulith는 경계 검증(`verify()`) 목적으로만 쓰며, `spring-modulith-core`는 **`bootstrap`의 test scope에만** 둔다. 도메인 모듈은 `@ApplicationModule(type = OPEN)` 선언을 위해 어노테이션 전용 `spring-modulith-api`만 `compileOnly`로 갖는다(4-3절). 이벤트 처리에는 Modulith를 쓰지 않는다(6-2절).
 
 ---
 
@@ -155,7 +155,7 @@ core:common → (프로젝트 내 의존 없음)
 ```
 
 - `core:domain:{도메인}`은 `core:common`에만 의존한다. 다른 도메인·web·security·JPA·Modulith에는 의존하지 않는다. Spring은 DI용 `spring-context`, 트랜잭션·이벤트 리스너용 `spring-tx`만 쓴다.
-- `infrastructure:*`는 각 도메인의 공개 인터페이스를 구현하므로 해당 `core:domain:{도메인}`에 의존하되(단 `outbox` 제외), 도메인 `internal`에는 접근하지 않는다.
+- `infrastructure:*`는 각 도메인의 공개 인터페이스를 구현하므로 해당 `core:domain:{도메인}`에 의존하되(단 `outbox` 제외), 도메인의 `service.impl`에는 접근하지 않는다.
 - `core:common`은 어떤 도메인 개념도 담지 않는다(`{Domain}Id` 같은 값 타입 금지). 순수 기술 어휘 + 인증 추상(PrincipalProvider·Role·Department) + 크로스 도메인 이벤트 타입 + 아웃박스 포트만 둔다.
 - 모듈 간 의존은 원칙적으로 `implementation`을 쓴다. `api`로 노출하면 전이 의존으로 레이어가 오염된다.
 
@@ -168,8 +168,8 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 ### 4-1. 두 경계의 강제 성격
 
 - **도메인 간 경계(`{도메인A}` ↛ `{도메인B}`)**: Gradle이 컴파일 타임에 하드 강제한다. 의존을 안 걸면 상대 도메인 클래스는 컴파일 자체가 안 된다.
-- **도메인 내부 경계(공개 / `internal`)**: Modulith `verify()`가 **CI 타임에** 강제한다. 같은 모듈 안이라 Gradle이 못 막고, 다른 모듈에서 `internal` 타입을 import해도 컴파일은 된다 — `verify()`가 빌드를 깨는 것이 유일한 방어선이다.
-- 따라서 **`verify()` 테스트를 `gradle check`와 PR 머지 게이트에 필수로 건다.** 실행하지 않으면 내부 경계는 강제되지 않는다.
+- **도메인 내부 경계(공개 계층 / `service.impl`)**: 도메인 모듈은 OPEN이라 Modulith가 가리지 않는다. `bootstrap`의 **ArchUnit 테스트(`DomainImplAccessTests`)** 가 CI 타임에 강제한다. 같은 모듈 안이라 Gradle이 못 막고, `impl`에 public 타입이 생기면 다른 모듈에서 import해도 컴파일은 된다 — ArchUnit이 빌드를 깨는 것이 방어선이다.
+- 따라서 **`verify()`와 `DomainImplAccessTests`를 `gradle check`와 PR 머지 게이트에 필수로 건다.** 실행하지 않으면 내부 경계는 강제되지 않는다.
 
 ### 4-2. 패키지 컨벤션 (탐지 규칙)
 
@@ -184,28 +184,51 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 - `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(어노테이션 없이 순수 Java 유지).
 - 도메인이 하나일 때부터 **일부러 위반을 만들어 `verify()`가 실패하는지** 확인한다.
 
-### 4-3. 도메인 모듈의 공개 경계
+### 4-3. 도메인 모듈의 패키지 구조 & 공개 경계
 
-공개 타입을 모듈 **최상위 패키지**에, 내부 구현을 **`internal` 하위 패키지**에 둔다. Modulith가 최상위를 공개 API로, 하위 패키지를 내부로 간주한다. (`api`/`spi` 같은 named interface 패키지는 두지 않는다.)
+Gradle 모듈 `core:domain:{모듈}` 하나가 Modulith 애플리케이션 모듈 하나(`{basePackage}.{모듈}`)다. 모듈 안은 **`domain/{도메인}`** 으로 도메인(aggregate) 단위를 나누고, 각 도메인 아래를 **계층 패키지**(`domain`/`repository`/`service`/`service.impl`)로 나눈다. 도메인 객체만 있는 도메인도 계층 패키지를 생략하지 않는다.
 
-member 도메인 예시:
+Modulith는 모듈 기본 패키지만 공개로, 모든 하위 패키지를 비공개로 보는데 이 구조와 맞지 않는다(공개 계층 패키지마다 `@NamedInterface`를 달아야 함). 그래서 **모듈 기본 패키지의 `package-info.java`에 `@ApplicationModule(type = OPEN)`을 선언해 하위 패키지를 모두 열고**, `service.impl` 차단은 `bootstrap`의 **ArchUnit 테스트(`DomainImplAccessTests`)** 가 담당한다(4-4절).
+
+member 모듈 예시 (도메인 `member`·`notification`):
 
 ```
-{basePackage}.member
-├── MemberService                 // 공개 인터페이스 (진입점)
-├── Member, MemberRegisterCommand // 경계를 넘는 도메인 객체 / Command (record)
-├── MemberRepository              // 공개 인터페이스 (아웃바운드 포트, infrastructure:db가 구현)
-├── MemberErrorCode               // 도메인 에러 코드 (api의 Swagger 문서화가 참조 → 공개)
-└── internal/
-    └── MemberServiceImpl         // MemberService 구현체 (감춰짐), 그 외 내부 협력 객체
+{basePackage}.member                      // Modulith 애플리케이션 모듈 (= core:domain:member)
+├── package-info.java                     // @ApplicationModule(type = OPEN)
+└── domain/
+    ├── member/                           // 도메인(aggregate) 단위
+    │   ├── domain/
+    │   │   ├── Member, Department, TermType, MemberTermAgreement   // 도메인 객체·enum
+    │   │   └── MemberErrorCode                                     // 도메인 에러 코드 (api Swagger 문서화가 참조)
+    │   ├── repository/
+    │   │   └── MemberRepository          // 아웃바운드 포트 (infrastructure:db가 구현)
+    │   └── service/
+    │       ├── MemberService             // 공개 진입점
+    │       └── impl/                     // 비공개 — 모든 클래스 package-private
+    │           └── MemberServiceImpl     // 구현체, 그 외 내부 협력 객체
+    └── notification/
+        └── domain/
+            └── Notification, MemberNotificationSetting
 ```
 
-- 다른 모듈은 최상위 공개 타입만 참조한다. `internal` 외부 참조는 `verify()`가 차단한다.
-- **Repository/Client 인터페이스는 `infrastructure:*`가 구현해야 하므로 `internal`이 아니라 공개(최상위)에 둔다.** 진입점(`{Domain}Service`)과 아웃바운드 포트(`{Domain}Repository`/`{Domain}Client`)는 공개, 그 구현·로직은 비공개.
+```java
+// {basePackage}/member/package-info.java
+@ApplicationModule(type = ApplicationModule.Type.OPEN)
+package kr.ac.kookmin.stream.member;
+
+import org.springframework.modulith.ApplicationModule;
+```
+
+- `service.impl` 밖의 클래스는 `service.impl` 안의 타입을 참조하지 않는다. 같은 도메인의 `service` 패키지도, 다른 도메인의 `impl`도 예외가 아니다 — 허용되는 참조는 **같은 `impl` 패키지 안**뿐이다(ArchUnit 규칙 1).
+- `service.impl` 안의 모든 클래스는 **package-private**으로 선언한다(ArchUnit 규칙 2). 그래서 다른 모듈에서는 컴파일 자체가 안 되고, 협력 객체도 같은 패키지 안에서만 쓰인다.
+- **Repository/Client 인터페이스는 `infrastructure:*`가 구현해야 하므로 `repository` 패키지(공개)에 둔다.** 진입점(`{Domain}Service`)과 아웃바운드 포트(`{Domain}Repository`/`{Domain}Client`)는 공개, 그 구현·로직은 `service.impl`에 비공개.
 - 소비 측은 공개 인터페이스를 주입받고, Spring이 런타임에 `{Domain}ServiceImpl`를 연결한다.
-- 도메인 `internal` 내부 패키지 구조는 각 도메인이 자유롭게 설계한다.
+- `service.impl` 내부 구조는 각 도메인이 자유롭게 설계한다.
+- 새 모듈을 만들면 기본 패키지에 위 `package-info.java`를 함께 만든다. 도메인·계층 패키지를 추가할 때는 아무 선언도 필요 없다.
 
 ### 4-4. 검증 테스트
+
+두 테스트가 한 쌍이다. `ModularityTests.verify()`는 모듈 간 순환·의존 규칙을, `DomainImplAccessTests`는 도메인 모듈 안의 `service.impl` 경계를 검사한다.
 
 ```java
 // bootstrap/src/test/.../ModularityTests.java
@@ -225,6 +248,25 @@ class ModularityTests {
 }
 ```
 
+```java
+// bootstrap/src/test/.../DomainImplAccessTests.java (ArchUnit)
+@AnalyzeClasses(packages = "{basePackage}", importOptions = ImportOption.DoNotIncludeTests.class)
+class DomainImplAccessTests {
+
+    // 규칙 1 — service.impl은 같은 패키지 안에서만 참조한다
+    @ArchTest
+    static final ArchRule implIsOnlyReferencedFromItsOwnPackage = classes()
+        .that().resideInAPackage("..service.impl..")
+        .should(ArchConditions.onlyHaveDependentsWhere(originInSamePackageAsTarget()));
+
+    // 규칙 2 — service.impl의 클래스는 package-private으로 둔다
+    @ArchTest
+    static final ArchRule implHasNoPublicClasses = noClasses()
+        .that().resideInAPackage("..service.impl..")
+        .should().bePublic();
+}
+```
+
 ---
 
 ## 5. 레이어 구조 & 규칙
@@ -234,10 +276,10 @@ class ModularityTests {
 ```
 Presentation   Controller, Request/Response, UseCase         → api:* 모듈
       ↓
-Business       {Domain}Service (공개 인터페이스)               → core:domain:{도메인} (최상위)
-               {Domain}ServiceImpl (구현체)                   → core:domain:{도메인} (internal)
+Business       {Domain}Service (공개 인터페이스)               → core:domain:{모듈} domain/{도메인}/service
+               {Domain}ServiceImpl (구현체)                   → core:domain:{모듈} domain/{도메인}/service/impl (비공개)
       ↓
-Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:domain:{도메인} (최상위)
+Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:domain:{모듈} domain/{도메인}/repository
                  └ 구현: {Domain}RepositoryImpl / {Domain}JpaRepository → infrastructure:db
                  └ 구현: {Domain}ClientImpl                             → infrastructure:client
 ```
@@ -250,7 +292,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 4. 동일 레이어 간 참조를 금지한다.
 
 - **Business가 Data Access를 직접 참조한다** — `{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 사용한다.
-- 비즈니스 규칙 검증 등은 `{Domain}ServiceImpl` 또는 `internal` 패키지의 별도 협력 객체에 둔다.
+- 비즈니스 규칙 검증 등은 `{Domain}ServiceImpl` 또는 `service.impl` 패키지의 별도 협력 객체에 둔다.
 - 도메인 객체는 `core:domain`에 `record`(불변)로 두되 JPA 어노테이션을 갖지 않는다. JPA Entity는 `infrastructure:db`에 둔다.
 
 ---
@@ -264,7 +306,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 교차 도메인 조회·쓰기 흐름은 presentation의 `{Feature}UseCase`가 여러 도메인의 공개 `{Domain}Service`를 조합해 처리한다.
 
 - **`api:*` 모듈에 둔다.** `core`에는 두지 않는다.
-- 공개 `{Domain}Service`만 조합한다. `{Domain}Repository`·`internal`에는 접근하지 않는다.
+- 공개 `{Domain}Service`만 조합한다. `{Domain}Repository`·`service.impl`에는 접근하지 않는다.
 - Controller는 UseCase 하나만 참조한다: `Controller → UseCase → 각 도메인 Service`.
 - 서로 다른 도메인의 Service 2개 이상을 조합할 때만 UseCase를 만든다. **단일 도메인 흐름은 Controller가 그 `{Domain}Service`를 직접 참조**한다.
 - **트랜잭션은 원자성이 필요한 흐름에만 건다.** 유료 행사 신청(행사 정원 차감 + 회비/결제 반영)처럼 전부 성공/전부 실패해야 하는 경우에만 UseCase 메서드에 `@Transactional`을 선언한다(동일 DataSource 기준 한 트랜잭션). 운영진 대시보드 같은 조회 조합에는 트랜잭션을 걸지 않는다.
@@ -304,7 +346,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 | `bootstrap` | 모든 `api:*` + `gateway:*` + `infrastructure:*` + `core:common` + Spring Boot 실행(Actuator, 스케줄링) + `spring-modulith-core`·ArchUnit(**test scope**) |
 | `api:common-api` | `core:domain:{도메인}` + `core:common` + `gateway:auth`(DepartmentAccessChecker) + `gateway:logging` + Spring MVC + validation |
 | `api:{client}-api` | `api:common-api` + `core:domain:{도메인}` + `core:common` + `gateway:auth` + `gateway:logging` + Spring MVC + validation |
-| `core:domain:{도메인}` | `core:common` + `spring-context`(DI) + `spring-tx` + 순수 Java. **Modulith·web·security·JPA 없음** |
+| `core:domain:{도메인}` | `core:common` + `spring-context`(DI) + `spring-tx` + `spring-modulith-api`(**compileOnly**, `@ApplicationModule` 선언용) + 순수 Java. **Modulith core·web·security·JPA 없음** |
 | `core:common` | 순수 Java / 유틸리티만. Spring·Modulith·web·security·JPA 없음 |
 | `gateway:auth` | `core:common` + Spring Security + `jjwt` + `spring-webmvc`(예외 위임) |
 | `gateway:logging` | `core:common` + `spring-web` + `spring-context` + slf4j 등 + Servlet API |
@@ -316,7 +358,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 
 ## 8. 확장 · 미결
 
-- **도메인 `internal` 패키지 구조**: 각 도메인이 자유롭게 설계한다(4-3절 제약만 만족).
+- **도메인 `service.impl` 패키지 구조**: 각 도메인이 자유롭게 설계한다(4-3절 제약만 만족).
 - **`common.event` 분가**: 크로스 도메인 이벤트가 늘면 `core:event-contract`로 분리.
 - **아웃박스 외부화**: 브로커(Kafka 등) 필요 시 릴레이 재발행 대상을 확장. 현재는 인프로세스 재발행만.
 - **레거시 role 흡수**: 기존 `USER/ADMIN/WORKER/GA` 시스템의 데이터 흡수·마이그레이션은 `role-migration-plan.md`에 계획으로만 정리(미구현).

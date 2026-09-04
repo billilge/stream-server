@@ -22,7 +22,7 @@ api/
 └── app-api                        # 학생 앱 (STUDENT)
 core/
 ├── common                         # ErrorCode/BusinessException, PrincipalProvider 등 공유 커널
-└── domain/{도메인}                 # {Domain}Service(공개) / {Domain}ServiceImpl(internal)
+└── domain/{모듈}                   # domain/{도메인}/{domain|repository|service|service.impl}, impl만 비공개
 gateway/
 ├── auth                           # Spring Security, JWT
 └── logging                        # MDC 필터, access log
@@ -32,7 +32,7 @@ infrastructure/
 └── outbox                         # 아웃박스 릴레이 (폴러·재발행)
 ```
 
-도메인 간 경계는 Gradle(컴파일 타임)로, 도메인 내부 공개/`internal` 경계는 `verify()`(CI)로 강제한다.
+도메인 간 경계는 Gradle(컴파일 타임)로, 도메인 내부 `service.impl` 경계는 ArchUnit 테스트(CI)로 강제한다. `service.impl` 안의 클래스는 모두 package-private으로 둔다.
 
 ## 컨벤션 문서
 

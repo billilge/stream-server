@@ -8,7 +8,7 @@
 
 ## 1. 네이밍 컨벤션
 
-Business는 공개 인터페이스 + `internal` 구현체로 구성한다.
+Business는 공개 인터페이스 + `service.impl` 구현체로 구성한다. 도메인 모듈 안의 패키지는 `domain/{도메인}/{domain|repository|service|service.impl}`로 나누며, `service.impl` 안의 클래스는 모두 package-private으로 둔다(`architecture.md` 4-3절).
 
 | 레이어 | 역할 | 네이밍 | 위치 |
 | --- | --- | --- | --- |
@@ -16,12 +16,12 @@ Business는 공개 인터페이스 + `internal` 구현체로 구성한다.
 | Presentation | 요청 객체 | `{Domain}{Action}Request` | `api:{client}-api` |
 | Presentation | 응답 객체 | `{Domain}{Action}Response` | `api:{client}-api` |
 | Presentation | 교차 도메인 조합 | `{Feature}UseCase` | `api:{client}-api` |
-| Business | 공개 진입점 인터페이스 | `{Domain}Service` | `core:domain:{도메인}` (최상위) |
-| Business | 구현체 | `{Domain}ServiceImpl` | `core:domain:{도메인}` (`internal`) |
-| Data Access | Repository 인터페이스 | `{Domain}Repository` | `core:domain:{도메인}` (최상위, 공개) |
+| Business | 공개 진입점 인터페이스 | `{Domain}Service` | `core:domain:{모듈}` `domain/{도메인}/service` (공개) |
+| Business | 구현체 | `{Domain}ServiceImpl` | `core:domain:{모듈}` `domain/{도메인}/service/impl` (비공개) |
+| Data Access | Repository 인터페이스 | `{Domain}Repository` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Repository 구현체 | `{Domain}RepositoryImpl` | `infrastructure:db` |
 | Data Access | JPA Repository | `{Domain}JpaRepository` | `infrastructure:db` |
-| Data Access | 외부 API 클라이언트 인터페이스 | `{Domain}Client` | `core:domain:{도메인}` (최상위, 공개) |
+| Data Access | 외부 API 클라이언트 인터페이스 | `{Domain}Client` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Client 구현체 | `{Domain}ClientImpl` | `infrastructure:client` |
 
 ---
@@ -186,7 +186,7 @@ private MemberProfile profile;   // record VO를 JSON 컬럼으로
 - `core:domain`에 인터페이스만 공개로 선언하고, 부재는 `Optional`로 표현한다.
 
 ```java
-// core:domain:member (공개)
+// core:domain:member — domain/member/repository (공개)
 public interface MemberRepository {
     Optional<Member> findById(Long id);
     boolean existsByStudentNo(String studentNo);
@@ -225,13 +225,13 @@ public class MemberRepositoryImpl implements MemberRepository {
 
 ### 2-7. Business Layer (Service)
 
-- `{Domain}Service`는 공개 인터페이스(최상위), `{Domain}ServiceImpl`는 구현체(`internal`). 외부에 숨기기 위해 **package-private 클래스**로 선언한다(package-private `@Service`도 빈 등록됨).
+- `{Domain}Service`는 공개 인터페이스(`service`), `{Domain}ServiceImpl`는 구현체(`service.impl`). `service.impl` 안의 클래스는 구현체·협력 객체 모두 **package-private**으로 선언한다(package-private `@Service`도 빈 등록됨). ArchUnit(`DomainImplAccessTests`)이 public 클래스와 외부 참조를 잡는다.
 - **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
-- 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 internal 협력 객체)에서 하고 `BusinessException`을 던진다.
+- 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 `service.impl` 협력 객체)에서 하고 `BusinessException`을 던진다.
 - 트랜잭션 경계는 Service 메서드에. 조회 전용은 `@Transactional(readOnly = true)`, 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절).
 
 ```java
-// core:domain:member (최상위)
+// core:domain:member — domain/member/service (공개)
 public interface MemberService {
     Member register(MemberRegisterCommand command);
     Member getById(Long id);
@@ -239,7 +239,7 @@ public interface MemberService {
 ```
 
 ```java
-// core:domain:member/internal (감춰짐)
+// core:domain:member — domain/member/service/impl (비공개)
 @Service
 @RequiredArgsConstructor
 class MemberServiceImpl implements MemberService {
