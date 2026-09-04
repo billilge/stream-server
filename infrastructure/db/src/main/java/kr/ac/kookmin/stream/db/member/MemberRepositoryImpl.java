@@ -14,6 +14,6 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public Optional<Member> findById(Long id) {
-        return memberJpaRepository.findByIdAndDeletedAtIsNull(id).map(MemberJpaEntity::toDomain);
+        return memberJpaRepository.findByIdAndIsDeletedFalse(id).map(MemberJpaEntity::toDomain);
     }
 }
