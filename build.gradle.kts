@@ -40,8 +40,10 @@ subprojects {
 
     extensions.configure<SpotlessExtension> {
         java {
-            // AOSP 프로파일 — 들여쓰기 4칸, 한 줄 100자
-            googleJavaFormat().aosp()
+            removeUnusedImports()
+            importOrder("", "\\#")
+            // IntelliJ 포맷 결과를 CI에서 그대로 강제하기 위한 Eclipse JDT 프로파일
+            eclipse().configFile(rootProject.file("config/eclipse-formatter.xml"))
         }
     }
 }
