@@ -1,6 +1,6 @@
 # 포맷만 바꾼 커밋 목록. git blame에서 제외해 실제 코드 작성자를 추적할 수 있게 한다.
 # GitHub은 이 파일을 자동으로 인식한다.
 # 로컬 적용: git config blame.ignoreRevsFile .git-blame-ignore-revs
-
-# chore: 전체 코드 spotless 포맷 적용
-2befe6b396f6e1904b3d30590c595d1fd926cf57
+#
+# Squash Merge가 기본이라 브랜치 커밋 해시는 main에 남지 않는다.
+# 포맷 PR을 머지한 뒤, main에 생긴 squash 커밋 해시를 여기에 추가한다.
