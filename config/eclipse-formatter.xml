@@ -20,7 +20,9 @@
     <setting id="org.eclipse.jdt.core.formatter.indent_empty_lines" value="false"/>
     <!-- ij_keep_blank_lines_in_code=1 -->
     <setting id="org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve" value="1"/>
-    <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="true"/>
+    <!-- ij_java_keep_line_breaks=true(IntelliJ 기본) → 작성자가 넣은 줄바꿈을 유지한다.
+         true면 의도적으로 끊어둔 메서드 체인이 전부 한 줄로 뭉친다. -->
+    <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="false"/>
     <setting id="org.eclipse.jdt.core.formatter.join_lines_in_comments" value="false"/>
 
     <!-- ===== 중괄호 위치: 전부 end_of_line ===== -->
@@ -153,8 +155,9 @@
     <setting id="org.eclipse.jdt.core.formatter.wrap_before_assignment_operator" value="false"/>
     <!-- 배열 초기화 값: normal -->
     <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer" value="16"/>
-    <!-- enum 상수: off -->
-    <setting id="org.eclipse.jdt.core.formatter.alignment_for_enum_constants" value="0"/>
+    <!-- enum 상수: on_every_item.
+         off(0)면 상수를 한 줄에 몰아넣고 상수 중간에서 줄바꿈해 버린다. -->
+    <setting id="org.eclipse.jdt.core.formatter.alignment_for_enum_constants" value="80"/>
     <!-- 어노테이션 인자: off -->
     <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation" value="0"/>
     <!-- try 리소스: off -->
