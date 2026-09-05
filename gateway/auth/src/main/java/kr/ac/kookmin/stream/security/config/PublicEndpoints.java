@@ -8,25 +8,16 @@ import org.springframework.http.server.PathContainer;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-/**
- * 인증 없이 여는 엔드포인트. SecurityConfig의 permitAll 대상이며 용도별로 묶어 관리한다.
- */
+/** 인증 없이 여는 엔드포인트. SecurityConfig의 permitAll 대상이며 용도별로 묶어 관리한다. */
 @Getter
 @Accessors(fluent = true)
 public enum PublicEndpoints {
 
-    HEALTH_CHECK(List.of(
-        "/actuator/health"
-    )),
-    SWAGGER(List.of(
-        "/swagger-ui/**",
-        "/swagger-ui.html",
-        "/v3/api-docs/**"
-    ));
+    HEALTH_CHECK(List.of("/actuator/health")),
+    SWAGGER(List.of("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"));
 
     private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())
-        .flatMap(endpoints -> endpoints.pathPatterns.stream())
-        .toList();
+            .flatMap(endpoints -> endpoints.pathPatterns.stream()).toList();
 
     private final List<String> patterns;
     private final List<PathPattern> pathPatterns;
@@ -39,13 +30,13 @@ public enum PublicEndpoints {
 
     public static String[] allPatterns() {
         return Arrays.stream(values())
-            .flatMap(endpoints -> endpoints.patterns.stream())
-            .toArray(String[]::new);
+                .flatMap(endpoints -> endpoints.patterns.stream())
+                .toArray(String[]::new);
     }
 
     public static boolean isPublic(String path) {
         PathContainer pathContainer = PathContainer.parsePath(path);
         return ALL_PATH_PATTERNS.stream()
-            .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
+                .anyMatch(pathPattern -> pathPattern.matches(pathContainer));
     }
 }

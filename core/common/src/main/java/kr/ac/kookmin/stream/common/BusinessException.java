@@ -13,7 +13,10 @@ public class BusinessException extends RuntimeException {
     }
 
     public BusinessException(ErrorCode errorCode, Object... formatArgs) {
-        super(formatArgs.length == 0 ? errorCode.message() : errorCode.message().formatted(formatArgs));
+        super(
+                formatArgs.length == 0
+                        ? errorCode.message()
+                        : errorCode.message().formatted(formatArgs));
         this.errorCode = errorCode;
     }
 }

@@ -15,7 +15,8 @@ class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
 
     public Member getById(Long id) {
-        return memberRepository.findById(id)
-            .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository
+                .findById(id)
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }

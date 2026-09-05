@@ -30,35 +30,37 @@ public class JwtProvider {
         this.secretKey = Keys.hmacShaKeyFor(jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(Long userId, Set<Role> roles, Set<CouncilDepartment> councilDepartments) {
+    public String generateAccessToken(
+            Long userId,
+            Set<Role> roles,
+            Set<CouncilDepartment> councilDepartments) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + jwtProperties.accessTokenExpiry());
 
         return Jwts.builder()
-            .issuer(jwtProperties.issuer())
-            .subject(String.valueOf(userId))
-            .issuedAt(issuedAt)
-            .expiration(expiration)
-            .claim(ROLES_CLAIM, names(roles))
-            .claim(COUNCIL_CLAIM, names(councilDepartments))
-            .signWith(secretKey)
-            .compact();
+                .issuer(jwtProperties.issuer())
+                .subject(String.valueOf(userId))
+                .issuedAt(issuedAt)
+                .expiration(expiration)
+                .claim(ROLES_CLAIM, names(roles))
+                .claim(COUNCIL_CLAIM, names(councilDepartments))
+                .signWith(secretKey)
+                .compact();
     }
 
     public JwtPayload parse(String token) {
         try {
             Claims claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .requireIssuer(jwtProperties.issuer())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                    .verifyWith(secretKey)
+                    .requireIssuer(jwtProperties.issuer())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             return new JwtPayload(
-                Long.valueOf(claims.getSubject()),
-                toEnumSet(claims, ROLES_CLAIM, Role.class),
-                toEnumSet(claims, COUNCIL_CLAIM, CouncilDepartment.class)
-            );
+                    Long.valueOf(claims.getSubject()),
+                    toEnumSet(claims, ROLES_CLAIM, Role.class),
+                    toEnumSet(claims, COUNCIL_CLAIM, CouncilDepartment.class));
         } catch (JwtException | IllegalArgumentException e) {
             throw new InvalidTokenException(e);
         }
@@ -74,7 +76,7 @@ public class JwtProvider {
             return EnumSet.noneOf(type);
         }
         return values.stream()
-            .map(value -> Enum.valueOf(type, String.valueOf(value)))
-            .collect(Collectors.toCollection(() -> EnumSet.noneOf(type)));
+                .map(value -> Enum.valueOf(type, String.valueOf(value)))
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(type)));
     }
 }

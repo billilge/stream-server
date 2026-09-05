@@ -17,5 +17,4 @@ class ModularityTests {
     void writeDocs() {
         new Documenter(modules).writeDocumentation();
     }
-
 }

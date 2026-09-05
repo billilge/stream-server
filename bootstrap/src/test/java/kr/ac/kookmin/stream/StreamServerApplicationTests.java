@@ -9,5 +9,4 @@ class StreamServerApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }
