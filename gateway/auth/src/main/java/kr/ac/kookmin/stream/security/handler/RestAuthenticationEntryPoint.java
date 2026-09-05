@@ -25,6 +25,9 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletResponse response,
             AuthenticationException authenticationException) {
         handlerExceptionResolver.resolveException(
-                request, response, null, new BusinessException(CommonErrorCode.UNAUTHORIZED));
+                request,
+                response,
+                null,
+                new BusinessException(CommonErrorCode.UNAUTHORIZED));
     }
 }

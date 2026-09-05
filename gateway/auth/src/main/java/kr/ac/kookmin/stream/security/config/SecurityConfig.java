@@ -32,20 +32,18 @@ public class SecurityConfig {
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
-                        request ->
-                                request.requestMatchers(PublicEndpoints.allPatterns())
-                                        .permitAll()
-                                        .requestMatchers("/v1/admin/**")
-                                        .hasAuthority(Role.ADMIN.name())
-                                        .requestMatchers("/v1/app/**")
-                                        .hasAuthority(Role.STUDENT.name())
-                                        .anyRequest()
-                                        .authenticated())
+                        request -> request.requestMatchers(PublicEndpoints.allPatterns())
+                                .permitAll()
+                                .requestMatchers("/v1/admin/**")
+                                .hasAuthority(Role.ADMIN.name())
+                                .requestMatchers("/v1/app/**")
+                                .hasAuthority(Role.STUDENT.name())
+                                .anyRequest()
+                                .authenticated())
                 .exceptionHandling(
-                        exception ->
-                                exception
-                                        .authenticationEntryPoint(authenticationEntryPoint)
-                                        .accessDeniedHandler(accessDeniedHandler))
+                        exception -> exception
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler))
                 // ExceptionTranslationFilter 뒤에 두어야 필터가 던진 인증 예외가 EntryPoint로 넘어간다
                 .addFilterBefore(JwtAuthFilter.of(jwtProvider), AuthorizationFilter.class)
                 .build();

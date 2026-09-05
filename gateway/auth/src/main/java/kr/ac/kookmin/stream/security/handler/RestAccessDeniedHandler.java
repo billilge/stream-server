@@ -25,6 +25,9 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletResponse response,
             AccessDeniedException accessDeniedException) {
         handlerExceptionResolver.resolveException(
-                request, response, null, new BusinessException(CommonErrorCode.FORBIDDEN));
+                request,
+                response,
+                null,
+                new BusinessException(CommonErrorCode.FORBIDDEN));
     }
 }

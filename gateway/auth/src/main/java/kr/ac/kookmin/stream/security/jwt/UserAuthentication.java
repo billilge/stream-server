@@ -45,9 +45,9 @@ public class UserAuthentication extends AbstractAuthenticationToken {
 
     private static Collection<GrantedAuthority> toAuthorities(JwtPayload payload) {
         return Stream.concat(
-                        payload.roles().stream().map(Role::name),
-                        payload.councilDepartments().stream()
-                                .map(department -> COUNCIL_AUTHORITY_PREFIX + department.name()))
+                payload.roles().stream().map(Role::name),
+                payload.councilDepartments().stream()
+                        .map(department -> COUNCIL_AUTHORITY_PREFIX + department.name()))
                 .<GrantedAuthority>map(SimpleGrantedAuthority::new)
                 .toList();
     }

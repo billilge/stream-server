@@ -12,11 +12,12 @@ import org.springframework.web.util.pattern.PathPatternParser;
 @Getter
 @Accessors(fluent = true)
 public enum PublicEndpoints {
+
     HEALTH_CHECK(List.of("/actuator/health")),
     SWAGGER(List.of("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"));
 
-    private static final List<PathPattern> ALL_PATH_PATTERNS =
-            Arrays.stream(values()).flatMap(endpoints -> endpoints.pathPatterns.stream()).toList();
+    private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())
+            .flatMap(endpoints -> endpoints.pathPatterns.stream()).toList();
 
     private final List<String> patterns;
     private final List<PathPattern> pathPatterns;

@@ -27,12 +27,13 @@ public class JwtProvider {
 
     public JwtProvider(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        this.secretKey =
-                Keys.hmacShaKeyFor(jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8));
+        this.secretKey = Keys.hmacShaKeyFor(jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateAccessToken(
-            Long userId, Set<Role> roles, Set<CouncilDepartment> councilDepartments) {
+            Long userId,
+            Set<Role> roles,
+            Set<CouncilDepartment> councilDepartments) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + jwtProperties.accessTokenExpiry());
 
@@ -49,13 +50,12 @@ public class JwtProvider {
 
     public JwtPayload parse(String token) {
         try {
-            Claims claims =
-                    Jwts.parser()
-                            .verifyWith(secretKey)
-                            .requireIssuer(jwtProperties.issuer())
-                            .build()
-                            .parseSignedClaims(token)
-                            .getPayload();
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .requireIssuer(jwtProperties.issuer())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             return new JwtPayload(
                     Long.valueOf(claims.getSubject()),

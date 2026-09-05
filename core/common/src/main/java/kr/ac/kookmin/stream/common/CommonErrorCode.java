@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @AllArgsConstructor
 public enum CommonErrorCode implements ErrorCode {
+
     INVALID_INPUT(ErrorStatus.BAD_REQUEST, "유효하지 않은 입력값입니다."),
     UNAUTHORIZED(ErrorStatus.UNAUTHORIZED, "인증이 필요합니다."),
     FORBIDDEN(ErrorStatus.FORBIDDEN, "접근 권한이 없습니다."),
