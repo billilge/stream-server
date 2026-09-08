@@ -1,8 +1,8 @@
 package kr.ac.kookmin.stream.db.member;
 
 import java.util.Optional;
-import kr.ac.kookmin.stream.member.Member;
-import kr.ac.kookmin.stream.member.MemberRepository;
+import kr.ac.kookmin.stream.member.domain.member.domain.Member;
+import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +14,6 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public Optional<Member> findById(Long id) {
-        return memberJpaRepository.findByIdAndDeletedAtIsNull(id).map(MemberJpaEntity::toDomain);
+        return memberJpaRepository.findByIdAndIsDeletedFalse(id).map(MemberJpaEntity::toDomain);
     }
 }

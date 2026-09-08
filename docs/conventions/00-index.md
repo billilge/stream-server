@@ -5,7 +5,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 **핵심 전제**
 - 학생이 **대여·행사 신청·사물함 신청·회비 납부** 등을, 운영진(부서별 관리자)이 관리를 수행하는 **단일 학생회** 플랫폼(테넌트 식별자 없음).
 - 언어 Java 21, DB MySQL 8.x. Spring Modulith는 경계 검증 `verify()` 전용.
-- 도메인 간 경계는 Gradle(컴파일 타임), 도메인 내부(공개/`internal`) 경계는 `verify()`(CI 타임)로 강제.
+- 도메인 간 경계는 Gradle(컴파일 타임), 도메인 내부(`service.impl`) 경계는 ArchUnit 테스트(CI 타임)로 강제. Modulith `verify()`는 모듈 간 순환·의존 검사.
 - 교차 도메인 동기 조합은 api의 `UseCase`, 비동기 반응은 이벤트 + 직접 구현 아웃박스.
 - 권한은 2계층: 기본 role(`STUDENT`/`ADMIN`) + 관리자 부서(`Department`, `DEPT_*`).
 
@@ -30,7 +30,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 - "soft delete 컬럼 인덱스/유니크" → `flyway-migration.md` 3-4절
 - "객체를 어떻게 생성하지 / Lombok 어디까지" → `coding-style.md` 2-10·2-11절
 - "에러 코드 추가" → `error-handling.md`
-- "도메인 내부 구현 숨기기" → `architecture.md` 4-3절 (최상위 공개 / `internal`)
+- "도메인 내부 구현 숨기기 / 패키지 구조" → `architecture.md` 4-3절 (`domain/{도메인}/{domain|repository|service|service.impl}`, OPEN 모듈 + ArchUnit)
 
 ## 모듈 한눈에 보기
 
@@ -44,8 +44,8 @@ core/
 ├── common                      # ErrorCode/BusinessException/ErrorStatus, PrincipalProvider/Role/Department,
 │                               # PageResult/CursorSliceResult, OutboxWriter, common.event (shared module)
 └── domain/{auth,member,event,welfare,internal}
-                                # {Domain}Service(공개)/{Domain}ServiceImpl(internal)/
-                                # {Domain}Repository·{Domain}Client(공개)/{Domain}ErrorCode
+                                # 모듈 안은 domain/{도메인}/{domain|repository|service|service.impl}
+                                # OPEN 모듈. service.impl만 비공개(package-private, ArchUnit이 검사)
 gateway/
 ├── auth                        # Spring Security, JWT, DepartmentAccessChecker
 └── logging                     # MDC 필터, access log

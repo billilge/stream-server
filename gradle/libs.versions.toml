@@ -25,6 +25,7 @@ springBootStarterSecurityTest = { module = "org.springframework.boot:spring-boot
 springBootStarterDataJpaTest = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
 
 # Spring Modulith — verify() boundary checks only, bootstrap test scope
+springModulithApi = { module = "org.springframework.modulith:spring-modulith-api" }
 springModulithStarterTest = { module = "org.springframework.modulith:spring-modulith-starter-test" }
 springModulithDocs = { module = "org.springframework.modulith:spring-modulith-docs" }
 
@@ -38,7 +39,6 @@ jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }
-h2 = { module = "com.h2database:h2" }
 
 jjwtApi = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwtVersion" }
 jjwtImpl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwtVersion" }

@@ -7,6 +7,9 @@ description = "JPA Entity, RepositoryImpl, Flyway 마이그레이션 (MySQL)"
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:domain:member"))
+    implementation(project(":core:domain:event"))
+    implementation(project(":core:domain:welfare"))
+    implementation(project(":core:domain:internal"))
 
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarterDataJpa)

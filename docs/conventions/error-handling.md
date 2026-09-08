@@ -36,7 +36,7 @@ public final class ErrorStatus {
 ## 2. CommonErrorCode & 도메인 ErrorCode
 
 - 공통 에러 코드는 `core:common`의 `CommonErrorCode`.
-- 도메인 에러 코드는 각 `core:domain:{도메인}`에 별도 enum으로 두고, api Swagger 문서화가 참조하므로 **공개(최상위)** 에 둔다.
+- 도메인 에러 코드는 각 도메인의 `domain/{도메인}/domain` 패키지에 별도 enum으로 두고, api Swagger 문서화가 참조하므로 공개 패키지(`domain`)에 둔다.
 
 ```java
 // core:common — CommonErrorCode.java
