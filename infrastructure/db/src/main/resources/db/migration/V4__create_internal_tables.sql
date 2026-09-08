@@ -1,0 +1,46 @@
+CREATE TABLE work_schedules (
+    schedule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    member_id BIGINT NOT NULL,
+    day_of_week VARCHAR(10) NOT NULL,
+    start_hour TINYINT NOT NULL,
+    end_hour TINYINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_work_schedules_member_id ON work_schedules (member_id);
+
+CREATE TABLE admin_config_values (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    config_key VARCHAR(255) NOT NULL,
+    config_value VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX uk_admin_config_values_config_key ON admin_config_values (config_key);
+
+CREATE TABLE display_posters (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image_key VARCHAR(255) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE display_calendar_schedules (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    date DATE NOT NULL,
+    schedules TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE files (
+    file_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    file_key TEXT NOT NULL,
+    category VARCHAR(30) NOT NULL,                  -- TEMP / NOTICE_ATTACHMENT / NOTICE_IMAGE / EVENT_IMAGE / ARCHIVE_IMAGE
+    original_name VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    uploader_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
