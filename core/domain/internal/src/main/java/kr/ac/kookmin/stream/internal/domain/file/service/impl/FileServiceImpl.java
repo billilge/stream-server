@@ -8,7 +8,7 @@ import kr.ac.kookmin.stream.internal.domain.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.internal.domain.file.domain.FileUploadUrlIssueCommand;
 import kr.ac.kookmin.stream.internal.domain.file.domain.FileUploadUrlIssueResult;
 import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
-import kr.ac.kookmin.stream.internal.domain.file.repository.FileClient;
+import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
 import kr.ac.kookmin.stream.internal.domain.file.repository.FileRepository;
 import kr.ac.kookmin.stream.internal.domain.file.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +22,15 @@ class FileServiceImpl implements FileService {
     private static final String FILE_KEY_PREFIX = "files/";
 
     private final FileRepository fileRepository;
-    private final FileClient fileClient;
+    private final FileStorageClient fileStorageClient;
 
     @Override
     @Transactional
-    public FileUploadUrlIssueResult issueUploadUrl(FileUploadUrlIssueCommand command) {
+    public FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command) {
         FileUploadPolicy.validate(command.category(), command.originalName(), command.fileSize());
 
         String fileKey = generateFileKey(command.originalName());
-        UploadUrl uploadUrl = fileClient.issueUploadUrl(fileKey, command.contentType());
+        UploadUrl uploadUrl = fileStorageClient.issuePresignedUrl(fileKey, command.contentType());
 
         File file = File.of(
             null,
@@ -51,7 +51,7 @@ class FileServiceImpl implements FileService {
     public void receiveUpload(String fileKey, InputStream content) {
         fileRepository.findByFileKey(fileKey)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        fileClient.write(fileKey, content);
+        fileStorageClient.write(fileKey, content);
     }
 
     @Override
@@ -59,7 +59,7 @@ class FileServiceImpl implements FileService {
     public void delete(Long fileId) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        fileClient.deleteObject(file.getFileKey());
+        fileStorageClient.deleteObject(file.getFileKey());
         fileRepository.deleteById(fileId);
     }
 

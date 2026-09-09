@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.client.file;
+package kr.ac.kookmin.stream.client.file.local;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

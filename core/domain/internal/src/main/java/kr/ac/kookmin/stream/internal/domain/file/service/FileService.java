@@ -5,7 +5,7 @@ import kr.ac.kookmin.stream.internal.domain.file.domain.FileUploadUrlIssueComman
 import kr.ac.kookmin.stream.internal.domain.file.domain.FileUploadUrlIssueResult;
 
 public interface FileService {
-    FileUploadUrlIssueResult issueUploadUrl(FileUploadUrlIssueCommand command);
+    FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command);
     void receiveUpload(String fileKey, InputStream content);
     void delete(Long fileId);
 }

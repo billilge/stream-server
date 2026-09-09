@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.client.file;
+package kr.ac.kookmin.stream.client.file.local;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
-import kr.ac.kookmin.stream.internal.domain.file.repository.FileClient;
+import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,14 +17,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class FileClientImpl implements FileClient {
+public class LocalFileStorageClient implements FileStorageClient {
 
     private static final String LOCAL_UPLOAD_PATH = "/v1/admin/files/local-upload/";
 
     private final LocalFileStorageProperties properties;
 
     @Override
-    public UploadUrl issueUploadUrl(String fileKey, String contentType) {
+    public UploadUrl issuePresignedUrl(String fileKey, String contentType) {
         String url = properties.baseUrl() + LOCAL_UPLOAD_PATH + fileKey;
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(properties.uploadUrlExpirySeconds());
         return new UploadUrl(url, expiresAt);

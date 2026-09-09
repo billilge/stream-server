@@ -27,8 +27,8 @@ public class AdminFileController {
     private final PrincipalProvider principalProvider;
 
     @PostMapping("/presigned-url")
-    public ApiResponse<FileUploadUrlIssueResponse> issueUploadUrl(@Valid @RequestBody FileUploadUrlIssueRequest request) {
-        FileUploadUrlIssueResult result = fileService.issueUploadUrl(request.toCommand(principalProvider.userId()));
+    public ApiResponse<FileUploadUrlIssueResponse> issuePresignedUrl(@Valid @RequestBody FileUploadUrlIssueRequest request) {
+        FileUploadUrlIssueResult result = fileService.issuePresignedUrl(request.toCommand(principalProvider.userId()));
         return ApiResponse.success(FileUploadUrlIssueResponse.from(result));
     }
 
@@ -40,7 +40,7 @@ public class AdminFileController {
 
     /**
      * S3 연동 전 임시 엔드포인트. presigned-url 발급 응답의 uploadUrl이 이 경로를 가리킨다.
-     * S3로 전환하면 이 메서드와 FileClientImpl의 로컬 구현을 함께 제거한다.
+     * S3로 전환하면 이 메서드와 LocalFileStorageClient의 로컬 구현을 함께 제거한다.
      */
     @PutMapping("/local-upload/**")
     public ApiResponse<Void> receiveLocalUpload(HttpServletRequest request) throws IOException {
