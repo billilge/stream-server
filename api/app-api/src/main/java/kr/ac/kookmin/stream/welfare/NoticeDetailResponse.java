@@ -10,18 +10,18 @@ public record NoticeDetailResponse(
     String title,
     String content,
     NoticeCategory category,
-    List<NoticeImageResponse> images,
-    List<NoticeAttachmentResponse> attachments,
+    List<Image> images,
+    List<Attachment> attachments,
     LocalDateTime createdAt
 ) {
 
     public static NoticeDetailResponse from(Notice notice) {
-        List<NoticeImageResponse> images = notice.getImageIds() == null
+        List<Image> images = notice.getImageIds() == null
             ? List.of()
-            : notice.getImageIds().stream().map(NoticeImageResponse::from).toList();
-        List<NoticeAttachmentResponse> attachments = notice.getAttachmentIds() == null
+            : notice.getImageIds().stream().map(Image::from).toList();
+        List<Attachment> attachments = notice.getAttachmentIds() == null
             ? List.of()
-            : notice.getAttachmentIds().stream().map(NoticeAttachmentResponse::from).toList();
+            : notice.getAttachmentIds().stream().map(Attachment::from).toList();
 
         return new NoticeDetailResponse(
             notice.getId(),
@@ -32,5 +32,19 @@ public record NoticeDetailResponse(
             attachments,
             notice.getCreatedAt()
         );
+    }
+
+    public record Image(Long fileId, String fileUrl) {
+
+        public static Image from(Long fileId) {
+            return new Image(fileId, null);
+        }
+    }
+
+    public record Attachment(Long fileId, String fileName, String fileUrl) {
+
+        public static Attachment from(Long fileId) {
+            return new Attachment(fileId, null, null);
+        }
     }
 }
