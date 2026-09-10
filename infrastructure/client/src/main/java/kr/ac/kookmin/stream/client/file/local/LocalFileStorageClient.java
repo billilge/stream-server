@@ -10,12 +10,14 @@ import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
 import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * 로컬 디스크 기반 임시 구현체. S3 연동 시 이 클래스와 "임시 로컬 업로드 엔드포인트"를 함께 제거한다.
  */
 @Component
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
 @RequiredArgsConstructor
 public class LocalFileStorageClient implements FileStorageClient {
 

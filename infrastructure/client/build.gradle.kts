@@ -13,6 +13,9 @@ dependencies {
     implementation(libs.springWeb)
     implementation(libs.jacksonDatabind)
 
+    implementation(platform(libs.awsSdkBom))
+    implementation(libs.awsS3)
+
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)
     testRuntimeOnly(libs.junitPlatformLauncher)
