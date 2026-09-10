@@ -3,6 +3,8 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,38 +13,30 @@ public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long
 
     Optional<NoticeJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    @Query(
-        value = """
-            SELECT * FROM notices
-            WHERE is_deleted = false
-            AND (:category IS NULL OR category = :category)
-            ORDER BY pinned DESC, created_at DESC, notice_id DESC
-            LIMIT :limit
-            """,
-        nativeQuery = true
-    )
-    List<NoticeJpaEntity> findFirstSlice(@Param("category") String category, @Param("limit") int limit);
+    @Query("""
+        SELECT n FROM NoticeJpaEntity n
+        WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
+        ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
+        """)
+    List<NoticeJpaEntity> findFirstSlice(@Param("category") NoticeCategory category, Pageable pageable);
 
-    @Query(
-        value = """
-            SELECT * FROM notices
-            WHERE is_deleted = false
-            AND (:category IS NULL OR category = :category)
-            AND (
-                pinned < :cursorPinned
-                OR (pinned = :cursorPinned AND created_at < :cursorCreatedAt)
-                OR (pinned = :cursorPinned AND created_at = :cursorCreatedAt AND notice_id < :cursorId)
-            )
-            ORDER BY pinned DESC, created_at DESC, notice_id DESC
-            LIMIT :limit
-            """,
-        nativeQuery = true
-    )
+    @Query("""
+        SELECT n FROM NoticeJpaEntity n
+        WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
+        AND (
+            (CASE WHEN n.pinned = true THEN 1 ELSE 0 END) < (CASE WHEN :cursorPinned = true THEN 1 ELSE 0 END)
+            OR (n.pinned = :cursorPinned AND n.createdAt < :cursorCreatedAt)
+            OR (n.pinned = :cursorPinned AND n.createdAt = :cursorCreatedAt AND n.id < :cursorId)
+        )
+        ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
+        """)
     List<NoticeJpaEntity> findNextSlice(
-        @Param("category") String category,
+        @Param("category") NoticeCategory category,
         @Param("cursorPinned") boolean cursorPinned,
         @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
         @Param("cursorId") Long cursorId,
-        @Param("limit") int limit
+        Pageable pageable
     );
 }
