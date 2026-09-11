@@ -58,14 +58,11 @@ public class Event {
      * @param appliedCount status가 APPLIED인 신청 수. 선착순 모집이 아니면 쓰이지 않는다
      */
     public RecruitStatus calculateRecruitStatus(LocalDateTime now, long appliedCount) {
-        if (recruitStatus == RecruitStatus.CLOSED) {
+        if (isForceClosed() || isAfterApplyPeriod(now)) {
             return RecruitStatus.CLOSED;
         }
-        if (now.isBefore(applyStartAt)) {
+        if (isBeforeApplyPeriod(now)) {
             return RecruitStatus.BEFORE_OPEN;
-        }
-        if (now.isAfter(applyEndAt)) {
-            return RecruitStatus.CLOSED;
         }
         if (isCapacityFull(appliedCount)) {
             return RecruitStatus.CLOSED;
@@ -75,10 +72,32 @@ public class Event {
 
     /**
      * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
-     * <p>
-     * 모집 상태 계산은 정원 마감을 CLOSED로 합치지만, 신청 실패 사유는 기간 마감과 정원 마감을 구분해야 하므로 분리해 둔다.
      */
     public boolean isCapacityFull(long appliedCount) {
         return recruitType == RecruitType.FIRST_COME && appliedCount >= capacity;
+    }
+
+    /**
+     * 정원 때문에만 닫힌 상태인지. 모집 상태 계산은 강제 마감·기간 종료·정원 마감을 모두 CLOSED로 합치지만,
+     * 신청 실패 사유는 이 둘을 구분해야 하므로 정원이 유일한 사유일 때를 따로 판정한다.
+     */
+    public boolean isClosedByCapacityOnly(LocalDateTime now, long appliedCount) {
+        return !isForceClosed()
+            && !isBeforeApplyPeriod(now)
+            && !isAfterApplyPeriod(now)
+            && isCapacityFull(appliedCount);
+    }
+
+    /** 운영진이 강제로 마감했는지. 저장된 recruitStatus는 이 뜻만 갖는다. */
+    private boolean isForceClosed() {
+        return recruitStatus == RecruitStatus.CLOSED;
+    }
+
+    private boolean isBeforeApplyPeriod(LocalDateTime now) {
+        return now.isBefore(applyStartAt);
+    }
+
+    private boolean isAfterApplyPeriod(LocalDateTime now) {
+        return now.isAfter(applyEndAt);
     }
 }

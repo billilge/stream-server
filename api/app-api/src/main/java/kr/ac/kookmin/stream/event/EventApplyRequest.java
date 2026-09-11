@@ -8,7 +8,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 public record EventApplyRequest(
     @NotNull(message = "신청서 답변 목록을 입력해 주세요.")
     @Valid
-    List<AnswerRequest> answers
+    List<@NotNull(message = "답변 항목이 비어 있습니다.") AnswerRequest> answers
 ) {
 
     public EventApplyCommand toCommand() {

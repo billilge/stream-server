@@ -56,18 +56,18 @@ class EventServiceImpl implements EventService {
     /**
      * 모집 중인 행사를 가져온다. 폼 조회와 신청이 같은 기준으로 열려 있어야 하므로 한곳에 둔다.
      * <p>
-     * 정원 마감은 기간 마감과 사유를 구분해야 해서 모집 상태 계산보다 먼저 본다.
+     * 닫혀 있으면 사유를 가른다. 강제 마감·기간 종료가 정원 마감보다 앞선 사유다.
      */
     private Event getOpenEvent(Long eventId) {
         Event event = eventRepository.findById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
 
+        LocalDateTime now = LocalDateTime.now();
         long appliedCount = eventRepository.countAppliedByEventId(eventId);
-        if (event.isCapacityFull(appliedCount)) {
-            throw new BusinessException(EventErrorCode.CAPACITY_FULL);
-        }
-        if (event.calculateRecruitStatus(LocalDateTime.now(), appliedCount) != RecruitStatus.OPEN) {
-            throw new BusinessException(EventErrorCode.ALREADY_CLOSED);
+        if (event.calculateRecruitStatus(now, appliedCount) != RecruitStatus.OPEN) {
+            throw new BusinessException(event.isClosedByCapacityOnly(now, appliedCount)
+                ? EventErrorCode.CAPACITY_FULL
+                : EventErrorCode.ALREADY_CLOSED);
         }
         return event;
     }

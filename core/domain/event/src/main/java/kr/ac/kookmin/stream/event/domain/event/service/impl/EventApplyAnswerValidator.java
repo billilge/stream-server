@@ -57,10 +57,13 @@ class EventApplyAnswerValidator {
         String answerText = answer.answerText();
         List<Integer> selectedOptions = answer.selectedOptions() == null ? List.of() : answer.selectedOptions();
         QuestionType questionType = question.getQuestionType();
+        // 선택형은 answerText를 쓰지 않는다. 미사용 필드를 빈 문자열로 채워 보내는 클라이언트도 있어
+        // AnswerCommand.isEmpty()와 같은 기준(null 또는 blank)으로 "값 없음"을 판정한다
+        boolean hasAnswerText = answerText != null && !answerText.isBlank();
 
         switch (questionType) {
             case SHORT_TEXT, LONG_TEXT -> {
-                if (answerText == null || answerText.isBlank() || !selectedOptions.isEmpty()) {
+                if (!hasAnswerText || !selectedOptions.isEmpty()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 if (answerText.length() > questionType.maxLength()) {
@@ -68,13 +71,13 @@ class EventApplyAnswerValidator {
                 }
             }
             case SINGLE_CHOICE -> {
-                if (answerText != null || selectedOptions.size() != 1) {
+                if (hasAnswerText || selectedOptions.size() != 1) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 validateSelectedOptionRange(question, selectedOptions);
             }
             case MULTIPLE_CHOICE -> {
-                if (answerText != null || selectedOptions.isEmpty()) {
+                if (hasAnswerText || selectedOptions.isEmpty()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 if (new HashSet<>(selectedOptions).size() != selectedOptions.size()) {
