@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface EventApplicationJpaRepository extends JpaRepository<EventApplicationJpaEntity, Long> {
 
     long countByEventIdAndStatus(Long eventId, EventApplicationStatus status);
+
+    boolean existsByEventIdAndMemberIdAndStatus(Long eventId, Long memberId, EventApplicationStatus status);
 }

@@ -67,9 +67,18 @@ public class Event {
         if (now.isAfter(applyEndAt)) {
             return RecruitStatus.CLOSED;
         }
-        if (recruitType == RecruitType.FIRST_COME && appliedCount >= capacity) {
+        if (isCapacityFull(appliedCount)) {
             return RecruitStatus.CLOSED;
         }
         return RecruitStatus.OPEN;
+    }
+
+    /**
+     * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
+     * <p>
+     * 모집 상태 계산은 정원 마감을 CLOSED로 합치지만, 신청 실패 사유는 기간 마감과 정원 마감을 구분해야 하므로 분리해 둔다.
+     */
+    public boolean isCapacityFull(long appliedCount) {
+        return recruitType == RecruitType.FIRST_COME && appliedCount >= capacity;
     }
 }
