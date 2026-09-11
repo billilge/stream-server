@@ -48,4 +48,28 @@ public class Event {
             applyEndAt, recruitType, imageIds, capacity, recruitStatus, createdBy
         );
     }
+
+    /**
+     * 현재 시각과 신청자 수를 반영한 모집 상태를 계산한다.
+     * <p>
+     * 저장된 recruitStatus는 운영진의 강제 마감만을 뜻하므로, 신청 기간과 잔여 정원을 함께 봐야 실제 상태가 나온다.
+     * 행사 상세 조회·신청서 폼 조회·행사 신청이 같은 기준을 써야 하므로 도메인에 둔다.
+     *
+     * @param appliedCount status가 APPLIED인 신청 수. 선착순 모집이 아니면 쓰이지 않는다
+     */
+    public RecruitStatus calculateRecruitStatus(LocalDateTime now, long appliedCount) {
+        if (recruitStatus == RecruitStatus.CLOSED) {
+            return RecruitStatus.CLOSED;
+        }
+        if (now.isBefore(applyStartAt)) {
+            return RecruitStatus.BEFORE_OPEN;
+        }
+        if (now.isAfter(applyEndAt)) {
+            return RecruitStatus.CLOSED;
+        }
+        if (recruitType == RecruitType.FIRST_COME && appliedCount >= capacity) {
+            return RecruitStatus.CLOSED;
+        }
+        return RecruitStatus.OPEN;
+    }
 }
