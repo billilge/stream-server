@@ -25,6 +25,7 @@ public class Event {
     private List<Long> imageIds;
     private int capacity;
     private RecruitStatus recruitStatus;
+    private boolean published;
     private Long createdBy;
 
     public static Event of(
@@ -41,11 +42,12 @@ public class Event {
         List<Long> imageIds,
         int capacity,
         RecruitStatus recruitStatus,
+        boolean published,
         Long createdBy
     ) {
         return new Event(
             id, title, description, target, place, eventStartAt, eventEndAt, applyStartAt,
-            applyEndAt, recruitType, imageIds, capacity, recruitStatus, createdBy
+            applyEndAt, recruitType, imageIds, capacity, recruitStatus, published, createdBy
         );
     }
 

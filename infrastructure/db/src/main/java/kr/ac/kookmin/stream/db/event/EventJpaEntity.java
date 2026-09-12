@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +21,13 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "events")
+@Table(
+    name = "events",
+    indexes = @Index(
+        name = "idx_events_is_published_is_deleted_event_start_at",
+        columnList = "is_published, is_deleted, event_start_at"
+    )
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventJpaEntity extends BaseSoftDeleteEntity {
 
@@ -67,6 +74,9 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "recruit_status", nullable = false, length = 30)
     private RecruitStatus recruitStatus;
 
+    @Column(name = "is_published", nullable = false)
+    private boolean isPublished;
+
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
@@ -84,6 +94,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.imageIds = event.getImageIds();
         this.capacity = event.getCapacity();
         this.recruitStatus = event.getRecruitStatus();
+        this.isPublished = event.isPublished();
         this.createdBy = event.getCreatedBy();
     }
 
@@ -93,6 +104,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
 
     public Event toDomain() {
         return Event.of(id, title, description, target, place, eventStartAt, eventEndAt,
-            applyStartAt, applyEndAt, recruitType, imageIds, capacity, recruitStatus, createdBy);
+            applyStartAt, applyEndAt, recruitType, imageIds, capacity, recruitStatus, isPublished,
+            createdBy);
     }
 }
