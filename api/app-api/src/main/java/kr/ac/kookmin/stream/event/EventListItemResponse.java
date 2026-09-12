@@ -22,13 +22,20 @@ public record EventListItemResponse(
             summary.title(),
             summary.target(),
             summary.eventStartAt(),
-            // 대표 이미지 파일 id는 summary.thumbnailFileId()로 알 수 있으나
-            // 파일 키 → 공개 URL 조립(#17)이 아직 없어 URL은 내려보내지 않는다
-            null,
+            thumbnailUrlOf(summary.thumbnailFileId()),
             summary.applyStartAt(),
             summary.applyEndAt(),
             summary.recruitStatus(),
             summary.daysUntilDeadline()
         );
+    }
+
+    /**
+     * 대표 이미지 파일 id를 공개 URL로 바꾼다.
+     * <p>
+     * 파일 키 → 공개 URL 조립(#17)이 아직 없어 현재는 항상 비어 있다. #17이 머지되면 이 메서드만 채우면 된다.
+     */
+    private static String thumbnailUrlOf(Long thumbnailFileId) {
+        return null;
     }
 }
