@@ -61,46 +61,24 @@ class EventSummaryTest {
         }
     }
 
+    /**
+     * 날짜 계산 규칙 자체는 {@code EventTest}가 덮는다. 여기서는 계산 결과가 실리는지만 확인한다.
+     */
     @Nested
     @DisplayName("마감까지 남은 일수")
     class DaysUntilDeadline {
 
         @Test
-        @DisplayName("모집 중이면 신청 마감일까지 남은 날짜 수를 센다")
-        void countsDays() {
-            Event event = event(
+        @DisplayName("모집 중이면 Event가 계산한 값을 싣고, 그 외에는 비운다")
+        void carriesEventCalculation() {
+            Event open = event(
                 NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
-
-            assertEquals(3, EventSummary.of(event, 0, NOW).daysUntilDeadline());
-        }
-
-        @Test
-        @DisplayName("마감 당일이면 0이다")
-        void deadlineToday() {
-            Event event = event(
-                NOW.minusDays(1), NOW.withHour(23).withMinute(59), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
-
-            assertEquals(0, EventSummary.of(event, 0, NOW).daysUntilDeadline());
-        }
-
-        @Test
-        @DisplayName("시각이 아니라 날짜로 세므로 23시간 뒤 마감도 하루 뒤면 1이다")
-        void countsByDateNotByHours() {
-            Event event = event(
-                NOW.minusDays(1), NOW.plusDays(1).withHour(9), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
-
-            assertEquals(1, EventSummary.of(event, 0, NOW).daysUntilDeadline());
-        }
-
-        @Test
-        @DisplayName("모집 중이 아니면 내려보내지 않는다")
-        void nullWhenNotOpen() {
-            Event beforeOpen = event(
-                NOW.plusDays(1), NOW.plusDays(5), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
             Event closed = event(
                 NOW.minusDays(5), NOW.minusDays(1), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
 
-            assertNull(EventSummary.of(beforeOpen, 0, NOW).daysUntilDeadline());
+            assertEquals(
+                open.daysUntilDeadline(NOW, RecruitStatus.OPEN),
+                EventSummary.of(open, 0, NOW).daysUntilDeadline());
             assertNull(EventSummary.of(closed, 0, NOW).daysUntilDeadline());
         }
     }

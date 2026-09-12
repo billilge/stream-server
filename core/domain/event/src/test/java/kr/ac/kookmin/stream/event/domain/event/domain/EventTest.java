@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -94,6 +95,50 @@ class EventTest {
                 RecruitStatus.OPEN,
                 openRecruit.calculateRecruitStatus(APPLY_START_AT.plusDays(1), CAPACITY + 100)
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("마감까지 남은 일수")
+    class DaysUntilDeadline {
+
+        // 신청 마감은 APPLY_END_AT = 2026-09-10 18:00
+
+        @Test
+        @DisplayName("모집 중이면 마감일까지 남은 날짜 수를 센다")
+        void countsRemainingDays() {
+            Event event = firstComeEvent();
+
+            assertEquals(2, event.daysUntilDeadline(
+                LocalDateTime.of(2026, 9, 8, 10, 0), RecruitStatus.OPEN));
+        }
+
+        @Test
+        @DisplayName("마감 당일이면 0이다")
+        void deadlineToday() {
+            Event event = firstComeEvent();
+
+            assertEquals(0, event.daysUntilDeadline(
+                LocalDateTime.of(2026, 9, 10, 9, 0), RecruitStatus.OPEN));
+        }
+
+        @Test
+        @DisplayName("시각이 아니라 날짜로 세므로 19시간 뒤 마감이어도 하루 뒤면 1이다")
+        void countsByDateNotByHours() {
+            Event event = firstComeEvent();
+
+            assertEquals(1, event.daysUntilDeadline(
+                LocalDateTime.of(2026, 9, 9, 23, 0), RecruitStatus.OPEN));
+        }
+
+        @Test
+        @DisplayName("모집 중이 아니면 내려보내지 않는다")
+        void nullWhenNotOpen() {
+            Event event = firstComeEvent();
+            LocalDateTime now = LocalDateTime.of(2026, 9, 8, 10, 0);
+
+            assertNull(event.daysUntilDeadline(now, RecruitStatus.BEFORE_OPEN));
+            assertNull(event.daysUntilDeadline(now, RecruitStatus.CLOSED));
         }
     }
 
