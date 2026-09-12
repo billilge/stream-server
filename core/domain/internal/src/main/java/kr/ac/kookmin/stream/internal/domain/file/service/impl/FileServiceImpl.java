@@ -32,8 +32,7 @@ class FileServiceImpl implements FileService {
         String fileKey = generateFileKey(command.originalName());
         UploadUrl uploadUrl = fileStorageClient.issuePresignedUrl(fileKey, command.contentType());
 
-        File file = File.of(
-            null,
+        File file = File.create(
             fileKey,
             command.category(),
             command.originalName(),
