@@ -21,7 +21,7 @@ class EventTest {
             1L, "2026 소융대 개강 행사", "설명", "소융대 재학생", "101호",
             LocalDateTime.of(2026, 9, 15, 18, 0), LocalDateTime.of(2026, 9, 15, 20, 0),
             APPLY_START_AT, APPLY_END_AT,
-            recruitType, List.of(), CAPACITY, recruitStatus, 1L
+            recruitType, List.of(), CAPACITY, recruitStatus, true, 1L
         );
     }
 
