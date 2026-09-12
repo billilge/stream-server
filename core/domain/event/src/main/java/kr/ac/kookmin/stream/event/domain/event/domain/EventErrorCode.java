@@ -16,7 +16,8 @@ public enum EventErrorCode implements ErrorCode {
     CAPACITY_FULL(ErrorStatus.CONFLICT, "모집 정원이 마감되었습니다."),
     ALREADY_APPLIED(ErrorStatus.CONFLICT, "이미 신청한 행사입니다."),
     INVALID_ANSWER(ErrorStatus.BAD_REQUEST, "신청서 답변 형식이 올바르지 않습니다."),
-    EVENT_INVALID_CURSOR(ErrorStatus.BAD_REQUEST, "유효하지 않은 커서입니다.");
+    EVENT_INVALID_CURSOR(ErrorStatus.BAD_REQUEST, "유효하지 않은 커서입니다."),
+    EVENT_INVALID_RECRUIT_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 모집 상태입니다.");
 
     private final int status;
     private final String message;
