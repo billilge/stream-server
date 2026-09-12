@@ -3,14 +3,18 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicantCount;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
@@ -24,6 +28,25 @@ class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventApplyAnswerValidator eventApplyAnswerValidator;
+
+    @Override
+    @Transactional(readOnly = true)
+    public CursorSliceResult<EventSummary> getPublishedEvents(
+        RecruitStatus recruitStatus,
+        EventCursor cursor,
+        int size
+    ) {
+        // 필터링(DB)과 응답(도메인)이 같은 시각을 봐야 모집 상태가 어긋나지 않는다
+        LocalDateTime now = LocalDateTime.now();
+        CursorSliceResult<EventApplicantCount> slice =
+            eventRepository.findPublishedSlice(recruitStatus, cursor, size, now);
+
+        List<EventSummary> content = slice.content().stream()
+            .map(entry -> EventSummary.of(entry.event(), entry.applicantCount(), now))
+            .toList();
+
+        return new CursorSliceResult<>(content, slice.hasNext(), slice.nextCursor());
+    }
 
     @Override
     @Transactional(readOnly = true)
