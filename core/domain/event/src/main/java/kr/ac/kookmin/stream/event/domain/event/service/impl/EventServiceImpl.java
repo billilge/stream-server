@@ -12,6 +12,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
@@ -46,6 +47,16 @@ class EventServiceImpl implements EventService {
             .toList();
 
         return new CursorSliceResult<>(content, slice.hasNext(), slice.nextCursor());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EventDetail getPublishedEvent(Long eventId) {
+        Event event = eventRepository.findPublishedById(eventId)
+            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+
+        LocalDateTime now = LocalDateTime.now();
+        return EventDetail.of(event, eventRepository.countAppliedByEventId(eventId), now);
     }
 
     @Override

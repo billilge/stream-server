@@ -17,6 +17,11 @@ public interface EventRepository {
     Optional<Event> findById(Long id);
 
     /**
+     * 게시되고 삭제되지 않은 행사 한 건을 조회한다. 아직 공개하지 않은 행사는 학생에게 없는 것으로 보여야 한다.
+     */
+    Optional<Event> findPublishedById(Long id);
+
+    /**
      * 게시되고 삭제되지 않은 행사를 행사 시작 일시 오름차순(동일 시각은 eventId 오름차순)으로 조회한다.
      * recruitStatus가 주어지면 {@code now} 기준으로 계산한 모집 상태가 일치하는 행사만 남긴다.
      */

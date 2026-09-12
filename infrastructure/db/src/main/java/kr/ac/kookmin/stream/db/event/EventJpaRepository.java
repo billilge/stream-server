@@ -15,6 +15,8 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
 
     Optional<EventJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
+    Optional<EventJpaEntity> findByIdAndIsDeletedFalseAndIsPublishedTrue(Long id);
+
     /**
      * 게시된 행사를 (event_start_at, event_id) keyset 커서로 조회한다.
      * <p>

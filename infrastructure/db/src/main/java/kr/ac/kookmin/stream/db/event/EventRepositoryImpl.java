@@ -35,6 +35,11 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public Optional<Event> findPublishedById(Long id) {
+        return eventJpaRepository.findByIdAndIsDeletedFalseAndIsPublishedTrue(id).map(EventJpaEntity::toDomain);
+    }
+
+    @Override
     public CursorSliceResult<EventApplicantCount> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,
