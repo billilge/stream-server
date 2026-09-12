@@ -80,7 +80,7 @@ class EventApplyAnswerValidator {
                 if (hasAnswerText || selectedOptions.isEmpty()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
-                if (new HashSet<>(selectedOptions).size() != selectedOptions.size()) {
+                if (selectedOptions.stream().distinct().count() != selectedOptions.size()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 validateSelectedOptionRange(question, selectedOptions);

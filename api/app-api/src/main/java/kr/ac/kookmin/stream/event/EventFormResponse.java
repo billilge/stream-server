@@ -14,13 +14,13 @@ public record EventFormResponse(
 ) {
 
     public static EventFormResponse from(EventApplicationForm form) {
-        Event event = form.getEvent();
+        Event event = form.event();
         return new EventFormResponse(
             event.getId(),
             event.getTitle(),
             event.getEventStartAt(),
             event.getPlace(),
-            form.getQuestions().stream().map(EventFormQuestionResponse::from).toList()
+            form.questions().stream().map(EventFormQuestionResponse::from).toList()
         );
     }
 }

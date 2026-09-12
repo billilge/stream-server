@@ -12,9 +12,9 @@ public record EventApplyResponse(
 ) {
 
     public static EventApplyResponse from(EventApplicationResult result) {
-        Event event = result.getEvent();
+        Event event = result.event();
         return new EventApplyResponse(
-            result.getApplicationId(),
+            result.applicationId(),
             event.getTitle(),
             event.getEventStartAt(),
             event.getPlace()

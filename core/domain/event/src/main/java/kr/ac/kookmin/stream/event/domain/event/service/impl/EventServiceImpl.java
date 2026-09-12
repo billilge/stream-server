@@ -8,7 +8,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -30,7 +29,7 @@ class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public EventApplicationForm getApplicationForm(Long eventId) {
         Event event = getOpenEvent(eventId);
-        return EventApplicationForm.of(event, eventRepository.findQuestionsByEventId(eventId));
+        return new EventApplicationForm(event, eventRepository.findQuestionsByEventId(eventId));
     }
 
     @Override
@@ -45,12 +44,12 @@ class EventServiceImpl implements EventService {
         List<EventQuestion> questions = eventRepository.findQuestionsByEventId(eventId);
         eventApplyAnswerValidator.validate(questions, command);
 
-        EventApplication application = eventRepository.saveApplication(EventApplication.of(
-            null, eventId, memberId, EventApplicationStatus.APPLIED, LocalDateTime.now(), null
-        ));
+        EventApplication application = eventRepository.saveApplication(
+            EventApplication.create(eventId, memberId, LocalDateTime.now())
+        );
         eventRepository.saveAnswers(toAnswers(application.getId(), command));
 
-        return EventApplicationResult.of(application.getId(), event);
+        return new EventApplicationResult(application.getId(), event);
     }
 
     /**
@@ -75,8 +74,7 @@ class EventServiceImpl implements EventService {
     private List<EventApplicationAnswer> toAnswers(Long applicationId, EventApplyCommand command) {
         return command.answers().stream()
             .filter(answer -> !answer.isEmpty())
-            .map(answer -> EventApplicationAnswer.of(
-                null,
+            .map(answer -> EventApplicationAnswer.create(
                 applicationId,
                 answer.questionId(),
                 answer.answerText(),
