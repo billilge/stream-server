@@ -30,12 +30,12 @@ public class AppNoticeController {
     ) {
         NoticeCursor noticeCursor = cursor == null ? null : NoticeCursor.from(CursorCodec.decode(cursor));
         CursorSliceResult<Notice> result = noticeService.getNotices(NoticeCategory.from(category), noticeCursor, size);
-        CursorSliceResult<NoticeListItemResponse> mapped = new CursorSliceResult<>(
+        CursorSliceResponse<NoticeListItemResponse> response = new CursorSliceResponse<>(
             result.content().stream().map(NoticeListItemResponse::from).toList(),
             result.hasNext(),
             result.nextCursor() == null ? null : CursorCodec.encode(result.nextCursor())
         );
-        return ApiResponse.success(CursorSliceResponse.from(mapped));
+        return ApiResponse.success(response);
     }
 
     @GetMapping("/{noticeId}")
