@@ -65,11 +65,12 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
     );
 
     @Query("""
-        SELECT a.eventId, COUNT(a) FROM EventApplicationJpaEntity a
+        SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountRow(a.eventId, COUNT(a))
+        FROM EventApplicationJpaEntity a
         WHERE a.eventId IN :eventIds AND a.status = :appliedStatus
         GROUP BY a.eventId
         """)
-    List<Object[]> countApplicantsByEventIds(
+    List<EventApplicantCountRow> countApplicantsByEventIds(
         @Param("eventIds") List<Long> eventIds,
         @Param("appliedStatus") EventApplicationStatus appliedStatus
     );

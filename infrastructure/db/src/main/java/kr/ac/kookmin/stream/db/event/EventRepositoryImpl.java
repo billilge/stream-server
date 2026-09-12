@@ -79,7 +79,7 @@ public class EventRepositoryImpl implements EventRepository {
         }
         List<Long> eventIds = events.stream().map(Event::getId).toList();
         return eventJpaRepository.countApplicantsByEventIds(eventIds, EventApplicationStatus.APPLIED).stream()
-            .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+            .collect(Collectors.toMap(EventApplicantCountRow::eventId, EventApplicantCountRow::applicantCount));
     }
 
     @Override
