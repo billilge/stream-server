@@ -115,10 +115,11 @@ public final class ApiResponse<T> {
 | 오프셋 | 페이지 번호·전체 개수·전체 페이지 필요 | `PageResult<T>` / `PageResponse<T>` |
 
 - 커서 기반 응답 필드는 항상 `content`/`hasNext`/`nextCursor`로 통일한다.
+- `nextCursor`는 **클라이언트에게 불투명한 문자열**이다. 정렬 키가 여러 개인 keyset 커서를 담아야 하므로 도메인이 `{Domain}Cursor` record로 정렬 키와 그 문자열 표현(`format()`/`from(String)`)을 소유하고, Base64 URL-safe 인코딩은 웹 계층에서 `CursorCodec`(`api:common-api`)으로 처리한다.
 
 ```java
 // core:common
-public record CursorSliceResult<T>(List<T> content, boolean hasNext, Long nextCursor) {}
+public record CursorSliceResult<T>(List<T> content, boolean hasNext, String nextCursor) {}
 public record PageResult<T>(List<T> content, int page, int size, long totalCount, int totalPage) {}
 ```
 
