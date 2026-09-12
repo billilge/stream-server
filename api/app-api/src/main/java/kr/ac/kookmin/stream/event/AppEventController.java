@@ -33,6 +33,11 @@ public class AppEventController {
         return ApiResponse.success(CursorSliceResponse.from(toResponse(result)));
     }
 
+    @GetMapping("/{eventId}")
+    public ApiResponse<EventDetailResponse> getEvent(@PathVariable Long eventId) {
+        return ApiResponse.success(EventDetailResponse.from(eventService.getPublishedEvent(eventId)));
+    }
+
     @GetMapping("/{eventId}/form")
     public ApiResponse<EventFormResponse> getApplicationForm(@PathVariable Long eventId) {
         return ApiResponse.success(EventFormResponse.from(eventService.getApplicationForm(eventId)));
