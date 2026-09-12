@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -70,6 +71,22 @@ public class Event {
             return RecruitStatus.CLOSED;
         }
         return RecruitStatus.OPEN;
+    }
+
+    /**
+     * 신청 마감까지 남은 날짜 수. 목록·상세가 같은 D-Day를 보여야 하므로 도메인에 둔다.
+     * <p>
+     * 시각이 아니라 날짜 단위로 세므로 마감 당일은 언제든 0이다. D-Day 배지는 모집 중일 때만 노출하기로 해
+     * 그 외 상태에서는 값을 내려보내지 않는다.
+     *
+     * @param recruitStatus {@link #calculateRecruitStatus}로 이미 계산해둔 모집 상태
+     * @return 모집 중이면 남은 날짜 수, 그 외에는 {@code null}
+     */
+    public Integer daysUntilDeadline(LocalDateTime now, RecruitStatus recruitStatus) {
+        if (recruitStatus != RecruitStatus.OPEN) {
+            return null;
+        }
+        return (int) ChronoUnit.DAYS.between(now.toLocalDate(), applyEndAt.toLocalDate());
     }
 
     /**

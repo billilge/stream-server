@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
@@ -31,16 +30,8 @@ public record EventSummary(
             event.getApplyStartAt(),
             event.getApplyEndAt(),
             recruitStatus,
-            calculateDaysUntilDeadline(event, recruitStatus, now)
+            event.daysUntilDeadline(now, recruitStatus)
         );
-    }
-
-    // D-Day 배지는 모집 중일 때만 노출하므로 그 외 상태에서는 값을 내려보내지 않는다
-    private static Integer calculateDaysUntilDeadline(Event event, RecruitStatus recruitStatus, LocalDateTime now) {
-        if (recruitStatus != RecruitStatus.OPEN) {
-            return null;
-        }
-        return (int) ChronoUnit.DAYS.between(now.toLocalDate(), event.getApplyEndAt().toLocalDate());
     }
 
     private static Long thumbnailFileIdOf(List<Long> imageIds) {
