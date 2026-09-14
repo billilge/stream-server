@@ -72,6 +72,22 @@ public record MemberResponse(
 public record MemberRegisterCommand(String studentNo, String name) {}
 ```
 
+**오직 하나의 Response에서만 쓰이는 하위 DTO**는 별도 파일로 빼지 않고 그 Response 안에 중첩 `record`로 선언한다. 다른 곳에서도 쓰이게 되면 그 시점에 최상위 파일로 승격한다.
+
+```java
+// api:app-api
+public record NoticeDetailResponse(
+    Long noticeId,
+    List<Image> images
+) {
+    public record Image(Long fileId, String fileUrl) {
+        public static Image from(Long fileId) {
+            return new Image(fileId, null);
+        }
+    }
+}
+```
+
 **공통 응답 래퍼 (`ApiResponse`, `api:common-api`)** — `private` 생성자 + 정적 팩토리.
 
 ```java

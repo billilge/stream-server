@@ -73,6 +73,6 @@ public class NoticeJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Notice toDomain() {
-        return Notice.of(id, title, content, category, pinned, createdBy, attachmentIds, imageIds);
+        return Notice.of(id, title, content, category, pinned, createdBy, attachmentIds, imageIds, getCreatedAt());
     }
 }

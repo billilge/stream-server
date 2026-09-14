@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":api:common-api"))
     implementation(project(":core:common"))
     implementation(project(":core:domain:event"))
+    implementation(project(":core:domain:welfare"))
     implementation(project(":gateway:auth"))
     implementation(project(":gateway:logging"))
 
