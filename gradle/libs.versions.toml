@@ -5,6 +5,7 @@ jjwtVersion = "0.12.6"
 archunitVersion = "1.3.0"
 junitBomVersion = "6.0.0"
 lombokVersion = "1.18.36"
+springdocVersion = "3.1.1"
 
 [libraries]
 # BOMs — import as `platform(...)` in modules that don't apply the Boot plugin directly
@@ -45,6 +46,9 @@ jjwtImpl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwtVersion" }
 jjwtJackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwtVersion" }
 
 archunitJunit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunitVersion" }
+
+# OpenAPI(Swagger) 문서 — springdoc 3.1.x가 Spring Boot 4.1 / Spring Framework 7 대응
+springdocStarterWebmvcUi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocVersion" }
 
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombokVersion" }
 
