@@ -18,6 +18,17 @@ public class File {
     private String contentType;
     private Long uploaderId;
 
+    public static File create(
+        String fileKey,
+        FileCategory category,
+        String originalName,
+        long fileSize,
+        String contentType,
+        Long uploaderId
+    ) {
+        return new File(null, fileKey, category, originalName, fileSize, contentType, uploaderId);
+    }
+
     public static File of(
         Long id,
         String fileKey,
