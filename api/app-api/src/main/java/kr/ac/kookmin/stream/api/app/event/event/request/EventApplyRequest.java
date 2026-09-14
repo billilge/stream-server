@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.event;
+package kr.ac.kookmin.stream.api.app.event.event.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

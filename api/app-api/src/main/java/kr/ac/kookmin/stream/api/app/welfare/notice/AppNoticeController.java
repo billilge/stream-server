@@ -1,8 +1,11 @@
-package kr.ac.kookmin.stream.welfare;
+package kr.ac.kookmin.stream.api.app.welfare.notice;
 
+import java.awt.Cursor;
 import kr.ac.kookmin.stream.ApiResponse;
 import kr.ac.kookmin.stream.CursorCodec;
 import kr.ac.kookmin.stream.CursorSliceResponse;
+import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse;
+import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -24,23 +27,24 @@ public class AppNoticeController {
 
     @GetMapping
     public ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
-        @RequestParam(name = "category", required = false) String category,
-        @RequestParam(name = "cursor", required = false) String cursor,
-        @RequestParam(name = "size", defaultValue = "20") int size
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "cursor", required = false) String cursor,
+            @RequestParam(name = "size", defaultValue = "20") int size
     ) {
         NoticeCursor noticeCursor = cursor == null ? null : NoticeCursor.from(CursorCodec.decode(cursor));
         CursorSliceResult<Notice> result = noticeService.getNotices(NoticeCategory.from(category), noticeCursor, size);
-        CursorSliceResponse<NoticeListItemResponse> response = new CursorSliceResponse<>(
-            result.content().stream().map(NoticeListItemResponse::from).toList(),
-            result.hasNext(),
-            result.nextCursor() == null ? null : CursorCodec.encode(result.nextCursor())
+        CursorSliceResponse<NoticeListItemResponse> response = CursorSliceResponse.from(
+                result,
+                NoticeListItemResponse::from
         );
+
         return ApiResponse.success(response);
     }
 
     @GetMapping("/{noticeId}")
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
         Notice notice = noticeService.getNotice(noticeId);
+
         return ApiResponse.success(NoticeDetailResponse.from(notice));
     }
 }

@@ -32,6 +32,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 - "외부 클라이언트 구현체가 여러 개인데 일부 메서드가 특정 구현체에서 의미 없음" → `coding-style.md` 2-12절 (`UnsupportedOperationException` + `@ConditionalOnProperty` 스위칭)
 - "에러 코드 추가" → `error-handling.md`
 - "도메인 내부 구현 숨기기 / 패키지 구조" → `architecture.md` 4-3절 (`domain/{도메인}/{domain|repository|service|service.impl}`, OPEN 모듈 + ArchUnit)
+- "api 모듈(컨트롤러·DTO) 패키지 어디에" → `architecture.md` 2-2절 (`{basePackage}.api.{client}.{팀}.{도메인}`, DTO는 `request`/`response`)
 
 ## 모듈 한눈에 보기
 

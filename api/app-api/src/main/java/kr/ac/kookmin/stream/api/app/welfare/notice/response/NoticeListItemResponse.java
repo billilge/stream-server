@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.welfare;
+package kr.ac.kookmin.stream.api.app.welfare.notice.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
