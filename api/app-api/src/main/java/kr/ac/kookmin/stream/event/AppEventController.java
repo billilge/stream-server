@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.event;
 
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.CursorCodec;
 import kr.ac.kookmin.stream.CursorSliceResponse;
 import kr.ac.kookmin.stream.app.AppApiUser;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
@@ -30,7 +29,7 @@ public class AppEventController {
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
             request.toRecruitStatus(), request.toCursor(), request.sizeOrDefault());
-        return ApiResponse.success(CursorSliceResponse.from(toResponse(result)));
+        return ApiResponse.success(CursorSliceResponse.of(result, EventListItemResponse::from));
     }
 
     @GetMapping("/{eventId}")
@@ -51,15 +50,6 @@ public class AppEventController {
     ) {
         return ApiResponse.success(
             EventApplyResponse.from(eventService.apply(eventId, apiUser.userId(), request.toCommand()))
-        );
-    }
-
-    // 커서는 클라이언트에게 불투명한 토큰이어야 하므로 응답 직전 웹 계층에서 인코딩한다
-    private CursorSliceResult<EventListItemResponse> toResponse(CursorSliceResult<EventSummary> result) {
-        return new CursorSliceResult<>(
-            result.content().stream().map(EventListItemResponse::from).toList(),
-            result.hasNext(),
-            result.nextCursor() == null ? null : CursorCodec.encode(result.nextCursor())
         );
     }
 }
