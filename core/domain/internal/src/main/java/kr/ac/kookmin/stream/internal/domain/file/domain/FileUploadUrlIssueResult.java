@@ -7,4 +7,8 @@ public record FileUploadUrlIssueResult(
     String uploadUrl,
     String fileKey,
     LocalDateTime expiresAt
-) {}
+) {
+    public static FileUploadUrlIssueResult of(File file, UploadUrl uploadUrl) {
+        return new FileUploadUrlIssueResult(file.getId(), uploadUrl.url(), file.getFileKey(), uploadUrl.expiresAt());
+    }
+}

@@ -42,7 +42,7 @@ class FileServiceImpl implements FileService {
         );
         File saved = fileRepository.save(file);
 
-        return new FileUploadUrlIssueResult(saved.getId(), uploadUrl.url(), fileKey, uploadUrl.expiresAt());
+        return FileUploadUrlIssueResult.of(saved, uploadUrl);
     }
 
     @Override
