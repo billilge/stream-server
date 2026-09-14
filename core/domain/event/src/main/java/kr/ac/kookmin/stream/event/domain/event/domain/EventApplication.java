@@ -28,4 +28,11 @@ public class EventApplication {
     ) {
         return new EventApplication(id, eventId, memberId, status, appliedAt, canceledAt);
     }
+
+    /**
+     * 새 신청을 만든다. 식별자는 저장 시 부여되고, 신청 직후 상태는 항상 APPLIED다.
+     */
+    public static EventApplication create(Long eventId, Long memberId, LocalDateTime appliedAt) {
+        return new EventApplication(null, eventId, memberId, EventApplicationStatus.APPLIED, appliedAt, null);
+    }
 }
