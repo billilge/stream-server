@@ -71,7 +71,9 @@ public class EventRepositoryImpl implements EventRepository {
             return Map.of();
         }
         return eventJpaRepository.countApplicantsByEventIds(eventIds, EventApplicationStatus.APPLIED).stream()
-            .collect(Collectors.toMap(EventApplicantCountRow::eventId, EventApplicantCountRow::applicantCount));
+            .collect(Collectors.toMap(
+                EventApplicantCountProjection::eventId,
+                EventApplicantCountProjection::applicantCount));
     }
 
     @Override
