@@ -24,14 +24,9 @@ public class NoticeRepositoryImpl implements NoticeRepository {
             ? noticeJpaRepository.findFirstSlice(category, pageable)
             : noticeJpaRepository.findNextSlice(category, cursor.pinned(), cursor.createdAt(), cursor.id(), pageable);
 
-        boolean hasNext = entities.size() > size;
-        List<Notice> content = entities.stream()
-            .limit(size)
-            .map(NoticeJpaEntity::toDomain)
-            .toList();
-        String nextCursor = hasNext ? NoticeCursor.of(content.get(content.size() - 1), category).format() : null;
-
-        return new CursorSliceResult<>(content, hasNext, nextCursor);
+        return CursorSliceResult.ofSlice(
+            entities, size, NoticeJpaEntity::toDomain, notice -> NoticeCursor.of(notice, category).format()
+        );
     }
 
     @Override
