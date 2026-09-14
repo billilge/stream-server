@@ -61,15 +61,8 @@ public class EventRepositoryImpl implements EventRepository {
             pageable
         );
 
-        boolean hasNext = entities.size() > size;
-        List<Event> events = entities.stream()
-            .limit(size)
-            .map(EventJpaEntity::toDomain)
-            .toList();
-
-        String nextCursor = hasNext ? EventCursor.of(events.getLast()).format() : null;
-
-        return new CursorSliceResult<>(events, hasNext, nextCursor);
+        return CursorSliceResult.ofSlice(
+            entities, size, EventJpaEntity::toDomain, event -> EventCursor.of(event).format());
     }
 
     @Override
