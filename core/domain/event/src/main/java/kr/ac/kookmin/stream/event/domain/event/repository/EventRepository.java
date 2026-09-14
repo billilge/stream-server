@@ -2,11 +2,11 @@ package kr.ac.kookmin.stream.event.domain.event.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicantCount;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -25,12 +25,18 @@ public interface EventRepository {
      * 게시되고 삭제되지 않은 행사를 행사 시작 일시 오름차순(동일 시각은 eventId 오름차순)으로 조회한다.
      * recruitStatus가 주어지면 {@code now} 기준으로 계산한 모집 상태가 일치하는 행사만 남긴다.
      */
-    CursorSliceResult<EventApplicantCount> findPublishedSlice(
+    CursorSliceResult<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,
         int size,
         LocalDateTime now
     );
+
+    /**
+     * 행사별 유효 신청자 수를 한 번에 조회한다. 목록처럼 여러 행사의 신청자 수가 필요할 때 N+1을 피하기 위한 것으로,
+     * 신청이 한 건도 없는 행사는 결과에 담기지 않는다.
+     */
+    Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
 
     List<EventQuestion> findQuestionsByEventId(Long eventId);
 

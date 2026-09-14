@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicantCount;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
@@ -40,7 +39,7 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public CursorSliceResult<EventApplicantCount> findPublishedSlice(
+    public CursorSliceResult<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,
         int size,
@@ -68,21 +67,16 @@ public class EventRepositoryImpl implements EventRepository {
             .map(EventJpaEntity::toDomain)
             .toList();
 
-        Map<Long, Long> applicantCounts = countApplicants(events);
-        List<EventApplicantCount> content = events.stream()
-            .map(event -> new EventApplicantCount(event, applicantCounts.getOrDefault(event.getId(), 0L)))
-            .toList();
-
         String nextCursor = hasNext ? EventCursor.of(events.getLast()).format() : null;
 
-        return new CursorSliceResult<>(content, hasNext, nextCursor);
+        return new CursorSliceResult<>(events, hasNext, nextCursor);
     }
 
-    private Map<Long, Long> countApplicants(List<Event> events) {
-        if (events.isEmpty()) {
+    @Override
+    public Map<Long, Long> countAppliedByEventIds(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
             return Map.of();
         }
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
         return eventJpaRepository.countApplicantsByEventIds(eventIds, EventApplicationStatus.APPLIED).stream()
             .collect(Collectors.toMap(EventApplicantCountRow::eventId, EventApplicantCountRow::applicantCount));
     }

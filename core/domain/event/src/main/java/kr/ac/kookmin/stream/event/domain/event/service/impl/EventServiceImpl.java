@@ -2,10 +2,10 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicantCount;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
@@ -39,11 +39,14 @@ class EventServiceImpl implements EventService {
     ) {
         // 필터링(DB)과 응답(도메인)이 같은 시각을 봐야 모집 상태가 어긋나지 않는다
         LocalDateTime now = LocalDateTime.now();
-        CursorSliceResult<EventApplicantCount> slice =
-            eventRepository.findPublishedSlice(recruitStatus, cursor, size, now);
+        CursorSliceResult<Event> slice = eventRepository.findPublishedSlice(recruitStatus, cursor, size, now);
+
+        // 신청자 수는 한 번에 모아 조회한다. 행사마다 따로 세면 페이지 크기만큼 쿼리가 더 나간다
+        Map<Long, Long> applicantCounts = eventRepository.countAppliedByEventIds(
+            slice.content().stream().map(Event::getId).toList());
 
         List<EventSummary> content = slice.content().stream()
-            .map(entry -> EventSummary.of(entry.event(), entry.applicantCount(), now))
+            .map(event -> EventSummary.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now))
             .toList();
 
         return new CursorSliceResult<>(content, slice.hasNext(), slice.nextCursor());
