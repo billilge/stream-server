@@ -44,7 +44,7 @@ public record Member(
 
 ### 2-2. DTO / Command
 
-- Request/Response DTO는 `record`(`api:{client}-api`).
+- Request/Response DTO는 `record`(`api:{client}-api`). 각 도메인 패키지 아래 `request`/`response` 하위 패키지로 나눠 둔다(`{basePackage}.api.{client}.{팀}.{도메인}.{request|response}`, `architecture.md` 2-2절).
 - Request DTO를 Service로 그대로 넘기지 않는다. `toCommand()`로 Command(`core:domain`)로 변환한다.
 
 ```java
@@ -285,7 +285,7 @@ class MemberServiceImpl implements MemberService {
 ### 2-8. Controller
 
 - role 전용 `ApiUser`(`config-and-auth.md`)와 `{Domain}Service`를 주입받는다. 단일 도메인 흐름은 Controller가 직접 처리한다.
-- 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 팀 패키지에 둔다(`architecture.md` 2-2절).
+- 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 `{basePackage}.api.{client}.{팀}.{도메인}` 패키지 바로 아래 둔다(DTO는 그 아래 `request`/`response`로 분리, `architecture.md` 2-2절).
 
 ```java
 // api:admin-api — 운영진 회원 등록
