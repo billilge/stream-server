@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.event;
+package kr.ac.kookmin.stream.api.app.event.event.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;

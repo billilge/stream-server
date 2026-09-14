@@ -1,8 +1,11 @@
-package kr.ac.kookmin.stream.event;
+package kr.ac.kookmin.stream.api.app.event.event;
 
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.app.AppApiUser;
+import kr.ac.kookmin.stream.api.app.AppApiUser;
+import kr.ac.kookmin.stream.api.app.event.event.request.EventApplyRequest;
+import kr.ac.kookmin.stream.api.app.event.event.response.EventApplyResponse;
+import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
