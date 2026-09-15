@@ -5,3 +5,4 @@ spring:
     import:
       - classpath:application-gateway-auth.yml
       - classpath:application-infrastructure-db.yml
+      - classpath:application-infrastructure-client.yml

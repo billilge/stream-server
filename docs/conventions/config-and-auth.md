@@ -177,7 +177,7 @@ public class LockerApprovalUseCase {
 | `gateway:auth` | `jwt/JwtProvider.java` / `jwt/JwtAuthFilter.java` | JWT 생성·파싱 / 토큰 검증 |
 | `gateway:auth` | `config/SecurityConfig.java` | FilterChain, URL 패턴별 role 인가 |
 | `api:common-api` | `common/ApiUser.java` | 인증 사용자 스냅샷 인터페이스 |
-| `api:{client}-api` | `{role}/{Role}ApiUser.java`, `.../resolver/{Role}ApiUserArgumentResolver.java` | role 전용 `ApiUser` + 주입 |
+| `api:{client}-api` | `api/{client}/{Client}ApiUser.java`, `api/{client}/resolver/{Client}ApiUserArgumentResolver.java` | 클라이언트 전용 `ApiUser` + 주입 (`architecture.md` 2-2절) |
 
 ---
 
