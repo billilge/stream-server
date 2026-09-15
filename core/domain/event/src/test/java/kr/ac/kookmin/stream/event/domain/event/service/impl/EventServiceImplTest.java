@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -39,7 +41,7 @@ class EventServiceImplTest {
     @DisplayName("행사마다 자기 신청자 수를 붙인다")
     void matchesApplicantCountToItsEvent() {
         FakeEventRepository repository = new FakeEventRepository(
-            new CursorSliceResult<>(List.of(event(1L), event(2L)), false, null),
+            List.of(event(1L), event(2L)),
             Map.of(1L, 3L, 2L, 7L));
 
         List<EventSummary> content = new EventServiceImpl(repository, null)
@@ -55,7 +57,7 @@ class EventServiceImplTest {
     void keepsEventsWithoutApplicants() {
         // 집계 쿼리는 신청이 없는 행사를 아예 돌려주지 않으므로 2번 행사는 맵에 없다
         FakeEventRepository repository = new FakeEventRepository(
-            new CursorSliceResult<>(List.of(event(1L), event(2L)), false, null),
+            List.of(event(1L), event(2L)),
             Map.of(1L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, null)
@@ -78,7 +80,7 @@ class EventServiceImplTest {
             RecruitType.FIRST_COME, List.of(), 100, RecruitStatus.OPEN, true, 1L);
 
         FakeEventRepository repository = new FakeEventRepository(
-            new CursorSliceResult<>(List.of(full, roomy), false, null),
+            List.of(full, roomy),
             Map.of(1L, 3L, 2L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, null)
@@ -89,23 +91,37 @@ class EventServiceImplTest {
     }
 
     @Test
-    @DisplayName("hasNext와 nextCursor는 조회 결과를 그대로 싣는다")
-    void carriesSliceMetadata() {
+    @DisplayName("요청한 크기보다 한 건 더 읽어 다음 페이지 여부를 판단한다")
+    void detectsNextPage() {
         FakeEventRepository repository = new FakeEventRepository(
-            new CursorSliceResult<>(List.of(event(1L)), true, "커서"), Map.of());
+            List.of(event(1L), event(2L), event(3L)), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, null)
-            .getPublishedEvents(null, null, 20);
+            .getPublishedEvents(null, null, 2);
 
+        assertEquals(3, repository.requestedLimit);
+        assertEquals(List.of(1L, 2L), result.content().stream().map(EventSummary::eventId).toList());
         assertTrue(result.hasNext());
-        assertEquals("커서", result.nextCursor());
+        assertEquals(EventCursor.of(event(2L)).format(), result.nextCursor());
+    }
+
+    @Test
+    @DisplayName("마지막 페이지면 다음 커서를 내려보내지 않는다")
+    void noCursorOnLastPage() {
+        FakeEventRepository repository = new FakeEventRepository(List.of(event(1L), event(2L)), Map.of());
+
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, null)
+            .getPublishedEvents(null, null, 2);
+
+        assertFalse(result.hasNext());
+        assertNull(result.nextCursor());
     }
 
     @Test
     @DisplayName("조회 결과가 없으면 신청자 수도 빈 목록으로 물어본다")
     void asksNothingWhenSliceIsEmpty() {
         FakeEventRepository repository = new FakeEventRepository(
-            new CursorSliceResult<>(List.of(), false, null), Map.of());
+            List.of(), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, null)
             .getPublishedEvents(null, null, 20);
@@ -117,19 +133,21 @@ class EventServiceImplTest {
     /** 목록 조회에 쓰이는 두 메서드만 답하고, 나머지는 이 테스트가 건드리지 않는다. */
     private static final class FakeEventRepository implements EventRepository {
 
-        private final CursorSliceResult<Event> slice;
+        private final List<Event> fetched;
         private final Map<Long, Long> applicantCounts;
         private List<Long> requestedEventIds;
+        private int requestedLimit;
 
-        private FakeEventRepository(CursorSliceResult<Event> slice, Map<Long, Long> applicantCounts) {
-            this.slice = slice;
+        private FakeEventRepository(List<Event> fetched, Map<Long, Long> applicantCounts) {
+            this.fetched = fetched;
             this.applicantCounts = applicantCounts;
         }
 
         @Override
-        public CursorSliceResult<Event> findPublishedSlice(
-            RecruitStatus recruitStatus, EventCursor cursor, int size, LocalDateTime now) {
-            return slice;
+        public List<Event> findPublishedSlice(
+            RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
+            this.requestedLimit = limit;
+            return fetched.stream().limit(limit).toList();
         }
 
         @Override
