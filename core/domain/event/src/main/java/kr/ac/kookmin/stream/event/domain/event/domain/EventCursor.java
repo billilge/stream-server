@@ -16,6 +16,10 @@ public record EventCursor(LocalDateTime eventStartAt, Long eventId) {
         return new EventCursor(event.getEventStartAt(), event.getId());
     }
 
+    public static EventCursor of(EventSummary summary) {
+        return new EventCursor(summary.eventStartAt(), summary.eventId());
+    }
+
     // Base64 인코딩은 웹(Controller) 계층 책임이라 여기서는 순수 문자열 표현만 다룬다
     public static EventCursor from(String raw) {
         String[] parts = raw.split(SPLIT_REGEX, -1);

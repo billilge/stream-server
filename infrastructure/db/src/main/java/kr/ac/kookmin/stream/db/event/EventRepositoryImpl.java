@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -39,15 +38,13 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public CursorSliceResult<Event> findPublishedSlice(
+    public List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,
-        int size,
+        int limit,
         LocalDateTime now
     ) {
-        // 다음 페이지 존재 여부를 알기 위해 한 건 더 읽는다
-        Pageable pageable = Pageable.ofSize(size + 1);
-        List<EventJpaEntity> entities = eventJpaRepository.findPublishedSlice(
+        return eventJpaRepository.findPublishedSlice(
             recruitStatus == null,
             recruitStatus == RecruitStatus.BEFORE_OPEN,
             recruitStatus == RecruitStatus.OPEN,
@@ -58,11 +55,8 @@ public class EventRepositoryImpl implements EventRepository {
             now,
             cursor == null ? null : cursor.eventStartAt(),
             cursor == null ? null : cursor.eventId(),
-            pageable
-        );
-
-        return CursorSliceResult.ofSlice(
-            entities, size, EventJpaEntity::toDomain, event -> EventCursor.of(event).format());
+            Pageable.ofSize(limit)
+        ).stream().map(EventJpaEntity::toDomain).toList();
     }
 
     @Override

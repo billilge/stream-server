@@ -39,17 +39,19 @@ class EventServiceImpl implements EventService {
     ) {
         // 필터링(DB)과 응답(도메인)이 같은 시각을 봐야 모집 상태가 어긋나지 않는다
         LocalDateTime now = LocalDateTime.now();
-        CursorSliceResult<Event> slice = eventRepository.findPublishedSlice(recruitStatus, cursor, size, now);
+        // 다음 페이지가 있는지 알려면 한 건 더 읽어봐야 한다
+        List<Event> fetched = eventRepository.findPublishedSlice(recruitStatus, cursor, size + 1, now);
 
         // 신청자 수는 한 번에 모아 조회한다. 행사마다 따로 세면 페이지 크기만큼 쿼리가 더 나간다
         Map<Long, Long> applicantCounts = eventRepository.countAppliedByEventIds(
-            slice.content().stream().map(Event::getId).toList());
+            fetched.stream().limit(size).map(Event::getId).toList());
 
-        List<EventSummary> content = slice.content().stream()
-            .map(event -> EventSummary.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now))
-            .toList();
-
-        return new CursorSliceResult<>(content, slice.hasNext(), slice.nextCursor());
+        return CursorSliceResult.ofSlice(
+            fetched,
+            size,
+            event -> EventSummary.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now),
+            summary -> EventCursor.of(summary).format()
+        );
     }
 
     @Override
