@@ -21,6 +21,7 @@ Business는 공개 인터페이스 + `service.impl` 구현체로 구성한다. �
 | Data Access | Repository 인터페이스 | `{Domain}Repository` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Repository 구현체 | `{Domain}RepositoryImpl` | `infrastructure:db` |
 | Data Access | JPA Repository | `{Domain}JpaRepository` | `infrastructure:db` |
+| Data Access | 조회 전용 프로젝션 | `{조회내용}Projection` (예: `EventApplicantCountProjection`) | `infrastructure:db` |
 | Data Access | 외부 API 클라이언트 인터페이스 | `{Domain}Client` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Client 구현체 | `{Domain}ClientImpl` | `infrastructure:client` |
 
@@ -131,10 +132,11 @@ public final class ApiResponse<T> {
 | 오프셋 | 페이지 번호·전체 개수·전체 페이지 필요 | `PageResult<T>` / `PageResponse<T>` |
 
 - 커서 기반 응답 필드는 항상 `content`/`hasNext`/`nextCursor`로 통일한다.
+- `nextCursor`는 **클라이언트에게 불투명한 문자열**이다. 정렬 키가 여러 개인 keyset 커서를 담아야 하므로 도메인이 `{Domain}Cursor` record로 정렬 키와 그 문자열 표현(`format()`/`from(String)`)을 소유하고, Base64 URL-safe 인코딩은 웹 계층에서 `CursorCodec`(`api:common-api`)으로 처리한다.
 
 ```java
 // core:common
-public record CursorSliceResult<T>(List<T> content, boolean hasNext, Long nextCursor) {}
+public record CursorSliceResult<T>(List<T> content, boolean hasNext, String nextCursor) {}
 public record PageResult<T>(List<T> content, int page, int size, long totalCount, int totalPage) {}
 ```
 
@@ -238,6 +240,37 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 }
 ```
+
+**조회 전용 프로젝션** — 일부 컬럼이나 집계 결과만 필요하면 `record`로 받고 JPQL 생성자 표현식으로 채운다. `List<Object[]>`는 무엇이 담겼는지 드러나지 않아 쓰지 않는다.
+
+- 이름은 `{조회내용}Projection`으로 끝낸다. `Row`·`Dto`는 쓰지 않는다.
+- `infrastructure:db`에 두고 `core:domain` 밖으로 내보내지 않는다. 도메인 변환은 `{Domain}RepositoryImpl`이 한다.
+
+```java
+// infrastructure:db
+public record EventApplicantCountProjection(Long eventId, Long applicantCount) {}
+
+@Query("""
+    SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountProjection(a.eventId, COUNT(a))
+    FROM EventApplicationJpaEntity a
+    WHERE a.eventId IN :eventIds
+    GROUP BY a.eventId
+    """)
+List<EventApplicantCountProjection> countApplicantsByEventIds(@Param("eventIds") List<Long> eventIds);
+```
+
+**레포지토리는 조합하지 않는다** — 여러 조회 결과를 짝짓는 일은 `{Domain}ServiceImpl`이 한다. 레포지토리는 각각 그대로 돌려준다. 그래야 조합을 DB 없이 단위 테스트할 수 있고, 호출부가 필요한 조회만 고를 수 있다.
+
+```java
+// ❌ 레포지토리가 행사와 신청자 수를 짝지어 반환
+CursorSliceResult<EventApplicantCount> findPublishedSlice(...);
+
+// ✅ 각각 반환하고 서비스가 조합
+CursorSliceResult<Event> findPublishedSlice(...);
+Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
+```
+
+---
 
 ### 2-7. Business Layer (Service)
 

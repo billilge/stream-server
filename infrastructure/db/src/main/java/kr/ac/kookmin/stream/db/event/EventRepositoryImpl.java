@@ -1,14 +1,21 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,6 +30,44 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public Optional<Event> findById(Long id) {
         return eventJpaRepository.findByIdAndIsDeletedFalse(id).map(EventJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<Event> findPublishedById(Long id) {
+        return eventJpaRepository.findByIdAndIsDeletedFalseAndIsPublishedTrue(id).map(EventJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<Event> findPublishedSlice(
+        RecruitStatus recruitStatus,
+        EventCursor cursor,
+        int limit,
+        LocalDateTime now
+    ) {
+        return eventJpaRepository.findPublishedSlice(
+            recruitStatus == null,
+            recruitStatus == RecruitStatus.BEFORE_OPEN,
+            recruitStatus == RecruitStatus.OPEN,
+            recruitStatus == RecruitStatus.CLOSED,
+            RecruitStatus.CLOSED,
+            RecruitType.FIRST_COME,
+            EventApplicationStatus.APPLIED,
+            now,
+            cursor == null ? null : cursor.eventStartAt(),
+            cursor == null ? null : cursor.eventId(),
+            Pageable.ofSize(limit)
+        ).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public Map<Long, Long> countAppliedByEventIds(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Map.of();
+        }
+        return eventJpaRepository.countApplicantsByEventIds(eventIds, EventApplicationStatus.APPLIED).stream()
+            .collect(Collectors.toMap(
+                EventApplicantCountProjection::eventId,
+                EventApplicantCountProjection::applicantCount));
     }
 
     @Override
