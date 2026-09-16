@@ -28,10 +28,9 @@ class FeeServiceImpl implements FeeService {
     @Override
     @Transactional
     public StudentFee requestConfirmation(Long memberId) {
-        LocalDateTime now = LocalDateTime.now();
         StudentFee fee = feeRepository.findByMemberId(memberId)
-            .map(existing -> existing.requestConfirmation(now))
-            .orElseGet(() -> StudentFee.create(memberId, now));
+            .map(StudentFee::requestConfirmation)
+            .orElseGet(() -> StudentFee.create(memberId));
         return feeRepository.save(fee);
     }
 

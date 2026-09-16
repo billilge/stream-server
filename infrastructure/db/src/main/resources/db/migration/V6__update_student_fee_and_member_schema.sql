@@ -4,7 +4,6 @@ ALTER TABLE student_fees
     DROP COLUMN paid_at,
     DROP COLUMN confirmed_by,
     CHANGE COLUMN payment_status status VARCHAR(20) NOT NULL DEFAULT 'UNPAID', -- UNPAID / PENDING / PAID
-    ADD COLUMN requested_at DATETIME NULL,
     ADD COLUMN reviewed_at DATETIME NULL;
 
 DROP INDEX idx_student_fees_member_id ON student_fees;

@@ -22,7 +22,7 @@ public record AdminFeeSearchResponse(
             member.getStudentId(),
             member.getDepartment().name(),
             fee.getStatus().name(),
-            fee.getRequestedAt(),
+            fee.getCreatedAt(),
             fee.getReviewedAt()
         );
     }

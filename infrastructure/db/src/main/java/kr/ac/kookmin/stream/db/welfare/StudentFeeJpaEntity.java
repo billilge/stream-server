@@ -40,9 +40,6 @@ public class StudentFeeJpaEntity extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private PaymentStatus status;
 
-    @Column(name = "requested_at")
-    private LocalDateTime requestedAt;
-
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
@@ -50,7 +47,6 @@ public class StudentFeeJpaEntity extends BaseTimeEntity {
         this.id = fee.getId();
         this.memberId = fee.getMemberId();
         this.status = fee.getStatus();
-        this.requestedAt = fee.getRequestedAt();
         this.reviewedAt = fee.getReviewedAt();
     }
 
@@ -59,6 +55,6 @@ public class StudentFeeJpaEntity extends BaseTimeEntity {
     }
 
     public StudentFee toDomain() {
-        return StudentFee.of(id, memberId, status, requestedAt, reviewedAt, getCreatedAt(), getUpdatedAt());
+        return StudentFee.of(id, memberId, status, reviewedAt, getCreatedAt(), getUpdatedAt());
     }
 }

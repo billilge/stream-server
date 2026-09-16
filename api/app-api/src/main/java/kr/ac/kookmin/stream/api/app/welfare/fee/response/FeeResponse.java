@@ -12,6 +12,7 @@ public record FeeResponse(
 ) {
     public static FeeResponse of(StudentFee fee, String paymentLinkUrl) {
         LocalDateTime confirmedAt = fee.getStatus() == PaymentStatus.PAID ? fee.getReviewedAt() : null;
-        return new FeeResponse(fee.getStatus().name(), paymentLinkUrl, fee.getRequestedAt(), confirmedAt);
+        // student_fees엔 별도 requested_at 컬럼이 없어, 확인 요청 시각은 row의 created_at으로 갈음한다.
+        return new FeeResponse(fee.getStatus().name(), paymentLinkUrl, fee.getCreatedAt(), confirmedAt);
     }
 }
