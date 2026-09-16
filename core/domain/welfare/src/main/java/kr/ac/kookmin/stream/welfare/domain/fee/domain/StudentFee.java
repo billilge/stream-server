@@ -13,21 +13,38 @@ public class StudentFee {
 
     private Long id;
     private Long memberId;
-    private int amount;
-    private PaymentStatus paymentStatus;
-    private String paymentLinkUrl;
-    private LocalDateTime paidAt;
-    private Long confirmedBy;
+    private PaymentStatus status;
+    private LocalDateTime requestedAt;
+    private LocalDateTime reviewedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static StudentFee create(Long memberId, LocalDateTime now) {
+        return new StudentFee(null, memberId, PaymentStatus.PENDING, now, null, null, null);
+    }
+
+    // 아직 확인 요청을 한 번도 보내지 않은 회원을 위한 가상의 기본값 (DB에 row가 없음, 저장하지 않는다)
+    public static StudentFee notRequested(Long memberId) {
+        return new StudentFee(null, memberId, PaymentStatus.UNPAID, null, null, null, null);
+    }
 
     public static StudentFee of(
         Long id,
         Long memberId,
-        int amount,
-        PaymentStatus paymentStatus,
-        String paymentLinkUrl,
-        LocalDateTime paidAt,
-        Long confirmedBy
+        PaymentStatus status,
+        LocalDateTime requestedAt,
+        LocalDateTime reviewedAt,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
     ) {
-        return new StudentFee(id, memberId, amount, paymentStatus, paymentLinkUrl, paidAt, confirmedBy);
+        return new StudentFee(id, memberId, status, requestedAt, reviewedAt, createdAt, updatedAt);
+    }
+
+    public StudentFee requestConfirmation(LocalDateTime now) {
+        return new StudentFee(id, memberId, PaymentStatus.PENDING, now, null, createdAt, updatedAt);
+    }
+
+    public StudentFee review(PaymentStatus reviewedStatus, LocalDateTime now) {
+        return new StudentFee(id, memberId, reviewedStatus, requestedAt, now, createdAt, updatedAt);
     }
 }
