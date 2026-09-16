@@ -43,9 +43,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "fcm_token")
     private String fcmToken;
 
-    @Column(name = "is_fee_paid", nullable = false)
-    private boolean feePaid;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
@@ -61,7 +58,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
         this.department = member.getDepartment();
         this.email = member.getEmail();
         this.fcmToken = member.getFcmToken();
-        this.feePaid = member.isFeePaid();
         this.role = member.getRole();
         this.councilDepartment = member.getCouncilDepartment();
     }
@@ -71,6 +67,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Member toDomain() {
-        return Member.of(id, studentId, name, department, email, fcmToken, feePaid, role, councilDepartment);
+        return Member.of(id, studentId, name, department, email, fcmToken, role, councilDepartment);
     }
 }
