@@ -17,3 +17,7 @@ CREATE UNIQUE INDEX uk_student_transfer_statuses_member_id ON student_transfer_s
 
 ALTER TABLE members
     DROP COLUMN is_fee_paid;
+
+-- 회원당 납부자 명부는 1행만 존재한다 (PayerService.sync가 member_id로 조회·갱신·삭제한다)
+DROP INDEX idx_payers_member_id ON payers;
+CREATE UNIQUE INDEX uk_payers_member_id ON payers (member_id);
