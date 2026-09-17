@@ -3,9 +3,7 @@ package kr.ac.kookmin.stream.welfare.domain.fee.domain;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-// 토스 앱을 여는 송금 딥링크(supertoss://send)를 만든다. 공식 문서가 아니라
-// https://github.com/nemokoala/TossMe 구현을 참고했다 — bank/accountNo/amount 순서,
-// accountNo의 하이픈 제거, application/x-www-form-urlencoded 인코딩(UTF-8, 공백은 '+')이 그 근거다.
+// 토스 앱을 여는 송금 딥링크(supertoss://send)를 만든다.
 public final class TossTransferLinkGenerator {
 
     private static final String BASE_URL = "supertoss://send";
