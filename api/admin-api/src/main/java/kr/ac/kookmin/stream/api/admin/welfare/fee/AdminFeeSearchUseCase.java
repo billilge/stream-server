@@ -9,7 +9,7 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminFeeSearchUseCase {
 
-    private final FeeService feeService;
+    private final StudentTransferStatusService studentTransferStatusService;
     private final MemberService memberService;
 
     @Transactional(readOnly = true)
@@ -31,13 +31,13 @@ public class AdminFeeSearchUseCase {
             }
         }
 
-        PageResult<StudentTransferStatus> result = feeService.search(status, memberIds, page, size);
+        PageResult<StudentTransferStatus> result = studentTransferStatusService.search(status, memberIds, page, size);
         Map<Long, Member> membersById = memberService.findAllByIds(
             result.content().stream().map(StudentTransferStatus::getMemberId).toList()
         ).stream().collect(Collectors.toMap(Member::getId, Function.identity()));
 
         List<AdminFeeSearchResponse> content = result.content().stream()
-            .map(request -> AdminFeeSearchResponse.of(request, membersById.get(request.getMemberId())))
+            .map(transferStatus -> AdminFeeSearchResponse.of(transferStatus, membersById.get(transferStatus.getMemberId())))
             .toList();
 
         return new PageResult<>(content, result.page(), result.size(), result.totalCount(), result.totalPage());

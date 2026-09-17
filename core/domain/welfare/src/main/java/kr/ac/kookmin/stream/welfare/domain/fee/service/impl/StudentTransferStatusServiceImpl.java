@@ -5,60 +5,61 @@ import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.repository.FeeRepository;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
+import kr.ac.kookmin.stream.welfare.domain.fee.repository.StudentTransferStatusRepository;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-class FeeServiceImpl implements FeeService {
+class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
-    private final FeeRepository feeRepository;
+    private final StudentTransferStatusRepository studentTransferStatusRepository;
     private final PayerRepository payerRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public StudentTransferStatus getMyFee(Long memberId) {
-        return feeRepository.findByMemberId(memberId).orElseGet(() -> StudentTransferStatus.notRequested(memberId));
+    public StudentTransferStatus getByMemberId(Long memberId) {
+        return studentTransferStatusRepository.findByMemberId(memberId)
+            .orElseGet(() -> StudentTransferStatus.notRequested(memberId));
     }
 
     @Override
     @Transactional
     public StudentTransferStatus requestConfirmation(Long memberId) {
-        StudentTransferStatus request = feeRepository.findByMemberId(memberId)
+        StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
             .map(StudentTransferStatus::requestConfirmation)
             .orElseGet(() -> StudentTransferStatus.create(memberId));
-        return feeRepository.save(request);
+        return studentTransferStatusRepository.save(transferStatus);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResult<StudentTransferStatus> search(String status, List<Long> memberIds, int page, int size) {
         TransferStatus transferStatus = status == null ? null : parseStatus(status, FeeErrorCode.INVALID_TRANSFER_STATUS);
-        return feeRepository.search(transferStatus, memberIds, page, size);
+        return studentTransferStatusRepository.search(transferStatus, memberIds, page, size);
     }
 
     @Override
     @Transactional
-    public StudentTransferStatus review(Long feeId, String status) {
+    public StudentTransferStatus review(Long transferStatusId, String status) {
         TransferStatus reviewedStatus = parseStatus(status, FeeErrorCode.INVALID_FEE_STATUS);
         if (reviewedStatus == TransferStatus.PENDING) {
             throw new BusinessException(FeeErrorCode.INVALID_FEE_STATUS);
         }
 
-        StudentTransferStatus request = feeRepository.findById(feeId)
+        StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
-        if (request.getStatus() != TransferStatus.PENDING) {
+        if (transferStatus.getStatus() != TransferStatus.PENDING) {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REVIEWED);
         }
 
-        return feeRepository.save(request.review(reviewedStatus, LocalDateTime.now()));
+        return studentTransferStatusRepository.save(transferStatus.review(reviewedStatus, LocalDateTime.now()));
     }
 
     @Override

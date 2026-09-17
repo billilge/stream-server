@@ -13,7 +13,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateRespon
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
+import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminFeeController {
 
-    private final ConfigService configService;
+    private final AdminConfigValueService adminConfigValueService;
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
     private final DepartmentAccessChecker departmentAccessChecker;
@@ -50,21 +50,21 @@ public class AdminFeeController {
         return ApiResponse.success(PageResponse.from(result, response -> response));
     }
 
-    @PatchMapping("/requests/{feeId}")
+    @PatchMapping("/requests/{transferStatusId}")
     public ApiResponse<FeeStatusUpdateResponse> updateStatus(
-        @PathVariable Long feeId,
+        @PathVariable Long transferStatusId,
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        StudentTransferStatus transferStatus = adminFeeReviewUseCase.review(feeId, request.status());
+        StudentTransferStatus transferStatus = adminFeeReviewUseCase.review(transferStatusId, request.status());
         return ApiResponse.success(FeeStatusUpdateResponse.from(transferStatus));
     }
 
     @PutMapping("/link")
     public ApiResponse<FeeLinkUpdateResponse> updateLink(@Valid @RequestBody FeeLinkUpdateRequest request) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        configService.upsertValue(FeeConfigKeys.TRANSFER_BANK, request.bank());
-        configService.upsertValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO, request.accountNo());
+        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_BANK, request.bank());
+        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO, request.accountNo());
         return ApiResponse.success(FeeLinkUpdateResponse.of(request.bank(), request.accountNo()));
     }
 
@@ -74,7 +74,7 @@ public class AdminFeeController {
         if (request.amount() == null || request.amount() <= 0) {
             throw new BusinessException(FeeErrorCode.INVALID_FEE_AMOUNT);
         }
-        configService.upsertValue(FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(request.amount()));
+        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(request.amount()));
         return ApiResponse.success(FeeAmountUpdateResponse.of(request.amount()));
     }
 }

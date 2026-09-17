@@ -5,7 +5,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.repository.FeeRepository;
+import kr.ac.kookmin.stream.welfare.domain.fee.repository.StudentTransferStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class FeeRepositoryImpl implements FeeRepository {
+public class StudentTransferStatusRepositoryImpl implements StudentTransferStatusRepository {
 
     private final StudentTransferStatusJpaRepository studentTransferStatusJpaRepository;
 
@@ -46,7 +46,7 @@ public class FeeRepositoryImpl implements FeeRepository {
     }
 
     @Override
-    public StudentTransferStatus save(StudentTransferStatus request) {
-        return studentTransferStatusJpaRepository.save(StudentTransferStatusJpaEntity.from(request)).toDomain();
+    public StudentTransferStatus save(StudentTransferStatus transferStatus) {
+        return studentTransferStatusJpaRepository.save(StudentTransferStatusJpaEntity.from(transferStatus)).toDomain();
     }
 }

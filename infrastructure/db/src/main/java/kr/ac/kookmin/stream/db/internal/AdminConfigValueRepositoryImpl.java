@@ -2,13 +2,13 @@ package kr.ac.kookmin.stream.db.internal;
 
 import java.util.Optional;
 import kr.ac.kookmin.stream.internal.domain.config.domain.AdminConfigValue;
-import kr.ac.kookmin.stream.internal.domain.config.repository.ConfigRepository;
+import kr.ac.kookmin.stream.internal.domain.config.repository.AdminConfigValueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ConfigRepositoryImpl implements ConfigRepository {
+public class AdminConfigValueRepositoryImpl implements AdminConfigValueRepository {
 
     private final AdminConfigValueJpaRepository adminConfigValueJpaRepository;
 

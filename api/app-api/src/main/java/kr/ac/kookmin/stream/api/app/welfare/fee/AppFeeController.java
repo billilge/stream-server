@@ -22,8 +22,10 @@ public class AppFeeController {
     private final AppFeeUseCase appFeeUseCase;
 
     @GetMapping("/me")
-    public ApiResponse<FeeResponse> getMyFee(AppApiUser apiUser, @Valid @ModelAttribute FeeMeRequest request) {
-        return ApiResponse.success(appFeeUseCase.getMyFee(apiUser.userId(), request.grade(), request.semester()));
+    public ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser, @Valid @ModelAttribute FeeMeRequest request) {
+        return ApiResponse.success(
+            appFeeUseCase.getFeeByMemberId(apiUser.userId(), request.grade(), request.semester())
+        );
     }
 
     @PostMapping
