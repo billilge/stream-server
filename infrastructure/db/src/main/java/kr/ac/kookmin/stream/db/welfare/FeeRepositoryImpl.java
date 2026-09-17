@@ -3,8 +3,8 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.PaymentStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentFee;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.FeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +28,7 @@ public class FeeRepositoryImpl implements FeeRepository {
     }
 
     @Override
-    public PageResult<StudentFee> search(PaymentStatus status, List<Long> memberIds, int page, int size) {
+    public PageResult<StudentFee> search(TransferStatus status, List<Long> memberIds, int page, int size) {
         boolean filterByMember = memberIds != null;
         List<Long> ids = filterByMember ? memberIds : List.of();
 

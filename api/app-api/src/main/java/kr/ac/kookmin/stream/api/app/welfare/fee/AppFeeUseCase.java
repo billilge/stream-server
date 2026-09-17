@@ -11,22 +11,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AppFeeUseCase {
 
-    private static final String FEE_PAYMENT_LINK_KEY = "FEE_PAYMENT_LINK";
+    private static final String FEE_TRANSFER_LINK_KEY = "FEE_TRANSFER_LINK";
 
     private final FeeService feeService;
     private final ConfigService configService;
 
     public FeeResponse getMyFee(Long memberId) {
         StudentFee fee = feeService.getMyFee(memberId);
-        return FeeResponse.of(fee, paymentLinkUrl());
+        return FeeResponse.of(fee, transferLinkUrl());
     }
 
     public FeeResponse requestConfirmation(Long memberId) {
         StudentFee fee = feeService.requestConfirmation(memberId);
-        return FeeResponse.of(fee, paymentLinkUrl());
+        return FeeResponse.of(fee, transferLinkUrl());
     }
 
-    private String paymentLinkUrl() {
-        return configService.getValue(FEE_PAYMENT_LINK_KEY).orElse(null);
+    private String transferLinkUrl() {
+        return configService.getValue(FEE_TRANSFER_LINK_KEY).orElse(null);
     }
 }

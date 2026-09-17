@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminFeeController {
 
-    private static final String FEE_PAYMENT_LINK_KEY = "FEE_PAYMENT_LINK";
+    private static final String FEE_TRANSFER_LINK_KEY = "FEE_TRANSFER_LINK";
 
     private final FeeService feeService;
     private final ConfigService configService;
@@ -61,7 +61,7 @@ public class AdminFeeController {
     @PutMapping("/link")
     public ApiResponse<FeeLinkUpdateResponse> updateLink(@Valid @RequestBody FeeLinkUpdateRequest request) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        configService.upsertValue(FEE_PAYMENT_LINK_KEY, request.paymentLinkUrl());
-        return ApiResponse.success(FeeLinkUpdateResponse.of(request.paymentLinkUrl()));
+        configService.upsertValue(FEE_TRANSFER_LINK_KEY, request.transferLinkUrl());
+        return ApiResponse.success(FeeLinkUpdateResponse.of(request.transferLinkUrl()));
     }
 }

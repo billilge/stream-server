@@ -11,8 +11,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.PaymentStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentFee;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -38,7 +38,7 @@ public class StudentFeeJpaEntity extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PaymentStatus status;
+    private TransferStatus status;
 
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;

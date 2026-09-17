@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.domain;
 
-public enum PaymentStatus {
+public enum TransferStatus {
     UNPAID,
     PENDING,
     PAID
