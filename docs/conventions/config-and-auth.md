@@ -216,16 +216,53 @@ ApiResponse<Void> apply(
 
 ### 인증 불필요 API
 
-`SecurityConfig`에 `permitAll`을 추가하고, Controller에서 `ApiUser` 파라미터를 선언하지 않는다.
+공개 엔드포인트는 **`gateway:auth`의 `PublicEndpoints` enum을 단일 진실 원천으로** 관리한다. 여기에 URL 패턴만 추가하면 Security permitAll과 Swagger 문서 표기(아래 "Swagger 보안 요구사항 표기")가 함께 맞춰진다. Controller에서는 `ApiUser` 파라미터를 선언하지 않는다.
+
+1. `PublicEndpoints`에 용도별로 패턴을 추가한다.
 
 ```java
-http.authorizeHttpRequests(auth -> auth
-    .requestMatchers("/auth/login").permitAll()
+// gateway:auth — PublicEndpoints.java
+public enum PublicEndpoints {
+    HEALTH_CHECK(List.of("/actuator/health")),
+    SWAGGER(List.of("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")),
+    AUTH(List.of("/auth/login"));   // 예: 로그인
+    // ...
+}
+```
+
+2. `SecurityConfig`는 `PublicEndpoints.allPatterns()`를 permitAll 대상으로 쓴다(이미 배선되어 있다). role별 패턴은 `anyRequest`보다 먼저 선언한다.
+
+```java
+http.authorizeHttpRequests(request -> request
+    .requestMatchers(PublicEndpoints.allPatterns()).permitAll()
     .requestMatchers("/v1/admin/**").hasAuthority(Role.ADMIN.name())
     .requestMatchers("/v1/app/**").hasAuthority(Role.STUDENT.name())
     .anyRequest().authenticated()
 );
 ```
+
+### Swagger 보안 요구사항 표기
+
+`OpenApiConfig`는 전역으로 JWT 보안 요구사항(`addSecurityItem`)을 걸어 **기본값을 "인증 필요"**로 둔다. 공개 API가 "인증 필요"로 잘못 표시되지 않도록, `PublicEndpoints`를 재사용하는 `OpenApiCustomizer`가 공개 경로의 보안 요구사항을 비운다.
+
+```java
+// api:common-api — PublicPathSecurityCustomizer.java
+@Component
+public class PublicPathSecurityCustomizer implements OpenApiCustomizer {
+
+    @Override
+    public void customise(OpenAPI openApi) {
+        openApi.getPaths().forEach((path, item) -> {
+            if (PublicEndpoints.isPublic(path)) {
+                item.readOperations().forEach(operation -> operation.setSecurity(List.of()));
+            }
+        });
+    }
+}
+```
+
+> 공개 여부의 진실 원천은 `PublicEndpoints` 하나다. 여기만 갱신하면 permitAll과 Swagger 표기가 함께 맞춰지므로 둘이 어긋날 일이 없다.
+> 핸들러 메서드만 알고 경로는 모르는 `OperationCustomizer`(→ `ApiErrorCodeCustomizer`) 대신, 경로를 아는 `OpenApiCustomizer`를 쓰는 이유가 이것이다. `isPublic`은 `PathPattern` 기반이라 `/v1/app/rentals/{id}` 같은 템플릿 경로도 매칭된다.
 
 ### 테스트 환경
 
