@@ -2,10 +2,10 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentFee;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
 
 public record AdminFeeSearchResponse(
-    Long studentFeeId,
+    Long studentTransferRequestId,
     Long memberId,
     String name,
     String studentId,
@@ -14,16 +14,16 @@ public record AdminFeeSearchResponse(
     LocalDateTime requestedAt,
     LocalDateTime reviewedAt
 ) {
-    public static AdminFeeSearchResponse of(StudentFee fee, Member member) {
+    public static AdminFeeSearchResponse of(StudentTransferRequest request, Member member) {
         return new AdminFeeSearchResponse(
-            fee.getId(),
-            fee.getMemberId(),
+            request.getId(),
+            request.getMemberId(),
             member.getName(),
             member.getStudentId(),
             member.getDepartment().name(),
-            fee.getStatus().name(),
-            fee.getCreatedAt(),
-            fee.getReviewedAt()
+            request.getStatus().name(),
+            request.getCreatedAt(),
+            request.getReviewedAt()
         );
     }
 }

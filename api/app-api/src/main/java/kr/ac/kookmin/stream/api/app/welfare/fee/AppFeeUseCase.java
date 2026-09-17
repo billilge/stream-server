@@ -2,7 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.fee;
 
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentFee;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,13 +17,13 @@ public class AppFeeUseCase {
     private final ConfigService configService;
 
     public FeeResponse getMyFee(Long memberId) {
-        StudentFee fee = feeService.getMyFee(memberId);
-        return FeeResponse.of(fee, transferLinkUrl());
+        StudentTransferRequest request = feeService.getMyFee(memberId);
+        return FeeResponse.of(request, transferLinkUrl());
     }
 
     public FeeResponse requestConfirmation(Long memberId) {
-        StudentFee fee = feeService.requestConfirmation(memberId);
-        return FeeResponse.of(fee, transferLinkUrl());
+        StudentTransferRequest request = feeService.requestConfirmation(memberId);
+        return FeeResponse.of(request, transferLinkUrl());
     }
 
     private String transferLinkUrl() {

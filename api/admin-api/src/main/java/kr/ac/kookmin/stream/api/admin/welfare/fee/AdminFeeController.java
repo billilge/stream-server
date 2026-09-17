@@ -12,7 +12,7 @@ import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentFee;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,8 +54,8 @@ public class AdminFeeController {
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        StudentFee fee = feeService.review(feeId, request.status());
-        return ApiResponse.success(FeeStatusUpdateResponse.from(fee));
+        StudentTransferRequest transferRequest = feeService.review(feeId, request.status());
+        return ApiResponse.success(FeeStatusUpdateResponse.from(transferRequest));
     }
 
     @PutMapping("/link")

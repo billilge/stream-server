@@ -7,7 +7,13 @@ ALTER TABLE student_fees
     ADD COLUMN reviewed_at DATETIME NULL;
 
 DROP INDEX idx_student_fees_member_id ON student_fees;
-CREATE UNIQUE INDEX uk_student_fees_member_id ON student_fees (member_id);
+
+ALTER TABLE student_fees
+    CHANGE COLUMN student_fee_id student_transfer_request_id BIGINT NOT NULL AUTO_INCREMENT;
+
+RENAME TABLE student_fees TO student_transfer_requests;
+
+CREATE UNIQUE INDEX uk_student_transfer_requests_member_id ON student_transfer_requests (member_id);
 
 ALTER TABLE members
     DROP COLUMN is_fee_paid;
