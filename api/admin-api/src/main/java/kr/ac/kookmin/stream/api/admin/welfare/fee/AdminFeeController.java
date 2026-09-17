@@ -18,6 +18,7 @@ import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -46,7 +47,9 @@ public class AdminFeeController {
         @RequestParam(defaultValue = "20") int size
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        PageResult<AdminFeeSearchResponse> result = adminFeeSearchUseCase.search(status, keyword, page, size);
+        PageResult<AdminFeeSearchResponse> result = adminFeeSearchUseCase.search(
+            TransferStatus.from(status), keyword, page, size
+        );
         return ApiResponse.success(PageResponse.from(result, response -> response));
     }
 
@@ -56,7 +59,9 @@ public class AdminFeeController {
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        StudentTransferStatus transferStatus = adminFeeReviewUseCase.review(transferStatusId, request.status());
+        StudentTransferStatus transferStatus = adminFeeReviewUseCase.review(
+            transferStatusId, TransferStatus.from(request.status())
+        );
         return ApiResponse.success(FeeStatusUpdateResponse.from(transferStatus));
     }
 

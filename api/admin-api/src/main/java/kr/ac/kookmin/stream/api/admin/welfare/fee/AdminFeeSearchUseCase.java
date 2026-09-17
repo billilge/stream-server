@@ -9,6 +9,7 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ public class AdminFeeSearchUseCase {
     private final MemberService memberService;
 
     @Transactional(readOnly = true)
-    public PageResult<AdminFeeSearchResponse> search(String status, String keyword, int page, int size) {
+    public PageResult<AdminFeeSearchResponse> search(TransferStatus status, String keyword, int page, int size) {
         List<Long> memberIds = null;
         if (keyword != null && !keyword.isBlank()) {
             memberIds = memberService.searchIdsByKeyword(keyword);

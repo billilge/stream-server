@@ -40,17 +40,15 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<StudentTransferStatus> search(String status, List<Long> memberIds, int page, int size) {
-        TransferStatus transferStatus = status == null ? null : parseStatus(status, FeeErrorCode.INVALID_TRANSFER_STATUS);
-        return studentTransferStatusRepository.search(transferStatus, memberIds, page, size);
+    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, int page, int size) {
+        return studentTransferStatusRepository.search(status, memberIds, page, size);
     }
 
     @Override
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, String status) {
-        TransferStatus reviewedStatus = parseStatus(status, FeeErrorCode.INVALID_FEE_STATUS);
-        if (reviewedStatus == TransferStatus.PENDING) {
-            throw new BusinessException(FeeErrorCode.INVALID_FEE_STATUS);
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status) {
+        if (status == TransferStatus.PENDING) {
+            throw new BusinessException(FeeErrorCode.INVALID_TRANSFER_STATUS);
         }
 
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
@@ -59,7 +57,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REVIEWED);
         }
 
-        return studentTransferStatusRepository.save(transferStatus.review(reviewedStatus, LocalDateTime.now()));
+        return studentTransferStatusRepository.save(transferStatus.review(status, LocalDateTime.now()));
     }
 
     @Override
@@ -77,15 +75,5 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     // 학번 앞 4자리를 입학년도로 본다 (레거시 빌릴게 백엔드의 PayerService와 동일한 규칙)
     private String enrollmentYearOf(String studentId) {
         return studentId.substring(0, 4);
-    }
-
-    // Spring MVC는 잘못된 enum 문자열을 MethodArgumentNotValidException이 아닌 다른 예외로 던지므로
-    // 원하는 커스텀 에러 코드를 응답하려면 String으로 받아 여기서 직접 파싱한다.
-    private TransferStatus parseStatus(String status, FeeErrorCode invalidCode) {
-        try {
-            return TransferStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException(invalidCode);
-        }
     }
 }
