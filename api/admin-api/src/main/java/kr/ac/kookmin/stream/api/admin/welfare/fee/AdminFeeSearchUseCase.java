@@ -27,7 +27,7 @@ public class AdminFeeSearchUseCase {
         if (keyword != null && !keyword.isBlank()) {
             memberIds = memberService.searchIdsByKeyword(keyword);
             if (memberIds.isEmpty()) {
-                return new PageResult<>(List.of(), page, size, 0, 0);
+                return PageResult.empty(page, size);
             }
         }
 
@@ -36,10 +36,8 @@ public class AdminFeeSearchUseCase {
             result.content().stream().map(StudentTransferStatus::getMemberId).toList()
         ).stream().collect(Collectors.toMap(Member::getId, Function.identity()));
 
-        List<AdminFeeSearchResponse> content = result.content().stream()
-            .map(transferStatus -> AdminFeeSearchResponse.of(transferStatus, membersById.get(transferStatus.getMemberId())))
-            .toList();
-
-        return new PageResult<>(content, result.page(), result.size(), result.totalCount(), result.totalPage());
+        return result.map(transferStatus ->
+            AdminFeeSearchResponse.of(transferStatus, membersById.get(transferStatus.getMemberId()))
+        );
     }
 }

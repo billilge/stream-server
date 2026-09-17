@@ -36,12 +36,11 @@ public class StudentTransferStatusRepositoryImpl implements StudentTransferStatu
             status, filterByMember, ids, PageRequest.of(page, size)
         );
 
-        return new PageResult<>(
+        return PageResult.of(
             result.getContent().stream().map(StudentTransferStatusJpaEntity::toDomain).toList(),
             result.getNumber(),
             result.getSize(),
-            result.getTotalElements(),
-            result.getTotalPages()
+            result.getTotalElements()
         );
     }
 
