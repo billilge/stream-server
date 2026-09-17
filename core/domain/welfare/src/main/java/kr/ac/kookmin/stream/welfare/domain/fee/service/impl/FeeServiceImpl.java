@@ -6,8 +6,10 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.FeeRepository;
+import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 class FeeServiceImpl implements FeeService {
 
     private final FeeRepository feeRepository;
+    private final PayerRepository payerRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,6 +59,23 @@ class FeeServiceImpl implements FeeService {
         }
 
         return feeRepository.save(request.review(reviewedStatus, LocalDateTime.now()));
+    }
+
+    @Override
+    @Transactional
+    public void syncPayer(Long memberId, String name, String studentId, TransferStatus status) {
+        if (status == TransferStatus.PAID) {
+            Payer payer = payerRepository.findByMemberId(memberId)
+                .orElseGet(() -> Payer.create(memberId, name, studentId, enrollmentYearOf(studentId)));
+            payerRepository.save(payer);
+        } else {
+            payerRepository.deleteByMemberId(memberId);
+        }
+    }
+
+    // 학번 앞 4자리를 입학년도로 본다 (레거시 빌릴게 백엔드의 PayerService와 동일한 규칙)
+    private String enrollmentYearOf(String studentId) {
+        return studentId.substring(0, 4);
     }
 
     // Spring MVC는 잘못된 enum 문자열을 MethodArgumentNotValidException이 아닌 다른 예외로 던지므로
