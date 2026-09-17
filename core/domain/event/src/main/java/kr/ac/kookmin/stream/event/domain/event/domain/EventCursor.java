@@ -1,15 +1,15 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.Cursor;
 
 /**
  * 행사 목록의 keyset 커서. 정렬 기준(행사 시작 일시 오름차순 + eventId 오름차순)과 짝을 이룬다.
  */
-public record EventCursor(LocalDateTime eventStartAt, Long eventId) {
+public record EventCursor(LocalDateTime eventStartAt, Long eventId) implements Cursor {
 
-    private static final String JOIN = "|";
-    private static final String SPLIT_REGEX = "\\|";
     private static final int PART_COUNT = 2;
 
     public static EventCursor of(Event event) {
@@ -20,20 +20,17 @@ public record EventCursor(LocalDateTime eventStartAt, Long eventId) {
         return new EventCursor(summary.eventStartAt(), summary.eventId());
     }
 
-    // Base64 인코딩은 웹(Controller) 계층 책임이라 여기서는 순수 문자열 표현만 다룬다
     public static EventCursor from(String raw) {
-        String[] parts = raw.split(SPLIT_REGEX, -1);
-        if (parts.length != PART_COUNT) {
-            throw new BusinessException(EventErrorCode.EVENT_INVALID_CURSOR);
-        }
         try {
-            return new EventCursor(LocalDateTime.parse(parts[0]), Long.valueOf(parts[1]));
+            List<String> parts = Cursor.parseParts(raw, PART_COUNT, EventErrorCode.EVENT_INVALID_CURSOR);
+            return new EventCursor(LocalDateTime.parse(parts.get(0)), Long.valueOf(parts.get(1)));
         } catch (RuntimeException e) {
             throw new BusinessException(EventErrorCode.EVENT_INVALID_CURSOR);
         }
     }
 
-    public String format() {
-        return eventStartAt + JOIN + eventId;
+    @Override
+    public List<String> toParts() {
+        return List.of(eventStartAt.toString(), String.valueOf(eventId));
     }
 }
