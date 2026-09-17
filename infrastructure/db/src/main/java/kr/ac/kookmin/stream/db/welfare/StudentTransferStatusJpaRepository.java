@@ -9,22 +9,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface StudentTransferRequestJpaRepository extends JpaRepository<StudentTransferRequestJpaEntity, Long> {
+public interface StudentTransferStatusJpaRepository extends JpaRepository<StudentTransferStatusJpaEntity, Long> {
 
-    Optional<StudentTransferRequestJpaEntity> findByMemberId(Long memberId);
+    Optional<StudentTransferStatusJpaEntity> findByMemberId(Long memberId);
 
     @Query(value = """
-        SELECT r FROM StudentTransferRequestJpaEntity r
+        SELECT r FROM StudentTransferStatusJpaEntity r
         WHERE (:status IS NULL OR r.status = :status)
         AND (:filterByMember = false OR r.memberId IN :memberIds)
         ORDER BY r.createdAt DESC, r.id DESC
         """,
         countQuery = """
-        SELECT COUNT(r) FROM StudentTransferRequestJpaEntity r
+        SELECT COUNT(r) FROM StudentTransferStatusJpaEntity r
         WHERE (:status IS NULL OR r.status = :status)
         AND (:filterByMember = false OR r.memberId IN :memberIds)
         """)
-    Page<StudentTransferRequestJpaEntity> search(
+    Page<StudentTransferStatusJpaEntity> search(
         @Param("status") TransferStatus status,
         @Param("filterByMember") boolean filterByMember,
         @Param("memberIds") List<Long> memberIds,

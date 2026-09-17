@@ -8,7 +8,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchRespons
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,9 +31,9 @@ public class AdminFeeSearchUseCase {
             }
         }
 
-        PageResult<StudentTransferRequest> result = feeService.search(status, memberIds, page, size);
+        PageResult<StudentTransferStatus> result = feeService.search(status, memberIds, page, size);
         Map<Long, Member> membersById = memberService.findAllByIds(
-            result.content().stream().map(StudentTransferRequest::getMemberId).toList()
+            result.content().stream().map(StudentTransferStatus::getMemberId).toList()
         ).stream().collect(Collectors.toMap(Member::getId, Function.identity()));
 
         List<AdminFeeSearchResponse> content = result.content().stream()

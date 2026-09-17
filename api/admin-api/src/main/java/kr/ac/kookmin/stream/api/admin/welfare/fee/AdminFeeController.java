@@ -12,7 +12,7 @@ import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TossTransferLinkGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,7 +54,7 @@ public class AdminFeeController {
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        StudentTransferRequest transferRequest = adminFeeReviewUseCase.review(feeId, request.status());
+        StudentTransferStatus transferRequest = adminFeeReviewUseCase.review(feeId, request.status());
         return ApiResponse.success(FeeStatusUpdateResponse.from(transferRequest));
     }
 

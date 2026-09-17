@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -22,15 +22,15 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Table(
-    name = "student_transfer_requests",
-    uniqueConstraints = @UniqueConstraint(name = "uk_student_transfer_requests_member_id", columnNames = "member_id")
+    name = "student_transfer_statuses",
+    uniqueConstraints = @UniqueConstraint(name = "uk_student_transfer_statuses_member_id", columnNames = "member_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StudentTransferRequestJpaEntity extends BaseTimeEntity {
+public class StudentTransferStatusJpaEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_transfer_request_id")
+    @Column(name = "student_transfer_status_id")
     private Long id;
 
     @Column(name = "member_id", nullable = false)
@@ -43,18 +43,18 @@ public class StudentTransferRequestJpaEntity extends BaseTimeEntity {
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
-    private StudentTransferRequestJpaEntity(StudentTransferRequest request) {
+    private StudentTransferStatusJpaEntity(StudentTransferStatus request) {
         this.id = request.getId();
         this.memberId = request.getMemberId();
         this.status = request.getStatus();
         this.reviewedAt = request.getReviewedAt();
     }
 
-    public static StudentTransferRequestJpaEntity from(StudentTransferRequest request) {
-        return new StudentTransferRequestJpaEntity(request);
+    public static StudentTransferStatusJpaEntity from(StudentTransferStatus request) {
+        return new StudentTransferStatusJpaEntity(request);
     }
 
-    public StudentTransferRequest toDomain() {
-        return StudentTransferRequest.of(id, memberId, status, reviewedAt, getCreatedAt(), getUpdatedAt());
+    public StudentTransferStatus toDomain() {
+        return StudentTransferStatus.of(id, memberId, status, reviewedAt, getCreatedAt(), getUpdatedAt());
     }
 }
