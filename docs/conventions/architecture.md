@@ -69,7 +69,7 @@ root
 | `bootstrap` | 조립·기동 방식 | `@Modulithic` 메인, 최종 빈 조립, 스케줄링 활성화, 실행 설정, `bootJar` | 비즈니스 로직, 도메인 규칙 |
 | `api:*` | 클라이언트 요구(요청/응답 형태) | Controller, Request/Response DTO, 교차 도메인 `UseCase` | 비즈니스 규칙, 영속화, 보안 정책 구현 |
 | `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입 | 특정 도메인 개념(`{Domain}Id` 등), Spring·JPA·web·security |
-| `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith |
+| `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith core (`@ApplicationModule` 선언용 `spring-modulith-api`는 compileOnly로 허용) |
 | `gateway:*` | 횡단관심사 정책 | 인증/인가(`auth`), 요청 추적·access log(`logging`) | 도메인 규칙, 영속화 |
 | `infrastructure:*` | 외부 기술(구현 세부) | `{Domain}Repository`/`{Domain}Client` 구현, JPA Entity·Flyway(`db`), 외부 API 어댑터(`client`), 아웃박스 릴레이(`outbox`) | 비즈니스 규칙, 도메인 진입점 |
 
@@ -182,7 +182,7 @@ core:domain:{도메인} ↛ core:domain:{다른도메인}    (금지)
 core:common → (프로젝트 내 의존 없음)
 ```
 
-- `core:domain:{도메인}`은 `core:common`에만 의존한다. 다른 도메인·web·security·JPA·Modulith에는 의존하지 않는다. Spring은 DI용 `spring-context`, 트랜잭션·이벤트 리스너용 `spring-tx`만 쓴다.
+- `core:domain:{도메인}`은 런타임으로 `core:common`에만 의존한다. 다른 도메인·web·security·JPA·**Modulith core**에는 의존하지 않는다. Spring은 DI용 `spring-context`, 트랜잭션·이벤트 리스너용 `spring-tx`만 쓰고, `@ApplicationModule` 경계 선언용 `spring-modulith-api`만 `compileOnly`로 둔다(4-3절·377줄 표).
 - `infrastructure:*`는 각 도메인의 공개 인터페이스를 구현하므로 해당 `core:domain:{도메인}`에 의존하되(단 `outbox` 제외), 도메인의 `service.impl`에는 접근하지 않는다.
 - `core:common`은 어떤 도메인 개념도 담지 않는다(`{Domain}Id` 같은 값 타입 금지). 순수 기술 어휘 + 인증 추상(PrincipalProvider·Role·Department) + 크로스 도메인 이벤트 타입 + 아웃박스 포트만 둔다.
 - 모듈 간 의존은 원칙적으로 `implementation`을 쓴다. `api`로 노출하면 전이 의존으로 레이어가 오염된다.
