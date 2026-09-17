@@ -13,6 +13,7 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferRequest;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TossTransferLinkGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -60,7 +61,8 @@ public class AdminFeeController {
     @PutMapping("/link")
     public ApiResponse<FeeLinkUpdateResponse> updateLink(@Valid @RequestBody FeeLinkUpdateRequest request) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        configService.upsertValue(FEE_TRANSFER_LINK_KEY, request.transferLinkUrl());
-        return ApiResponse.success(FeeLinkUpdateResponse.of(request.transferLinkUrl()));
+        String transferLinkUrl = TossTransferLinkGenerator.generate(request.bank(), request.accountNo(), request.amount());
+        configService.upsertValue(FEE_TRANSFER_LINK_KEY, transferLinkUrl);
+        return ApiResponse.success(FeeLinkUpdateResponse.of(transferLinkUrl));
     }
 }
