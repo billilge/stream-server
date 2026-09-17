@@ -3,17 +3,21 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.ApiResponse;
 import kr.ac.kookmin.stream.PageResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAmountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeLinkUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAmountUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeLinkUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.ConfigService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.TossTransferLinkGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,8 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/admin/fee")
 @RequiredArgsConstructor
 public class AdminFeeController {
-
-    private static final String FEE_TRANSFER_LINK_KEY = "FEE_TRANSFER_LINK";
 
     private final ConfigService configService;
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
@@ -54,15 +56,25 @@ public class AdminFeeController {
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        StudentTransferStatus transferRequest = adminFeeReviewUseCase.review(feeId, request.status());
-        return ApiResponse.success(FeeStatusUpdateResponse.from(transferRequest));
+        StudentTransferStatus transferStatus = adminFeeReviewUseCase.review(feeId, request.status());
+        return ApiResponse.success(FeeStatusUpdateResponse.from(transferStatus));
     }
 
     @PutMapping("/link")
     public ApiResponse<FeeLinkUpdateResponse> updateLink(@Valid @RequestBody FeeLinkUpdateRequest request) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        String transferLinkUrl = TossTransferLinkGenerator.generate(request.bank(), request.accountNo(), request.amount());
-        configService.upsertValue(FEE_TRANSFER_LINK_KEY, transferLinkUrl);
-        return ApiResponse.success(FeeLinkUpdateResponse.of(transferLinkUrl));
+        configService.upsertValue(FeeConfigKeys.TRANSFER_BANK, request.bank());
+        configService.upsertValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO, request.accountNo());
+        return ApiResponse.success(FeeLinkUpdateResponse.of(request.bank(), request.accountNo()));
+    }
+
+    @PutMapping("/amount")
+    public ApiResponse<FeeAmountUpdateResponse> updateAmount(@RequestBody FeeAmountUpdateRequest request) {
+        departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
+        if (request.amount() == null || request.amount() <= 0) {
+            throw new BusinessException(FeeErrorCode.INVALID_FEE_AMOUNT);
+        }
+        configService.upsertValue(FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(request.amount()));
+        return ApiResponse.success(FeeAmountUpdateResponse.of(request.amount()));
     }
 }
