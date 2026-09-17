@@ -19,6 +19,9 @@ public record NoticeCursor(boolean pinned, LocalDateTime createdAt, Long id, Not
     public static NoticeCursor from(String raw) {
         try {
             List<String> parts = Cursor.parseParts(raw, PART_COUNT, NoticeErrorCode.NOTICE_INVALID_CURSOR);
+            if (!parts.get(0).equals("true") && !parts.get(0).equals("false")) {
+                throw new BusinessException(NoticeErrorCode.NOTICE_INVALID_CURSOR);
+            }
             boolean pinned = Boolean.parseBoolean(parts.get(0));
             LocalDateTime createdAt = LocalDateTime.parse(parts.get(1));
             Long id = Long.valueOf(parts.get(2));
