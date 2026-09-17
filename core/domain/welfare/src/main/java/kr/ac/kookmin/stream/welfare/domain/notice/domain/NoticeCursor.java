@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.common.Cursor;
 public record NoticeCursor(boolean pinned, LocalDateTime createdAt, Long id, NoticeCategory category)
     implements Cursor {
 
+    private static final String JOIN = "|";
     private static final int PART_COUNT = 4;
     private static final String NO_CATEGORY = "-";
 
@@ -29,12 +30,8 @@ public record NoticeCursor(boolean pinned, LocalDateTime createdAt, Long id, Not
     }
 
     @Override
-    public List<String> toParts() {
-        return List.of(
-            String.valueOf(pinned),
-            createdAt.toString(),
-            String.valueOf(id),
-            category == null ? NO_CATEGORY : category.name()
-        );
+    public String format() {
+        String categoryPart = category == null ? NO_CATEGORY : category.name();
+        return pinned + JOIN + createdAt + JOIN + id + JOIN + categoryPart;
     }
 }

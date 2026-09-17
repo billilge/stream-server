@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.common.Cursor;
  */
 public record EventCursor(LocalDateTime eventStartAt, Long eventId) implements Cursor {
 
+    private static final String JOIN = "|";
     private static final int PART_COUNT = 2;
 
     public static EventCursor of(Event event) {
@@ -30,7 +31,7 @@ public record EventCursor(LocalDateTime eventStartAt, Long eventId) implements C
     }
 
     @Override
-    public List<String> toParts() {
-        return List.of(eventStartAt.toString(), String.valueOf(eventId));
+    public String format() {
+        return eventStartAt + JOIN + eventId;
     }
 }

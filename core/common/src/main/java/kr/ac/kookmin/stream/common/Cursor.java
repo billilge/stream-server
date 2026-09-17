@@ -2,15 +2,12 @@ package kr.ac.kookmin.stream.common;
 
 import java.util.List;
 
-// keyset 커서 record가 구현하는 공통 계약. 각 커서는 자기 필드를 문자열 리스트로 바꾸는 방법만 알면 되고,
-// 그 리스트를 합치고/나누고/개수를 검증하는 부분은 여기서 공유한다.
+// keyset 커서 record가 구현하는 공통 계약. format() 시그니처를 강제해 구현체마다 이름이
+// 갈리는 걸 막고, 문자열을 나누고/개수를 검증하는 부분(파싱 실패 처리)만 공유한다.
+// 필드 구성이 구현체마다 달라 join(포맷팅) 자체는 공유하지 않는다.
 public interface Cursor {
 
-    List<String> toParts();
-
-    default String format() {
-        return String.join("|", toParts());
-    }
+    String format();
 
     static List<String> parseParts(String raw, int expectedCount, ErrorCode invalidCursorError) {
         String[] parts = raw.split("\\|", -1);
