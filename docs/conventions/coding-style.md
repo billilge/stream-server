@@ -357,6 +357,7 @@ public class AppMemberController {
 ### 2-9. UseCase (교차 도메인 조합)
 
 - **서로 다른 도메인의 `{Domain}Service` 2개 이상**을 조합할 때만 만든다. `api:{client}-api`에 두고 공개 `{Domain}Service`만 조합한다.
+- **`{도메인}` 아래 `usecase` 하위 패키지에 둔다**(`{basePackage}.api.{client}.{팀}.{도메인}.usecase`, `request`/`response`와 동일 계층, `architecture.md` 2-2절). 컨트롤러는 `{도메인}` 패키지 바로 아래 있으므로 UseCase와 계층이 분리된다.
 - 트랜잭션은 원자성이 필요한 흐름에만. 조회 조합은 걸지 않거나 `readOnly`, 원자적 쓰기에만 `@Transactional`(`architecture.md` 6-1절).
 
 ```java

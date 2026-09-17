@@ -84,7 +84,7 @@ root
 
 - **클라이언트 모듈의 베이스 패키지는 `{basePackage}.api.{client}`** 다(`{client}` = `app`/`admin`). `common-api`만 `{basePackage}` 루트에 공통 인프라를 둔다.
 - 그 아래를 **`{팀}.{도메인}`** 으로 나눈다. `{팀}`은 bounded context(예: `welfare`), `{도메인}`은 그 팀이 소유한 개별 도메인(예: `notice`)이다 — `core:domain:{팀}` 모듈의 `domain/{도메인}` 구조(4-3절)를 프레젠테이션에서도 그대로 미러링한다.
-- **DTO는 `{도메인}` 아래 `request`/`response` 하위 패키지로 분리**한다. 컨트롤러는 `{도메인}` 패키지 바로 아래 둔다.
+- **DTO는 `{도메인}` 아래 `request`/`response` 하위 패키지로, 교차 도메인 `UseCase`는 `{도메인}` 아래 `usecase` 하위 패키지로 분리**한다. 컨트롤러는 `{도메인}` 패키지 바로 아래 둔다.
 - **클라이언트 전역 공통물**(예: `AppApiUser`)은 클라이언트 베이스 패키지에, 그 부속 인프라(ArgumentResolver 등)는 `resolver` 같은 용도별 하위 패키지에 둔다.
 - 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다. 팀별 파일이 서로 겹치지 않게 한다.
 - 여러 팀이 같은 파일을 편집하는 지점은 **라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다. 보안 설정(`SecurityConfig`의 role→URL 인가)은 `gateway:auth`가 소유한다.
@@ -333,7 +333,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 
 교차 도메인 조회·쓰기 흐름은 presentation의 `{Feature}UseCase`가 여러 도메인의 공개 `{Domain}Service`를 조합해 처리한다.
 
-- **`api:*` 모듈에 둔다.** `core`에는 두지 않는다.
+- **`api:*` 모듈의 `{도메인}.usecase` 패키지에 둔다.** `core`에는 두지 않는다(패키지 규칙은 2-2절).
 - 공개 `{Domain}Service`만 조합한다. `{Domain}Repository`·`service.impl`에는 접근하지 않는다.
 - Controller는 UseCase 하나만 참조한다: `Controller → UseCase → 각 도메인 Service`.
 - 서로 다른 도메인의 Service 2개 이상을 조합할 때만 UseCase를 만든다. **단일 도메인 흐름은 Controller가 그 `{Domain}Service`를 직접 참조**한다.
