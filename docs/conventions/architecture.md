@@ -80,43 +80,71 @@ root
 
 ### 2-2. 프레젠테이션 레이어 분리 축 — 클라이언트 기준
 
-`api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) 단위 패키지**로 가른다.
+`api:*`는 **클라이언트(admin/app)를 모듈 경계**로 삼는다(팀·도메인이 아니라). 팀 소유권은 모듈을 쪼개지 않고 **모듈 내부를 팀(bounded context) → 도메인 단위 패키지**로 가른다.
 
-- `admin-api`·`app-api` 내부를 **팀(bounded context) 단위 패키지**로 나눠 팀별 파일이 서로 겹치지 않게 한다. 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다.
+- **클라이언트 모듈의 베이스 패키지는 `{basePackage}.api.{client}`** 다(`{client}` = `app`/`admin`). `common-api`만 `{basePackage}` 루트에 공통 인프라를 둔다.
+- 그 아래를 **`{팀}.{도메인}`** 으로 나눈다. `{팀}`은 bounded context(예: `welfare`), `{도메인}`은 그 팀이 소유한 개별 도메인(예: `notice`)이다 — `core:domain:{팀}` 모듈의 `domain/{도메인}` 구조(4-3절)를 프레젠테이션에서도 그대로 미러링한다.
+- **DTO는 `{도메인}` 아래 `request`/`response` 하위 패키지로 분리**한다. 컨트롤러는 `{도메인}` 패키지 바로 아래 둔다.
+- **클라이언트 전역 공통물**(예: `AppApiUser`)은 클라이언트 베이스 패키지에, 그 부속 인프라(ArgumentResolver 등)는 `resolver` 같은 용도별 하위 패키지에 둔다.
+- 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다. 팀별 파일이 서로 겹치지 않게 한다.
 - 여러 팀이 같은 파일을 편집하는 지점은 **라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다. 보안 설정(`SecurityConfig`의 role→URL 인가)은 `gateway:auth`가 소유한다.
 - admin 별도 배포가 필요해지면 `admin-api` + 필요한 도메인을 조립하는 bootstrap을 추가한다(현재는 단일 bootstrap).
 
 ```
 api/
 ├── common-api              # 여러 팀이 공유하는 유일한 지점 (라우팅·응답/예외)
+│   └── {basePackage}                   # WebMvcConfig, ApiResponse, GlobalExceptionHandler, ApiUser
 ├── admin-api               # ADMIN /v1/admin/**
-│   └── {basePackage}.{팀}       # 팀(bounded context) 패키지 = 소유 단위
+│   └── {basePackage}.api.admin
+│       ├── (클라이언트 공통물)              # AdminApiUser 등
+│       ├── resolver/                   # ArgumentResolver 등 부속 인프라
+│       └── {팀}/{도메인}                 # 팀(bounded context) → 도메인 = 소유 단위
 └── app-api                 # STUDENT /v1/app/**
-    └── {basePackage}.{팀}
+    └── {basePackage}.api.app
+        ├── (클라이언트 공통물)              # AppApiUser 등
+        ├── resolver/
+        └── {팀}/{도메인}
 ```
 
-팀은 `core`(auth·member)·`event`·`internal`·`welfare` 넷이다. 구체 예시 — `core` 팀이 auth·member 두 도메인을 소유하고, `welfare` 팀이 대여·회비·공지를 소유하며, admin·app 양쪽에 각자의 컨트롤러를 두는 모습:
+팀은 `core`(auth·member)·`event`·`internal`·`welfare` 넷이다. 구체 예시 — `core` 팀이 auth·member 두 도메인을, `welfare` 팀이 대여·회비·공지를 소유하며, admin·app 양쪽에 각자의 컨트롤러를 두는 모습:
 
 ```
 api/
 ├── common-api
-│   └── {basePackage}                      # WebMvcConfig, ApiResponse, GlobalExceptionHandler
+│   └── {basePackage}                          # WebMvcConfig, ApiResponse, GlobalExceptionHandler
 ├── admin-api
-│   └── {basePackage}
-│       ├── core                           # core 팀 (auth·member)
-│       │   ├── AdminMemberController       #   운영진 회원 관리
-│       │   └── AdminMemberResponse
-│       └── welfare                         # welfare 팀 (대여·회비·공지)
-│           ├── AdminRentalController       #   대여 승인·반납 처리
-│           └── AdminRentalApproveRequest
+│   └── {basePackage}.api.admin
+│       ├── AdminApiUser                       # 클라이언트 공통물
+│       ├── resolver
+│       │   └── AdminApiUserArgumentResolver
+│       ├── core                               # core 팀 (auth·member)
+│       │   └── member
+│       │       ├── AdminMemberController       #   운영진 회원 관리
+│       │       ├── request
+│       │       │   └── MemberRegisterRequest
+│       │       └── response
+│       │           └── MemberResponse
+│       └── welfare                            # welfare 팀 (대여·회비·공지)
+│           └── rental
+│               ├── AdminRentalController       #   대여 승인·반납 처리
+│               └── request
+│                   └── RentalApproveRequest
 └── app-api
-    └── {basePackage}
-        ├── core                           # core 팀 (auth·member)
-        │   ├── AppAuthController           #   로그인/토큰
-        │   └── AppMemberController         #   내 정보
-        └── welfare                         # welfare 팀 (대여·회비·공지)
-            ├── AppRentalController         #   대여 신청
-            └── AppRentalApplyRequest
+    └── {basePackage}.api.app
+        ├── AppApiUser
+        ├── resolver
+        │   └── AppApiUserArgumentResolver
+        ├── core                               # core 팀 (auth·member)
+        │   ├── auth
+        │   │   └── AppAuthController           #   로그인/토큰
+        │   └── member
+        │       └── AppMemberController         #   내 정보
+        └── welfare                            # welfare 팀 (대여·회비·공지)
+            └── notice
+                ├── AppNoticeController         #   공지 조회
+                └── response
+                    ├── NoticeDetailResponse
+                    └── NoticeListItemResponse
 ```
 
 - 한 팀 패키지(`core`, `welfare`)의 파일은 그 팀만 건드린다 — admin·app에 흩어져 있어도 소유는 팀 단위다.

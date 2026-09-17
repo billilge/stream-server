@@ -21,6 +21,7 @@ Business는 공개 인터페이스 + `service.impl` 구현체로 구성한다. �
 | Data Access | Repository 인터페이스 | `{Domain}Repository` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Repository 구현체 | `{Domain}RepositoryImpl` | `infrastructure:db` |
 | Data Access | JPA Repository | `{Domain}JpaRepository` | `infrastructure:db` |
+| Data Access | 조회 전용 프로젝션 | `{조회내용}Projection` (예: `EventApplicantCountProjection`) | `infrastructure:db` |
 | Data Access | 외부 API 클라이언트 인터페이스 | `{Domain}Client` | `core:domain:{모듈}` `domain/{도메인}/repository` (공개) |
 | Data Access | Client 구현체 | `{Domain}ClientImpl` | `infrastructure:client` |
 
@@ -44,7 +45,7 @@ public record Member(
 
 ### 2-2. DTO / Command
 
-- Request/Response DTO는 `record`(`api:{client}-api`).
+- Request/Response DTO는 `record`(`api:{client}-api`). 각 도메인 패키지 아래 `request`/`response` 하위 패키지로 나눠 둔다(`{basePackage}.api.{client}.{팀}.{도메인}.{request|response}`, `architecture.md` 2-2절).
 - Request DTO를 Service로 그대로 넘기지 않는다. `toCommand()`로 Command(`core:domain`)로 변환한다.
 
 ```java
@@ -131,10 +132,11 @@ public final class ApiResponse<T> {
 | 오프셋 | 페이지 번호·전체 개수·전체 페이지 필요 | `PageResult<T>` / `PageResponse<T>` |
 
 - 커서 기반 응답 필드는 항상 `content`/`hasNext`/`nextCursor`로 통일한다.
+- `nextCursor`는 **클라이언트에게 불투명한 문자열**이다. 정렬 키가 여러 개인 keyset 커서를 담아야 하므로 도메인이 `{Domain}Cursor` record로 정렬 키와 그 문자열 표현(`format()`/`from(String)`)을 소유하고, Base64 URL-safe 인코딩은 웹 계층에서 `CursorCodec`(`api:common-api`)으로 처리한다.
 
 ```java
 // core:common
-public record CursorSliceResult<T>(List<T> content, boolean hasNext, Long nextCursor) {}
+public record CursorSliceResult<T>(List<T> content, boolean hasNext, String nextCursor) {}
 public record PageResult<T>(List<T> content, int page, int size, long totalCount, int totalPage) {}
 ```
 
@@ -239,6 +241,37 @@ public class MemberRepositoryImpl implements MemberRepository {
 }
 ```
 
+**조회 전용 프로젝션** — 일부 컬럼이나 집계 결과만 필요하면 `record`로 받고 JPQL 생성자 표현식으로 채운다. `List<Object[]>`는 무엇이 담겼는지 드러나지 않아 쓰지 않는다.
+
+- 이름은 `{조회내용}Projection`으로 끝낸다. `Row`·`Dto`는 쓰지 않는다.
+- `infrastructure:db`에 두고 `core:domain` 밖으로 내보내지 않는다. 도메인 변환은 `{Domain}RepositoryImpl`이 한다.
+
+```java
+// infrastructure:db
+public record EventApplicantCountProjection(Long eventId, Long applicantCount) {}
+
+@Query("""
+    SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountProjection(a.eventId, COUNT(a))
+    FROM EventApplicationJpaEntity a
+    WHERE a.eventId IN :eventIds
+    GROUP BY a.eventId
+    """)
+List<EventApplicantCountProjection> countApplicantsByEventIds(@Param("eventIds") List<Long> eventIds);
+```
+
+**레포지토리는 조합하지 않는다** — 여러 조회 결과를 짝짓는 일은 `{Domain}ServiceImpl`이 한다. 레포지토리는 각각 그대로 돌려준다. 그래야 조합을 DB 없이 단위 테스트할 수 있고, 호출부가 필요한 조회만 고를 수 있다.
+
+```java
+// ❌ 레포지토리가 행사와 신청자 수를 짝지어 반환
+CursorSliceResult<EventApplicantCount> findPublishedSlice(...);
+
+// ✅ 각각 반환하고 서비스가 조합
+CursorSliceResult<Event> findPublishedSlice(...);
+Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
+```
+
+---
+
 ### 2-7. Business Layer (Service)
 
 - `{Domain}Service`는 공개 인터페이스(`service`), `{Domain}ServiceImpl`는 구현체(`service.impl`). `service.impl` 안의 클래스는 구현체·협력 객체 모두 **package-private**으로 선언한다(package-private `@Service`도 빈 등록됨). ArchUnit(`DomainImplAccessTests`)이 public 클래스와 외부 참조를 잡는다.
@@ -285,7 +318,7 @@ class MemberServiceImpl implements MemberService {
 ### 2-8. Controller
 
 - role 전용 `ApiUser`(`config-and-auth.md`)와 `{Domain}Service`를 주입받는다. 단일 도메인 흐름은 Controller가 직접 처리한다.
-- 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 팀 패키지에 둔다(`architecture.md` 2-2절).
+- 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 `{basePackage}.api.{client}.{팀}.{도메인}` 패키지 바로 아래 둔다(DTO는 그 아래 `request`/`response`로 분리, `architecture.md` 2-2절).
 
 ```java
 // api:admin-api — 운영진 회원 등록
@@ -434,6 +467,53 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 # lombok.config (루트)
 config.stopBubbling = true
 lombok.copyableAnnotations += org.springframework.beans.factory.annotation.Qualifier
+```
+
+### 2-12. Client (외부 스토리지·API 클라이언트)
+
+Repository(2-6절)와 같은 구조다 — `core:domain`에 인터페이스(공개), `infrastructure:client`에 구현체.
+
+```java
+// core:domain:internal — domain/file/client (공개)
+public interface FileStorageClient {
+    UploadUrl issuePresignedUrl(String fileKey, String contentType);
+    void write(String fileKey, InputStream content);
+    void deleteObject(String fileKey);
+}
+```
+
+- **구현체가 여러 개이고 그중 일부 메서드가 특정 구현체에서 의미가 없으면, 인터페이스를 쪼개지 않고 그 구현체에서 `UnsupportedOperationException` + 사유 주석으로 막는다.** 인터페이스 분리는 그 구현체가 계속 쓰일 때만 이득이 크다 — 임시 구현체처럼 나중에 통째로 걷어낼 코드라면 지금 쪼개봤자 걷어낼 때 그 분리도 같이 없어진다.
+
+```java
+// infrastructure:client — S3FileStorageClient
+// S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일 바이트를 받을 일이 없다
+@Override
+public void write(String fileKey, InputStream content) {
+    throw new UnsupportedOperationException("S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일을 받지 않는다");
+}
+```
+
+- **한 포트에 구현체가 여러 개면 `@ConditionalOnProperty`로 하나만 Bean으로 띄운다**(`@Profile`이 아니라 — 로컬/운영을 나누는 게 아니라 같은 환경 안에서 설정값으로 고르는 것이므로).
+
+```java
+@Component
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
+public class S3FileStorageClient implements FileStorageClient { ... }
+
+@Component
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
+public class LocalFileStorageClient implements FileStorageClient { ... }
+```
+
+- **임시 구현체(추후 다른 구현체로 완전히 교체될 코드)에는 "무엇으로 전환하면 이 코드를 지운다"는 클래스 주석을 남긴다.** 그 임시 구현체에 딸린 전용 엔드포인트·메서드(예: 로컬 전용 업로드 수신 API)도 같은 문구로 표시해서, 실제 전환 작업을 할 때 검색 한 번으로 같이 지울 대상을 찾을 수 있게 한다.
+
+```java
+/**
+ * 로컬 디스크 기반 임시 구현체. S3 연동 시 이 클래스와 "임시 로컬 업로드 엔드포인트"를 함께 제거한다.
+ */
+@Component
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
+public class LocalFileStorageClient implements FileStorageClient { ... }
 ```
 
 ---

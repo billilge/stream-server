@@ -6,12 +6,14 @@ archunitVersion = "1.3.0"
 junitBomVersion = "6.0.0"
 lombokVersion = "1.18.36"
 springdocVersion = "3.1.1"
+awsSdkVersion = "2.54.15"
 
 [libraries]
 # BOMs — import as `platform(...)` in modules that don't apply the Boot plugin directly
 springBootDependenciesBom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBootVersion" }
 springModulithBom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "springModulithVersion" }
 junitBom = { module = "org.junit:junit-bom", version.ref = "junitBomVersion" }
+awsSdkBom = { module = "software.amazon.awssdk:bom", version.ref = "awsSdkVersion" }
 
 # Spring Boot starters (version managed by springBootDependenciesBom / the Boot plugin)
 springBootStarter = { module = "org.springframework.boot:spring-boot-starter" }
@@ -40,6 +42,8 @@ jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }
+
+awsS3 = { module = "software.amazon.awssdk:s3" }
 
 jjwtApi = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwtVersion" }
 jjwtImpl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwtVersion" }
