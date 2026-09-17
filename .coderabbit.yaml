@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+# CodeRabbit 설정. 규칙 근거는 docs/conventions/* 문서.
+language: "ko-KR"
+tone_instructions: "간결하고 근거 중심으로 리뷰한다. 변경된 범위에 집중하고 임의의 리팩토링은 권하지 않는다. 컨벤션 위반은 docs/conventions 문서를 근거로 지적한다."
+
+reviews:
+  profile: "chill"
+  high_level_summary: false  # PR 본문에 요약 섹션을 추가하지 않는다
+  changed_files_summary: true
+  review_status: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+  path_filters:
+    - "!**/build/**"
+    - "!**/.gradle/**"
+    - "!gradle/wrapper/**"
+  path_instructions:
+    - path: "**/*.java"
+      instructions: |
+        coding-style.md 기준:
+        - 객체는 new 대신 정적 팩토리 메서드로 생성하고 생성자는 private(프레임워크가 요구하면 protected). Lombok @RequiredArgsConstructor로 생성자 주입.
+        - 도메인 객체/VO/DTO는 record. Request DTO는 Service에 그대로 넘기지 말고 toCommand()로 Command(core:domain)로 변환한다.
+        - 네이밍: {Client}{Domain}Controller, {Domain}Service/{Domain}ServiceImpl, {Feature}UseCase, {Domain}Repository/{Domain}Client.
+        error-handling.md 기준:
+        - 예외는 BusinessException 계층 + ErrorCode로 던진다. ErrorCode/ErrorStatus는 core:common, 도메인 ErrorCode는 해당 core:domain에 둔다. Spring HttpStatus를 직접 쓰지 않는다.
+    - path: "api/**/*.java"
+      instructions: |
+        프레젠테이션 레이어(architecture.md 2-2·5·6-1절):
+        - 패키지는 {basePackage}.api.{client}.{팀}.{도메인}. Controller는 도메인 패키지 바로 아래, Request/Response DTO는 그 아래 request/response 하위 패키지에 둔다.
+        - 교차 도메인 UseCase는 {도메인}.usecase 하위 패키지(request/response와 동일 계층)에 둔다. 서로 다른 도메인 Service 2개 이상을 조합할 때만 만들고, 단일 도메인 흐름은 Controller가 {Domain}Service를 직접 호출한다.
+        - Controller/UseCase는 공개 {Domain}Service만 호출하고 {Domain}Repository·service.impl에는 접근하지 않는다.
+        - 트랜잭션은 원자성이 필요한 쓰기 흐름의 UseCase 메서드에만 @Transactional. 조회 조합에는 걸지 않는다.
+    - path: "core/domain/**/*.java"
+      instructions: |
+        도메인 레이어(architecture.md 4-3절):
+        - 패키지는 domain/{도메인}/{domain|repository|service|service.impl}. 도메인 객체만 있어도 계층 패키지를 생략하지 않는다.
+        - service.impl 안의 클래스는 구현체·협력 객체 모두 package-private으로 선언한다(public 금지).
+        - 다른 core:domain 도메인에 직접 의존하지 않는다. web·security·JPA·Modulith core에 런타임 의존하지 않고 spring-context/spring-tx만 쓴다. Modulith는 package-info의 @ApplicationModule(type = OPEN) 경계 선언용 spring-modulith-api를 compileOnly로만 두고, 경계 검증은 bootstrap 테스트가 담당한다.
+        - 트랜잭션 경계는 Service 메서드에 둔다. 조회 전용은 @Transactional(readOnly = true), UseCase가 감쌀 수 있게 기본 전파(REQUIRED)를 쓴다. REQUIRES_NEW 금지.
+    - path: "infrastructure/db/**/*.java"
+      instructions: |
+        영속화 레이어: JPA Entity·RepositoryImpl는 여기에만 둔다. 공개 {Domain}Repository를 구현하되 도메인의 service.impl에는 접근하지 않는다.
+    - path: "infrastructure/db/src/main/resources/db/migration/**"
+      instructions: |
+        Flyway 마이그레이션(flyway-migration.md) 규칙을 따른다. 이미 적용된 마이그레이션 파일은 수정하지 말고 새 버전 파일로 추가한다. MySQL 기준.
+
+chat:
+  auto_reply: true
