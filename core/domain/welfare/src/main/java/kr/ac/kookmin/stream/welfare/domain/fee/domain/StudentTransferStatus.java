@@ -40,7 +40,11 @@ public class StudentTransferStatus {
 
     // 확인 요청(POST /v1/app/fee) 시각은 별도 컬럼 없이 row의 created_at(최초 생성) 또는
     // 재요청 시점의 updated_at으로 갈음한다 — student_transfer_statuses 테이블에 requested_at 컬럼을 두지 않기로 했다(ERD 기준).
+    // PAID는 최종 상태다 — 이미 승인된 회원이 다시 요청해도 상태를 되돌리지 않고 그대로 반환한다.
     public StudentTransferStatus requestConfirmation() {
+        if (status == TransferStatus.PAID) {
+            return this;
+        }
         return new StudentTransferStatus(id, memberId, TransferStatus.PENDING, null, createdAt, updatedAt);
     }
 
