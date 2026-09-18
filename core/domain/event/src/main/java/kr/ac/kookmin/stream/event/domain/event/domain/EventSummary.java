@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 행사 목록 한 건. 모집 상태와 마감까지 남은 일수는 저장값이 아니라 조회 시점 기준으로 계산한다.
@@ -26,15 +25,11 @@ public record EventSummary(
             event.getTitle(),
             event.getTarget(),
             event.getEventStartAt(),
-            thumbnailFileIdOf(event.getImageIds()),
+            event.thumbnailFileId(),
             event.getApplyStartAt(),
             event.getApplyEndAt(),
             recruitStatus,
             event.daysUntilDeadline(now, recruitStatus)
         );
-    }
-
-    private static Long thumbnailFileIdOf(List<Long> imageIds) {
-        return imageIds == null || imageIds.isEmpty() ? null : imageIds.getFirst();
     }
 }

@@ -13,6 +13,7 @@ import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
@@ -188,6 +189,28 @@ class EventServiceImplTest {
 
         @Override
         public List<EventApplicationAnswer> saveAnswers(List<EventApplicationAnswer> answers) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Event> findAllByIds(List<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplication> findApplicationSlice(
+            Long memberId, EventApplicationCursor cursor, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<EventApplication> findApplicationByIdAndMemberId(
+            Long applicationId, Long memberId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
             throw new UnsupportedOperationException();
         }
     }
