@@ -15,6 +15,7 @@ import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.security.DepartmentAccessChecker;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.Bank;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -68,9 +69,10 @@ public class AdminFeeController {
     @PutMapping("/link")
     public ApiResponse<FeeLinkUpdateResponse> updateLink(@Valid @RequestBody FeeLinkUpdateRequest request) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_BANK, request.bank());
+        Bank bank = Bank.from(request.bank());
+        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_BANK, bank.displayName());
         adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO, request.accountNo());
-        return ApiResponse.success(FeeLinkUpdateResponse.of(request.bank(), request.accountNo()));
+        return ApiResponse.success(FeeLinkUpdateResponse.of(bank.displayName(), request.accountNo()));
     }
 
     @PutMapping("/amount")
