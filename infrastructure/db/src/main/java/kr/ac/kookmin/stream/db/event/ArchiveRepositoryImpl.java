@@ -1,8 +1,8 @@
 package kr.ac.kookmin.stream.db.event;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
@@ -16,9 +16,14 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
     private final ArchiveJpaRepository archiveJpaRepository;
     private final ArchiveRelatedLinkJpaRepository archiveRelatedLinkJpaRepository;
 
+    /**
+     * 연도를 반개구간으로 바꿔 조회한다. {@code YEAR(start_date) = ?}처럼 컬럼에 함수를 씌우면 인덱스를
+     * 쓸 수 없어서인데, 어떻게 질의할지는 인프라의 몫이므로 변환을 여기서 한다.
+     */
     @Override
-    public List<Archive> findAllOrderByStartDateDesc(LocalDate startInclusive, LocalDate endExclusive) {
-        return archiveJpaRepository.findAllInPeriod(startInclusive, endExclusive).stream()
+    public List<Archive> findAllByYearOrderByStartDateDesc(Integer year) {
+        return archiveJpaRepository
+            .findAllInPeriod(DateUtil.startOfYear(year), DateUtil.startOfNextYear(year)).stream()
             .map(ArchiveJpaEntity::toDomain)
             .toList();
     }
