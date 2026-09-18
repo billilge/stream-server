@@ -11,6 +11,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAmountUpdateRespon
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeLinkUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
@@ -34,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminFeeController {
 
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final AdminConfigValueService adminConfigValueService;
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
@@ -47,10 +50,16 @@ public class AdminFeeController {
         @RequestParam(defaultValue = "20") int size
     ) {
         departmentAccessChecker.requireDepartment(CouncilDepartment.GENERAL_AFFAIRS);
-        PageResult<AdminFeeSearchResponse> result = adminFeeSearchUseCase.search(
+        if (page < 0 || size <= 0 || size > MAX_PAGE_SIZE) {
+            throw new BusinessException(CommonErrorCode.INVALID_INPUT);
+        }
+        PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(
             TransferStatus.from(status), keyword, page, size
         );
-        return ApiResponse.success(PageResponse.from(result, response -> response));
+        PageResult<AdminFeeSearchResponse> response = result.map(
+            pair -> AdminFeeSearchResponse.of(pair.status(), pair.member())
+        );
+        return ApiResponse.success(PageResponse.from(response, r -> r));
     }
 
     @PatchMapping("/requests/{transferStatusId}")

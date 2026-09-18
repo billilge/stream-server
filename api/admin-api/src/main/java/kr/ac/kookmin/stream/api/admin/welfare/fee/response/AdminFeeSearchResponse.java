@@ -14,16 +14,19 @@ public record AdminFeeSearchResponse(
     LocalDateTime requestedAt,
     LocalDateTime reviewedAt
 ) {
-    public static AdminFeeSearchResponse of(StudentTransferStatus request, Member member) {
+    private static final String WITHDRAWN_MEMBER_LABEL = "(탈퇴한 회원)";
+
+    // member가 null이면 탈퇴(소프트 삭제)한 회원의 과거 요청이다 — 이름/학번/학과를 알 수 없으니 표시용 placeholder를 쓴다.
+    public static AdminFeeSearchResponse of(StudentTransferStatus status, Member member) {
         return new AdminFeeSearchResponse(
-            request.getId(),
-            request.getMemberId(),
-            member.getName(),
-            member.getStudentId(),
-            member.getDepartment().name(),
-            request.getStatus().name(),
-            request.getCreatedAt(),
-            request.getReviewedAt()
+            status.getId(),
+            status.getMemberId(),
+            member != null ? member.getName() : WITHDRAWN_MEMBER_LABEL,
+            member != null ? member.getStudentId() : null,
+            member != null ? member.getDepartment().name() : null,
+            status.getStatus().name(),
+            status.getCreatedAt(),
+            status.getReviewedAt()
         );
     }
 }
