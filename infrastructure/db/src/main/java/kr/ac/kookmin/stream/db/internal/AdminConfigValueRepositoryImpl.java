@@ -18,7 +18,7 @@ public class AdminConfigValueRepositoryImpl implements AdminConfigValueRepositor
     }
 
     @Override
-    public AdminConfigValue save(AdminConfigValue configValue) {
-        return adminConfigValueJpaRepository.save(AdminConfigValueJpaEntity.from(configValue)).toDomain();
+    public void upsert(String configKey, String configValue) {
+        adminConfigValueJpaRepository.upsert(configKey, configValue);
     }
 }

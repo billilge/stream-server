@@ -23,9 +23,8 @@ class AdminConfigValueServiceImpl implements AdminConfigValueService {
     @Override
     @Transactional
     public AdminConfigValue upsertValue(String configKey, String configValue) {
-        AdminConfigValue value = adminConfigValueRepository.findByKey(configKey)
-            .map(existing -> existing.withValue(configValue))
-            .orElseGet(() -> AdminConfigValue.create(configKey, configValue));
-        return adminConfigValueRepository.save(value);
+        adminConfigValueRepository.upsert(configKey, configValue);
+        return adminConfigValueRepository.findByKey(configKey)
+            .orElseThrow(() -> new IllegalStateException("upsert 직후 값을 찾을 수 없습니다: " + configKey));
     }
 }

@@ -21,8 +21,4 @@ public class AdminConfigValue {
     public static AdminConfigValue of(Long id, String configKey, String configValue) {
         return new AdminConfigValue(id, configKey, configValue);
     }
-
-    public AdminConfigValue withValue(String newValue) {
-        return new AdminConfigValue(id, configKey, newValue);
-    }
 }
