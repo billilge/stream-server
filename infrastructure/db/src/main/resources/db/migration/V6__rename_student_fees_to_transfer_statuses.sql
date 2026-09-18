@@ -1,3 +1,10 @@
+-- V3의 idx_student_fees_member_id는 유니크가 아니라, 동시 확인요청으로 같은 member_id에
+-- row가 두 개 이상 쌓였을 수 있다. 아래 uk_student_transfer_statuses_member_id를 걸기 전에
+-- member_id별로 가장 최근(id가 가장 큰) row만 남기고 나머지를 지운다.
+DELETE t1 FROM student_fees t1
+    INNER JOIN student_fees t2
+        ON t1.member_id = t2.member_id AND t1.student_fee_id < t2.student_fee_id;
+
 ALTER TABLE student_fees
     DROP COLUMN amount,
     DROP COLUMN payment_link_url,
