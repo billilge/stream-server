@@ -23,10 +23,16 @@ public class AppArchiveController {
 
     private final ArchiveService archiveService;
 
+    /**
+     * 목록과 연도는 서로 독립적인 조회다. 연도 버튼은 필터와 무관하게 전체가 보여야 하므로 각각 조회해 응답에서 합친다.
+     */
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @GetMapping
     public ApiResponse<ArchiveListResponse> getArchives(@Valid @ModelAttribute ArchiveListRequest request) {
-        return ApiResponse.success(ArchiveListResponse.from(archiveService.getArchives(request.year())));
+        return ApiResponse.success(ArchiveListResponse.of(
+            archiveService.getArchives(request.year()),
+            archiveService.getYears()
+        ));
     }
 
     @ApiErrorCode(type = ArchiveErrorCode.class, codes = {"ARCHIVE_NOT_FOUND"})

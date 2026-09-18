@@ -6,7 +6,6 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveErrorCode;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveList;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveSummary;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
 import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
@@ -25,14 +24,17 @@ class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     @Transactional(readOnly = true)
-    public ArchiveList getArchives(Integer year) {
-        List<ArchiveSummary> archives =
-            archiveRepository.findAllOrderByStartDateDesc(startOf(year), startOf(nextYearOf(year))).stream()
-                .map(ArchiveSummary::from)
-                .toList();
+    public List<ArchiveSummary> getArchives(Integer year) {
+        return archiveRepository.findAllOrderByStartDateDesc(startOf(year), startOf(nextYearOf(year)))
+            .stream()
+            .map(ArchiveSummary::from)
+            .toList();
+    }
 
-        // 연도 버튼은 필터와 무관하게 전체가 보여야 하므로 목록과 별개로 조회한다
-        return new ArchiveList(archives, archiveRepository.findAllYearsDesc());
+    @Override
+    @Transactional(readOnly = true)
+    public List<Integer> getYears() {
+        return archiveRepository.findAllYearsDesc();
     }
 
     @Override
