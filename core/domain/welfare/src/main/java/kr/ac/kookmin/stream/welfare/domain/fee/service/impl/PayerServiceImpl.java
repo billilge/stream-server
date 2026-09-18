@@ -19,6 +19,7 @@ class PayerServiceImpl implements PayerService {
     public void sync(Long memberId, String name, String studentId, TransferStatus status) {
         if (status == TransferStatus.PAID) {
             Payer payer = payerRepository.findByMemberId(memberId)
+                .map(existing -> existing.withDetails(name, studentId, enrollmentYearOf(studentId)))
                 .orElseGet(() -> Payer.create(memberId, name, studentId, enrollmentYearOf(studentId)));
             payerRepository.save(payer);
         } else {
