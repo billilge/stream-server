@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.api.admin.welfare.fee;
+package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
@@ -23,7 +23,9 @@ public class AdminFeeReviewUseCase {
     public StudentTransferStatus review(Long transferStatusId, TransferStatus status) {
         StudentTransferStatus transferStatus = studentTransferStatusService.review(transferStatusId, status);
         Member member = memberService.getById(transferStatus.getMemberId());
+
         payerService.sync(member.getId(), member.getName(), member.getStudentId(), transferStatus.getStatus());
+
         return transferStatus;
     }
 }

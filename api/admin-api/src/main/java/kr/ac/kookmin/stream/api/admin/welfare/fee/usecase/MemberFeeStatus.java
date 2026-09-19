@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.api.admin.welfare.fee;
+package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
