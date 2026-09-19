@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
@@ -28,12 +29,12 @@ public class StudentTransferStatusRepositoryImpl implements StudentTransferStatu
     }
 
     @Override
-    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, int page, int size) {
+    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset) {
         boolean filterByMember = memberIds != null;
         List<Long> ids = filterByMember ? memberIds : List.of();
 
         Page<StudentTransferStatusJpaEntity> result = studentTransferStatusJpaRepository.search(
-            status, filterByMember, ids, PageRequest.of(page, size)
+            status, filterByMember, ids, PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(

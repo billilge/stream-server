@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -30,15 +31,18 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     @Transactional
     public StudentTransferStatus requestConfirmation(Long memberId) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
-            .map(StudentTransferStatus::requestConfirmation)
+            .map(existing -> {
+                existing.requestConfirmation();
+                return existing;
+            })
             .orElseGet(() -> StudentTransferStatus.create(memberId));
         return studentTransferStatusRepository.save(transferStatus);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, int page, int size) {
-        return studentTransferStatusRepository.search(status, memberIds, page, size);
+    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset) {
+        return studentTransferStatusRepository.search(status, memberIds, pageOffset);
     }
 
     @Override
@@ -54,6 +58,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REVIEWED);
         }
 
-        return studentTransferStatusRepository.save(transferStatus.review(status, LocalDateTime.now()));
+        transferStatus.review(status, LocalDateTime.now());
+        return studentTransferStatusRepository.save(transferStatus);
     }
 }
