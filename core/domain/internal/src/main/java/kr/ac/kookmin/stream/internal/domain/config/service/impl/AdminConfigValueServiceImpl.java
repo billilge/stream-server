@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.internal.domain.config.service.impl;
 
+import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.internal.domain.config.domain.AdminConfigValue;
 import kr.ac.kookmin.stream.internal.domain.config.repository.AdminConfigValueRepository;
@@ -26,5 +27,11 @@ class AdminConfigValueServiceImpl implements AdminConfigValueService {
         adminConfigValueRepository.upsert(configKey, configValue);
         return adminConfigValueRepository.findByKey(configKey)
             .orElseThrow(() -> new IllegalStateException("upsert 직후 값을 찾을 수 없습니다: " + configKey));
+    }
+
+    @Override
+    @Transactional
+    public void upsertValues(Map<String, String> values) {
+        values.forEach(adminConfigValueRepository::upsert);
     }
 }
