@@ -34,7 +34,10 @@ public class Payer {
     }
 
     // 이미 명부에 있는 회원의 이름·학번이 최신 값과 달라졌을 때 갱신한다.
-    public Payer withDetails(String name, String studentId, String enrollmentYear) {
-        return new Payer(id, memberId, name, studentId, enrollmentYear, true);
+    public void updateDetails(String name, String studentId, String enrollmentYear) {
+        this.name = name;
+        this.studentId = studentId;
+        this.enrollmentYear = enrollmentYear;
+        this.registered = true;
     }
 }

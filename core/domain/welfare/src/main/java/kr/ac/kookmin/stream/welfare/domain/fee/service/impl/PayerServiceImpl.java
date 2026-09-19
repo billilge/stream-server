@@ -17,14 +17,19 @@ class PayerServiceImpl implements PayerService {
     @Override
     @Transactional
     public void sync(Long memberId, String name, String studentId, TransferStatus status) {
-        if (status == TransferStatus.PAID) {
-            Payer payer = payerRepository.findByMemberId(memberId)
-                .map(existing -> existing.withDetails(name, studentId, enrollmentYearOf(studentId)))
-                .orElseGet(() -> Payer.create(memberId, name, studentId, enrollmentYearOf(studentId)));
-            payerRepository.save(payer);
-        } else {
+        if (status != TransferStatus.PAID) {
             payerRepository.deleteByMemberId(memberId);
+            return;
         }
+
+        String enrollmentYear = enrollmentYearOf(studentId);
+        Payer payer = payerRepository.findByMemberId(memberId).orElse(null);
+        if (payer == null) {
+            payer = Payer.create(memberId, name, studentId, enrollmentYear);
+        } else {
+            payer.updateDetails(name, studentId, enrollmentYear);
+        }
+        payerRepository.save(payer);
     }
 
     // 학번 앞 4자리를 입학년도로 본다 (레거시 빌릴게 백엔드의 PayerService와 동일한 규칙)
