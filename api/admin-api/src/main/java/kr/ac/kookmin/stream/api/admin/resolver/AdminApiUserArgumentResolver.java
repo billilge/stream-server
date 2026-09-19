@@ -39,6 +39,6 @@ public class AdminApiUserArgumentResolver implements ApiUserArgumentResolver {
         if (!principalProvider.roles().contains(Role.ADMIN)) {
             throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
-        return AdminApiUser.from(principalProvider.userId());
+        return AdminApiUser.from(principalProvider.userId(), principalProvider.councilDepartments());
     }
 }

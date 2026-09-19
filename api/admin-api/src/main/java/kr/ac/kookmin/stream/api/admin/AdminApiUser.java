@@ -1,6 +1,10 @@
 package kr.ac.kookmin.stream.api.admin;
 
+import java.util.Set;
 import kr.ac.kookmin.stream.ApiUser;
+import kr.ac.kookmin.stream.common.CouncilDepartment;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -12,15 +16,13 @@ import lombok.experimental.Accessors;
  */
 @Getter
 @Accessors(fluent = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AdminApiUser implements ApiUser {
 
     private final Long userId;
+    private final Set<CouncilDepartment> councilDepartments;
 
-    private AdminApiUser(Long userId) {
-        this.userId = userId;
-    }
-
-    public static AdminApiUser from(Long userId) {
-        return new AdminApiUser(userId);
+    public static AdminApiUser from(Long userId, Set<CouncilDepartment> councilDepartments) {
+        return new AdminApiUser(userId, Set.copyOf(councilDepartments));
     }
 }

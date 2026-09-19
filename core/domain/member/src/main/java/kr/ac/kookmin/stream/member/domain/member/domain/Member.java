@@ -18,7 +18,6 @@ public class Member {
     private Department department;
     private String email;
     private String fcmToken;
-    private boolean feePaid;
     private Role role;
     private CouncilDepartment councilDepartment;
 
@@ -29,10 +28,9 @@ public class Member {
         Department department,
         String email,
         String fcmToken,
-        boolean feePaid,
         Role role,
         CouncilDepartment councilDepartment
     ) {
-        return new Member(id, studentId, name, department, email, fcmToken, feePaid, role, councilDepartment);
+        return new Member(id, studentId, name, department, email, fcmToken, role, councilDepartment);
     }
 }
