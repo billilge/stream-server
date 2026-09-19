@@ -38,6 +38,14 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), message));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
+            MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
+        return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleInternal(Exception e) {
         log.error("[requestId={}, userId={}] {}",

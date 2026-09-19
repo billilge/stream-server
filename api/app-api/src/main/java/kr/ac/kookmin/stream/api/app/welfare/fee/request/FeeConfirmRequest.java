@@ -1,18 +1,11 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.GradeSemester;
 
-public record FeeConfirmRequest(
-    @NotNull(message = "학년을 입력해 주세요.")
-    @Min(value = 1, message = "학년은 1~4 사이여야 합니다.")
-    @Max(value = 4, message = "학년은 1~4 사이여야 합니다.")
-    Integer grade,
+// 학년·학기 검증은 GradeSemester.of에서 하므로, 여기서는 Bean Validation을 붙이지 않는다.
+public record FeeConfirmRequest(Integer grade, Integer semester) {
 
-    @NotNull(message = "학기를 입력해 주세요.")
-    @Min(value = 1, message = "학기는 1~2 사이여야 합니다.")
-    @Max(value = 2, message = "학기는 1~2 사이여야 합니다.")
-    Integer semester
-) {
+    public GradeSemester toGradeSemester() {
+        return GradeSemester.of(grade, semester);
+    }
 }

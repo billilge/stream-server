@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.welfare.domain.fee.domain;
+package kr.ac.kookmin.stream.welfare.domain.fee.service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
