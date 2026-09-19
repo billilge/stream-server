@@ -22,7 +22,7 @@ import org.hibernate.type.SqlTypes;
 @Table(
     name = "notices",
     indexes = {
-        @Index(name = "idx_notices_category_is_deleted", columnList = "category, is_deleted")
+        @Index(name = "idx_notices_is_deleted_pinned_created_at", columnList = "is_deleted, pinned, created_at")
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
