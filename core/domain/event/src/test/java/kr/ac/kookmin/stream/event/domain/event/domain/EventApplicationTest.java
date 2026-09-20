@@ -33,25 +33,14 @@ class EventApplicationTest {
     void cancel() {
         EventApplication application = applied();
 
-        EventApplication canceled = application.cancel(CANCELED_AT);
-
-        assertEquals(EventApplicationStatus.CANCELED, canceled.getStatus());
-        assertEquals(CANCELED_AT, canceled.getCanceledAt());
-        assertTrue(canceled.isCanceled());
-        assertEquals(application.getId(), canceled.getId());
-        assertEquals(application.getEventId(), canceled.getEventId());
-        assertEquals(application.getMemberId(), canceled.getMemberId());
-        assertEquals(application.getAppliedAt(), canceled.getAppliedAt());
-    }
-
-    @Test
-    @DisplayName("취소해도 원본 신청은 그대로 남는다")
-    void cancelDoesNotMutateOriginal() {
-        EventApplication application = applied();
-
         application.cancel(CANCELED_AT);
 
-        assertEquals(EventApplicationStatus.APPLIED, application.getStatus());
-        assertNull(application.getCanceledAt());
+        assertEquals(EventApplicationStatus.CANCELED, application.getStatus());
+        assertEquals(CANCELED_AT, application.getCanceledAt());
+        assertTrue(application.isCanceled());
+        assertEquals(102L, application.getId());
+        assertEquals(15L, application.getEventId());
+        assertEquals(1L, application.getMemberId());
+        assertEquals(APPLIED_AT, application.getAppliedAt());
     }
 }

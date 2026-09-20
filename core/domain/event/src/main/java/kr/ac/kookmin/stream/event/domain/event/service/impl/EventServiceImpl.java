@@ -154,7 +154,8 @@ class EventServiceImpl implements EventService {
             throw new BusinessException(EventErrorCode.CANCEL_DEADLINE_PASSED);
         }
 
-        eventRepository.saveApplication(application.cancel(now));
+        application.cancel(now);
+        eventRepository.saveApplication(application);
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
