@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.api.app.event.event;
 
 import jakarta.validation.Valid;
-import kr.ac.kookmin.stream.ApiErrorCode;
 import kr.ac.kookmin.stream.ApiResponse;
 import kr.ac.kookmin.stream.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
@@ -14,10 +13,8 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventApplyResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
-import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/app/events")
 @RequiredArgsConstructor
-public class AppEventController {
+public class AppEventController implements AppEventApi {
 
     private final EventService eventService;
 
@@ -54,10 +51,8 @@ public class AppEventController {
         return ApiResponse.success(CursorSliceResponse.from(result, EventListItemResponse::from));
     }
 
+    @Override
     @GetMapping("/applications")
-    // 커서 Base64 디코딩 실패는 CursorCodec이 INVALID_INPUT으로, 그 뒤 형식 오류는 EVENT_INVALID_CURSOR로 걸린다
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_CURSOR"})
     public ApiResponse<CursorSliceResponse<EventApplicationListItemResponse>> getMyApplications(
         AppApiUser apiUser,
         @Valid @ModelAttribute EventApplicationListRequest request
@@ -68,8 +63,8 @@ public class AppEventController {
             CursorSliceResponse.from(result, EventApplicationListItemResponse::from));
     }
 
+    @Override
     @GetMapping("/applications/{applicationId}")
-    @ApiErrorCode(type = EventErrorCode.class, codes = {"APPLICATION_NOT_FOUND", "EVENT_NOT_FOUND"})
     public ApiResponse<EventApplicationDetailResponse> getMyApplication(
         AppApiUser apiUser,
         @PathVariable Long applicationId
@@ -78,11 +73,8 @@ public class AppEventController {
             eventService.getMyApplication(applicationId, apiUser.userId())));
     }
 
+    @Override
     @PatchMapping("/applications/{applicationId}/cancel")
-    @ApiErrorCode(
-        type = EventErrorCode.class,
-        codes = {"APPLICATION_NOT_FOUND", "EVENT_NOT_FOUND", "ALREADY_CANCELED", "CANCEL_DEADLINE_PASSED"}
-    )
     public ApiResponse<Void> cancelApplication(
         AppApiUser apiUser,
         @PathVariable Long applicationId
