@@ -4,7 +4,7 @@ import kr.ac.kookmin.stream.ApiErrorCode;
 import kr.ac.kookmin.stream.ApiResponse;
 import kr.ac.kookmin.stream.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
-import kr.ac.kookmin.stream.api.app.event.event.request.EventApplicationListRequest;
+import kr.ac.kookmin.stream.api.app.event.event.request.EventApplicationListParams;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventApplicationDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventApplicationListItemResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
@@ -24,7 +24,7 @@ public interface AppEventApi {
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<EventApplicationListItemResponse>> getMyApplications(
         AppApiUser apiUser,
-        EventApplicationListRequest request
+        EventApplicationListParams params
     );
 
     /** 내 행사 신청 상세. 행사의 질문 전체에 이 신청의 답변을 붙여 내려준다. */

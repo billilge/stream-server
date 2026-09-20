@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import kr.ac.kookmin.stream.CursorCodec;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 
-public record EventApplicationListRequest(
+public record EventApplicationListParams(
     String cursor,
 
     @Min(value = 1, message = "조회 개수는 1 이상 100 이하여야 합니다.")

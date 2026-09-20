@@ -4,9 +4,9 @@ import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.ApiResponse;
 import kr.ac.kookmin.stream.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
-import kr.ac.kookmin.stream.api.app.event.event.request.EventApplicationListRequest;
+import kr.ac.kookmin.stream.api.app.event.event.request.EventApplicationListParams;
 import kr.ac.kookmin.stream.api.app.event.event.request.EventApplyRequest;
-import kr.ac.kookmin.stream.api.app.event.event.request.EventListRequest;
+import kr.ac.kookmin.stream.api.app.event.event.request.EventListParams;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventApplicationDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventApplicationListItemResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventApplyResponse;
@@ -46,10 +46,10 @@ public class AppEventController implements AppEventApi {
 
     @GetMapping
     public ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
-        @Valid @ModelAttribute EventListRequest request
+        @Valid @ModelAttribute EventListParams params
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
-            request.toRecruitStatus(), request.toCursor(), request.sizeOrDefault());
+            params.toRecruitStatus(), params.toCursor(), params.sizeOrDefault());
         return ApiResponse.success(CursorSliceResponse.from(result, EventListItemResponse::from));
     }
 
@@ -57,10 +57,10 @@ public class AppEventController implements AppEventApi {
     @GetMapping("/applications")
     public ApiResponse<CursorSliceResponse<EventApplicationListItemResponse>> getMyApplications(
         AppApiUser apiUser,
-        @Valid @ModelAttribute EventApplicationListRequest request
+        @Valid @ModelAttribute EventApplicationListParams params
     ) {
         CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getMyApplications(
-            apiUser.userId(), request.toCursor(), request.sizeOrDefault());
+            apiUser.userId(), params.toCursor(), params.sizeOrDefault());
         return ApiResponse.success(
             CursorSliceResponse.from(result, EventApplicationListItemResponse::from));
     }

@@ -6,7 +6,7 @@ import kr.ac.kookmin.stream.CursorCodec;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 
-public record EventListRequest(
+public record EventListParams(
     String cursor,
 
     @Min(value = 1, message = "조회 개수는 1 이상 100 이하여야 합니다.")
