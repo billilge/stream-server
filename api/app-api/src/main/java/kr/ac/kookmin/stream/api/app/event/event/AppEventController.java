@@ -16,6 +16,7 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
+import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppEventController implements AppEventApi {
 
     private final EventService eventService;
+    private final EventApplicationService eventApplicationService;
 
     @GetMapping
     public ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
@@ -57,7 +59,7 @@ public class AppEventController implements AppEventApi {
         AppApiUser apiUser,
         @Valid @ModelAttribute EventApplicationListRequest request
     ) {
-        CursorSliceResult<EventApplicationSummary> result = eventService.getMyApplications(
+        CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getMyApplications(
             apiUser.userId(), request.toCursor(), request.sizeOrDefault());
         return ApiResponse.success(
             CursorSliceResponse.from(result, EventApplicationListItemResponse::from));
@@ -70,7 +72,7 @@ public class AppEventController implements AppEventApi {
         @PathVariable Long applicationId
     ) {
         return ApiResponse.success(EventApplicationDetailResponse.from(
-            eventService.getMyApplication(applicationId, apiUser.userId())));
+            eventApplicationService.getMyApplication(applicationId, apiUser.userId())));
     }
 
     @Override
@@ -79,7 +81,7 @@ public class AppEventController implements AppEventApi {
         AppApiUser apiUser,
         @PathVariable Long applicationId
     ) {
-        eventService.cancelApplication(applicationId, apiUser.userId());
+        eventApplicationService.cancelApplication(applicationId, apiUser.userId());
         return ApiResponse.success();
     }
 
@@ -90,7 +92,7 @@ public class AppEventController implements AppEventApi {
 
     @GetMapping("/{eventId}/form")
     public ApiResponse<EventFormResponse> getApplicationForm(@PathVariable Long eventId) {
-        return ApiResponse.success(EventFormResponse.from(eventService.getApplicationForm(eventId)));
+        return ApiResponse.success(EventFormResponse.from(eventApplicationService.getApplicationForm(eventId)));
     }
 
     @PostMapping("/{eventId}/applications")
@@ -100,7 +102,7 @@ public class AppEventController implements AppEventApi {
         @Valid @RequestBody EventApplyRequest request
     ) {
         return ApiResponse.success(
-            EventApplyResponse.from(eventService.apply(eventId, apiUser.userId(), request.toCommand()))
+            EventApplyResponse.from(eventApplicationService.apply(eventId, apiUser.userId(), request.toCommand()))
         );
     }
 }
