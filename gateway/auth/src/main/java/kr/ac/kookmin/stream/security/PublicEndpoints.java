@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.security.config;
+package kr.ac.kookmin.stream.security;
 
 import java.util.Arrays;
 import java.util.List;
