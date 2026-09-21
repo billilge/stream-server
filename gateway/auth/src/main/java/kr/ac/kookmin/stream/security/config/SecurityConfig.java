@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.security.config;
 
 import kr.ac.kookmin.stream.common.Role;
+import kr.ac.kookmin.stream.security.PublicEndpoints;
 import kr.ac.kookmin.stream.security.handler.RestAccessDeniedHandler;
 import kr.ac.kookmin.stream.security.handler.RestAuthenticationEntryPoint;
 import kr.ac.kookmin.stream.security.jwt.JwtAuthFilter;

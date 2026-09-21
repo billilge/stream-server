@@ -2,7 +2,7 @@ package kr.ac.kookmin.stream;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.List;
-import kr.ac.kookmin.stream.security.config.PublicEndpoints;
+import kr.ac.kookmin.stream.security.PublicEndpoints;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.stereotype.Component;
 
