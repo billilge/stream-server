@@ -44,6 +44,7 @@ public class AppEventController implements AppEventApi {
     private final EventService eventService;
     private final EventApplicationService eventApplicationService;
 
+    @Override
     @GetMapping
     public ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
         @Valid @ModelAttribute EventListParams params
@@ -85,16 +86,19 @@ public class AppEventController implements AppEventApi {
         return ApiResponse.success();
     }
 
+    @Override
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailResponse> getEvent(@PathVariable Long eventId) {
         return ApiResponse.success(EventDetailResponse.from(eventService.getPublishedEvent(eventId)));
     }
 
+    @Override
     @GetMapping("/{eventId}/form")
     public ApiResponse<EventFormResponse> getApplicationForm(@PathVariable Long eventId) {
         return ApiResponse.success(EventFormResponse.from(eventApplicationService.getApplicationForm(eventId)));
     }
 
+    @Override
     @PostMapping("/{eventId}/applications")
     public ApiResponse<EventApplyResponse> apply(
         AppApiUser apiUser,

@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/app/fee")
 @RequiredArgsConstructor
-public class AppFeeController {
+public class AppFeeController implements AppFeeApi {
 
     private final StudentTransferStatusService studentTransferStatusService;
     private final FeeTransferUrlProvider feeTransferUrlProvider;
 
+    @Override
     @GetMapping("/me")
     public ApiResponse<FeeResponse> getFeeByMemberId(
         AppApiUser apiUser,
@@ -35,6 +36,7 @@ public class AppFeeController {
         return ApiResponse.success(FeeResponse.of(transferStatus, feeTransferUrlProvider.getTransferUrl(gradeSemester)));
     }
 
+    @Override
     @PostMapping
     public ApiResponse<FeeResponse> requestConfirmation(
         AppApiUser apiUser,

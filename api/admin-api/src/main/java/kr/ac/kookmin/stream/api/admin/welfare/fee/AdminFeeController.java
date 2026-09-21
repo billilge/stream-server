@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 import jakarta.validation.Valid;
 import java.util.Map;
 import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.PageQuery;
+import kr.ac.kookmin.stream.PageParams;
 import kr.ac.kookmin.stream.PageResponse;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.security.RequireDepartment;
@@ -37,28 +37,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/admin/fee")
 @RequiredArgsConstructor
-public class AdminFeeController {
+public class AdminFeeController implements AdminFeeApi {
 
     private final AdminConfigValueService adminConfigValueService;
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
 
+    @Override
     @GetMapping("/requests")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<PageResponse<AdminFeeSearchResponse>> getRequests(
         AdminApiUser apiUser,
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String keyword,
-        @Valid @ModelAttribute PageQuery pageQuery
+        @Valid @ModelAttribute PageParams pageParams
     ) {
         TransferStatus transferStatus = TransferStatus.from(status);
-        PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(transferStatus, keyword, pageQuery.toOffset());
+        PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(transferStatus, keyword, pageParams.toOffset());
 
         return ApiResponse.success(
                 PageResponse.from(result, (vo) -> AdminFeeSearchResponse.of(vo.status(), vo.member()))
         );
     }
 
+    @Override
     @PatchMapping("/requests/{transferStatusId}")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeStatusUpdateResponse> updateStatus(
@@ -72,6 +74,7 @@ public class AdminFeeController {
         return ApiResponse.success(FeeStatusUpdateResponse.from(reviewed));
     }
 
+    @Override
     @PutMapping("/link")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeLinkUpdateResponse> updateLink(
@@ -86,6 +89,7 @@ public class AdminFeeController {
         return ApiResponse.success(FeeLinkUpdateResponse.of(request.bank(), request.accountNo()));
     }
 
+    @Override
     @PutMapping("/amount")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeAmountUpdateResponse> updateAmount(
