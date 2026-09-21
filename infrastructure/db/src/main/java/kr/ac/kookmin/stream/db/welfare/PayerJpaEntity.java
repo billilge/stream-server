@@ -5,8 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import lombok.AccessLevel;
@@ -15,9 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(
     name = "payers",
-    indexes = {
-        @Index(name = "idx_payers_member_id", columnList = "member_id")
-    }
+    uniqueConstraints = @UniqueConstraint(name = "uk_payers_member_id", columnNames = "member_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PayerJpaEntity extends BaseTimeEntity {

@@ -14,6 +14,10 @@ public class AdminConfigValue {
     private String configKey;
     private String configValue;
 
+    public static AdminConfigValue create(String configKey, String configValue) {
+        return new AdminConfigValue(null, configKey, configValue);
+    }
+
     public static AdminConfigValue of(Long id, String configKey, String configValue) {
         return new AdminConfigValue(id, configKey, configValue);
     }
