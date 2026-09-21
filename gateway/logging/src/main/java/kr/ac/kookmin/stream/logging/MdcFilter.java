@@ -32,4 +32,9 @@ public class MdcFilter extends OncePerRequestFilter {
             MDC.clear();
         }
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return LoggingExclusions.isExcluded(request);
+    }
 }

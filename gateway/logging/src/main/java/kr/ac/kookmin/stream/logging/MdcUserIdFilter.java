@@ -34,6 +34,11 @@ public class MdcUserIdFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return LoggingExclusions.isExcluded(request);
+    }
+
     private void putUserId() {
         try {
             MDC.put(MdcKeys.USER_ID, String.valueOf(principalProvider.userId()));

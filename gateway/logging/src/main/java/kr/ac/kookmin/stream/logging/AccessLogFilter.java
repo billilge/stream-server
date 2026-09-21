@@ -38,4 +38,9 @@ public class AccessLogFilter extends OncePerRequestFilter {
                 System.currentTimeMillis() - start);
         }
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return LoggingExclusions.isExcluded(request);
+    }
 }
