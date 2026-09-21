@@ -13,7 +13,9 @@ Business는 공개 인터페이스 + `service.impl` 구현체로 구성한다. �
 | 레이어 | 역할 | 네이밍 | 위치 |
 | --- | --- | --- | --- |
 | Presentation | HTTP 요청 처리 | `{Client}{Domain}Controller` (예: `AppMemberController`, `AdminMemberController`) | `api:{client}-api` |
-| Presentation | 요청 객체 | `{Domain}{Action}Request` | `api:{client}-api` |
+| Presentation | Swagger 명세 인터페이스 | `{Client}{Domain}Api` (예: `AppMemberApi`) — 컨트롤러가 `implements`, `error-handling.md` 6절 | `api:{client}-api` |
+| Presentation | 요청 바디 객체 (`@RequestBody`) | `{Domain}{Action}Request` | `api:{client}-api` |
+| Presentation | 쿼리 파라미터 객체 (`@ModelAttribute`) | `{Domain}{Action}Params` (예: `EventListParams`, 공용 `PageParams`) | `api:{client}-api` |
 | Presentation | 응답 객체 | `{Domain}{Action}Response` | `api:{client}-api` |
 | Presentation | 교차 도메인 조합 | `{Feature}UseCase` | `api:{client}-api` |
 | Business | 공개 진입점 인터페이스 | `{Domain}Service` | `core:domain:{모듈}` `domain/{도메인}/service` (공개) |
@@ -47,6 +49,7 @@ public record Member(
 
 - Request/Response DTO는 `record`(`api:{client}-api`). 각 도메인 패키지 아래 `request`/`response` 하위 패키지로 나눠 둔다(`{basePackage}.api.{client}.{팀}.{도메인}.{request|response}`, `architecture.md` 2-2절).
 - Request DTO를 Service로 그대로 넘기지 않는다. `toCommand()`로 Command(`core:domain`)로 변환한다.
+- 접미사로 요청 형태를 구분한다: **`@RequestBody` 바디 DTO는 `Request`**, **`@ModelAttribute`로 바인딩하는 쿼리 파라미터 DTO는 `Params`**(예: `EventListParams`, `ArchiveListParams`). 파일은 둘 다 `request` 하위 패키지에 둔다. 페이지네이션 공용 파라미터는 `common-api`의 `PageParams`를 쓴다.
 
 ```java
 // api:admin-api
@@ -319,16 +322,18 @@ class MemberServiceImpl implements MemberService {
 
 - role 전용 `ApiUser`(`config-and-auth.md`)와 `{Domain}Service`를 주입받는다. 단일 도메인 흐름은 Controller가 직접 처리한다.
 - 클라이언트 접두사(`Admin`/`App`)로 컨트롤러를 구분하고, 각 클라이언트 모듈의 `{basePackage}.api.{client}.{팀}.{도메인}` 패키지 바로 아래 둔다(DTO는 그 아래 `request`/`response`로 분리, `architecture.md` 2-2절).
+- Swagger 문서용 어노테이션(`@Tag`/`@Operation`/`@ApiErrorCode`)은 짝이 되는 `{Client}{Domain}Api` 인터페이스에 모으고, 컨트롤러가 이를 `implements`한다. 각 핸들러에 `@Override`를 붙이고 컨트롤러에는 라우팅·바인딩·본문만 남긴다(`error-handling.md` 6절).
 
 ```java
-// api:admin-api — 운영진 회원 등록
+// api:admin-api — 운영진 회원 등록 (Swagger 명세는 AdminMemberApi, error-handling.md 6절)
 @RestController
 @RequestMapping("/v1/admin/members")
 @RequiredArgsConstructor
-public class AdminMemberController {
+public class AdminMemberController implements AdminMemberApi {
 
     private final MemberService memberService;
 
+    @Override
     @PostMapping
     public ApiResponse<MemberResponse> register(@Valid @RequestBody MemberRegisterRequest request) {
         Member member = memberService.register(request.toCommand());
@@ -338,14 +343,15 @@ public class AdminMemberController {
 ```
 
 ```java
-// api:app-api — 학생 내 정보 조회
+// api:app-api — 학생 내 정보 조회 (Swagger 명세는 AppMemberApi)
 @RestController
 @RequestMapping("/v1/app/members")
 @RequiredArgsConstructor
-public class AppMemberController {
+public class AppMemberController implements AppMemberApi {
 
     private final MemberService memberService;
 
+    @Override
     @GetMapping("/me")
     public ApiResponse<MemberResponse> me(StudentApiUser apiUser) {
         Member member = memberService.getById(apiUser.userId());
