@@ -1,8 +1,8 @@
-package kr.ac.kookmin.stream.internal;
+package kr.ac.kookmin.stream.api.admin.internal.file;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.internal.domain.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;

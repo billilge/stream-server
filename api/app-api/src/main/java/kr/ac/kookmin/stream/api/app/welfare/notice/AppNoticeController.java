@@ -1,9 +1,8 @@
 package kr.ac.kookmin.stream.api.app.welfare.notice;
 
-import java.awt.Cursor;
-import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.CursorCodec;
-import kr.ac.kookmin.stream.CursorSliceResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.CursorCodec;
+import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;

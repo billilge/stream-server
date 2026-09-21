@@ -1,6 +1,7 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common.config;
 
 import java.util.List;
+import kr.ac.kookmin.stream.api.common.resolver.ApiUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Configuration;

@@ -2,7 +2,7 @@ package kr.ac.kookmin.stream.api.app.event.event.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import kr.ac.kookmin.stream.CursorCodec;
+import kr.ac.kookmin.stream.api.common.CursorCodec;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 

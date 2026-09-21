@@ -1,7 +1,9 @@
-package kr.ac.kookmin.stream.internal;
+package kr.ac.kookmin.stream.api.admin.internal.file;
 
 import jakarta.validation.Valid;
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.admin.internal.file.request.FileUploadUrlIssueRequest;
+import kr.ac.kookmin.stream.api.admin.internal.file.response.FileUploadUrlIssueResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.common.PrincipalProvider;
 import kr.ac.kookmin.stream.internal.domain.file.domain.FileUploadUrlIssueResult;
 import kr.ac.kookmin.stream.internal.domain.file.service.FileService;

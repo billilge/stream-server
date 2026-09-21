@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.resolver;
 
-import kr.ac.kookmin.stream.ApiUserArgumentResolver;
+import kr.ac.kookmin.stream.api.common.resolver.ApiUserArgumentResolver;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CommonErrorCode;

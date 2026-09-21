@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.app.event.archive;
 
 import jakarta.validation.Valid;
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.request.ArchiveListParams;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveListResponse;

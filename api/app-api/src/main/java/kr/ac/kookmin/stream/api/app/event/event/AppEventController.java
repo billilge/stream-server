@@ -1,8 +1,8 @@
 package kr.ac.kookmin.stream.api.app.event.event;
 
 import jakarta.validation.Valid;
-import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.CursorSliceResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.event.request.EventApplicationListParams;
 import kr.ac.kookmin.stream.api.app.event.event.request.EventApplyRequest;

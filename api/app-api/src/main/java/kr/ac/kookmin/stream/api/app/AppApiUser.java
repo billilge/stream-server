@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.api.app;
 
-import kr.ac.kookmin.stream.ApiUser;
+import kr.ac.kookmin.stream.api.common.ApiUser;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 

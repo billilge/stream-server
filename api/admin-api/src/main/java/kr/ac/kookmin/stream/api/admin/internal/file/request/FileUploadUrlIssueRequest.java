@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.internal;
+package kr.ac.kookmin.stream.api.admin.internal.file.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

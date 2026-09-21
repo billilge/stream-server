@@ -1,5 +1,7 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common.resolver;
 
+import kr.ac.kookmin.stream.api.common.ApiUser;
+import kr.ac.kookmin.stream.api.common.config.WebMvcConfig;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 /**

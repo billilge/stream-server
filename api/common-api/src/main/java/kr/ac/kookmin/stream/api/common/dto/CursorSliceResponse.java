@@ -1,7 +1,8 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common.dto;
 
 import java.util.List;
 import java.util.function.Function;
+import kr.ac.kookmin.stream.api.common.CursorCodec;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 
 public record CursorSliceResponse<T>(List<T> content, boolean hasNext, String nextCursor) {
