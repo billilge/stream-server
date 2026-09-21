@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
     name = "event_applications",
     indexes = {
         @Index(name = "idx_event_applications_event_id_member_id", columnList = "event_id, member_id"),
-        @Index(name = "idx_event_applications_member_id", columnList = "member_id")
+        @Index(name = "idx_event_applications_member_id_applied_at", columnList = "member_id, applied_at")
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

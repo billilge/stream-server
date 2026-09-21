@@ -35,4 +35,19 @@ public class EventApplication {
     public static EventApplication create(Long eventId, Long memberId, LocalDateTime appliedAt) {
         return new EventApplication(null, eventId, memberId, EventApplicationStatus.APPLIED, appliedAt, null);
     }
+
+    /**
+     * 신청을 취소한다. 신청 기록과 제출한 답변은 지우지 않고 상태만 CANCELED로 바꾼다.
+     * 신청자 수 집계가 APPLIED만 세므로 이 상태 전환만으로 잔여 정원에 반영된다.
+     *
+     * @param canceledAt 취소 시각. 클라이언트가 보내지 않고 서버 시각으로 기록한다
+     */
+    public void cancel(LocalDateTime canceledAt) {
+        this.status = EventApplicationStatus.CANCELED;
+        this.canceledAt = canceledAt;
+    }
+
+    public boolean isCanceled() {
+        return status == EventApplicationStatus.CANCELED;
+    }
 }

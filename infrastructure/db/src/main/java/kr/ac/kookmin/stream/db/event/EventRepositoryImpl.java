@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -35,6 +36,14 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public Optional<Event> findPublishedById(Long id) {
         return eventJpaRepository.findByIdAndIsDeletedFalseAndIsPublishedTrue(id).map(EventJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<Event> findAllByIds(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return List.of();
+        }
+        return eventJpaRepository.findAllById(eventIds).stream().map(EventJpaEntity::toDomain).toList();
     }
 
     @Override
@@ -92,6 +101,33 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public EventApplication saveApplication(EventApplication application) {
         return eventApplicationJpaRepository.save(EventApplicationJpaEntity.from(application)).toDomain();
+    }
+
+    @Override
+    public List<EventApplication> findApplicationSlice(
+        Long memberId,
+        EventApplicationCursor cursor,
+        int limit
+    ) {
+        return eventApplicationJpaRepository.findSliceByMemberId(
+            memberId,
+            cursor == null ? null : cursor.appliedAt(),
+            cursor == null ? null : cursor.applicationId(),
+            Pageable.ofSize(limit)
+        ).stream().map(EventApplicationJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public Optional<EventApplication> findApplicationByIdAndMemberId(Long applicationId, Long memberId) {
+        return eventApplicationJpaRepository.findByIdAndMemberId(applicationId, memberId)
+            .map(EventApplicationJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
+        return eventApplicationAnswerJpaRepository.findAllByEventApplicationId(applicationId).stream()
+            .map(EventApplicationAnswerJpaEntity::toDomain)
+            .toList();
     }
 
     @Override

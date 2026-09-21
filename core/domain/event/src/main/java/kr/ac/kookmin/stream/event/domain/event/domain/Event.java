@@ -90,6 +90,13 @@ public class Event {
     }
 
     /**
+     * 대표 이미지 파일 id. 이미지 목록의 첫 장을 대표로 쓴다. 목록·신청 내역이 같은 장을 보여야 하므로 도메인에 둔다.
+     */
+    public Long thumbnailFileId() {
+        return imageIds == null || imageIds.isEmpty() ? null : imageIds.getFirst();
+    }
+
+    /**
      * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
      */
     public boolean isCapacityFull(long appliedCount) {
@@ -116,7 +123,10 @@ public class Event {
         return now.isBefore(applyStartAt);
     }
 
-    private boolean isAfterApplyPeriod(LocalDateTime now) {
+    /**
+     * 신청 기간이 끝났는지. 모집 상태 계산뿐 아니라 신청 취소 가능 여부 판정에도 쓰인다.
+     */
+    public boolean isAfterApplyPeriod(LocalDateTime now) {
         return now.isAfter(applyEndAt);
     }
 }
