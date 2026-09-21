@@ -1,7 +1,7 @@
-# Error Handling — 예외 처리 & Swagger 에러 문서화 (Java 21)
+# Error Handling — 예외 처리 & Swagger 명세 (Java 21)
 
-> ErrorCode/BusinessException 체계, GlobalExceptionHandler, `@ApiErrorCode` 기반 Swagger 에러 문서화를 다룬다.
-> 새 에러 코드 추가, 예외 처리 로직 작업 시 참조한다. 모듈 배치는 `architecture.md`.
+> ErrorCode/BusinessException 체계, GlobalExceptionHandler, `-Api` 인터페이스 기반 Swagger 명세(`@Tag`/`@Operation`/`@ApiErrorCode`)를 다룬다.
+> 새 에러 코드 추가, 예외 처리 로직, API 문서 작업 시 참조한다. 모듈 배치는 `architecture.md`.
 
 ---
 
@@ -167,9 +167,38 @@ public static <T> ApiResponse<T> error(String code, String message) {
 
 ---
 
-## 6. Swagger 에러 문서화
+## 6. Swagger 명세 — `-Api` 인터페이스
 
-`@ApiErrorCode`(`api:common-api`)로 API가 실제 던지는 개별 코드만 문서화한다. `type`으로 enum 클래스를, `codes`로 상수 이름을 넘긴다. 한 어노테이션에는 같은 `type`만 담고, 다른 enum은 어노테이션을 추가로 붙인다.
+Swagger 문서용 어노테이션은 **컨트롤러가 아니라 짝이 되는 `{Client}{Domain}Api` 인터페이스**에 모은다(예: `AppNoticeController` ↔ `AppNoticeApi`, 같은 패키지). 컨트롤러는 이 인터페이스를 `implements`하고 각 핸들러에 `@Override`를 붙이며, 라우팅·바인딩(`@GetMapping`·`@ModelAttribute`·`@PathVariable`·`@Valid` 등)과 본문만 남긴다(`coding-style.md` 2-8절).
+
+- 인터페이스 **타입에 `@Tag`**(name·description), **메서드에 `@Operation`**(summary·description) **+ `@ApiErrorCode`** 를 둔다. 인터페이스 메서드에는 Spring 바인딩 어노테이션을 붙이지 않는다.
+- springdoc은 인터페이스에 붙은 어노테이션을 `AnnotatedElementUtils`(타입 계층 탐색)로 인식하므로 구현 컨트롤러에서 그대로 문서화된다.
+- `app-api`·`admin-api`는 swagger-annotations 컴파일을 위해 `implementation(libs.springdocStarterWebmvcUi)`를 선언한다(문서 조립 빈은 `common-api`가 소유).
+
+```java
+// api:app-api — AppRentalApi.java (문서 명세, 구현은 AppRentalController)
+@Tag(name = "대여", description = "학생 앱 물품 대여 신청")
+public interface AppRentalApi {
+
+    @Operation(summary = "대여 신청", description = "재고를 확인하고 대여를 신청한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
+    ApiResponse<RentalApplyResponse> apply(AppApiUser apiUser, RentalApplyRequest request);
+}
+```
+
+```java
+// api:app-api — AppRentalController.java (라우팅·바인딩·본문만)
+@Override
+@PostMapping("/v1/app/rentals")
+public ApiResponse<RentalApplyResponse> apply(AppApiUser apiUser, @Valid @RequestBody RentalApplyRequest request) {
+    ...
+}
+```
+
+### 6-1. @ApiErrorCode — 에러 응답 문서화
+
+`@ApiErrorCode`(`api:common-api`)로 API가 **실제 던지는** 개별 코드만 문서화한다. `type`으로 enum 클래스를, `codes`로 상수 이름을 넘긴다. 한 어노테이션에는 같은 `type`만 담고, 다른 enum은 어노테이션을 추가로 붙인다.
 
 > Java `@Repeatable`은 컨테이너 어노테이션을 명시해야 한다(Kotlin과 다른 점).
 
@@ -190,13 +219,7 @@ public @interface ApiErrorCodes {
 }
 ```
 
-```java
-@ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-@ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
-@PostMapping("/v1/app/rentals")
-public ApiResponse<RentalApplyResponse> apply(...) { ... }
-```
-
+- **문서화 범위**: 각 엔드포인트가 실제로 던지는 코드만 나열한다. 인가 크로스컷팅(`CommonErrorCode.FORBIDDEN` — `ApiUser`·`@RequireDepartment`에서 유래)과 "있을 수 없는" 방어용 500(`INTERNAL_SERVER_ERROR`)은 문서화하지 않는다.
 - `codes`는 런타임에 enum 상수와 대조해 검증한다. 없는 이름이면 문서 조립 시 즉시 실패해 오탈자를 잡는다.
 - `ApiErrorCodeCustomizer`(`OperationCustomizer`, `@Component`)가 `codes`를 상수로 resolve해 OpenAPI 응답에 추가한다. springdoc이 자동 감지한다.
 - 같은 HTTP status의 코드가 여러 개면 **같은 응답에 example을 여러 개** 붙인다(그룹핑하지 않으면 덮인다). 기존 응답이 있으면 example만 병합한다.

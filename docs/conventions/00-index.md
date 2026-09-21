@@ -13,7 +13,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 | --- | --- | --- |
 | [`architecture.md`](./architecture.md) | 모듈 구조, 의존 방향, Modulith 경계 규칙, 레이어, 도메인 간 통신(UseCase·이벤트·아웃박스) | 새 모듈/도메인 설계, 의존성 리뷰 |
 | [`coding-style.md`](./coding-style.md) | 네이밍, 도메인 객체(record)/DTO/Command/Entity/Repository/Client/Service/UseCase 패턴, 정적 팩토리·Lombok, Validation | 실제 코드 작성/리뷰 |
-| [`error-handling.md`](./error-handling.md) | `ErrorCode`/`BusinessException`, `GlobalExceptionHandler`, `@ApiErrorCode` Swagger 문서화 | 에러 코드 추가, 예외 처리 |
+| [`error-handling.md`](./error-handling.md) | `ErrorCode`/`BusinessException`, `GlobalExceptionHandler`, `-Api` 인터페이스 Swagger 명세(`@Tag`/`@Operation`/`@ApiErrorCode`) | 에러 코드 추가, 예외 처리, API 문서화 |
 | [`config-and-auth.md`](./config-and-auth.md) | 설정 바인딩, 2계층 권한 모델(role + 부서), `PrincipalProvider`, `DepartmentAccessChecker` | 설정값 추가, 인증·인가 작업 |
 | [`logging.md`](./logging.md) | MDC 요청 추적, `MdcFilter`/`LoggingFilter`, 로그 레벨, JSON 로깅 | 로깅 코드, MDC 필드 추가 |
 | [`flyway-migration.md`](./flyway-migration.md) | Flyway 위치/네이밍, 테이블·인덱스 규칙, **soft delete 인덱스(MySQL)**, 사용자/부서·아웃박스 스키마 | 테이블/컬럼·인덱스, 스키마 작업 |
@@ -31,6 +31,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 - "객체를 어떻게 생성하지 / Lombok 어디까지" → `coding-style.md` 2-10·2-11절
 - "외부 클라이언트 구현체가 여러 개인데 일부 메서드가 특정 구현체에서 의미 없음" → `coding-style.md` 2-12절 (`UnsupportedOperationException` + `@ConditionalOnProperty` 스위칭)
 - "에러 코드 추가" → `error-handling.md`
+- "Swagger 명세 다는 곳 / 컨트롤러 문서 분리" → `error-handling.md` 6절 (`-Api` 인터페이스 + `@Tag`/`@Operation`/`@ApiErrorCode`)
 - "도메인 내부 구현 숨기기 / 패키지 구조" → `architecture.md` 4-3절 (`domain/{도메인}/{domain|repository|service|service.impl}`, OPEN 모듈 + ArchUnit)
 - "api 모듈(컨트롤러·DTO) 패키지 어디에" → `architecture.md` 2-2절 (`{basePackage}.api.{client}.{팀}.{도메인}`, DTO는 `request`/`response`)
 

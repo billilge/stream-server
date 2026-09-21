@@ -21,10 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/app/notices")
 @RequiredArgsConstructor
-public class AppNoticeController {
+public class AppNoticeController implements AppNoticeApi {
 
     private final NoticeService noticeService;
 
+    @Override
     @GetMapping
     public ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
             @RequestParam(name = "category", required = false) String category,
@@ -41,6 +42,7 @@ public class AppNoticeController {
         return ApiResponse.success(response);
     }
 
+    @Override
     @GetMapping("/{noticeId}")
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
         Notice notice = noticeService.getNotice(noticeId);

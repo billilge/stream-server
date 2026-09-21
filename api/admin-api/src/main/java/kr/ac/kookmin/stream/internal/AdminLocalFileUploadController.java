@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/admin/files")
 @RequiredArgsConstructor
-public class AdminLocalFileUploadController {
+public class AdminLocalFileUploadController implements AdminLocalFileUploadApi {
 
     private static final String LOCAL_UPLOAD_PATH = "/local-upload/";
 
     private final FileService fileService;
 
+    @Override
     @PutMapping("/local-upload/**")
     public ApiResponse<Void> receiveLocalUpload(HttpServletRequest request) throws IOException {
         String fileKey = extractFileKey(request);

@@ -16,17 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/admin/files")
 @RequiredArgsConstructor
-public class AdminFileController {
+public class AdminFileController implements AdminFileApi {
 
     private final FileService fileService;
     private final PrincipalProvider principalProvider;
 
+    @Override
     @PostMapping("/presigned-url")
     public ApiResponse<FileUploadUrlIssueResponse> issuePresignedUrl(@Valid @RequestBody FileUploadUrlIssueRequest request) {
         FileUploadUrlIssueResult result = fileService.issuePresignedUrl(request.toCommand(principalProvider.userId()));
         return ApiResponse.success(FileUploadUrlIssueResponse.from(result));
     }
 
+    @Override
     @DeleteMapping("/{fileId}")
     public ApiResponse<Void> delete(@PathVariable Long fileId) {
         fileService.delete(fileId);

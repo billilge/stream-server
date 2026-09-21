@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import kr.ac.kookmin.stream.common.PageOffset;
 
-public record PageQuery(
+public record PageParams(
 
     @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다.")
     Integer page,
