@@ -40,6 +40,7 @@ springTx = { module = "org.springframework:spring-tx" }
 
 jakartaServletApi = { module = "jakarta.servlet:jakarta.servlet-api" }
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+slf4jApi = { module = "org.slf4j:slf4j-api" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }
