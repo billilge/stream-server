@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common.dto;
 
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.ErrorCode;

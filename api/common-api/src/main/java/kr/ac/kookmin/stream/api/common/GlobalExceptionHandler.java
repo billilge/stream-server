@@ -1,8 +1,9 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common;
 
 import static kr.ac.kookmin.stream.logging.MdcKeys.REQUEST_ID;
 import static kr.ac.kookmin.stream.logging.MdcKeys.USER_ID;
 
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.common.ErrorStatus;

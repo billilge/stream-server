@@ -2,8 +2,8 @@ package kr.ac.kookmin.stream.api.app.event.archive;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ac.kookmin.stream.ApiErrorCode;
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.request.ArchiveListParams;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveListResponse;

@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee.response;
 
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.ApiConstants;
+import kr.ac.kookmin.stream.api.common.ApiConstants;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 

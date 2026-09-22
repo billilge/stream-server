@@ -2,9 +2,9 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import jakarta.validation.Valid;
 import java.util.Map;
-import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.PageParams;
-import kr.ac.kookmin.stream.PageResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.security.RequireDepartment;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAmountUpdateRequest;

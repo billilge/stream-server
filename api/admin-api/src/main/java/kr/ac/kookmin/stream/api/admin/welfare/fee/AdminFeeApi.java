@@ -2,10 +2,10 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ac.kookmin.stream.ApiErrorCode;
-import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.PageParams;
-import kr.ac.kookmin.stream.PageResponse;
+import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAmountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeLinkUpdateRequest;

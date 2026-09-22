@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common.openapi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

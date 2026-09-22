@@ -1,11 +1,11 @@
-package kr.ac.kookmin.stream.internal;
+package kr.ac.kookmin.stream.api.admin.internal.file;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import kr.ac.kookmin.stream.ApiErrorCode;
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.internal.domain.file.domain.FileErrorCode;
 
 /**

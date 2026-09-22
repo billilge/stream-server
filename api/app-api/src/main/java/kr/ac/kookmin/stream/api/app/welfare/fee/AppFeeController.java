@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee;
 
-import kr.ac.kookmin.stream.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeConfirmRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;

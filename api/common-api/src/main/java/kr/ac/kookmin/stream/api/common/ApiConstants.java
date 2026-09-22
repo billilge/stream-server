@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.api.common;
 
 // API 응답 전반에서 쓰는 공통 상수 모음.
 public final class ApiConstants {

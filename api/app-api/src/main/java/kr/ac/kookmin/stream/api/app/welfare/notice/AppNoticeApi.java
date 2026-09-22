@@ -2,9 +2,9 @@ package kr.ac.kookmin.stream.api.app.welfare.notice;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ac.kookmin.stream.ApiErrorCode;
-import kr.ac.kookmin.stream.ApiResponse;
-import kr.ac.kookmin.stream.CursorSliceResponse;
+import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;

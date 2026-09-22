@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.admin;
 
 import java.util.Set;
-import kr.ac.kookmin.stream.ApiUser;
+import kr.ac.kookmin.stream.api.common.ApiUser;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
