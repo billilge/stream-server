@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.client.file.s3;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,7 +9,8 @@ import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
 import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -18,10 +20,10 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /**
- * S3 기반 구현체. presigned URL은 클라이언트가 S3에 직접 PUT하는 용도라, 로컬 구현체와 달리
- * 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
- * 자격증명은 AWS 기본 자격증명 체인({@link DefaultCredentialsProvider})을 사용한다 —
- * EC2에 배포하면 인스턴스 프로필(IAM 역할)에서 자동으로 자격증명을 가져오므로 액세스 키를 앱에 직접 넣지 않는다.
+ * S3 호환 스토리지(Cloudflare R2) 기반 구현체. presigned URL은 클라이언트가 스토리지에 직접 PUT하는 용도라,
+ * 로컬 구현체와 달리 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
+ * R2는 AWS S3 API와 호환되므로 {@code endpointOverride}로 R2 엔드포인트를 지정하고 region은 {@code auto}를 쓴다.
+ * R2에는 EC2 인스턴스 프로필 같은 자동 자격증명 체인이 없어, R2 API 토큰의 액세스 키·시크릿 키를 정적으로 주입한다.
  */
 @Component
 @ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
@@ -34,15 +36,19 @@ public class S3FileStorageClient implements FileStorageClient {
     public S3FileStorageClient(S3FileStorageProperties properties) {
         this.properties = properties;
 
-        DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
+        StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
+            AwsBasicCredentials.create(properties.accessKey(), properties.secretKey()));
         Region region = Region.of(properties.region());
+        URI endpoint = URI.create(properties.endpoint());
 
         this.s3Client = S3Client.builder()
             .region(region)
+            .endpointOverride(endpoint)
             .credentialsProvider(credentialsProvider)
             .build();
         this.s3Presigner = S3Presigner.builder()
             .region(region)
+            .endpointOverride(endpoint)
             .credentialsProvider(credentialsProvider)
             .build();
     }

@@ -6,5 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record S3FileStorageProperties(
     String bucket,
     String region,
+    String endpoint,
+    String accessKey,
+    String secretKey,
     long uploadUrlExpirySeconds
 ) {}
