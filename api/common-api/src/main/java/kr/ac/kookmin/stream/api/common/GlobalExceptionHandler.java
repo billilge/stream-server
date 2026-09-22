@@ -23,8 +23,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e) {
-        log.warn("[requestId={}, userId={}] ({}) {}",
-            MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getErrorCode().name(), e.getMessage());
+        // 인증 실패(401)는 인터넷에 노출된 서버에서 스캐너·봇으로 인해 상시 발생하는 정상 트래픽이므로 DEBUG로 낮춘다
+        if (e.getErrorCode().status() == ErrorStatus.UNAUTHORIZED) {
+            log.debug("[requestId={}, userId={}] ({}) {}",
+                MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getErrorCode().name(), e.getMessage());
+        } else {
+            log.warn("[requestId={}, userId={}] ({}) {}",
+                MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getErrorCode().name(), e.getMessage());
+        }
         return ResponseEntity.status(e.getErrorCode().status()).body(ApiResponse.error(e));
     }
 
