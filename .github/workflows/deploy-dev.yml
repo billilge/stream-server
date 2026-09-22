@@ -53,6 +53,7 @@ jobs:
       - name: Deploy to Coolify
         run: |
           curl --fail-with-body --request POST \
+            --connect-timeout 10 --max-time 60 \
             "${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_DEV_UUID }}&force=true" \
             --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
             --header "Content-Length: 0"
