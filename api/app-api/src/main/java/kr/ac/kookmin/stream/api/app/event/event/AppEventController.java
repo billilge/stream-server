@@ -19,6 +19,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,7 +48,7 @@ public class AppEventController implements AppEventApi {
     @Override
     @GetMapping
     public ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
-        @Valid @ModelAttribute EventListParams params
+        @Valid @ParameterObject @ModelAttribute EventListParams params
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
             params.toRecruitStatus(), params.toCursor(), params.sizeOrDefault());
@@ -58,7 +59,7 @@ public class AppEventController implements AppEventApi {
     @GetMapping("/applications")
     public ApiResponse<CursorSliceResponse<EventApplicationListItemResponse>> getMyApplications(
         AppApiUser apiUser,
-        @Valid @ModelAttribute EventApplicationListParams params
+        @Valid @ParameterObject @ModelAttribute EventApplicationListParams params
     ) {
         CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getMyApplications(
             apiUser.userId(), params.toCursor(), params.sizeOrDefault());

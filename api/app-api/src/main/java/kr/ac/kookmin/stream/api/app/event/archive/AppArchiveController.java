@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveDetailResponse
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveListResponse;
 import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,7 @@ public class AppArchiveController implements AppArchiveApi {
      */
     @Override
     @GetMapping
-    public ApiResponse<ArchiveListResponse> getArchives(@Valid @ModelAttribute ArchiveListParams params) {
+    public ApiResponse<ArchiveListResponse> getArchives(@Valid @ParameterObject @ModelAttribute ArchiveListParams params) {
         return ApiResponse.success(ArchiveListResponse.of(
             archiveService.getArchives(params.year()),
             archiveService.getYears()

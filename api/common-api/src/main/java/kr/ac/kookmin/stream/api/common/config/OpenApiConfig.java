@@ -5,8 +5,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import kr.ac.kookmin.stream.api.common.ApiUser;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCodeCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +20,11 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     private static final String JWT_SCHEME = "bearerAuth";
+
+    static {
+        // ArgumentResolver로 주입되는 인증 사용자(ApiUser 구현체)를 springdoc이 쿼리 파라미터로 오인하지 않도록 무시한다.
+        SpringDocUtils.getConfig().addRequestWrapperToIgnore(ApiUser.class);
+    }
 
     @Bean
     public OpenAPI openAPI() {
