@@ -1,0 +1,32 @@
+# dev 프로파일 — SPRING_PROFILES_ACTIVE=dev 로 활성화한다.
+# 공통 설정(application.yaml 및 import 되는 모듈 설정) 위에 dev 전용 값만 덮어쓴다.
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+# 상세 로깅 / SQL·바인딩 파라미터 로그
+logging:
+  level:
+    kr.ac.kookmin: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+# Swagger UI / API 문서는 dev 에서만 노출
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+
+# actuator 엔드포인트 확장 (health 외 진단용). health 외 엔드포인트는 인증이 필요하다.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: never

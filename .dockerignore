@@ -1,0 +1,25 @@
+# 빌드 산출물 (이미지 안에서 Gradle이 새로 빌드한다)
+build/
+**/build/
+.gradle/
+
+# VCS / CI / IDE
+.git/
+.github/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+
+# 로컬 런타임 / 시크릿 (예시 파일만 남긴다)
+local-storage/
+.env
+.env.*
+!.env.example
+
+# 문서·기타
+docs/
+HELP.md

@@ -1,0 +1,24 @@
+# prod 프로파일 — SPRING_PROFILES_ACTIVE=prod 로 활성화한다.
+# 로그는 조용하게, 문서·진단 엔드포인트는 닫는다.
+
+logging:
+  level:
+    root: INFO
+    kr.ac.kookmin: INFO
+
+# Swagger UI / API 문서 비활성화
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+# actuator는 health 만 노출
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
