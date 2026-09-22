@@ -28,6 +28,11 @@ subprojects {
         "annotationProcessor"(rootProject.libs.lombok)
         "testCompileOnly"(rootProject.libs.lombok)
         "testAnnotationProcessor"(rootProject.libs.lombok)
+
+        // 모듈 공개 처리(@ApplicationModule·@NamedInterface 등)에 거의 모든 모듈이 사용하므로 공통 적용.
+        // compileOnly 어노테이션 전용 — 경계 검증은 bootstrap 테스트가 수행한다.
+        "compileOnly"(platform(rootProject.libs.springModulithBom))
+        "compileOnly"(rootProject.libs.springModulithApi)
     }
 
     tasks.withType<Test> {
