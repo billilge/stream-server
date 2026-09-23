@@ -17,6 +17,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateRespon
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 운영진 학생회비 API의 문서 명세. 구현은 {@link AdminFeeController}가 맡는다.
@@ -37,7 +38,7 @@ public interface AdminFeeApi {
         AdminApiUser apiUser,
         String status,
         String keyword,
-        PageParams pageParams
+        @ParameterObject PageParams pageParams
     );
 
     /** 납부 확인 요청 처리. 승인/반려로 상태를 바꾸고 납부자 명부에 반영한다. */
