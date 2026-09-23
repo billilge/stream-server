@@ -50,7 +50,7 @@ public record Member(
 - Request/Response DTO는 `record`(`api:{client}-api`). 각 도메인 패키지 아래 `request`/`response` 하위 패키지로 나눠 둔다(`{basePackage}.api.{client}.{팀}.{도메인}.{request|response}`, `architecture.md` 2-2절).
 - Request DTO를 Service로 그대로 넘기지 않는다. `toCommand()`로 Command(`core:domain`)로 변환한다.
 - 접미사로 요청 형태를 구분한다: **`@RequestBody` 바디 DTO는 `Request`**, **`@ModelAttribute`로 바인딩하는 쿼리 파라미터 DTO는 `Params`**(예: `EventListParams`, `ArchiveListParams`). 파일은 둘 다 `request` 하위 패키지에 둔다. 페이지네이션 공용 파라미터는 `common-api`의 `PageParams`를 쓴다.
-- `Params` DTO를 바인딩할 때는 `@ParameterObject`(springdoc)를 `@ModelAttribute`와 함께 붙인다. 없으면 Swagger에서 개별 필드로 펼쳐지지 않고 하나의 `object` 쿼리 파라미터로 뜬다. (예: `@Valid @ParameterObject @ModelAttribute EventListParams params`)
+- `Params` DTO 파라미터에는 `{Client}{Domain}Api` 인터페이스 쪽에 `@ParameterObject`(springdoc)를 붙인다. 없으면 Swagger에서 개별 필드로 펼쳐지지 않고 하나의 `object` 쿼리 파라미터로 뜬다. 컨트롤러에는 바인딩 어노테이션만 남긴다. (예: 인터페이스 `@ParameterObject EventListParams params`, 컨트롤러 `@Valid @ModelAttribute EventListParams params`)
 
 ```java
 // api:admin-api
@@ -326,7 +326,7 @@ class MemberServiceImpl implements MemberService {
 - Swagger 문서용 어노테이션(`@Tag`/`@Operation`/`@ApiErrorCode`)은 짝이 되는 `{Client}{Domain}Api` 인터페이스에 모으고, 컨트롤러가 이를 `implements`한다. 각 핸들러에 `@Override`를 붙이고 컨트롤러에는 라우팅·바인딩·본문만 남긴다(`error-handling.md` 6절).
 - Swagger 쿼리 파라미터 렌더링 규칙:
   - `ApiUser` 파라미터는 `OpenApiConfig`가 `SpringDocUtils.addRequestWrapperToIgnore(ApiUser.class)`로 문서에서 숨기므로 별도 처리하지 않는다.
-  - `@ModelAttribute` `Params` DTO에는 `@ParameterObject`를 함께 붙인다(2-2절).
+  - `@ModelAttribute` `Params` DTO에는 `-Api` 인터페이스의 같은 파라미터에 `@ParameterObject`를 붙인다(2-2절).
   - 파라미터 이름은 루트 빌드의 `-parameters` 컴파일 옵션으로 보존되므로 `@RequestParam("name")`처럼 이름을 중복 명시하지 않아도 된다.
 
 ```java
