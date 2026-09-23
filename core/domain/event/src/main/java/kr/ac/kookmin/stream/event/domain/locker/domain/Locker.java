@@ -31,4 +31,15 @@ public class Locker {
     ) {
         return new Locker(id, sectionId, lockerLabel, lockerNumber, rowNo, columnNo, status);
     }
+
+    /**
+     * 해당 운영 회차에서 선택할 수 있는지. 사물함 자체 상태와 신청 여부를 함께 본다.
+     * <p>
+     * 구역 목록의 선택 가능 수와 구역 상세의 선택 가능 여부가 같은 기준을 써야 하므로 도메인에 둔다.
+     *
+     * @param applied 해당 운영 회차에 이 사물함이 이미 신청되었는지
+     */
+    public boolean isSelectable(boolean applied) {
+        return status == LockerStatus.AVAILABLE && !applied;
+    }
 }
