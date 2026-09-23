@@ -9,6 +9,7 @@ import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveDetailResponse
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveListResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 행사 아카이브 API의 문서 명세. 구현은 {@link AppArchiveController}가 맡는다.
@@ -23,7 +24,7 @@ public interface AppArchiveApi {
     @Operation(summary = "행사 아카이브 목록 조회",
         description = "지난 행사 아카이브 목록과 필터용 연도 목록을 함께 조회한다. year를 지정하면 해당 연도만 필터링한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    ApiResponse<ArchiveListResponse> getArchives(ArchiveListParams params);
+    ApiResponse<ArchiveListResponse> getArchives(@ParameterObject ArchiveListParams params);
 
     /** 아카이브 상세. */
     @Operation(summary = "행사 아카이브 상세 조회")

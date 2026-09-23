@@ -17,6 +17,7 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 행사 API의 문서 명세. 구현은 {@link AppEventController}가 맡는다.
@@ -32,7 +33,7 @@ public interface AppEventApi {
         description = "게시된 행사를 커서 기반으로 조회한다. recruitStatus로 모집 상태를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_RECRUIT_STATUS", "EVENT_INVALID_CURSOR"})
-    ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(EventListParams params);
+    ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(@ParameterObject EventListParams params);
 
     /** 행사 상세. */
     @Operation(summary = "행사 상세 조회")
@@ -67,7 +68,7 @@ public interface AppEventApi {
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<EventApplicationListItemResponse>> getMyApplications(
         AppApiUser apiUser,
-        EventApplicationListParams params
+        @ParameterObject EventApplicationListParams params
     );
 
     /** 내 행사 신청 상세. 행사의 질문 전체에 이 신청의 답변을 붙여 내려준다. */

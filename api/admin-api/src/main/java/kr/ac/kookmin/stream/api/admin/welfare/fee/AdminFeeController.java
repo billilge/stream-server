@@ -24,7 +24,6 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -51,7 +50,7 @@ public class AdminFeeController implements AdminFeeApi {
         AdminApiUser apiUser,
         @RequestParam(required = false) String status,
         @RequestParam(required = false) String keyword,
-        @Valid @ParameterObject @ModelAttribute PageParams pageParams
+        @Valid @ModelAttribute PageParams pageParams
     ) {
         TransferStatus transferStatus = TransferStatus.from(status);
         PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(transferStatus, keyword, pageParams.toOffset());
