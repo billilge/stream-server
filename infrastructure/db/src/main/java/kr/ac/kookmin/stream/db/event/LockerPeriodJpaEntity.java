@@ -38,6 +38,9 @@ public class LockerPeriodJpaEntity extends BaseTimeEntity {
     @Column(name = "usage_end_at", nullable = false)
     private LocalDate usageEndAt;
 
+    @Column(name = "is_published", nullable = false)
+    private boolean isPublished;
+
     private LockerPeriodJpaEntity(LockerPeriod period) {
         this.id = period.getId();
         this.name = period.getName();
@@ -45,6 +48,7 @@ public class LockerPeriodJpaEntity extends BaseTimeEntity {
         this.applyEndAt = period.getApplyEndAt();
         this.usageStartAt = period.getUsageStartAt();
         this.usageEndAt = period.getUsageEndAt();
+        this.isPublished = period.isPublished();
     }
 
     public static LockerPeriodJpaEntity from(LockerPeriod period) {
@@ -52,6 +56,6 @@ public class LockerPeriodJpaEntity extends BaseTimeEntity {
     }
 
     public LockerPeriod toDomain() {
-        return LockerPeriod.of(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt);
+        return LockerPeriod.of(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, isPublished);
     }
 }
