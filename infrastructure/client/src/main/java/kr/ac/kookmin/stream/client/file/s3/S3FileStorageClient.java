@@ -6,10 +6,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
 import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -18,34 +17,18 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /**
- * S3 기반 구현체. presigned URL은 클라이언트가 S3에 직접 PUT하는 용도라, 로컬 구현체와 달리
- * 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
- * 자격증명은 AWS 기본 자격증명 체인({@link DefaultCredentialsProvider})을 사용한다 —
- * EC2에 배포하면 인스턴스 프로필(IAM 역할)에서 자동으로 자격증명을 가져오므로 액세스 키를 앱에 직접 넣지 않는다.
+ * S3 호환 스토리지(Cloudflare R2) 기반 구현체. presigned URL은 클라이언트가 스토리지에 직접 PUT하는 용도라,
+ * 로컬 구현체와 달리 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
+ * R2 엔드포인트·자격증명 설정은 {@link S3StorageConfig}가 만드는 {@link S3Client}/{@link S3Presigner} 빈에 있다.
  */
 @Component
 @ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
+@RequiredArgsConstructor
 public class S3FileStorageClient implements FileStorageClient {
 
     private final S3FileStorageProperties properties;
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-
-    public S3FileStorageClient(S3FileStorageProperties properties) {
-        this.properties = properties;
-
-        DefaultCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
-        Region region = Region.of(properties.region());
-
-        this.s3Client = S3Client.builder()
-            .region(region)
-            .credentialsProvider(credentialsProvider)
-            .build();
-        this.s3Presigner = S3Presigner.builder()
-            .region(region)
-            .credentialsProvider(credentialsProvider)
-            .build();
-    }
 
     @Override
     public UploadUrl issuePresignedUrl(String fileKey, String contentType) {
