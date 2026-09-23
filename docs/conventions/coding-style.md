@@ -456,7 +456,7 @@ public class UserAuthentication extends AbstractAuthenticationToken {
 
 - `@Data`·`@Setter`는 쓰지 않는다. 객체는 불변을 기본으로 하고, 상태 변경은 의도가 드러나는 메서드(`entity.delete()` 등)로 표현한다.
 - `record`에는 Lombok을 붙이지 않는다. 접근자·`equals`/`hashCode`가 이미 제공된다.
-- 스프링 빈의 생성자 주입은 **항상 `@RequiredArgsConstructor`**로 한다. 생성자를 직접 쓰는 경우는 하나뿐이다 — 주입받은 값으로 다른 필드를 초기화해야 할 때. 예: `JwtProperties`로 `SecretKey`를 만드는 `JwtProvider`.
+- 스프링 빈의 생성자 주입은 **항상 `@RequiredArgsConstructor`**로 한다. 생성자를 직접 쓰는 경우는 하나뿐이다 — 주입받은 값으로 다른 필드를 초기화해야 할 때. 예: `JwtProperties`로 `SecretKey`를 만드는 `JwtProvider`. 단 초기화할 대상이 외부 SDK 클라이언트라면 생성자에서 만들지 않고 `@Bean`으로 등록한다(2-12절).
 - 주입할 빈을 지목해야 하면 **필드에** `@Qualifier`를 붙인다. 루트 `lombok.config`의 `lombok.copyableAnnotations`가 이를 생성자 파라미터로 복사한다.
 
 ```java
@@ -510,6 +510,32 @@ public class S3FileStorageClient implements FileStorageClient { ... }
 @Component
 @ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
 public class LocalFileStorageClient implements FileStorageClient { ... }
+```
+
+- **외부 SDK 클라이언트(`S3Client`, `S3Presigner` 등)는 구현체 생성자에서 만들지 않고, 같은 패키지의 설정 클래스(`@Configuration`)에서 `@Bean`으로 등록해 주입받는다.** 설정 클래스에도 구현체와 같은 `@ConditionalOnProperty`를 붙인다. SDK 클라이언트는 `close()`가 필요한 자원인데, 빈으로 등록하면 종료 시 스프링이 대신 호출한다.
+
+```java
+// infrastructure:client — client/file/s3
+@Configuration
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
+public class S3StorageConfig {
+
+    @Bean
+    public S3Client s3Client(S3FileStorageProperties properties) { ... }
+
+    @Bean
+    public S3Presigner s3Presigner(S3FileStorageProperties properties) { ... }
+}
+
+@Component
+@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
+@RequiredArgsConstructor
+public class S3FileStorageClient implements FileStorageClient {
+
+    private final S3FileStorageProperties properties;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
+}
 ```
 
 - **임시 구현체(추후 다른 구현체로 완전히 교체될 코드)에는 "무엇으로 전환하면 이 코드를 지운다"는 클래스 주석을 남긴다.** 그 임시 구현체에 딸린 전용 엔드포인트·메서드(예: 로컬 전용 업로드 수신 API)도 같은 문구로 표시해서, 실제 전환 작업을 할 때 검색 한 번으로 같이 지울 대상을 찾을 수 있게 한다.
