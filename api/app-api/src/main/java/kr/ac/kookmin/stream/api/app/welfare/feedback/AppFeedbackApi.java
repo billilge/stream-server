@@ -3,11 +3,13 @@ package kr.ac.kookmin.stream.api.app.welfare.feedback;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
+import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackCreateRequest;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
@@ -36,4 +38,11 @@ public interface AppFeedbackApi {
     @Operation(summary = "피드백 상세 조회")
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_NOT_FOUND"})
     ApiResponse<FeedbackResponse> getFeedback(AppApiUser apiUser, Long feedbackId);
+
+    /** 피드백 질문 등록. 회차는 현재 열려 있는 회차로 서버가 자동 배정한다. */
+    @Operation(summary = "피드백 질문 등록",
+        description = "질문을 등록한다. 연도·회차는 현재 접수 기간이 열려 있는 회차로 서버가 자동 배정한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_NOT_OPEN"})
+    ApiResponse<FeedbackResponse> createFeedback(AppApiUser apiUser, FeedbackCreateRequest request);
 }
