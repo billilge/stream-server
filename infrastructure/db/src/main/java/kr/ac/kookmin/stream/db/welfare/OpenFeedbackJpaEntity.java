@@ -23,13 +23,19 @@ public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
     private Long id;
 
     @Column(nullable = false)
+    private int year;
+
+    @Column(nullable = false)
     private int round;
 
-    @Column(nullable = false, length = 20)
-    private String category;
-
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 500)
     private String question;
+
+    // BaseTimeEntity의 createdAt(DB DEFAULT CURRENT_TIMESTAMP, insertable=false)에 기대지 않고 직접 값을 채운다.
+    // insertable=false 컬럼은 save() 직후엔 DB에서 다시 읽어오기 전까지 자바 객체에 null로 남아있어서,
+    // 등록 응답에 질문 시각을 바로 내려줘야 하는 이 도메인엔 맞지 않는다.
+    @Column(name = "questioned_at", nullable = false)
+    private LocalDateTime questionedAt;
 
     @Column(columnDefinition = "TEXT")
     private String answer;
@@ -44,14 +50,15 @@ public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
     private Long answeredBy;
 
     private OpenFeedbackJpaEntity(OpenFeedback feedback) {
-        this.id = feedback.getId();
-        this.round = feedback.getRound();
-        this.category = feedback.getCategory();
-        this.question = feedback.getQuestion();
-        this.answer = feedback.getAnswer();
-        this.answeredAt = feedback.getAnsweredAt();
-        this.createdBy = feedback.getCreatedBy();
-        this.answeredBy = feedback.getAnsweredBy();
+        this.id = feedback.id();
+        this.year = feedback.year();
+        this.round = feedback.round();
+        this.question = feedback.question();
+        this.questionedAt = feedback.questionedAt();
+        this.answer = feedback.answer();
+        this.answeredAt = feedback.answeredAt();
+        this.createdBy = feedback.createdBy();
+        this.answeredBy = feedback.answeredBy();
     }
 
     public static OpenFeedbackJpaEntity from(OpenFeedback feedback) {
@@ -59,6 +66,6 @@ public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public OpenFeedback toDomain() {
-        return OpenFeedback.of(id, round, category, question, answer, answeredAt, createdBy, answeredBy);
+        return OpenFeedback.of(id, year, round, question, questionedAt, answer, answeredAt, createdBy, answeredBy);
     }
 }
