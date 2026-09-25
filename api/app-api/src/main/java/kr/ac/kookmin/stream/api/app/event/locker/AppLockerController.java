@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 학생 앱의 사물함 구역·배치 조회 API.
  * <p>
- * 구역과 사물함 조회 결과는 보는 사람과 무관하다. 내 사물함 표시는 그 결과에 회원의 신청 사물함을
- * 맞춰봐서 여기서 만든다. 조회 순서를 지켜야 한다. 미게시 회차·없는 구역 판정은 구역 조회가 하므로
- * 그쪽을 먼저 호출해야 404가 신청 조회보다 앞선다.
+ * 미게시 회차·없는 구역 판정은 구역 조회가 하므로 신청 조회보다 먼저 호출해야 404가 앞선다.
  */
 @RestController
 @RequestMapping("/v1/app/lockers")
