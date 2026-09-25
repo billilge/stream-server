@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
-import kr.ac.kookmin.stream.api.app.event.locker.request.LockerSectionListParams;
+import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerLayoutResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -29,7 +29,7 @@ public interface AppLockerApi {
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND"})
     ApiResponse<LockerSectionListResponse> getSections(
         AppApiUser apiUser,
-        @ParameterObject LockerSectionListParams params
+        @ParameterObject LockerPeriodParams params
     );
 
     /** 구역에 속한 사물함의 배치 정보와 선택 가능 여부. */
@@ -41,6 +41,6 @@ public interface AppLockerApi {
     ApiResponse<LockerLayoutResponse> getSectionLockers(
         AppApiUser apiUser,
         Long sectionId,
-        @ParameterObject LockerSectionListParams params
+        @ParameterObject LockerPeriodParams params
     );
 }

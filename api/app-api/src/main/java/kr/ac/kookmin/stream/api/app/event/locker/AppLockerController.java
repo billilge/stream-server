@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 import jakarta.validation.Valid;
 import java.util.List;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
-import kr.ac.kookmin.stream.api.app.event.locker.request.LockerSectionListParams;
+import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerLayoutResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -34,7 +34,7 @@ public class AppLockerController implements AppLockerApi {
     @GetMapping("/sections")
     public ApiResponse<LockerSectionListResponse> getSections(
         AppApiUser apiUser,
-        @Valid @ModelAttribute LockerSectionListParams params
+        @Valid @ModelAttribute LockerPeriodParams params
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         List<LockerSectionSummary> sections = lockerService.getSections(lockerPeriodId);
@@ -50,7 +50,7 @@ public class AppLockerController implements AppLockerApi {
     public ApiResponse<LockerLayoutResponse> getSectionLockers(
         AppApiUser apiUser,
         @PathVariable Long sectionId,
-        @Valid @ModelAttribute LockerSectionListParams params
+        @Valid @ModelAttribute LockerPeriodParams params
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         List<LockerAvailability> lockers = lockerService.getSectionLockers(lockerPeriodId, sectionId);
