@@ -4,10 +4,12 @@ import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackCreateRequest;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
+import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackRoundsResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.OpenFeedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.OpenFeedbackService;
 import lombok.RequiredArgsConstructor;
@@ -54,5 +56,15 @@ public class AppFeedbackController implements AppFeedbackApi {
     ) {
         OpenFeedback feedback = openFeedbackService.create(apiUser.userId(), request.question());
         return ApiResponse.success(FeedbackResponse.from(feedback));
+    }
+
+    @Override
+    @GetMapping("/rounds")
+    public ApiResponse<FeedbackRoundsResponse> getFeedbackRounds(
+        AppApiUser apiUser,
+        @RequestParam(required = false) Integer year
+    ) {
+        FeedbackRoundOptions options = openFeedbackService.getRoundOptions(year);
+        return ApiResponse.success(FeedbackRoundsResponse.from(options));
     }
 }

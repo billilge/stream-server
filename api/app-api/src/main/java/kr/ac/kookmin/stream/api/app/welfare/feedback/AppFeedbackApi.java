@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackCreateRequest;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
+import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackRoundsResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -45,4 +46,9 @@ public interface AppFeedbackApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_NOT_OPEN"})
     ApiResponse<FeedbackResponse> createFeedback(AppApiUser apiUser, FeedbackCreateRequest request);
+
+    /** 목록 화면의 연도 드롭다운·회차 칩을 그리기 위한 필터 옵션. */
+    @Operation(summary = "피드백 회차 필터 조회",
+        description = "year를 생략하면 현재 연도 기준으로, 회차가 하나라도 존재했던 전체 연도 목록과 그 연도에 실제로 존재하는 회차 목록을 함께 내려준다.")
+    ApiResponse<FeedbackRoundsResponse> getFeedbackRounds(AppApiUser apiUser, Integer year);
 }
