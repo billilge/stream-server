@@ -5,8 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 열린피드백 API의 문서 명세. 구현은 {@link AppFeedbackController}가 맡는다.
@@ -16,6 +19,18 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
  */
 @Tag(name = "열린피드백", description = "학생 앱 열린피드백 질문 등록·조회")
 public interface AppFeedbackApi {
+
+    /** 피드백 목록. year/round로 필터링하고 페이지 단위로 조회한다. */
+    @Operation(summary = "피드백 목록 조회",
+        description = "연도(year)·회차(round)로 필터링해 열린피드백 목록을 페이지 단위로 조회한다. "
+            + "year를 생략하면 전체 연도, round를 생략하면 그 안의 전체 회차를 대상으로 한다.")
+    @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"INVALID_FEEDBACK_ROUND"})
+    ApiResponse<PageResponse<FeedbackResponse>> getFeedbacks(
+        AppApiUser apiUser,
+        Integer year,
+        Integer round,
+        @ParameterObject PageParams pageParams
+    );
 
     /** 피드백 상세. */
     @Operation(summary = "피드백 상세 조회")
