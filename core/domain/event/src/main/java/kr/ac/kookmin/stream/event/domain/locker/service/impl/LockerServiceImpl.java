@@ -55,7 +55,6 @@ class LockerServiceImpl implements LockerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Locker> getLockerByMemberId(Long lockerPeriodId, Long memberId) {
         return lockerRepository.findAppliedLockerId(lockerPeriodId, memberId)
             .flatMap(lockerRepository::findLockerById);
