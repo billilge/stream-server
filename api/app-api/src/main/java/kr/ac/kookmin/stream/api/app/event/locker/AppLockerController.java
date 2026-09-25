@@ -40,7 +40,7 @@ public class AppLockerController implements AppLockerApi {
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         List<LockerSectionSummary> sections = lockerService.getSections(lockerPeriodId);
-        Long mySectionId = lockerService.getMyLocker(lockerPeriodId, apiUser.userId())
+        Long mySectionId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getSectionId)
             .orElse(null);
 
@@ -56,7 +56,7 @@ public class AppLockerController implements AppLockerApi {
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         List<LockerAvailability> lockers = lockerService.getSectionLockers(lockerPeriodId, sectionId);
-        Long myLockerId = lockerService.getMyLocker(lockerPeriodId, apiUser.userId())
+        Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)
             .orElse(null);
 

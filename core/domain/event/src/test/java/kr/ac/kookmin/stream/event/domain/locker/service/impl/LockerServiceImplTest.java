@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * 구역·사물함·신청을 각각 조회해 서비스가 구역별로 묶어 센다. 그 집계가 어긋나지 않는지 확인한다.
  * <p>
- * 내 사물함 표시는 표현 계층이 {@code getMyLocker} 결과를 맞춰봐서 만들므로 여기서는 그 조회만 본다.
+ * 내 사물함 표시는 표현 계층이 {@code getLockerByMemberId} 결과를 맞춰봐서 만들므로 여기서는 그 조회만 본다.
  */
 class LockerServiceImplTest {
 
@@ -131,8 +131,8 @@ class LockerServiceImplTest {
     }
 
     @Nested
-    @DisplayName("내 사물함")
-    class GetMyLocker {
+    @DisplayName("회원이 신청한 사물함")
+    class GetLockerByMemberId {
 
         @Test
         @DisplayName("신청한 사물함을 구역까지 담아 돌려준다")
@@ -142,7 +142,7 @@ class LockerServiceImplTest {
                 .withAllLockers(usable(11L, 1L), mine)
                 .withMyLocker(mine);
 
-            Optional<Locker> found = new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID);
+            Optional<Locker> found = new LockerServiceImpl(repository).getLockerByMemberId(PERIOD_ID, MEMBER_ID);
 
             assertTrue(found.isPresent());
             assertEquals(21L, found.get().getId());
@@ -155,7 +155,7 @@ class LockerServiceImplTest {
             FakeLockerRepository repository = new FakeLockerRepository()
                 .withAllLockers(usable(11L, 1L));
 
-            assertTrue(new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID).isEmpty());
+            assertTrue(new LockerServiceImpl(repository).getLockerByMemberId(PERIOD_ID, MEMBER_ID).isEmpty());
         }
 
         @Test
@@ -166,7 +166,7 @@ class LockerServiceImplTest {
                 .withAllLockers(usable(11L, 1L))
                 .withMyLockerId(99L);
 
-            assertTrue(new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID).isEmpty());
+            assertTrue(new LockerServiceImpl(repository).getLockerByMemberId(PERIOD_ID, MEMBER_ID).isEmpty());
         }
     }
 
