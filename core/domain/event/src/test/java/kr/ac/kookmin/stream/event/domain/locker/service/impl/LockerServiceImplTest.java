@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
@@ -22,7 +23,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * 구역·사물함·신청을 각각 조회해 서비스가 구역별로 묶어 센다. 그 집계와 조합이 어긋나지 않는지 확인한다.
+ * 구역·사물함·신청을 각각 조회해 서비스가 구역별로 묶어 센다. 그 집계가 어긋나지 않는지 확인한다.
+ * <p>
+ * 내 사물함 표시는 표현 계층이 {@code getMyLocker} 결과를 맞춰봐서 만들므로 여기서는 그 조회만 본다.
  */
 class LockerServiceImplTest {
 
@@ -57,8 +60,7 @@ class LockerServiceImplTest {
                     usable(21L, 2L))
                 .withAppliedLockerIds(13L);
 
-            List<LockerSectionSummary> sections =
-                new LockerServiceImpl(repository).getSections(PERIOD_ID, MEMBER_ID);
+            List<LockerSectionSummary> sections = new LockerServiceImpl(repository).getSections(PERIOD_ID);
 
             assertEquals(List.of(1L, 2L), sections.stream().map(LockerSectionSummary::sectionId).toList());
             assertEquals(3, sections.get(0).totalCount());
@@ -75,42 +77,11 @@ class LockerServiceImplTest {
                 .withSections(section(1L, "A-1"), section(2L, "A-2"))
                 .withAllLockers(usable(11L, 1L));
 
-            List<LockerSectionSummary> sections =
-                new LockerServiceImpl(repository).getSections(PERIOD_ID, MEMBER_ID);
+            List<LockerSectionSummary> sections = new LockerServiceImpl(repository).getSections(PERIOD_ID);
 
             assertEquals(2, sections.size());
             assertEquals(0, sections.get(1).totalCount());
             assertEquals(SectionAvailabilityStatus.FULL, sections.get(1).availabilityStatus());
-        }
-
-        @Test
-        @DisplayName("내 사물함이 있는 구역에만 hasMine이 붙는다")
-        void marksOnlyMySection() {
-            Locker mine = usable(21L, 2L);
-            FakeLockerRepository repository = new FakeLockerRepository()
-                .withSections(section(1L, "A-1"), section(2L, "A-2"))
-                .withAllLockers(usable(11L, 1L), mine)
-                .withAppliedLockerIds(21L)
-                .withMyLocker(mine);
-
-            List<LockerSectionSummary> sections =
-                new LockerServiceImpl(repository).getSections(PERIOD_ID, MEMBER_ID);
-
-            assertFalse(sections.get(0).hasMine());
-            assertTrue(sections.get(1).hasMine());
-        }
-
-        @Test
-        @DisplayName("신청이 없으면 어느 구역에도 hasMine이 붙지 않는다")
-        void noneWhenNotApplied() {
-            FakeLockerRepository repository = new FakeLockerRepository()
-                .withSections(section(1L, "A-1"))
-                .withAllLockers(usable(11L, 1L));
-
-            List<LockerSectionSummary> sections =
-                new LockerServiceImpl(repository).getSections(PERIOD_ID, MEMBER_ID);
-
-            assertFalse(sections.get(0).hasMine());
         }
 
         @Test
@@ -119,7 +90,7 @@ class LockerServiceImplTest {
             FakeLockerRepository repository = new FakeLockerRepository().withUnpublishedPeriod();
 
             BusinessException e = assertThrows(BusinessException.class,
-                () -> new LockerServiceImpl(repository).getSections(PERIOD_ID, MEMBER_ID));
+                () -> new LockerServiceImpl(repository).getSections(PERIOD_ID));
 
             assertEquals(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND, e.getErrorCode());
         }
@@ -140,28 +111,11 @@ class LockerServiceImplTest {
                 .withAppliedLockerIds(13L);
 
             List<LockerAvailability> lockers =
-                new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L, MEMBER_ID);
+                new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L);
 
             assertTrue(lockers.get(0).available());     // 사용 가능 + 미신청
             assertFalse(lockers.get(1).available());    // 사용 중지
             assertFalse(lockers.get(2).available());    // 이미 신청됨
-        }
-
-        @Test
-        @DisplayName("내 사물함에만 isMine이 붙고, 그 사물함은 선택 가능하지 않다")
-        void marksOnlyMyLocker() {
-            Locker mine = usable(13L, 1L);
-            FakeLockerRepository repository = new FakeLockerRepository()
-                .withSectionLockers(usable(11L, 1L), mine)
-                .withAppliedLockerIds(13L)
-                .withMyLocker(mine);
-
-            List<LockerAvailability> lockers =
-                new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L, MEMBER_ID);
-
-            assertFalse(lockers.get(0).mine());
-            assertTrue(lockers.get(1).mine());
-            assertFalse(lockers.get(1).available());
         }
 
         @Test
@@ -170,13 +124,53 @@ class LockerServiceImplTest {
             FakeLockerRepository repository = new FakeLockerRepository().withMissingSection();
 
             BusinessException e = assertThrows(BusinessException.class,
-                () -> new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 99L, MEMBER_ID));
+                () -> new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 99L));
 
             assertEquals(LockerErrorCode.LOCKER_SECTION_NOT_FOUND, e.getErrorCode());
         }
     }
 
-    /** 조회 결과만 답하고 집계·조합은 서비스가 하는지 보기 위한 가짜 레포지토리. */
+    @Nested
+    @DisplayName("내 사물함")
+    class GetMyLocker {
+
+        @Test
+        @DisplayName("신청한 사물함을 구역까지 담아 돌려준다")
+        void returnsAppliedLocker() {
+            Locker mine = usable(21L, 2L);
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withAllLockers(usable(11L, 1L), mine)
+                .withMyLocker(mine);
+
+            Optional<Locker> found = new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID);
+
+            assertTrue(found.isPresent());
+            assertEquals(21L, found.get().getId());
+            assertEquals(2L, found.get().getSectionId());
+        }
+
+        @Test
+        @DisplayName("신청하지 않았으면 비어 있다")
+        void emptyWhenNotApplied() {
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withAllLockers(usable(11L, 1L));
+
+            assertTrue(new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID).isEmpty());
+        }
+
+        @Test
+        @DisplayName("신청한 사물함이 삭제됐으면 비어 있다")
+        void emptyWhenLockerRemoved() {
+            // 신청 행은 남아 있는데 사물함이 삭제된 경우. 사물함 조회가 삭제된 건을 거르므로 여기서도 없는 것이 된다
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withAllLockers(usable(11L, 1L))
+                .withMyLockerId(99L);
+
+            assertTrue(new LockerServiceImpl(repository).getMyLocker(PERIOD_ID, MEMBER_ID).isEmpty());
+        }
+    }
+
+    /** 조회 결과만 답하고 집계는 서비스가 하는지 보기 위한 가짜 레포지토리. */
     private static final class FakeLockerRepository implements LockerRepository {
 
         private boolean publishedPeriod = true;
@@ -185,7 +179,7 @@ class LockerServiceImplTest {
         private List<Locker> allLockers = List.of();
         private List<Locker> sectionLockers = List.of();
         private Set<Long> appliedLockerIds = Set.of();
-        private Locker myLocker;
+        private Long myLockerId;
 
         FakeLockerRepository withSections(LockerSection... values) {
             this.sections = List.of(values);
@@ -208,7 +202,12 @@ class LockerServiceImplTest {
         }
 
         FakeLockerRepository withMyLocker(Locker value) {
-            this.myLocker = value;
+            return withMyLockerId(value.getId());
+        }
+
+        /** 사물함 목록에 없는 식별자를 넣으면 신청 행만 남고 사물함은 삭제된 상황이 된다. */
+        FakeLockerRepository withMyLockerId(Long value) {
+            this.myLockerId = value;
             return this;
         }
 
@@ -248,13 +247,20 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public Optional<Locker> findLockerById(Long lockerId) {
+            return Stream.concat(allLockers.stream(), sectionLockers.stream())
+                .filter(locker -> locker.getId().equals(lockerId))
+                .findFirst();
+        }
+
+        @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
             return appliedLockerIds;
         }
 
         @Override
         public Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId) {
-            return Optional.ofNullable(myLocker).map(Locker::getId);
+            return Optional.ofNullable(myLockerId);
         }
     }
 }

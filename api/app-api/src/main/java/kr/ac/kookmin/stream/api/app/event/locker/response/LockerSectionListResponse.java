@@ -5,7 +5,12 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public record LockerSectionListResponse(List<LockerSectionResponse> sections) {
 
-    public static LockerSectionListResponse from(List<LockerSectionSummary> sections) {
-        return new LockerSectionListResponse(sections.stream().map(LockerSectionResponse::from).toList());
+    /**
+     * @param mySectionId 조회한 회원이 신청한 사물함이 속한 구역. 신청하지 않았으면 {@code null}
+     */
+    public static LockerSectionListResponse of(List<LockerSectionSummary> sections, Long mySectionId) {
+        return new LockerSectionListResponse(sections.stream()
+            .map(summary -> LockerSectionResponse.of(summary, mySectionId))
+            .toList());
     }
 }

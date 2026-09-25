@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.api.app.event.locker.response;
 
+import java.util.Objects;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 
 public record LockerResponse(
@@ -12,7 +13,10 @@ public record LockerResponse(
     boolean isMine
 ) {
 
-    public static LockerResponse from(LockerAvailability locker) {
+    /**
+     * @param myLockerId 조회한 회원이 신청한 사물함. 신청하지 않았으면 {@code null}
+     */
+    public static LockerResponse of(LockerAvailability locker, Long myLockerId) {
         return new LockerResponse(
             locker.lockerId(),
             locker.lockerLabel(),
@@ -20,7 +24,7 @@ public record LockerResponse(
             locker.rowNo(),
             locker.columnNo(),
             locker.available(),
-            locker.mine()
+            Objects.equals(locker.lockerId(), myLockerId)
         );
     }
 }

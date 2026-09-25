@@ -5,7 +5,12 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 
 public record LockerLayoutResponse(List<LockerResponse> lockers) {
 
-    public static LockerLayoutResponse from(List<LockerAvailability> lockers) {
-        return new LockerLayoutResponse(lockers.stream().map(LockerResponse::from).toList());
+    /**
+     * @param myLockerId 조회한 회원이 신청한 사물함. 신청하지 않았으면 {@code null}
+     */
+    public static LockerLayoutResponse of(List<LockerAvailability> lockers, Long myLockerId) {
+        return new LockerLayoutResponse(lockers.stream()
+            .map(locker -> LockerResponse.of(locker, myLockerId))
+            .toList());
     }
 }

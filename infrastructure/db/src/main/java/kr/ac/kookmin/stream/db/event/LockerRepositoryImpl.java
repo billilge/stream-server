@@ -50,6 +50,12 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public Optional<Locker> findLockerById(Long lockerId) {
+        return lockerJpaRepository.findByIdAndIsDeletedFalse(lockerId)
+            .map(LockerJpaEntity::toDomain);
+    }
+
+    @Override
     public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
         return lockerApplicationJpaRepository.findLockerIdsByLockerPeriodId(lockerPeriodId);
     }

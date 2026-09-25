@@ -38,6 +38,11 @@ public interface LockerRepository {
     List<Locker> findLockersBySectionId(Long sectionId);
 
     /**
+     * 사물함 한 건. 삭제된 사물함은 없는 것으로 본다.
+     */
+    Optional<Locker> findLockerById(Long lockerId);
+
+    /**
      * 해당 운영 회차에 이미 신청된 사물함 식별자.
      */
     Set<Long> findAppliedLockerIds(Long lockerPeriodId);
@@ -45,7 +50,8 @@ public interface LockerRepository {
     /**
      * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
      * <p>
-     * 어느 구역인지는 이미 읽어둔 사물함 목록에서 가려낼 수 있어 식별자만 돌려준다.
+     * 사물함 값이 필요하면 {@link #findLockerById(Long)}로 이어 읽는다. 신청과 사물함을 조인해 한 번에
+     * 읽지 않는 이유는 이 포트의 조회를 전부 단일 테이블 조회로 두려는 것이다.
      */
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
 }

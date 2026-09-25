@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -23,46 +24,41 @@ class LockerServiceImpl implements LockerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LockerSectionSummary> getSections(Long lockerPeriodId, Long memberId) {
+    public List<LockerSectionSummary> getSections(Long lockerPeriodId) {
         requirePublishedPeriod(lockerPeriodId);
 
         Set<Long> appliedLockerIds = lockerRepository.findAppliedLockerIds(lockerPeriodId);
         Map<Long, List<Locker>> lockersBySection = lockerRepository.findAllLockers().stream()
             .collect(Collectors.groupingBy(Locker::getSectionId));
 
-        Long myLockerId = lockerRepository.findAppliedLockerId(lockerPeriodId, memberId).orElse(null);
-
         return lockerRepository.findAllSections().stream()
-            .map(section -> {
+            .map(section -> LockerSectionSummary.of(
+                section,
                 // 사물함이 한 건도 없는 구역은 묶음에 키가 없다. 빈 목록으로 채워 목록에서 빠지지 않게 한다
-                List<Locker> sectionLockers = lockersBySection.getOrDefault(section.getId(), List.of());
-                return LockerSectionSummary.of(
-                    section, sectionLockers, appliedLockerIds, containsMine(sectionLockers, myLockerId));
-            })
+                lockersBySection.getOrDefault(section.getId(), List.of()),
+                appliedLockerIds
+            ))
             .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<LockerAvailability> getSectionLockers(Long lockerPeriodId, Long sectionId, Long memberId) {
+    public List<LockerAvailability> getSectionLockers(Long lockerPeriodId, Long sectionId) {
         requirePublishedPeriod(lockerPeriodId);
         requireSection(sectionId);
 
         Set<Long> appliedLockerIds = lockerRepository.findAppliedLockerIds(lockerPeriodId);
-        Long myLockerId = lockerRepository.findAppliedLockerId(lockerPeriodId, memberId).orElse(null);
 
         return lockerRepository.findLockersBySectionId(sectionId).stream()
-            .map(locker -> LockerAvailability.of(
-                locker,
-                appliedLockerIds.contains(locker.getId()),
-                locker.getId().equals(myLockerId)
-            ))
+            .map(locker -> LockerAvailability.of(locker, appliedLockerIds.contains(locker.getId())))
             .toList();
     }
 
-    /** 내 사물함이 이 구역에 있는지. 회차당 신청이 최대 한 건이라 참이 되는 구역도 하나뿐이다. */
-    private boolean containsMine(List<Locker> lockers, Long myLockerId) {
-        return myLockerId != null && lockers.stream().anyMatch(locker -> myLockerId.equals(locker.getId()));
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Locker> getMyLocker(Long lockerPeriodId, Long memberId) {
+        return lockerRepository.findAppliedLockerId(lockerPeriodId, memberId)
+            .flatMap(lockerRepository::findLockerById);
     }
 
     /** 아직 게시하지 않은 회차는 학생에게 없는 것으로 보여야 하므로 두 조회의 입구에서 같은 기준으로 거른다. */
