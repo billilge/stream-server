@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/feedbacks")
+@RequestMapping("/v1/app/feedbacks")
 @RequiredArgsConstructor
 public class AppFeedbackController implements AppFeedbackApi {
 
