@@ -24,14 +24,12 @@ class OpenFeedbackServiceImpl implements OpenFeedbackService {
     private final FeedbackRoundRepository feedbackRoundRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public OpenFeedback getById(Long id) {
         return openFeedbackRepository.findById(id)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResult<OpenFeedback> search(Integer year, Integer round, PageOffset pageOffset) {
         if (round != null && round <= 0) {
             throw new BusinessException(FeedbackErrorCode.INVALID_FEEDBACK_ROUND);
@@ -50,7 +48,6 @@ class OpenFeedbackServiceImpl implements OpenFeedbackService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public FeedbackRoundOptions getRoundOptions(Integer year) {
         List<Integer> years = feedbackRoundRepository.findDistinctYears();
         int targetYear = year != null ? year : LocalDateTime.now().getYear();
