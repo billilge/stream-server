@@ -19,4 +19,10 @@ public interface RentalHistoryService {
      * 반납 정책이 없는 물품의 대여는 기한을 계산할 수 없어 제외한다.
      */
     List<ReturnRequiredRental> getReturnRequiredRentals(Long memberId);
+
+    /**
+     * 반납 신청. 본인 소유의 대여 중(RENTAL) 이력만 대상이며, 신청 즉시 반납 완료로 전이한다
+     * (운영진의 최종 확인 단계가 없어서다).
+     */
+    void returnRental(Long memberId, Long historyId);
 }

@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
+import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryRepository;
@@ -28,5 +29,11 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatus(itemId, memberId, RentalStatus.RENTAL);
+    }
+
+    @Override
+    public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.RENTAL)
+            .map(RentalHistoryJpaEntity::toDomain);
     }
 }

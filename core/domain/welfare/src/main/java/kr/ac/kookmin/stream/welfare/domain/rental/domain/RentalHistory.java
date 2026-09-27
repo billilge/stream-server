@@ -35,6 +35,12 @@ public class RentalHistory {
         return new RentalHistory(null, item.getId(), memberId, null, null, status, rentedCount, appliedAt, rentAt, returnedAt);
     }
 
+    /** 반납 신청 처리. 운영진의 최종 확인 단계가 없어 신청 즉시 반납 완료로 전이한다. */
+    public void markReturned(LocalDateTime returnedAt) {
+        this.rentalStatus = RentalStatus.RETURNED;
+        this.returnedAt = returnedAt;
+    }
+
     public static RentalHistory of(
         Long id,
         Long itemId,

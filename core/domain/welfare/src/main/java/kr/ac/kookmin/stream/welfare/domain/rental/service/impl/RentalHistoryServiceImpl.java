@@ -1,10 +1,14 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistorySummary;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 class RentalHistoryServiceImpl implements RentalHistoryService {
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
@@ -61,5 +67,15 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     // 대여 시각과 물품의 반납 정책이 모두 있어야 반납 기한을 계산할 수 있다
     private boolean hasDueAt(RentalHistory history, Item item) {
         return history.getRentAt() != null && item != null && item.getReturnPolicy() != null;
+    }
+
+    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
+    @Override
+    @Transactional
+    public void returnRental(Long memberId, Long historyId) {
+        RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        history.markReturned(LocalDateTime.now(KST));
+        rentalHistoryRepository.save(history);
     }
 }

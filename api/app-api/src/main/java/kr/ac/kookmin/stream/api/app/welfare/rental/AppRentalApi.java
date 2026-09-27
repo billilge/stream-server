@@ -62,4 +62,9 @@ public interface AppRentalApi {
         }
     )
     ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);
+
+    /** 반납 신청. 본인 소유의 대여 중 이력만 대상이다. */
+    @Operation(summary = "반납 신청", description = "대여 중인 물품의 반납을 신청한다. 신청 즉시 반납 완료로 처리된다.")
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
+    ApiResponse<Void> returnRental(AppApiUser apiUser, Long rentalHistoryId);
 }

@@ -19,6 +19,8 @@ import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalTimeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,6 +78,13 @@ public class AppRentalController implements AppRentalApi {
             request.rentAtMinute(),
             request.ignoreDuplicate()
         );
+        return ApiResponse.success();
+    }
+
+    @Override
+    @PatchMapping("/histories/{rentalHistoryId}/return")
+    public ApiResponse<Void> returnRental(AppApiUser apiUser, @PathVariable Long rentalHistoryId) {
+        rentalHistoryService.returnRental(apiUser.userId(), rentalHistoryId);
         return ApiResponse.success();
     }
 }
