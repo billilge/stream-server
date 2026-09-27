@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 
 public interface LockerRepository {
@@ -14,6 +16,11 @@ public interface LockerRepository {
     boolean existsPublishedPeriod(Long lockerPeriodId);
 
     boolean existsSection(Long sectionId);
+
+    /**
+     * 게시된 운영 회차 한 건. 아직 공개하지 않은 회차는 없는 것으로 본다.
+     */
+    Optional<LockerPeriod> findPublishedPeriodById(Long lockerPeriodId);
 
     /**
      * 전체 구역을 식별자 오름차순으로 조회한다.
@@ -36,6 +43,11 @@ public interface LockerRepository {
     Optional<Locker> findLockerById(Long lockerId);
 
     /**
+     * 해당 운영 회차에 이 사물함이 이미 신청되었는지.
+     */
+    boolean existsApplication(Long lockerPeriodId, Long lockerId);
+
+    /**
      * 해당 운영 회차에 이미 신청된 사물함 식별자.
      */
     Set<Long> findAppliedLockerIds(Long lockerPeriodId);
@@ -44,4 +56,10 @@ public interface LockerRepository {
      * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
      */
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
+
+    /**
+     * 신청을 저장한다. 같은 회차의 같은 사물함에 먼저 저장된 신청이 있으면
+     * {@link kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode#LOCKER_ALREADY_ASSIGNED}로 실패한다.
+     */
+    LockerApplication saveApplication(LockerApplication application);
 }

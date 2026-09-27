@@ -10,7 +10,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
@@ -263,6 +265,23 @@ class LockerServiceImplTest {
         @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
             return appliedLockerIds;
+        }
+
+        // 아래는 사물함 신청(LockerApplicationService)용 메서드라 이 테스트에서는 쓰지 않는다
+
+        @Override
+        public Optional<LockerPeriod> findPublishedPeriodById(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsApplication(Long lockerPeriodId, Long lockerId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LockerApplication saveApplication(LockerApplication application) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
