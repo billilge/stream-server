@@ -18,4 +18,6 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
         @Param("memberId") Long memberId,
         @Param("status") RentalStatus status
     );
+
+    boolean existsByItemIdAndMemberIdAndRentalStatus(Long itemId, Long memberId, RentalStatus rentalStatus);
 }

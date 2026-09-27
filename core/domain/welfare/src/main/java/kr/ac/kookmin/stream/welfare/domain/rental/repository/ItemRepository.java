@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -19,4 +20,9 @@ public interface ItemRepository {
     CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size);
 
     List<Item> findAllByIds(Collection<Long> ids);
+
+    /** 재고 차감용 비관적 락 조회. 동시에 들어온 대여 신청이 같은 물품의 재고를 동시에 읽지 못하게 한다. */
+    Optional<Item> findByIdForUpdate(Long id);
+
+    Item save(Item item);
 }

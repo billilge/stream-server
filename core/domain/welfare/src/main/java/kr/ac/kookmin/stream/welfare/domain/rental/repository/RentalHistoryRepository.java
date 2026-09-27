@@ -12,4 +12,9 @@ public interface RentalHistoryRepository {
      * @param status 대여 상태. null이면 전체
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
+
+    RentalHistory save(RentalHistory history);
+
+    /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
+    boolean existsActiveRental(Long itemId, Long memberId);
 }

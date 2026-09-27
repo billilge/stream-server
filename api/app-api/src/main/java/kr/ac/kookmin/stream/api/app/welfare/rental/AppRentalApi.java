@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.ItemListParams;
+import kr.ac.kookmin.stream.api.app.welfare.rental.request.RentalApplyRequest;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.RentalHistoryListParams;
 import kr.ac.kookmin.stream.api.app.welfare.rental.response.ItemListItemResponse;
 import kr.ac.kookmin.stream.api.app.welfare.rental.response.RentalHistoryListResponse;
@@ -46,4 +47,19 @@ public interface AppRentalApi {
         description = "지금 반납해야 하는 대여(대여 중 상태)와 반납 기한(dueAt)을 조회한다. "
             + "반납 기한은 대여일에 최대 대여 일수를 더한 날의 반납 마감 시각이다. 없으면 빈 배열이다.")
     ApiResponse<ReturnRequiredListResponse> getReturnRequired(AppApiUser apiUser);
+
+    /** 대여 신청. 회비 납부·재고·중복 대여·대여 가능 시간을 검증한 뒤 이력을 만든다. */
+    @Operation(summary = "대여 신청",
+        description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)은 제외된다. "
+            + "이미 대여 중인 같은 물품이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
+            + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(
+        type = RentalErrorCode.class,
+        codes = {
+            "ITEM_NOT_FOUND", "MEMBER_IS_NOT_PAYER", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
+            "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK"
+        }
+    )
+    ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);
 }

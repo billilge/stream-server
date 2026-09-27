@@ -19,4 +19,14 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
             .map(RentalHistoryJpaEntity::toDomain)
             .toList();
     }
+
+    @Override
+    public RentalHistory save(RentalHistory history) {
+        return rentalHistoryJpaRepository.save(RentalHistoryJpaEntity.from(history)).toDomain();
+    }
+
+    @Override
+    public boolean existsActiveRental(Long itemId, Long memberId) {
+        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatus(itemId, memberId, RentalStatus.RENTAL);
+    }
 }
