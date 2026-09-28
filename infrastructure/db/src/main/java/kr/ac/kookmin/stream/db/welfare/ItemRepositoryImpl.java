@@ -23,9 +23,12 @@ public class ItemRepositoryImpl implements ItemRepository {
     public CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
         String keywordPattern = keyword == null ? null : toContainsPattern(keyword);
-        List<ItemJpaEntity> entities = cursor == null
-            ? itemJpaRepository.findFirstSlice(category, keywordPattern, pageable)
-            : itemJpaRepository.findNextSlice(category, keywordPattern, cursor.name(), cursor.id(), pageable);
+        List<ItemJpaEntity> entities = itemJpaRepository.findSlice(
+            category, keywordPattern,
+            cursor == null ? null : cursor.name(),
+            cursor == null ? null : cursor.id(),
+            pageable
+        );
 
         return CursorSliceResult.ofSlice(
             entities, size, ItemJpaEntity::toDomain, item -> ItemCursor.of(item).format()
