@@ -3,8 +3,8 @@ package kr.ac.kookmin.stream.event.domain.locker.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
@@ -15,9 +15,17 @@ public interface LockerService {
     List<LockerSectionSummary> getSections(Long lockerPeriodId);
 
     /**
-     * 구역에 속한 사물함의 배치 정보와 선택 가능 여부를 조회한다.
+     * 구역에 속한 사물함을 배치도 순서(행 → 열)로 조회한다.
+     * <p>
+     * 선택 가능 여부는 담지 않는다. 판정은 {@link Locker#isSelectable(boolean)}이 갖고 있고, 신청 여부는
+     * {@link #getAppliedLockerIds(Long)}로 함께 읽어 호출하는 쪽에서 맞춰본다.
      */
-    List<LockerAvailability> getSectionLockers(Long lockerPeriodId, Long sectionId);
+    List<Locker> getSectionLockers(Long lockerPeriodId, Long sectionId);
+
+    /**
+     * 해당 운영 회차에 이미 신청된 사물함 식별자.
+     */
+    Set<Long> getAppliedLockerIds(Long lockerPeriodId);
 
     /**
      * 삭제되지 않은 사물함 전체를 구역별로 묶어 조회한다.

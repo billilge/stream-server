@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
@@ -41,16 +40,16 @@ class LockerServiceImpl implements LockerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<LockerAvailability> getSectionLockers(Long lockerPeriodId, Long sectionId) {
+    public List<Locker> getSectionLockers(Long lockerPeriodId, Long sectionId) {
         requirePublishedPeriod(lockerPeriodId);
         requireSection(sectionId);
 
-        Set<Long> appliedLockerIds = lockerRepository.findAppliedLockerIds(lockerPeriodId);
+        return lockerRepository.findLockersBySectionId(sectionId);
+    }
 
-        return lockerRepository.findLockersBySectionId(sectionId).stream()
-            .map(locker -> LockerAvailability.of(locker, appliedLockerIds.contains(locker.getId())))
-            .toList();
+    @Override
+    public Set<Long> getAppliedLockerIds(Long lockerPeriodId) {
+        return lockerRepository.findAppliedLockerIds(lockerPeriodId);
     }
 
     @Override

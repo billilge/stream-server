@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
@@ -25,7 +23,8 @@ import org.junit.jupiter.api.Test;
 /**
  * 구역·사물함·신청을 각각 조회해 서비스가 구역별로 묶어 센다. 그 집계가 어긋나지 않는지 확인한다.
  * <p>
- * 내 사물함 표시는 표현 계층이 {@code getLockerByMemberId} 결과를 맞춰봐서 만들므로 여기서는 그 조회만 본다.
+ * 선택 가능 여부와 내 사물함 표시는 표현 계층이 조회 결과를 맞춰봐서 만든다. 판정 규칙 자체는
+ * {@code LockerTest}가 덮으므로 여기서는 조회가 무엇을 돌려주는지만 본다.
  */
 class LockerServiceImplTest {
 
@@ -101,21 +100,29 @@ class LockerServiceImplTest {
     class GetSectionLockers {
 
         @Test
-        @DisplayName("사용 중지됐거나 이미 신청된 사물함은 선택할 수 없다")
-        void availability() {
+        @DisplayName("구역의 사물함을 레포지토리가 준 순서대로 돌려준다")
+        void returnsSectionLockers() {
+            // 선택 가능 판정은 담지 않는다. 판정 자체는 LockerTest가 덮는다
             FakeLockerRepository repository = new FakeLockerRepository()
                 .withSectionLockers(
                     usable(11L, 1L),
                     locker(12L, 1L, LockerStatus.DISABLED),
-                    usable(13L, 1L))
-                .withAppliedLockerIds(13L);
+                    usable(13L, 1L));
 
-            List<LockerAvailability> lockers =
-                new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L);
+            List<Locker> lockers = new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L);
 
-            assertTrue(lockers.get(0).available());     // 사용 가능 + 미신청
-            assertFalse(lockers.get(1).available());    // 사용 중지
-            assertFalse(lockers.get(2).available());    // 이미 신청됨
+            assertEquals(List.of(11L, 12L, 13L), lockers.stream().map(Locker::getId).toList());
+        }
+
+        @Test
+        @DisplayName("게시되지 않은 회차는 찾을 수 없다")
+        void unpublishedPeriod() {
+            FakeLockerRepository repository = new FakeLockerRepository().withUnpublishedPeriod();
+
+            BusinessException e = assertThrows(BusinessException.class,
+                () -> new LockerServiceImpl(repository).getSectionLockers(PERIOD_ID, 1L));
+
+            assertEquals(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND, e.getErrorCode());
         }
 
         @Test

@@ -2,13 +2,13 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerLayoutResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 학생 앱의 사물함 구역·배치 조회 API.
  * <p>
- * 미게시 회차·없는 구역 판정은 구역 조회가 하므로 신청 조회보다 먼저 호출해야 404가 앞선다.
+ * 선택 가능 여부와 내 사물함 표시는 조회 결과를 응답 DTO에서 맞춰봐서 만든다. 미게시 회차·없는 구역
+ * 판정은 구역 조회가 하므로 신청 조회보다 먼저 호출해야 404가 앞선다.
  */
 @RestController
 @RequestMapping("/v1/app/lockers")
@@ -53,11 +54,12 @@ public class AppLockerController implements AppLockerApi {
         @Valid @ModelAttribute LockerPeriodParams params
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
-        List<LockerAvailability> lockers = lockerService.getSectionLockers(lockerPeriodId, sectionId);
+        List<Locker> lockers = lockerService.getSectionLockers(lockerPeriodId, sectionId);
+        Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
         Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)
             .orElse(null);
 
-        return ApiResponse.success(LockerLayoutResponse.of(lockers, myLockerId));
+        return ApiResponse.success(LockerLayoutResponse.of(lockers, appliedLockerIds, myLockerId));
     }
 }
