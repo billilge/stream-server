@@ -16,6 +16,8 @@ dependencies {
     implementation(platform(libs.awsSdkBom))
     implementation(libs.awsS3)
 
+    implementation(libs.firebaseAdmin)
+
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)
     testRuntimeOnly(libs.junitPlatformLauncher)
