@@ -3,8 +3,8 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.OpenFeedback;
-import kr.ac.kookmin.stream.welfare.domain.feedback.repository.OpenFeedbackRepository;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
+import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,23 +12,23 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class OpenFeedbackRepositoryImpl implements OpenFeedbackRepository {
+public class FeedbackRepositoryImpl implements FeedbackRepository {
 
-    private final OpenFeedbackJpaRepository openFeedbackJpaRepository;
+    private final FeedbackJpaRepository feedbackJpaRepository;
 
     @Override
-    public Optional<OpenFeedback> findById(Long id) {
-        return openFeedbackJpaRepository.findByIdAndIsDeletedFalse(id).map(OpenFeedbackJpaEntity::toDomain);
+    public Optional<Feedback> findById(Long id) {
+        return feedbackJpaRepository.findByIdAndIsDeletedFalse(id).map(FeedbackJpaEntity::toDomain);
     }
 
     @Override
-    public PageResult<OpenFeedback> search(Integer year, Integer round, PageOffset pageOffset) {
-        Page<OpenFeedbackJpaEntity> result = openFeedbackJpaRepository.search(
+    public PageResult<Feedback> search(Integer year, Integer round, PageOffset pageOffset) {
+        Page<FeedbackJpaEntity> result = feedbackJpaRepository.search(
             year, round, PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(
-            result.getContent().stream().map(OpenFeedbackJpaEntity::toDomain).toList(),
+            result.getContent().stream().map(FeedbackJpaEntity::toDomain).toList(),
             result.getNumber(),
             result.getSize(),
             result.getTotalElements()
@@ -36,7 +36,7 @@ public class OpenFeedbackRepositoryImpl implements OpenFeedbackRepository {
     }
 
     @Override
-    public OpenFeedback save(OpenFeedback feedback) {
-        return openFeedbackJpaRepository.save(OpenFeedbackJpaEntity.from(feedback)).toDomain();
+    public Feedback save(Feedback feedback) {
+        return feedbackJpaRepository.save(FeedbackJpaEntity.from(feedback)).toDomain();
     }
 }

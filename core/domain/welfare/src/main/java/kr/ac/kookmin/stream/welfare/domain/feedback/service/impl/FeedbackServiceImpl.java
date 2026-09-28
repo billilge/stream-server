@@ -5,46 +5,46 @@ import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRound;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.OpenFeedback;
+import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepository;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRoundRepository;
-import kr.ac.kookmin.stream.welfare.domain.feedback.repository.OpenFeedbackRepository;
-import kr.ac.kookmin.stream.welfare.domain.feedback.service.OpenFeedbackService;
+import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-class OpenFeedbackServiceImpl implements OpenFeedbackService {
+class FeedbackServiceImpl implements FeedbackService {
 
-    private final OpenFeedbackRepository openFeedbackRepository;
+    private final FeedbackRepository feedbackRepository;
     private final FeedbackRoundRepository feedbackRoundRepository;
 
     @Override
-    public OpenFeedback getById(Long id) {
-        return openFeedbackRepository.findById(id)
+    public Feedback getById(Long id) {
+        return feedbackRepository.findById(id)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
     }
 
     @Override
-    public PageResult<OpenFeedback> search(Integer year, Integer round, PageOffset pageOffset) {
+    public PageResult<Feedback> search(Integer year, Integer round, PageOffset pageOffset) {
         if (round != null && round <= 0) {
             throw new BusinessException(FeedbackErrorCode.INVALID_FEEDBACK_ROUND);
         }
-        return openFeedbackRepository.search(year, round, pageOffset);
+        return feedbackRepository.search(year, round, pageOffset);
     }
 
     @Override
     @Transactional
-    public OpenFeedback create(Long memberId, String question) {
+    public Feedback create(Long memberId, String question) {
         FeedbackRound openRound = feedbackRoundRepository.findOpenAt(LocalDateTime.now())
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_OPEN));
 
-        OpenFeedback feedback = OpenFeedback.create(openRound.year(), openRound.round(), question, memberId);
-        return openFeedbackRepository.save(feedback);
+        Feedback feedback = Feedback.create(openRound.year(), openRound.round(), question, memberId);
+        return feedbackRepository.save(feedback);
     }
 
     @Override
