@@ -1,10 +1,16 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplyCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
@@ -32,6 +38,39 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
             LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
         );
         return new LockerApplicationResult(application, locker, period);
+    }
+
+    /**
+     * 트랜잭션을 걸지 않는다. 신청은 취소·변경이 없고, 조회 사이에 회차 게시·이름이 바뀌어도 각 건은 그 시점에 맞는
+     * 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
+     */
+    @Override
+    public List<LockerApplicationSummary> getApplicationsByMemberId(Long memberId) {
+        List<LockerApplication> applications = lockerApplicationRepository.findByMemberId(memberId);
+        if (applications.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, LockerPeriod> periods = lockerRepository.findPublishedPeriodsByIds(
+                applications.stream().map(LockerApplication::getLockerPeriodId).distinct().toList())
+            .stream()
+            .collect(Collectors.toMap(LockerPeriod::getId, Function.identity()));
+        Map<Long, Locker> lockers = lockerRepository.findLockersByIdsIncludingDeleted(
+                applications.stream().map(LockerApplication::getLockerId).distinct().toList())
+            .stream()
+            .collect(Collectors.toMap(Locker::getId, Function.identity()));
+
+        LocalDate today = LocalDate.now();
+        return applications.stream()
+            // 게시를 내린 회차의 신청은 학생에게 없는 것으로 보여야 한다
+            .filter(application -> periods.containsKey(application.getLockerPeriodId()))
+            .map(application -> LockerApplicationSummary.of(
+                application,
+                periods.get(application.getLockerPeriodId()),
+                lockers.get(application.getLockerId()),
+                today
+            ))
+            .toList();
     }
 
     /** 게시된 운영 회차. 아직 공개하지 않은 회차는 학생에게 없는 것으로 보여야 하므로 구역 조회와 같은 기준으로 거른다. */

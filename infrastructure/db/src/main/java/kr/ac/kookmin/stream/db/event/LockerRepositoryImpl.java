@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
@@ -34,6 +35,13 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
+        return lockerPeriodJpaRepository.findAllByIdInAndIsPublishedTrue(lockerPeriodIds).stream()
+            .map(LockerPeriodJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<LockerSection> findAllSections() {
         return lockerSectionJpaRepository.findAllByOrderByIdAsc().stream()
             .map(LockerSectionJpaEntity::toDomain)
@@ -58,5 +66,12 @@ public class LockerRepositoryImpl implements LockerRepository {
     public Optional<Locker> findLockerById(Long lockerId) {
         return lockerJpaRepository.findByIdAndIsDeletedFalse(lockerId)
             .map(LockerJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
+        return lockerJpaRepository.findAllByIdIn(lockerIds).stream()
+            .map(LockerJpaEntity::toDomain)
+            .toList();
     }
 }

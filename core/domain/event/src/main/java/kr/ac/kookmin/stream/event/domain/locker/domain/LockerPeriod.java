@@ -32,4 +32,11 @@ public class LockerPeriod {
     ) {
         return new LockerPeriod(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, published);
     }
+
+    /**
+     * 사용 기간이 끝났는지. 사용 종료일 당일까지는 사용 중으로 본다.
+     */
+    public boolean isUsageEnded(LocalDate today) {
+        return today.isAfter(usageEndAt);
+    }
 }

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -244,6 +245,18 @@ class LockerApplicationServiceImplTest {
         public List<Locker> findLockersBySectionId(Long sectionId) {
             throw new UnsupportedOperationException();
         }
+
+        // 아래는 회원별 신청 내역 조회용 메서드라 이 테스트에서는 쓰지 않는다
+
+        @Override
+        public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static final class FakeLockerApplicationRepository implements LockerApplicationRepository {
@@ -283,6 +296,11 @@ class LockerApplicationServiceImplTest {
 
         @Override
         public Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<LockerApplication> findByMemberId(Long memberId) {
             throw new UnsupportedOperationException();
         }
     }
