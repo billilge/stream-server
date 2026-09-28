@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -37,6 +38,16 @@ public class ItemRepositoryImpl implements ItemRepository {
         return itemJpaRepository.findAllById(ids).stream()
             .map(ItemJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public Optional<Item> findById(Long id) {
+        return itemJpaRepository.findById(id).map(ItemJpaEntity::toDomain);
+    }
+
+    @Override
+    public Item save(Item item) {
+        return itemJpaRepository.save(ItemJpaEntity.from(item)).toDomain();
     }
 
     // 검색어를 "포함" 조건의 LIKE 패턴으로 바꾼다. 검색어 안의 와일드카드가 패턴으로 해석되지 않게 이스케이프한다

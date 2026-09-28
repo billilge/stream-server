@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
+import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,8 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
         @Param("memberId") Long memberId,
         @Param("status") RentalStatus status
     );
+
+    boolean existsByItemIdAndMemberIdAndRentalStatus(Long itemId, Long memberId, RentalStatus rentalStatus);
+
+    Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatus(Long id, Long memberId, RentalStatus rentalStatus);
 }

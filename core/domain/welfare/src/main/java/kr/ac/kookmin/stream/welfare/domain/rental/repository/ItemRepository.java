@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -19,4 +20,8 @@ public interface ItemRepository {
     CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size);
 
     List<Item> findAllByIds(Collection<Long> ids);
+
+    Optional<Item> findById(Long id);
+
+    Item save(Item item);
 }
