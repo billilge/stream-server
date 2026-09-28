@@ -9,7 +9,7 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRound;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackSearchCondition;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepository;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRoundRepository;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
@@ -31,8 +31,8 @@ class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public PageResult<Feedback> search(FeedbackSearchCondition condition, PageOffset pageOffset) {
-        return feedbackRepository.search(condition.year(), condition.round(), pageOffset);
+    public PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset) {
+        return feedbackRepository.search(period.year(), period.round(), pageOffset);
     }
 
     @Override
