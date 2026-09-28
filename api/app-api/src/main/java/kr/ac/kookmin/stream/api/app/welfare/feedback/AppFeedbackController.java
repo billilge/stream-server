@@ -11,6 +11,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackSearchCondition;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +45,8 @@ public class AppFeedbackController implements AppFeedbackApi {
         @RequestParam(required = false) Integer round,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Feedback> result = feedbackService.search(year, round, pageParams.toOffset());
+        FeedbackSearchCondition condition = FeedbackSearchCondition.of(year, round);
+        PageResult<Feedback> result = feedbackService.search(condition, pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
     }
 
