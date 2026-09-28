@@ -14,7 +14,6 @@ import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryReposi
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +22,11 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
 
-    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다. 두 조회가 한 트랜잭션(같은 스냅샷)에 묶여야
-    // 그 사이에 바뀐 물품 때문에 이력과 물품 정보가 어긋나지 않는다. 쓰기가 없으니 readOnly다.
+    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다(coding-style.md 2-6). 지금은 items에 쓰기 경로가
+    // 없어 두 조회 사이에 물품이 바뀔 수 없으므로 트랜잭션이 필요 없다. 물품 이름 수정·신규 등록 정도만
+    // 생기는 한 이 필드는 필터·계산에 안 쓰여 트랜잭션 없이도 안전하다. 반납 정책·타입처럼 hasDueAt·dueAt
+    // 계산에 쓰이는 필드를 수정하는 기능이 생기면 그때 @Transactional(readOnly = true)를 다시 붙인다.
     @Override
-    @Transactional(readOnly = true)
     public List<RentalHistorySummary> getHistories(Long memberId, RentalStatus status) {
         List<RentalHistory> histories = rentalHistoryRepository.findAllByMemberId(memberId, status);
         Map<Long, Item> items = findItemsOf(histories);
@@ -36,9 +36,9 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .toList();
     }
 
-    // getHistories와 같은 이유(이력 + 물품 두 조회의 스냅샷 일관성, 쓰기 없음)로 readOnly다.
+    // getHistories와 같은 이유로 트랜잭션이 필요 없다. hasDueAt이 보는 returnPolicy는 지금 계획된
+    // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
     @Override
-    @Transactional(readOnly = true)
     public List<ReturnRequiredRental> getReturnRequiredRentals(Long memberId) {
         List<RentalHistory> histories = rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL);
         Map<Long, Item> items = findItemsOf(histories);
