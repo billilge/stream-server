@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplyCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
@@ -45,7 +43,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
      * 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
      */
     @Override
-    public List<LockerApplicationSummary> getApplicationsByMemberId(Long memberId) {
+    public List<LockerApplicationResult> getApplicationsByMemberId(Long memberId) {
         List<LockerApplication> applications = lockerApplicationRepository.findByMemberId(memberId);
         if (applications.isEmpty()) {
             return List.of();
@@ -54,15 +52,13 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
         Map<Long, LockerPeriod> publishedPeriods = getPublishedPeriods(applications);
         Map<Long, Locker> assignedLockers = getAssignedLockersIncludingRemoved(applications);
 
-        LocalDate today = LocalDate.now();
         return applications.stream()
             // 게시를 내린 회차의 신청은 학생에게 없는 것으로 보여야 한다
             .filter(application -> publishedPeriods.containsKey(application.getLockerPeriodId()))
-            .map(application -> LockerApplicationSummary.of(
+            .map(application -> new LockerApplicationResult(
                 application,
-                publishedPeriods.get(application.getLockerPeriodId()),
                 assignedLockers.get(application.getLockerId()),
-                today
+                publishedPeriods.get(application.getLockerPeriodId())
             ))
             .toList();
     }

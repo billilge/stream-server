@@ -19,8 +19,6 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplyCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
@@ -200,8 +198,12 @@ class LockerApplicationServiceImplTest {
             return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt);
         }
 
+        private List<Long> applicationIds(List<LockerApplicationResult> results) {
+            return results.stream().map(result -> result.application().getId()).toList();
+        }
+
         @Test
-        @DisplayName("저장소가 준 최신순을 유지하고, 회차·사물함 정보와 사용 기간에 따른 상태를 붙인다")
+        @DisplayName("저장소가 준 최신순을 유지하고, 신청마다 배정된 사물함과 운영 회차를 짝지어 준다")
         void combinesPeriodAndLocker() {
             LocalDateTime currentAppliedAt = LocalDateTime.of(2999, 8, 20, 13, 59);
             FakeLockerRepository repository = new FakeLockerRepository()
@@ -212,23 +214,19 @@ class LockerApplicationServiceImplTest {
                     application(25L, currentPeriod.getId(), 21L, currentAppliedAt),
                     application(11L, pastPeriod.getId(), 22L, LocalDateTime.of(2000, 3, 1, 10, 15)));
 
-            List<LockerApplicationSummary> summaries =
+            List<LockerApplicationResult> results =
                 service(repository).getApplicationsByMemberId(MEMBER_ID);
 
-            assertEquals(List.of(25L, 11L), summaries.stream().map(LockerApplicationSummary::applicationId).toList());
+            assertEquals(List.of(25L, 11L), applicationIds(results));
 
-            LockerApplicationSummary current = summaries.getFirst();
-            assertEquals(currentPeriod.getId(), current.lockerPeriodId());
-            assertEquals("2999-2학기", current.lockerPeriodName());
-            assertEquals(LockerApplicationStatus.ASSIGNED, current.applicationStatus());
-            assertEquals(currentAppliedAt, current.appliedAt());
-            assertEquals(LocalDate.of(2999, 9, 1), current.usageStartAt());
-            assertEquals(LocalDate.of(2999, 12, 15), current.usageEndAt());
-            assertEquals("B-25", current.lockerLabel());
+            LockerApplicationResult current = results.getFirst();
+            assertEquals(currentAppliedAt, current.application().getAppliedAt());
+            assertSame(currentPeriod, current.period());
+            assertEquals("B-25", current.locker().getLockerLabel());
 
-            LockerApplicationSummary past = summaries.get(1);
-            assertEquals(LockerApplicationStatus.EXPIRED, past.applicationStatus());
-            assertEquals("A-14", past.lockerLabel());
+            LockerApplicationResult past = results.get(1);
+            assertSame(pastPeriod, past.period());
+            assertEquals("A-14", past.locker().getLockerLabel());
         }
 
         @Test
@@ -241,10 +239,10 @@ class LockerApplicationServiceImplTest {
                     application(30L, unpublishedPeriod.getId(), 21L, LocalDateTime.of(2999, 8, 21, 9, 0)),
                     application(25L, currentPeriod.getId(), 21L, LocalDateTime.of(2999, 8, 20, 9, 0)));
 
-            List<LockerApplicationSummary> summaries =
+            List<LockerApplicationResult> results =
                 service(repository).getApplicationsByMemberId(MEMBER_ID);
 
-            assertEquals(List.of(25L), summaries.stream().map(LockerApplicationSummary::applicationId).toList());
+            assertEquals(List.of(25L), applicationIds(results));
         }
 
         @Test
@@ -257,10 +255,10 @@ class LockerApplicationServiceImplTest {
                 .withMemberApplications(
                     application(11L, pastPeriod.getId(), 22L, LocalDateTime.of(2000, 3, 1, 10, 15)));
 
-            List<LockerApplicationSummary> summaries =
+            List<LockerApplicationResult> results =
                 service(repository).getApplicationsByMemberId(MEMBER_ID);
 
-            assertEquals("A-14", summaries.getFirst().lockerLabel());
+            assertEquals("A-14", results.getFirst().locker().getLockerLabel());
         }
 
         @Test
@@ -268,10 +266,10 @@ class LockerApplicationServiceImplTest {
         void emptyWithoutApplications() {
             FakeLockerRepository repository = new FakeLockerRepository();
 
-            List<LockerApplicationSummary> summaries =
+            List<LockerApplicationResult> results =
                 service(repository).getApplicationsByMemberId(MEMBER_ID);
 
-            assertEquals(List.of(), summaries);
+            assertEquals(List.of(), results);
             assertEquals(0, repository.batchLookups);
         }
     }
