@@ -11,6 +11,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.SectionAvailabilityStatus;
+import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 class LockerServiceImpl implements LockerService {
 
     private final LockerRepository lockerRepository;
+    private final LockerApplicationRepository lockerApplicationRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<LockerSectionSummary> getSections(Long lockerPeriodId) {
         requirePublishedPeriod(lockerPeriodId);
 
-        Set<Long> appliedLockerIds = lockerRepository.findAppliedLockerIds(lockerPeriodId);
+        Set<Long> appliedLockerIds = lockerApplicationRepository.findAppliedLockerIds(lockerPeriodId);
         Map<Long, List<Locker>> lockersBySection = getLockerMapBySectionId();
 
         return lockerRepository.findAllSections().stream()
@@ -51,7 +53,7 @@ class LockerServiceImpl implements LockerService {
 
     @Override
     public Set<Long> getAppliedLockerIds(Long lockerPeriodId) {
-        return lockerRepository.findAppliedLockerIds(lockerPeriodId);
+        return lockerApplicationRepository.findAppliedLockerIds(lockerPeriodId);
     }
 
     @Override
@@ -62,7 +64,7 @@ class LockerServiceImpl implements LockerService {
 
     @Override
     public Optional<Locker> getLockerByMemberId(Long lockerPeriodId, Long memberId) {
-        return lockerRepository.findAppliedLockerId(lockerPeriodId, memberId)
+        return lockerApplicationRepository.findAppliedLockerId(lockerPeriodId, memberId)
             .flatMap(lockerRepository::findLockerById);
     }
 

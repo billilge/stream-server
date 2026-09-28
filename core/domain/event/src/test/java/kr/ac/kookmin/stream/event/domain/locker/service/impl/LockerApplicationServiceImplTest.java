@@ -23,6 +23,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
+import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -54,6 +55,10 @@ class LockerApplicationServiceImplTest {
         return Locker.of(LOCKER_ID, 1L, "B-25", 25, 1, 1, status);
     }
 
+    private static LockerApplicationServiceImpl service(FakeLockerRepository repository) {
+        return new LockerApplicationServiceImpl(repository, repository.applications);
+    }
+
     private static LockerApplyCommand command() {
         return new LockerApplyCommand(PERIOD_ID, LOCKER_ID);
     }
@@ -70,10 +75,10 @@ class LockerApplicationServiceImplTest {
                 .withLocker(locker(LockerStatus.AVAILABLE));
 
             LocalDateTime before = LocalDateTime.now();
-            LockerApplicationResult result = new LockerApplicationServiceImpl(repository).apply(MEMBER_ID, command());
+            LockerApplicationResult result = service(repository).apply(MEMBER_ID, command());
             LocalDateTime after = LocalDateTime.now();
 
-            LockerApplication saved = repository.saved.getFirst();
+            LockerApplication saved = repository.applications.saved.getFirst();
             assertNull(saved.getId());   // 식별자는 저장소가 부여한다
             assertEquals(PERIOD_ID, saved.getLockerPeriodId());
             assertEquals(MEMBER_ID, saved.getMemberId());
@@ -82,7 +87,7 @@ class LockerApplicationServiceImplTest {
             assertFalse(saved.getAppliedAt().isBefore(before));
             assertFalse(saved.getAppliedAt().isAfter(after));
 
-            assertEquals(FakeLockerRepository.SAVED_ID, result.application().getId());
+            assertEquals(FakeLockerApplicationRepository.SAVED_ID, result.application().getId());
             assertSame(repository.locker, result.locker());
             assertSame(repository.period, result.period());
         }
@@ -95,9 +100,9 @@ class LockerApplicationServiceImplTest {
                 .withLocker(locker(LockerStatus.AVAILABLE))
                 .withAppliedLocker(PERIOD_ID + 1, LOCKER_ID);
 
-            new LockerApplicationServiceImpl(repository).apply(MEMBER_ID, command());
+            service(repository).apply(MEMBER_ID, command());
 
-            assertEquals(1, repository.saved.size());
+            assertEquals(1, repository.applications.saved.size());
         }
     }
 
@@ -112,7 +117,7 @@ class LockerApplicationServiceImplTest {
                 .withLocker(locker(LockerStatus.AVAILABLE));
 
             assertErrorCode(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND, repository);
-            assertEquals(0, repository.saved.size());
+            assertEquals(0, repository.applications.saved.size());
         }
 
         @Test
@@ -124,7 +129,7 @@ class LockerApplicationServiceImplTest {
                 .withAppliedLocker(PERIOD_ID, LOCKER_ID);
 
             assertErrorCode(LockerErrorCode.LOCKER_ALREADY_ASSIGNED, repository);
-            assertEquals(0, repository.saved.size());
+            assertEquals(0, repository.applications.saved.size());
         }
 
         @Test
@@ -135,7 +140,7 @@ class LockerApplicationServiceImplTest {
                 .withLocker(locker(LockerStatus.DISABLED));
 
             assertErrorCode(LockerErrorCode.LOCKER_ALREADY_ASSIGNED, repository);
-            assertEquals(0, repository.saved.size());
+            assertEquals(0, repository.applications.saved.size());
         }
 
         @Test
@@ -146,9 +151,9 @@ class LockerApplicationServiceImplTest {
 
             assertThrows(
                 IllegalArgumentException.class,
-                () -> new LockerApplicationServiceImpl(repository).apply(MEMBER_ID, command())
+                () -> service(repository).apply(MEMBER_ID, command())
             );
-            assertEquals(0, repository.saved.size());
+            assertEquals(0, repository.applications.saved.size());
         }
 
         @Test
@@ -165,22 +170,22 @@ class LockerApplicationServiceImplTest {
         private void assertErrorCode(LockerErrorCode expected, FakeLockerRepository repository) {
             BusinessException exception = assertThrows(
                 BusinessException.class,
-                () -> new LockerApplicationServiceImpl(repository).apply(MEMBER_ID, command())
+                () -> service(repository).apply(MEMBER_ID, command())
             );
             assertEquals(expected, exception.getErrorCode());
         }
     }
 
-    /** 신청에 쓰는 조회·저장만 답하는 가짜 레포지토리. */
+    /**
+     * 신청에 쓰는 회차·사물함 조회만 답하는 가짜 레포지토리.
+     * <p>
+     * 신청 저장·조회는 {@link LockerApplicationRepository}로 나뉘어 있지만, 한 번에 준비할 수 있도록 그 가짜를 함께 들고 있다.
+     */
     private static final class FakeLockerRepository implements LockerRepository {
 
-        static final Long SAVED_ID = 25L;
-
+        private final FakeLockerApplicationRepository applications = new FakeLockerApplicationRepository();
         private LockerPeriod period;
         private Locker locker;
-        private final Set<List<Long>> appliedPeriodLockerIds = new HashSet<>();
-        private boolean losingSave;
-        private final List<LockerApplication> saved = new ArrayList<>();
 
         FakeLockerRepository withPeriod(LockerPeriod value) {
             this.period = value;
@@ -193,13 +198,13 @@ class LockerApplicationServiceImplTest {
         }
 
         FakeLockerRepository withAppliedLocker(Long lockerPeriodId, Long lockerId) {
-            this.appliedPeriodLockerIds.add(List.of(lockerPeriodId, lockerId));
+            applications.appliedPeriodLockerIds.add(List.of(lockerPeriodId, lockerId));
             return this;
         }
 
         /** 사전 검사와 저장 사이에 다른 신청이 먼저 커밋되어 유니크 제약에 걸린 상황. */
         FakeLockerRepository withLosingSave() {
-            this.losingSave = true;
+            applications.losingSave = true;
             return this;
         }
 
@@ -211,26 +216,6 @@ class LockerApplicationServiceImplTest {
         @Override
         public Optional<Locker> findLockerById(Long lockerId) {
             return Optional.ofNullable(locker).filter(value -> value.getId().equals(lockerId));
-        }
-
-        @Override
-        public boolean existsApplication(Long lockerPeriodId, Long lockerId) {
-            return appliedPeriodLockerIds.contains(List.of(lockerPeriodId, lockerId));
-        }
-
-        @Override
-        public LockerApplication saveApplication(LockerApplication application) {
-            if (losingSave) {
-                throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
-            }
-            saved.add(application);
-            return LockerApplication.of(
-                SAVED_ID,
-                application.getLockerPeriodId(),
-                application.getMemberId(),
-                application.getLockerId(),
-                application.getAppliedAt()
-            );
         }
 
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
@@ -259,6 +244,37 @@ class LockerApplicationServiceImplTest {
         public List<Locker> findLockersBySectionId(Long sectionId) {
             throw new UnsupportedOperationException();
         }
+    }
+
+    private static final class FakeLockerApplicationRepository implements LockerApplicationRepository {
+
+        static final Long SAVED_ID = 25L;
+
+        private final Set<List<Long>> appliedPeriodLockerIds = new HashSet<>();
+        private boolean losingSave;
+        private final List<LockerApplication> saved = new ArrayList<>();
+
+        @Override
+        public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
+            return appliedPeriodLockerIds.contains(List.of(lockerPeriodId, lockerId));
+        }
+
+        @Override
+        public LockerApplication save(LockerApplication application) {
+            if (losingSave) {
+                throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
+            }
+            saved.add(application);
+            return LockerApplication.of(
+                SAVED_ID,
+                application.getLockerPeriodId(),
+                application.getMemberId(),
+                application.getLockerId(),
+                application.getAppliedAt()
+            );
+        }
+
+        // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {

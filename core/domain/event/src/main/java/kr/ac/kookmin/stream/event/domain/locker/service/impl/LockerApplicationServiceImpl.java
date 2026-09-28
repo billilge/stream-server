@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplyCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
+import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 class LockerApplicationServiceImpl implements LockerApplicationService {
 
     private final LockerRepository lockerRepository;
+    private final LockerApplicationRepository lockerApplicationRepository;
 
     @Override
     @Transactional
@@ -26,7 +28,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
         LockerPeriod period = getPublishedPeriod(command.lockerPeriodId());
         Locker locker = getSelectableLocker(period.getId(), command.lockerId());
 
-        LockerApplication application = lockerRepository.saveApplication(
+        LockerApplication application = lockerApplicationRepository.save(
             LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
         );
         return new LockerApplicationResult(application, locker, period);
@@ -48,7 +50,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
         Locker locker = lockerRepository.findLockerById(lockerId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사물함입니다. lockerId=" + lockerId));
 
-        if (!locker.isSelectable(lockerRepository.existsApplication(lockerPeriodId, lockerId))) {
+        if (!locker.isSelectable(lockerApplicationRepository.existsByLocker(lockerPeriodId, lockerId))) {
             throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
         }
         return locker;
