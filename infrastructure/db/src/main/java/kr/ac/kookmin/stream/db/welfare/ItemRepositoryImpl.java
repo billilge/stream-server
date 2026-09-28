@@ -15,16 +15,13 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class ItemRepositoryImpl implements ItemRepository {
 
-    private static final char LIKE_ESCAPE = '!';
-
     private final ItemJpaRepository itemJpaRepository;
 
     @Override
     public CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
-        String keywordPattern = keyword == null ? null : toContainsPattern(keyword);
         List<ItemJpaEntity> entities = itemJpaRepository.findSlice(
-            category, keywordPattern,
+            category, keyword,
             cursor == null ? null : cursor.name(),
             cursor == null ? null : cursor.id(),
             pageable
@@ -40,14 +37,5 @@ public class ItemRepositoryImpl implements ItemRepository {
         return itemJpaRepository.findAllById(ids).stream()
             .map(ItemJpaEntity::toDomain)
             .toList();
-    }
-
-    // 검색어를 "포함" 조건의 LIKE 패턴으로 바꾼다. 검색어 안의 와일드카드가 패턴으로 해석되지 않게 이스케이프한다
-    private String toContainsPattern(String keyword) {
-        String escaped = keyword
-            .replace(String.valueOf(LIKE_ESCAPE), "" + LIKE_ESCAPE + LIKE_ESCAPE)
-            .replace("%", LIKE_ESCAPE + "%")
-            .replace("_", LIKE_ESCAPE + "_");
-        return "%" + escaped + "%";
     }
 }
