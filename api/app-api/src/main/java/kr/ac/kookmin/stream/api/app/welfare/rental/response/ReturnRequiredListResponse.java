@@ -2,12 +2,12 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.ReturnRequiredRental;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 
 public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
 
-    public static ReturnRequiredListResponse from(List<ReturnRequiredRental> rentals) {
-        return new ReturnRequiredListResponse(rentals.stream().map(Rental::from).toList());
+    public static ReturnRequiredListResponse from(List<RentalRecord> records) {
+        return new ReturnRequiredListResponse(records.stream().map(Rental::from).toList());
     }
 
     public record Rental(
@@ -17,12 +17,12 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
         LocalDateTime dueAt
     ) {
 
-        public static Rental from(ReturnRequiredRental rental) {
+        public static Rental from(RentalRecord record) {
             return new Rental(
-                rental.historyId(),
-                rental.itemName(),
-                ItemImageUrl.from(rental.itemImageKey()),
-                rental.dueAt()
+                record.history().getId(),
+                record.itemName(),
+                ItemImageUrl.from(record.itemImageKey()),
+                record.dueAt()
             );
         }
     }
