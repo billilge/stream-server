@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.locker.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerAvailability;
@@ -17,6 +18,14 @@ public interface LockerService {
      * 구역에 속한 사물함의 배치 정보와 선택 가능 여부를 조회한다.
      */
     List<LockerAvailability> getSectionLockers(Long lockerPeriodId, Long sectionId);
+
+    /**
+     * 삭제되지 않은 사물함 전체를 구역별로 묶어 조회한다.
+     * <p>
+     * 사물함이 한 건도 없는 구역은 키가 없다. 구역 목록을 만들 때처럼 빈 구역도 빠뜨리면 안 되는 쪽은
+     * {@code getOrDefault}로 받아야 한다.
+     */
+    Map<Long, List<Locker>> getLockerMapBySectionId();
 
     /**
      * 해당 운영 회차에서 회원이 신청한 사물함. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.

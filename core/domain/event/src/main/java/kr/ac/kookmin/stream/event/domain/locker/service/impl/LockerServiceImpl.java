@@ -28,8 +28,7 @@ class LockerServiceImpl implements LockerService {
         requirePublishedPeriod(lockerPeriodId);
 
         Set<Long> appliedLockerIds = lockerRepository.findAppliedLockerIds(lockerPeriodId);
-        Map<Long, List<Locker>> lockersBySection = lockerRepository.findAllLockers().stream()
-            .collect(Collectors.groupingBy(Locker::getSectionId));
+        Map<Long, List<Locker>> lockersBySection = getLockerMapBySectionId();
 
         return lockerRepository.findAllSections().stream()
             .map(section -> LockerSectionSummary.of(
@@ -52,6 +51,12 @@ class LockerServiceImpl implements LockerService {
         return lockerRepository.findLockersBySectionId(sectionId).stream()
             .map(locker -> LockerAvailability.of(locker, appliedLockerIds.contains(locker.getId())))
             .toList();
+    }
+
+    @Override
+    public Map<Long, List<Locker>> getLockerMapBySectionId() {
+        return lockerRepository.findAllLockers().stream()
+            .collect(Collectors.groupingBy(Locker::getSectionId));
     }
 
     @Override
