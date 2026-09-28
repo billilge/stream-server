@@ -7,9 +7,8 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRound;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRound;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepository;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRoundRepository;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
@@ -46,11 +45,12 @@ class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public FeedbackRoundOptions getRoundOptions(Integer year) {
-        List<Integer> years = feedbackRoundRepository.findDistinctYears();
-        int targetYear = year != null ? year : LocalDateTime.now().getYear();
-        List<Integer> rounds = feedbackRoundRepository.findRoundsByYear(targetYear);
+    public List<Integer> getAvailableYears() {
+        return feedbackRoundRepository.findDistinctYears();
+    }
 
-        return FeedbackRoundOptions.of(years, targetYear, rounds);
+    @Override
+    public List<Integer> getRoundsOf(int year) {
+        return feedbackRoundRepository.findRoundsByYear(year);
     }
 }

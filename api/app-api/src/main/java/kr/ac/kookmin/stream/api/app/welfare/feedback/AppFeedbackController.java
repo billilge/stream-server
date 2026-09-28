@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.api.app.welfare.feedback;
 
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.List;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackCreateRequest;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
@@ -10,7 +12,6 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundOptions;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,9 @@ public class AppFeedbackController implements AppFeedbackApi {
         AppApiUser apiUser,
         @RequestParam(required = false) Integer year
     ) {
-        FeedbackRoundOptions options = feedbackService.getRoundOptions(year);
-        return ApiResponse.success(FeedbackRoundsResponse.from(options));
+        List<Integer> years = feedbackService.getAvailableYears();
+        int targetYear = year != null ? year : LocalDateTime.now().getYear();
+        List<Integer> rounds = feedbackService.getRoundsOf(targetYear);
+        return ApiResponse.success(FeedbackRoundsResponse.of(years, targetYear, rounds));
     }
 }
