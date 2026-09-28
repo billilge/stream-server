@@ -28,12 +28,14 @@ final class FcmErrorClassifier {
         }
         // default를 두지 않는다. SDK에 새 에러 코드가 생기면 업그레이드 시 컴파일 에러로 분류 누락이 드러난다
         return switch (code) {
-            // FCM이 무효 토큰 신호로 안내하는 에러. INVALID_ARGUMENT는 페이로드 오류일 때도 나므로 정리 시 유의한다
-            case UNREGISTERED, INVALID_ARGUMENT -> PushSendStatus.INVALID_TOKEN;
+            // 토큰이 만료·삭제됐다는 신호. 토큰 정리 대상은 이것뿐이다
+            case UNREGISTERED -> PushSendStatus.INVALID_TOKEN;
             // UNAVAILABLE(503)은 SDK가 이미 최대 4회 재시도하고도 남은 실패다
             case UNAVAILABLE, INTERNAL, QUOTA_EXCEEDED -> PushSendStatus.RETRYABLE;
-            // SENDER_ID_MISMATCH는 서비스 계정이 다른 프로젝트를 가리켜도 전 토큰에 나므로, 토큰 정리 대상으로 보지 않는다
-            case THIRD_PARTY_AUTH_ERROR, SENDER_ID_MISMATCH -> PushSendStatus.FAILED;
+            // 아래는 전 토큰에 한꺼번에 날 수 있어 토큰 정리 대상으로 보면 멀쩡한 토큰까지 지운다.
+            // INVALID_ARGUMENT는 잘못된 토큰뿐 아니라 페이로드 오류에도 나고,
+            // SENDER_ID_MISMATCH는 서비스 계정이 다른 프로젝트를 가리켜도 난다
+            case INVALID_ARGUMENT, THIRD_PARTY_AUTH_ERROR, SENDER_ID_MISMATCH -> PushSendStatus.FAILED;
         };
     }
 
