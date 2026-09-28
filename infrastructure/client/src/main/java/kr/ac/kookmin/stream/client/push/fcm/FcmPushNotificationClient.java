@@ -52,16 +52,21 @@ public class FcmPushNotificationClient implements PushNotificationClient {
     }
 
     private PushSendResult sendChunk(List<String> tokens, PushMessage message) {
+        BatchResponse response;
         try {
-            BatchResponse response = firebaseMessaging.sendEachForMulticast(toMulticastMessage(tokens, message));
-            PushSendResult result = toResult(tokens, response.getResponses());
-            logFailures(result.outcomes(), response.getResponses());
-            return result;
+            response = firebaseMessaging.sendEachForMulticast(toMulticastMessage(tokens, message));
         } catch (FirebaseMessagingException e) {
             PushSendStatus status = FcmErrorClassifier.classify(e);
             logFailure(status, tokens.size(), e);
             return PushSendResult.of(tokens, status);
+        } catch (RuntimeException e) {
+            // data의 null 값처럼 메시지 구성 중 나는 예외도 호출 측 본 흐름을 깨지 않도록 발송 실패로 돌려준다
+            log.error("FCM 메시지 구성·발송 중 예외: tokenCount={}", tokens.size(), e);
+            return PushSendResult.of(tokens, PushSendStatus.FAILED);
         }
+        PushSendResult result = toResult(tokens, response.getResponses());
+        logFailures(result.outcomes(), response.getResponses());
+        return result;
     }
 
     // FCM이 등록 토큰에서 FID(Firebase Installation ID)로 전환 중이라 addAllTokens가 deprecated다(firebase-admin 9.10.0~).
