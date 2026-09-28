@@ -21,8 +21,7 @@ public interface ItemRepository {
 
     List<Item> findAllByIds(Collection<Long> ids);
 
-    /** 재고 차감용 비관적 락 조회. 동시에 들어온 대여 신청이 같은 물품의 재고를 동시에 읽지 못하게 한다. */
-    Optional<Item> findByIdForUpdate(Long id);
+    Optional<Item> findById(Long id);
 
     Item save(Item item);
 }

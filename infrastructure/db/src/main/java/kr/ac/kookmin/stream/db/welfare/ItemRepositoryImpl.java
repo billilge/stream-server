@@ -41,8 +41,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> findByIdForUpdate(Long id) {
-        return itemJpaRepository.findByIdForUpdate(id).map(ItemJpaEntity::toDomain);
+    public Optional<Item> findById(Long id) {
+        return itemJpaRepository.findById(id).map(ItemJpaEntity::toDomain);
     }
 
     @Override

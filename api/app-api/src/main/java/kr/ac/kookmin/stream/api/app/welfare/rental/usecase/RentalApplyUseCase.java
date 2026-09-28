@@ -29,11 +29,8 @@ public class RentalApplyUseCase {
 
     @Transactional
     public void apply(Long memberId, Long itemId, int count, int rentAtHour, int rentAtMinute, boolean ignoreDuplicate) {
-        // itemService.decreaseStock()이 이 트랜잭션의 첫 조회여야 한다 — 그 안의 비관적 락 조회가
-        // 먼저 실행돼야, 뒤이은 평범한 조회(isPayer, existsActiveRental)들이 락 획득 이후(=
-        // 경쟁 상대가 커밋한 이후) 시점의 데이터를 보게 된다(MySQL REPEATABLE READ 스냅샷).
-        Item item = itemService.decreaseStock(itemId, count);
-
+        // 동시성 보호(락) 없이 진행한다 — 재고 경쟁, 중복 대여 경쟁 둘 다 이론적으로 남아있는
+        // 경합이다. 필요해지면 별도로 다시 도입한다(billilge-rental-apply-review-fixes.md 참고).
         if (!payerService.isPayer(memberId)) {
             throw new BusinessException(RentalErrorCode.MEMBER_IS_NOT_PAYER);
         }
@@ -41,6 +38,8 @@ public class RentalApplyUseCase {
         if (!ignoreDuplicate && rentalHistoryService.existsActiveRental(itemId, memberId)) {
             throw new BusinessException(RentalErrorCode.RENTAL_ITEM_DUPLICATED);
         }
+
+        Item item = itemService.decreaseStock(itemId, count);
 
         LocalDateTime now = LocalDateTime.now(KST);
         LocalDateTime rentAt = LocalDate.now(KST).atTime(rentAtHour, rentAtMinute);

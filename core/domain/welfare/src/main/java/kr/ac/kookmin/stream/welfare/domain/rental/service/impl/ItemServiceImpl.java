@@ -27,7 +27,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item decreaseStock(Long itemId, int amount) {
-        Item item = itemRepository.findByIdForUpdate(itemId)
+        Item item = itemRepository.findById(itemId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
         item.decreaseStock(amount);
         return itemRepository.save(item);
