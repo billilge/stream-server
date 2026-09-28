@@ -12,3 +12,8 @@ file:
       access-key: ${R2_ACCESS_KEY:}
       secret-key: ${R2_SECRET_KEY:}
       upload-url-expiry-seconds: ${S3_UPLOAD_URL_EXPIRY_SECONDS:600}
+
+push:
+  type: ${PUSH_TYPE:log}
+  fcm:
+    credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
