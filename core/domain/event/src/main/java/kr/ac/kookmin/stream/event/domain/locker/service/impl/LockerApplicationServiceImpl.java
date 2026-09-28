@@ -51,26 +51,43 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
             return List.of();
         }
 
-        Map<Long, LockerPeriod> periods = lockerRepository.findPublishedPeriodsByIds(
-                applications.stream().map(LockerApplication::getLockerPeriodId).distinct().toList())
-            .stream()
-            .collect(Collectors.toMap(LockerPeriod::getId, Function.identity()));
-        Map<Long, Locker> lockers = lockerRepository.findLockersByIdsIncludingDeleted(
-                applications.stream().map(LockerApplication::getLockerId).distinct().toList())
-            .stream()
-            .collect(Collectors.toMap(Locker::getId, Function.identity()));
+        Map<Long, LockerPeriod> publishedPeriods = getPublishedPeriods(applications);
+        Map<Long, Locker> assignedLockers = getAssignedLockersIncludingRemoved(applications);
 
         LocalDate today = LocalDate.now();
         return applications.stream()
             // 게시를 내린 회차의 신청은 학생에게 없는 것으로 보여야 한다
-            .filter(application -> periods.containsKey(application.getLockerPeriodId()))
+            .filter(application -> publishedPeriods.containsKey(application.getLockerPeriodId()))
             .map(application -> LockerApplicationSummary.of(
                 application,
-                periods.get(application.getLockerPeriodId()),
-                lockers.get(application.getLockerId()),
+                publishedPeriods.get(application.getLockerPeriodId()),
+                assignedLockers.get(application.getLockerId()),
                 today
             ))
             .toList();
+    }
+
+    /** 신청들이 속한 운영 회차 중 게시된 것. 식별자로 찾아 쓸 수 있게 묶는다. */
+    private Map<Long, LockerPeriod> getPublishedPeriods(List<LockerApplication> applications) {
+        List<Long> lockerPeriodIds = applications.stream()
+            .map(LockerApplication::getLockerPeriodId)
+            .distinct()
+            .toList();
+        return lockerRepository.findPublishedPeriodsByIds(lockerPeriodIds).stream()
+            .collect(Collectors.toMap(LockerPeriod::getId, Function.identity()));
+    }
+
+    /**
+     * 신청들에 배정된 사물함. 이용이 끝난 뒤 철거(삭제)된 사물함이어도 지난 신청의 사물함 이름을 보여줘야 하므로
+     * 삭제된 사물함도 포함한다.
+     */
+    private Map<Long, Locker> getAssignedLockersIncludingRemoved(List<LockerApplication> applications) {
+        List<Long> lockerIds = applications.stream()
+            .map(LockerApplication::getLockerId)
+            .distinct()
+            .toList();
+        return lockerRepository.findLockersByIdsIncludingDeleted(lockerIds).stream()
+            .collect(Collectors.toMap(Locker::getId, Function.identity()));
     }
 
     /** 게시된 운영 회차. 아직 공개하지 않은 회차는 학생에게 없는 것으로 보여야 하므로 구역 조회와 같은 기준으로 거른다. */
