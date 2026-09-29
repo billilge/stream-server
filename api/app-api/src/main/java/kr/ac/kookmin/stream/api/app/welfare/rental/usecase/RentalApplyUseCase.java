@@ -31,9 +31,7 @@ public class RentalApplyUseCase {
     public void apply(Long memberId, Long itemId, int count, int rentAtHour, int rentAtMinute, boolean ignoreDuplicate) {
         // 동시성 보호(락) 없이 진행한다 — 재고 경쟁, 중복 대여 경쟁 둘 다 이론적으로 남아있는
         // 경합이다. 필요해지면 별도로 다시 도입한다(billilge-rental-apply-review-fixes.md 참고).
-        if (!payerService.isPayer(memberId)) {
-            throw new BusinessException(RentalErrorCode.MEMBER_IS_NOT_PAYER);
-        }
+        payerService.validatePayer(memberId);
 
         if (!ignoreDuplicate && rentalHistoryService.existsActiveRental(itemId, memberId)) {
             throw new BusinessException(RentalErrorCode.RENTAL_ITEM_DUPLICATED);

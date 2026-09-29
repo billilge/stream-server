@@ -13,6 +13,7 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
@@ -54,10 +55,11 @@ public interface AppRentalApi {
             + "이미 대여 중인 같은 물품이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
             + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"MEMBER_IS_NOT_PAYER"})
     @ApiErrorCode(
         type = RentalErrorCode.class,
         codes = {
-            "ITEM_NOT_FOUND", "MEMBER_IS_NOT_PAYER", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
+            "ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
             "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK"
         }
     )
