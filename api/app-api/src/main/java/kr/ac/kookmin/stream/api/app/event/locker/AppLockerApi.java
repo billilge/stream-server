@@ -3,7 +3,9 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
+import kr.ac.kookmin.stream.api.app.event.locker.request.LockerApplyRequest;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
+import kr.ac.kookmin.stream.api.app.event.locker.response.LockerApplyResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -18,7 +20,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다. 경로 매핑과
  * 파라미터 바인딩(@{@code ModelAttribute}, @{@code PathVariable} 등)은 구현체에 둔다.
  */
-@Tag(name = "사물함", description = "학생 앱 사물함 구역·배치 조회")
+@Tag(name = "사물함", description = "학생 앱 사물함 구역·배치 조회와 신청")
 public interface AppLockerApi {
 
     /** 구역별 전체·선택 가능 사물함 수와 표시 상태. */
@@ -43,4 +45,12 @@ public interface AppLockerApi {
         Long sectionId,
         @ParameterObject LockerPeriodParams params
     );
+
+    /** 고른 사물함을 신청하고 즉시 배정한다. */
+    @Operation(summary = "사물함 신청",
+        description = "게시된 운영 회차에서 고른 사물함을 신청하고 즉시 배정한다. 운영 회차당 한 개만 신청할 수 있고 "
+            + "신청 후에는 취소하거나 변경할 수 없다. 같은 사물함에 동시에 신청하면 먼저 완료된 신청만 성공한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_ALREADY_ASSIGNED"})
+    ApiResponse<LockerApplyResponse> apply(AppApiUser apiUser, LockerApplyRequest request);
 }

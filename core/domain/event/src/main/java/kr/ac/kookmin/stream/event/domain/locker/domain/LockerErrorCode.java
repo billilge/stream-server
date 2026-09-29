@@ -12,7 +12,8 @@ import lombok.experimental.Accessors;
 public enum LockerErrorCode implements ErrorCode {
 
     LOCKER_PERIOD_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 운영 회차를 찾을 수 없습니다."),
-    LOCKER_SECTION_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 구역을 찾을 수 없습니다.");
+    LOCKER_SECTION_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 구역을 찾을 수 없습니다."),
+    LOCKER_ALREADY_ASSIGNED(ErrorStatus.CONFLICT, "다른 사용자가 먼저 신청한 사물함입니다.");
 
     private final int status;
     private final String message;

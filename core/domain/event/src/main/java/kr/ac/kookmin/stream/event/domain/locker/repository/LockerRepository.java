@@ -2,10 +2,13 @@ package kr.ac.kookmin.stream.event.domain.locker.repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 
+/**
+ * 사물함 운영 회차·구역·사물함 저장소. 사물함 신청은 {@link LockerApplicationRepository}가 맡는다.
+ */
 public interface LockerRepository {
 
     /**
@@ -14,6 +17,11 @@ public interface LockerRepository {
     boolean existsPublishedPeriod(Long lockerPeriodId);
 
     boolean existsSection(Long sectionId);
+
+    /**
+     * 게시된 운영 회차 한 건. 아직 공개하지 않은 회차는 없는 것으로 본다.
+     */
+    Optional<LockerPeriod> findPublishedPeriodById(Long lockerPeriodId);
 
     /**
      * 전체 구역을 식별자 오름차순으로 조회한다.
@@ -34,14 +42,4 @@ public interface LockerRepository {
      * 사물함 한 건. 삭제된 사물함은 없는 것으로 본다.
      */
     Optional<Locker> findLockerById(Long lockerId);
-
-    /**
-     * 해당 운영 회차에 이미 신청된 사물함 식별자.
-     */
-    Set<Long> findAppliedLockerIds(Long lockerPeriodId);
-
-    /**
-     * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
-     */
-    Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
 }

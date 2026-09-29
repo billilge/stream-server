@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface LockerApplicationJpaRepository extends JpaRepository<LockerApplicationJpaEntity, Long> {
 
+    boolean existsByLockerPeriodIdAndLockerId(Long lockerPeriodId, Long lockerId);
+
     /**
      * 해당 운영 회차에 신청된 사물함 식별자. 신청 여부만 필요하므로 신청 자체는 읽지 않는다.
      */
