@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
@@ -24,6 +25,11 @@ public interface LockerRepository {
     Optional<LockerPeriod> findPublishedPeriodById(Long lockerPeriodId);
 
     /**
+     * 게시된 운영 회차 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     */
+    List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds);
+
+    /**
      * 전체 구역을 식별자 오름차순으로 조회한다.
      */
     List<LockerSection> findAllSections();
@@ -42,4 +48,9 @@ public interface LockerRepository {
      * 사물함 한 건. 삭제된 사물함은 없는 것으로 본다.
      */
     Optional<Locker> findLockerById(Long lockerId);
+
+    /**
+     * 식별자에 해당하는 사물함. 지난 신청 이력의 사물함 이름을 보여줘야 하므로 삭제된 사물함도 포함한다.
+     */
+    List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds);
 }

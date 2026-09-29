@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerApplyResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
+import kr.ac.kookmin.stream.api.app.event.locker.response.MyLockerApplicationListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
@@ -53,4 +54,10 @@ public interface AppLockerApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_ALREADY_ASSIGNED"})
     ApiResponse<LockerApplyResponse> apply(AppApiUser apiUser, LockerApplyRequest request);
+
+    /** 내 사물함 신청 내역. */
+    @Operation(summary = "내 배정 사물함 조회",
+        description = "게시된 운영 회차에서 배정된 내 사물함을 신청 일시 최신순으로 조회한다. 사용 기간이 끝난 회차는 "
+            + "EXPIRED로 내려간다. 배정된 사물함이 없으면 data가 null이다.")
+    ApiResponse<MyLockerApplicationListResponse> getMyApplications(AppApiUser apiUser);
 }

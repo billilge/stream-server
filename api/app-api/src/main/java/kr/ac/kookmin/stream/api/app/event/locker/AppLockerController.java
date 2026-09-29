@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.app.event.locker;
 
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
@@ -9,8 +10,10 @@ import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerApplyResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
+import kr.ac.kookmin.stream.api.app.event.locker.response.MyLockerApplicationListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
@@ -77,6 +80,17 @@ public class AppLockerController implements AppLockerApi {
     ) {
         return ApiResponse.success(
             LockerApplyResponse.from(lockerApplicationService.apply(apiUser.userId(), request.toCommand()))
+        );
+    }
+
+    @Override
+    @GetMapping("/applications")
+    public ApiResponse<MyLockerApplicationListResponse> getMyApplications(AppApiUser apiUser) {
+        List<LockerApplicationResult> applications =
+            lockerApplicationService.getApplicationsByMemberId(apiUser.userId());
+        // 배정된 사물함이 없으면 빈 목록 대신 data를 비운다 (명세)
+        return ApiResponse.success(
+            applications.isEmpty() ? null : MyLockerApplicationListResponse.of(applications, LocalDate.now())
         );
     }
 }

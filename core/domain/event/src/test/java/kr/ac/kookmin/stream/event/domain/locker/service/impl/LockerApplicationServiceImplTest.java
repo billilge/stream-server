@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * 사물함 신청 규칙을 확인한다. 동시 신청을 막는 유니크 제약은 DB가 걸기 때문에, 여기서는 저장소가 그 위반을
- * {@code LOCKER_ALREADY_ASSIGNED}로 알렸을 때 서비스가 그대로 전파하는지만 본다.
+ * 사물함 신청 규칙과 회원별 신청 내역 조합을 확인한다. 동시 신청을 막는 유니크 제약은 DB가 걸기 때문에, 여기서는
+ * 저장소가 그 위반을 {@code LOCKER_ALREADY_ASSIGNED}로 알렸을 때 서비스가 그대로 전파하는지만 본다.
  */
 class LockerApplicationServiceImplTest {
 
@@ -176,8 +177,105 @@ class LockerApplicationServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("회원별 신청 내역")
+    class GetApplicationsByMemberId {
+
+        // 오늘 날짜와 무관하게 상태가 갈리도록 사용 기간을 아주 먼 과거·미래로 둔다
+        private final LockerPeriod pastPeriod =
+            period(2L, "2000-1학기", LocalDate.of(2000, 3, 2), LocalDate.of(2000, 6, 21), true);
+        private final LockerPeriod currentPeriod =
+            period(3L, "2999-2학기", LocalDate.of(2999, 9, 1), LocalDate.of(2999, 12, 15), true);
+        private final LockerPeriod unpublishedPeriod =
+            period(4L, "비공개 회차", LocalDate.of(2999, 9, 1), LocalDate.of(2999, 12, 15), false);
+
+        private LockerPeriod period(Long id, String name, LocalDate usageStart, LocalDate usageEnd, boolean published) {
+            LocalDateTime applyAt = usageStart.atStartOfDay();
+            return LockerPeriod.of(id, name, applyAt, applyAt, usageStart, usageEnd, published);
+        }
+
+        private LockerApplication application(Long id, Long periodId, Long lockerId, LocalDateTime appliedAt) {
+            return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt);
+        }
+
+        private List<Long> applicationIds(List<LockerApplicationResult> results) {
+            return results.stream().map(result -> result.application().getId()).toList();
+        }
+
+        @Test
+        @DisplayName("저장소가 준 최신순을 유지하고, 신청마다 배정된 사물함과 운영 회차를 짝지어 준다")
+        void combinesPeriodAndLocker() {
+            LocalDateTime currentAppliedAt = LocalDateTime.of(2999, 8, 20, 13, 59);
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withPeriods(pastPeriod, currentPeriod)
+                .withLockersIncludingDeleted(Locker.of(21L, 1L, "B-25", 25, 1, 1, LockerStatus.AVAILABLE),
+                    Locker.of(22L, 1L, "A-14", 14, 1, 2, LockerStatus.AVAILABLE))
+                .withMemberApplications(
+                    application(25L, currentPeriod.getId(), 21L, currentAppliedAt),
+                    application(11L, pastPeriod.getId(), 22L, LocalDateTime.of(2000, 3, 1, 10, 15)));
+
+            List<LockerApplicationResult> results =
+                service(repository).getApplicationsByMemberId(MEMBER_ID);
+
+            assertEquals(List.of(25L, 11L), applicationIds(results));
+
+            LockerApplicationResult current = results.getFirst();
+            assertEquals(currentAppliedAt, current.application().getAppliedAt());
+            assertSame(currentPeriod, current.period());
+            assertEquals("B-25", current.locker().getLockerLabel());
+
+            LockerApplicationResult past = results.get(1);
+            assertSame(pastPeriod, past.period());
+            assertEquals("A-14", past.locker().getLockerLabel());
+        }
+
+        @Test
+        @DisplayName("게시를 내린 회차의 신청은 내역에서 빠진다")
+        void excludesUnpublishedPeriod() {
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withPeriods(currentPeriod, unpublishedPeriod)
+                .withLockersIncludingDeleted(Locker.of(21L, 1L, "B-25", 25, 1, 1, LockerStatus.AVAILABLE))
+                .withMemberApplications(
+                    application(30L, unpublishedPeriod.getId(), 21L, LocalDateTime.of(2999, 8, 21, 9, 0)),
+                    application(25L, currentPeriod.getId(), 21L, LocalDateTime.of(2999, 8, 20, 9, 0)));
+
+            List<LockerApplicationResult> results =
+                service(repository).getApplicationsByMemberId(MEMBER_ID);
+
+            assertEquals(List.of(25L), applicationIds(results));
+        }
+
+        @Test
+        @DisplayName("신청 뒤 삭제된 사물함이어도 지난 신청의 사물함 이름을 보여준다")
+        void showsDeletedLockerLabel() {
+            // findLockerById는 삭제된 사물함을 없는 것으로 보므로 신청 내역은 삭제 포함 조회를 써야 한다
+            FakeLockerRepository repository = new FakeLockerRepository()
+                .withPeriods(pastPeriod)
+                .withLockersIncludingDeleted(Locker.of(22L, 1L, "A-14", 14, 1, 2, LockerStatus.AVAILABLE))
+                .withMemberApplications(
+                    application(11L, pastPeriod.getId(), 22L, LocalDateTime.of(2000, 3, 1, 10, 15)));
+
+            List<LockerApplicationResult> results =
+                service(repository).getApplicationsByMemberId(MEMBER_ID);
+
+            assertEquals("A-14", results.getFirst().locker().getLockerLabel());
+        }
+
+        @Test
+        @DisplayName("신청이 없으면 회차·사물함을 조회하지 않고 빈 목록을 돌려준다")
+        void emptyWithoutApplications() {
+            FakeLockerRepository repository = new FakeLockerRepository();
+
+            List<LockerApplicationResult> results =
+                service(repository).getApplicationsByMemberId(MEMBER_ID);
+
+            assertEquals(List.of(), results);
+            assertEquals(0, repository.batchLookups);
+        }
+    }
+
     /**
-     * 신청에 쓰는 회차·사물함 조회만 답하는 가짜 레포지토리.
+     * 신청·신청 내역에 쓰는 회차·사물함 조회만 답하는 가짜 레포지토리.
      * <p>
      * 신청 저장·조회는 {@link LockerApplicationRepository}로 나뉘어 있지만, 한 번에 준비할 수 있도록 그 가짜를 함께 들고 있다.
      */
@@ -186,6 +284,9 @@ class LockerApplicationServiceImplTest {
         private final FakeLockerApplicationRepository applications = new FakeLockerApplicationRepository();
         private LockerPeriod period;
         private Locker locker;
+        private List<LockerPeriod> periods = List.of();
+        private List<Locker> lockersIncludingDeleted = List.of();
+        private int batchLookups;
 
         FakeLockerRepository withPeriod(LockerPeriod value) {
             this.period = value;
@@ -199,6 +300,23 @@ class LockerApplicationServiceImplTest {
 
         FakeLockerRepository withAppliedLocker(Long lockerPeriodId, Long lockerId) {
             applications.appliedPeriodLockerIds.add(List.of(lockerPeriodId, lockerId));
+            return this;
+        }
+
+        /** 게시 여부와 무관하게 존재하는 회차. 게시된 것만 조회된다. */
+        FakeLockerRepository withPeriods(LockerPeriod... values) {
+            this.periods = List.of(values);
+            return this;
+        }
+
+        FakeLockerRepository withLockersIncludingDeleted(Locker... values) {
+            this.lockersIncludingDeleted = List.of(values);
+            return this;
+        }
+
+        /** 저장소가 신청 일시 최신순으로 돌려준다고 보고 넣은 순서를 그대로 쓴다. */
+        FakeLockerRepository withMemberApplications(LockerApplication... values) {
+            applications.memberApplications = List.of(values);
             return this;
         }
 
@@ -216,6 +334,21 @@ class LockerApplicationServiceImplTest {
         @Override
         public Optional<Locker> findLockerById(Long lockerId) {
             return Optional.ofNullable(locker).filter(value -> value.getId().equals(lockerId));
+        }
+
+        @Override
+        public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
+            batchLookups++;
+            return periods.stream()
+                .filter(LockerPeriod::isPublished)
+                .filter(value -> lockerPeriodIds.contains(value.getId()))
+                .toList();
+        }
+
+        @Override
+        public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
+            batchLookups++;
+            return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();
         }
 
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
@@ -253,6 +386,7 @@ class LockerApplicationServiceImplTest {
         private final Set<List<Long>> appliedPeriodLockerIds = new HashSet<>();
         private boolean losingSave;
         private final List<LockerApplication> saved = new ArrayList<>();
+        private List<LockerApplication> memberApplications = List.of();
 
         @Override
         public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
@@ -272,6 +406,11 @@ class LockerApplicationServiceImplTest {
                 application.getLockerId(),
                 application.getAppliedAt()
             );
+        }
+
+        @Override
+        public List<LockerApplication> findByMemberId(Long memberId) {
+            return memberApplications.stream().filter(value -> value.getMemberId().equals(memberId)).toList();
         }
 
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다

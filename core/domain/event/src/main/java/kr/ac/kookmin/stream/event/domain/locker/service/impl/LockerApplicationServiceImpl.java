@@ -1,6 +1,10 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
@@ -32,6 +36,54 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
             LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
         );
         return new LockerApplicationResult(application, locker, period);
+    }
+
+    /**
+     * 트랜잭션을 걸지 않는다. 신청은 취소·변경이 없고, 조회 사이에 회차 게시·이름이 바뀌어도 각 건은 그 시점에 맞는
+     * 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
+     */
+    @Override
+    public List<LockerApplicationResult> getApplicationsByMemberId(Long memberId) {
+        List<LockerApplication> applications = lockerApplicationRepository.findByMemberId(memberId);
+        if (applications.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, LockerPeriod> publishedPeriods = getPublishedPeriods(applications);
+        Map<Long, Locker> assignedLockers = getAssignedLockersIncludingRemoved(applications);
+
+        return applications.stream()
+            // 게시를 내린 회차의 신청은 학생에게 없는 것으로 보여야 한다
+            .filter(application -> publishedPeriods.containsKey(application.getLockerPeriodId()))
+            .map(application -> new LockerApplicationResult(
+                application,
+                assignedLockers.get(application.getLockerId()),
+                publishedPeriods.get(application.getLockerPeriodId())
+            ))
+            .toList();
+    }
+
+    /** 신청들이 속한 운영 회차 중 게시된 것. 식별자로 찾아 쓸 수 있게 묶는다. */
+    private Map<Long, LockerPeriod> getPublishedPeriods(List<LockerApplication> applications) {
+        List<Long> lockerPeriodIds = applications.stream()
+            .map(LockerApplication::getLockerPeriodId)
+            .distinct()
+            .toList();
+        return lockerRepository.findPublishedPeriodsByIds(lockerPeriodIds).stream()
+            .collect(Collectors.toMap(LockerPeriod::getId, Function.identity()));
+    }
+
+    /**
+     * 신청들에 배정된 사물함. 이용이 끝난 뒤 철거(삭제)된 사물함이어도 지난 신청의 사물함 이름을 보여줘야 하므로
+     * 삭제된 사물함도 포함한다.
+     */
+    private Map<Long, Locker> getAssignedLockersIncludingRemoved(List<LockerApplication> applications) {
+        List<Long> lockerIds = applications.stream()
+            .map(LockerApplication::getLockerId)
+            .distinct()
+            .toList();
+        return lockerRepository.findLockersByIdsIncludingDeleted(lockerIds).stream()
+            .collect(Collectors.toMap(Locker::getId, Function.identity()));
     }
 
     /** 게시된 운영 회차. 아직 공개하지 않은 회차는 학생에게 없는 것으로 보여야 하므로 구역 조회와 같은 기준으로 거른다. */
