@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.common;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,9 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DateUtil {
+
+    /** 서버 기본 타임존에 기대지 않고 명시적으로 한국 표준시를 써야 하는 곳에 쓴다. */
+    public static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private static final int FIRST_MONTH = 1;
     private static final int FIRST_DAY = 1;

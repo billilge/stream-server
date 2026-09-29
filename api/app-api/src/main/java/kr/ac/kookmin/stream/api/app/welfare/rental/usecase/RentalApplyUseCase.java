@@ -2,8 +2,8 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.usecase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
@@ -21,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RentalApplyUseCase {
 
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
-
     private final PayerService payerService;
     private final ItemService itemService;
     private final RentalHistoryService rentalHistoryService;
@@ -39,8 +37,8 @@ public class RentalApplyUseCase {
 
         Item item = itemService.decreaseStock(itemId, count);
 
-        LocalDateTime now = LocalDateTime.now(KST);
-        LocalDateTime rentAt = LocalDate.now(KST).atTime(rentAtHour, rentAtMinute);
+        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        LocalDateTime rentAt = LocalDate.now(DateUtil.KST).atTime(rentAtHour, rentAtMinute);
         rentalHistoryService.create(item, memberId, count, now, rentAt);
     }
 }

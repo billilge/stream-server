@@ -1,12 +1,12 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 class RentalHistoryServiceImpl implements RentalHistoryService {
-
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
@@ -75,7 +73,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     public void returnRental(Long memberId, Long historyId) {
         RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
-        history.markReturned(LocalDateTime.now(KST));
+        history.markReturned(LocalDateTime.now(DateUtil.KST));
         rentalHistoryRepository.save(history);
     }
 
