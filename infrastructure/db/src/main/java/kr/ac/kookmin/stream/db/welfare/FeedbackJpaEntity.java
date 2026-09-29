@@ -8,14 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.OpenFeedback;
+import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "open_feedbacks")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
+public class FeedbackJpaEntity extends BaseSoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,7 +49,7 @@ public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "answered_by")
     private Long answeredBy;
 
-    private OpenFeedbackJpaEntity(OpenFeedback feedback) {
+    private FeedbackJpaEntity(Feedback feedback) {
         this.id = feedback.id();
         this.year = feedback.year();
         this.round = feedback.round();
@@ -61,11 +61,11 @@ public class OpenFeedbackJpaEntity extends BaseSoftDeleteEntity {
         this.answeredBy = feedback.answeredBy();
     }
 
-    public static OpenFeedbackJpaEntity from(OpenFeedback feedback) {
-        return new OpenFeedbackJpaEntity(feedback);
+    public static FeedbackJpaEntity from(Feedback feedback) {
+        return new FeedbackJpaEntity(feedback);
     }
 
-    public OpenFeedback toDomain() {
-        return OpenFeedback.of(id, year, round, question, questionedAt, answer, answeredAt, createdBy, answeredBy);
+    public Feedback toDomain() {
+        return Feedback.of(id, year, round, question, questionedAt, answer, answeredAt, createdBy, answeredBy);
     }
 }
