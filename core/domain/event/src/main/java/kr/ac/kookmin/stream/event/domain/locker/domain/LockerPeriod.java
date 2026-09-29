@@ -18,6 +18,8 @@ public class LockerPeriod {
     private LocalDateTime applyEndAt;
     private LocalDate usageStartAt;
     private LocalDate usageEndAt;
+    /** 운영진이 학생에게 공개했는지. 미게시 회차는 학생에게 없는 것으로 보여야 한다. */
+    private boolean published;
 
     public static LockerPeriod of(
         Long id,
@@ -25,8 +27,9 @@ public class LockerPeriod {
         LocalDateTime applyStartAt,
         LocalDateTime applyEndAt,
         LocalDate usageStartAt,
-        LocalDate usageEndAt
+        LocalDate usageEndAt,
+        boolean published
     ) {
-        return new LockerPeriod(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt);
+        return new LockerPeriod(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, published);
     }
 }
