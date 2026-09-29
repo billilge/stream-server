@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
-import kr.ac.kookmin.stream.api.app.event.locker.response.LockerLayoutResponse;
+import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
@@ -38,7 +38,7 @@ public interface AppLockerApi {
             + "사물함이 사용 가능한 상태이고 해당 회차에 신청되지 않은 경우에만 선택할 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_SECTION_NOT_FOUND"})
-    ApiResponse<LockerLayoutResponse> getSectionLockers(
+    ApiResponse<LockerSectionDetailResponse> getSectionLockers(
         AppApiUser apiUser,
         Long sectionId,
         @ParameterObject LockerPeriodParams params

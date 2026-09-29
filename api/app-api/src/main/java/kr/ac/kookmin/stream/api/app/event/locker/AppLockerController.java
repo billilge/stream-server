@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
-import kr.ac.kookmin.stream.api.app.event.locker.response.LockerLayoutResponse;
+import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
@@ -48,7 +48,7 @@ public class AppLockerController implements AppLockerApi {
 
     @Override
     @GetMapping("/sections/{sectionId}")
-    public ApiResponse<LockerLayoutResponse> getSectionLockers(
+    public ApiResponse<LockerSectionDetailResponse> getSectionLockers(
         AppApiUser apiUser,
         @PathVariable Long sectionId,
         @Valid @ModelAttribute LockerPeriodParams params
@@ -60,6 +60,6 @@ public class AppLockerController implements AppLockerApi {
             .map(Locker::getId)
             .orElse(null);
 
-        return ApiResponse.success(LockerLayoutResponse.of(lockers, appliedLockerIds, myLockerId));
+        return ApiResponse.success(LockerSectionDetailResponse.of(lockers, appliedLockerIds, myLockerId));
     }
 }

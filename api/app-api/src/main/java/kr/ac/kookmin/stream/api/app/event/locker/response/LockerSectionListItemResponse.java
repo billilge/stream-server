@@ -4,7 +4,7 @@ import java.util.Objects;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.SectionAvailabilityStatus;
 
-public record LockerSectionResponse(
+public record LockerSectionListItemResponse(
     Long sectionId,
     String section,
     int availableCount,
@@ -16,8 +16,8 @@ public record LockerSectionResponse(
     /**
      * @param mySectionId 조회한 회원이 신청한 사물함이 속한 구역. 신청하지 않았으면 {@code null}
      */
-    public static LockerSectionResponse of(LockerSectionSummary summary, Long mySectionId) {
-        return new LockerSectionResponse(
+    public static LockerSectionListItemResponse of(LockerSectionSummary summary, Long mySectionId) {
+        return new LockerSectionListItemResponse(
             summary.sectionId(),
             summary.label(),
             summary.availableCount(),
