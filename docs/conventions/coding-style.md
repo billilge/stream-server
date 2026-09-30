@@ -489,22 +489,12 @@ Repository(2-6절)와 같은 구조다 — `core:domain`에 인터페이스(공�
 // core:domain:file — client (공개)
 public interface FileStorageClient {
     UploadUrl issuePresignedUrl(String fileKey, String contentType);
-    void write(String fileKey, InputStream content);
     void deleteObject(String fileKey);
     String publicBaseUrl();
 }
 ```
 
-- **구현체가 여러 개이고 그중 일부 메서드가 특정 구현체에서 의미가 없으면, 인터페이스를 쪼개지 않고 그 구현체에서 `UnsupportedOperationException` + 사유 주석으로 막는다.** 인터페이스 분리는 그 구현체가 계속 쓰일 때만 이득이 크다 — 임시 구현체처럼 나중에 통째로 걷어낼 코드라면 지금 쪼개봤자 걷어낼 때 그 분리도 같이 없어진다.
-
-```java
-// infrastructure:client — S3FileStorageClient
-// S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일 바이트를 받을 일이 없다
-@Override
-public void write(String fileKey, InputStream content) {
-    throw new UnsupportedOperationException("S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일을 받지 않는다");
-}
-```
+- **구현체가 여러 개이고 그중 일부 메서드가 특정 구현체에서 의미가 없으면, 인터페이스를 쪼개지 않고 그 구현체에서 `UnsupportedOperationException` + 사유 주석으로 막는다.** 인터페이스 분리는 그 구현체가 계속 쓰일 때만 이득이 크다 — 임시 구현체처럼 나중에 통째로 걷어낼 코드라면 지금 쪼개봤자 걷어낼 때 그 분리도 같이 없어진다. 반대로 그 메서드를 호출하는 곳이 아예 없어지면(예: 임시 구현체 전용이었던 메서드), 포트에서도 메서드 자체를 지운다 — 예외를 던지는 코드로만 남겨두지 않는다.
 
 - **한 포트에 구현체가 여러 개면 `@ConditionalOnProperty`로 하나만 Bean으로 띄운다**(`@Profile`이 아니라 — 로컬/운영을 나누는 게 아니라 같은 환경 안에서 설정값으로 고르는 것이므로). 구현체가 하나뿐이면 이 어노테이션 자체가 필요 없다 — 나중에 두 번째 구현체가 생기는 시점에 다시 붙인다.
 

@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.file.service;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueResult;
 
 public interface FileService {
     FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command);
-    void receiveUpload(String fileKey, InputStream content);
     void delete(Long fileId);
     Optional<File> findById(Long fileId);
     Map<Long, File> findAllByIdIn(List<Long> fileIds);

@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.file.service.impl;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,13 +47,6 @@ class FileServiceImpl implements FileService {
         File saved = fileRepository.save(file);
 
         return FileUploadUrlIssueResult.of(saved, uploadUrl);
-    }
-
-    @Override
-    public void receiveUpload(String fileKey, InputStream content) {
-        fileRepository.findByFileKey(fileKey)
-            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        fileStorageClient.write(fileKey, content);
     }
 
     @Override

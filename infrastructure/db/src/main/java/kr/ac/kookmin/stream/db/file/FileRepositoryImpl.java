@@ -19,11 +19,6 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     @Override
-    public Optional<File> findByFileKey(String fileKey) {
-        return fileJpaRepository.findByFileKey(fileKey).map(FileJpaEntity::toDomain);
-    }
-
-    @Override
     public List<File> findAllByIdIn(List<Long> ids) {
         return fileJpaRepository.findAllByIdIn(ids).stream().map(FileJpaEntity::toDomain).toList();
     }
