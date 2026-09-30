@@ -52,7 +52,6 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void receiveUpload(String fileKey, InputStream content) {
         fileRepository.findByFileKey(fileKey)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
@@ -64,8 +63,8 @@ class FileServiceImpl implements FileService {
     public void delete(Long fileId) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        fileStorageClient.deleteObject(file.getFileKey());
         fileRepository.deleteById(fileId);
+        fileStorageClient.deleteObject(file.getFileKey());
     }
 
     @Override
