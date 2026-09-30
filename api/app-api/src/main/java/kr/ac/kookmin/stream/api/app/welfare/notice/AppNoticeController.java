@@ -1,11 +1,16 @@
 package kr.ac.kookmin.stream.api.app.welfare.notice;
 
+import java.util.List;
+import java.util.Map;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.CursorCodec;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.file.domain.FileInfo;
+import kr.ac.kookmin.stream.file.domain.FileUrl;
+import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCursor;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppNoticeController implements AppNoticeApi {
 
     private final NoticeService noticeService;
+    private final FileService fileService;
 
     @Override
     @GetMapping
@@ -33,9 +39,16 @@ public class AppNoticeController implements AppNoticeApi {
     ) {
         NoticeCursor noticeCursor = cursor == null ? null : NoticeCursor.from(CursorCodec.decode(cursor));
         CursorSliceResult<Notice> result = noticeService.getNotices(NoticeCategory.from(category), noticeCursor, size);
+
+        List<Long> thumbnailIds = result.content().stream()
+                .map(AppNoticeController::firstImageId)
+                .filter(id -> id != null)
+                .toList();
+        Map<Long, FileUrl> thumbnailUrls = fileService.resolveUrls(thumbnailIds);
+
         CursorSliceResponse<NoticeListItemResponse> response = CursorSliceResponse.from(
                 result,
-                NoticeListItemResponse::from
+                notice -> NoticeListItemResponse.from(notice, thumbnailUrls)
         );
 
         return ApiResponse.success(response);
@@ -46,6 +59,17 @@ public class AppNoticeController implements AppNoticeApi {
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
         Notice notice = noticeService.getNotice(noticeId);
 
-        return ApiResponse.success(NoticeDetailResponse.from(notice));
+        Map<Long, FileUrl> imageUrls = fileService.resolveUrls(
+                notice.getImageIds() == null ? List.of() : notice.getImageIds()
+        );
+        Map<Long, FileInfo> attachmentInfos = fileService.resolveInfos(
+                notice.getAttachmentIds() == null ? List.of() : notice.getAttachmentIds()
+        );
+
+        return ApiResponse.success(NoticeDetailResponse.from(notice, imageUrls, attachmentInfos));
+    }
+
+    private static Long firstImageId(Notice notice) {
+        return notice.getImageIds() == null || notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
     }
 }
