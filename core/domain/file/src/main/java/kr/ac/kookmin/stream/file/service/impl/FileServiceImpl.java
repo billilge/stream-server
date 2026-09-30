@@ -1,19 +1,18 @@
 package kr.ac.kookmin.stream.file.service.impl;
 
 import java.io.InputStream;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.file.client.FileStorageClient;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
-import kr.ac.kookmin.stream.file.domain.FileInfo;
 import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueCommand;
 import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueResult;
-import kr.ac.kookmin.stream.file.domain.FileUrl;
 import kr.ac.kookmin.stream.file.domain.UploadUrl;
 import kr.ac.kookmin.stream.file.repository.FileRepository;
 import kr.ac.kookmin.stream.file.service.FileService;
@@ -68,57 +67,22 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Optional<FileUrl> resolveUrl(Long fileId) {
-        return fileRepository.findById(fileId)
-            .map(file -> fileStorageClient.publicUrl(file.getFileKey()));
+    public Optional<File> findById(Long fileId) {
+        return fileRepository.findById(fileId);
     }
 
     @Override
-    public Map<Long, FileUrl> resolveUrls(List<Long> fileIds) {
+    public Map<Long, File> findAllByIdIn(List<Long> fileIds) {
         if (fileIds.isEmpty()) {
             return Map.of();
         }
-
-        List<File> files = fileRepository.findAllByIdIn(fileIds);
-        Map<String, FileUrl> urlsByKey = fileStorageClient.publicUrls(files.stream().map(File::getFileKey).toList());
-
-        Map<Long, FileUrl> result = new LinkedHashMap<>();
-        for (File file : files) {
-            result.put(file.getId(), urlsByKey.get(file.getFileKey()));
-        }
-        return result;
+        return fileRepository.findAllByIdIn(fileIds).stream()
+            .collect(Collectors.toMap(File::getId, Function.identity()));
     }
 
     @Override
-    public Optional<FileInfo> resolveInfo(Long fileId) {
-        return fileRepository.findById(fileId)
-            .map(file -> new FileInfo(file.getOriginalName(), fileStorageClient.publicUrl(file.getFileKey())));
-    }
-
-    @Override
-    public Map<Long, FileInfo> resolveInfos(List<Long> fileIds) {
-        if (fileIds.isEmpty()) {
-            return Map.of();
-        }
-
-        List<File> files = fileRepository.findAllByIdIn(fileIds);
-        Map<String, FileUrl> urlsByKey = fileStorageClient.publicUrls(files.stream().map(File::getFileKey).toList());
-
-        Map<Long, FileInfo> result = new LinkedHashMap<>();
-        for (File file : files) {
-            result.put(file.getId(), new FileInfo(file.getOriginalName(), urlsByKey.get(file.getFileKey())));
-        }
-        return result;
-    }
-
-    @Override
-    public FileUrl publicUrl(String fileKey) {
-        return fileStorageClient.publicUrl(fileKey);
-    }
-
-    @Override
-    public Map<String, FileUrl> publicUrls(List<String> fileKeys) {
-        return fileStorageClient.publicUrls(fileKeys);
+    public String publicBaseUrl() {
+        return fileStorageClient.publicBaseUrl();
     }
 
     private String generateFileKey(String originalName) {

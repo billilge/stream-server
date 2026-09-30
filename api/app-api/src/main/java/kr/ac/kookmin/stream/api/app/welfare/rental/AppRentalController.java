@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.api.app.welfare.rental;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.ItemListParams;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.RentalHistoryListParams;
@@ -12,7 +11,6 @@ import kr.ac.kookmin.stream.api.app.welfare.rental.response.ReturnRequiredListRe
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
-import kr.ac.kookmin.stream.file.domain.FileUrl;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
@@ -41,10 +39,8 @@ public class AppRentalController implements AppRentalApi {
         CursorSliceResult<Item> result = itemService.getItems(
             params.toCategory(), params.toKeyword(), params.toCursor(), params.sizeOrDefault()
         );
-        Map<String, FileUrl> imageUrls = fileService.publicUrls(
-            result.content().stream().map(Item::getImageKey).filter(key -> key != null).distinct().toList()
-        );
-        return ApiResponse.success(CursorSliceResponse.from(result, item -> ItemListItemResponse.from(item, imageUrls)));
+        String publicBaseUrl = fileService.publicBaseUrl();
+        return ApiResponse.success(CursorSliceResponse.from(result, item -> ItemListItemResponse.from(item, publicBaseUrl)));
     }
 
     @Override
@@ -54,19 +50,13 @@ public class AppRentalController implements AppRentalApi {
         @Valid @ModelAttribute RentalHistoryListParams params
     ) {
         List<RentalRecord> records = rentalHistoryService.getHistories(apiUser.userId(), params.toStatus());
-        return ApiResponse.success(RentalHistoryListResponse.from(records, resolveImageUrls(records)));
+        return ApiResponse.success(RentalHistoryListResponse.from(records, fileService.publicBaseUrl()));
     }
 
     @Override
     @GetMapping("/histories/return-required")
     public ApiResponse<ReturnRequiredListResponse> getReturnRequired(AppApiUser apiUser) {
         List<RentalRecord> records = rentalHistoryService.getReturnRequiredRentals(apiUser.userId());
-        return ApiResponse.success(ReturnRequiredListResponse.from(records, resolveImageUrls(records)));
-    }
-
-    private Map<String, FileUrl> resolveImageUrls(List<RentalRecord> records) {
-        return fileService.publicUrls(
-            records.stream().map(RentalRecord::itemImageKey).filter(key -> key != null).distinct().toList()
-        );
+        return ApiResponse.success(ReturnRequiredListResponse.from(records, fileService.publicBaseUrl()));
     }
 }

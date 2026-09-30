@@ -8,8 +8,7 @@ import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse;
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
-import kr.ac.kookmin.stream.file.domain.FileInfo;
-import kr.ac.kookmin.stream.file.domain.FileUrl;
+import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -44,11 +43,12 @@ public class AppNoticeController implements AppNoticeApi {
                 .map(AppNoticeController::firstImageId)
                 .filter(id -> id != null)
                 .toList();
-        Map<Long, FileUrl> thumbnailUrls = fileService.resolveUrls(thumbnailIds);
+        Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIds);
+        String publicBaseUrl = fileService.publicBaseUrl();
 
         CursorSliceResponse<NoticeListItemResponse> response = CursorSliceResponse.from(
                 result,
-                notice -> NoticeListItemResponse.from(notice, thumbnailUrls)
+                notice -> NoticeListItemResponse.from(notice, filesById, publicBaseUrl)
         );
 
         return ApiResponse.success(response);
@@ -59,14 +59,16 @@ public class AppNoticeController implements AppNoticeApi {
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
         Notice notice = noticeService.getNotice(noticeId);
 
-        Map<Long, FileUrl> imageUrls = fileService.resolveUrls(
+        Map<Long, File> imagesById = fileService.findAllByIdIn(
                 notice.getImageIds() == null ? List.of() : notice.getImageIds()
         );
-        Map<Long, FileInfo> attachmentInfos = fileService.resolveInfos(
+        Map<Long, File> attachmentsById = fileService.findAllByIdIn(
                 notice.getAttachmentIds() == null ? List.of() : notice.getAttachmentIds()
         );
 
-        return ApiResponse.success(NoticeDetailResponse.from(notice, imageUrls, attachmentInfos));
+        return ApiResponse.success(
+                NoticeDetailResponse.from(notice, imagesById, attachmentsById, fileService.publicBaseUrl())
+        );
     }
 
     private static Long firstImageId(Notice notice) {
