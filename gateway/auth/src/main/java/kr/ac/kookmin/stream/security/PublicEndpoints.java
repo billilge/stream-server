@@ -22,10 +22,6 @@ public enum PublicEndpoints {
         "/swagger-ui/**",
         "/swagger-ui.html",
         "/v3/api-docs/**"
-    )),
-    /** 로컬 스토리지 파일 공개 읽기. S3 연동 전 임시 서빙이라 S3 전환 시 제거한다. */
-    LOCAL_FILE_READ(List.of(
-        "/files/**"
     ));
 
     private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())

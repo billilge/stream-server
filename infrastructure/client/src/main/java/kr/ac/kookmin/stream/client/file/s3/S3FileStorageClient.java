@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import kr.ac.kookmin.stream.file.client.FileStorageClient;
 import kr.ac.kookmin.stream.file.domain.UploadUrl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -18,11 +17,10 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 /**
  * S3 호환 스토리지(Cloudflare R2) 기반 구현체. presigned URL은 클라이언트가 스토리지에 직접 PUT하는 용도라,
- * 로컬 구현체와 달리 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
+ * 서버가 파일 바이트를 직접 받는 write(...)는 지원하지 않는다.
  * R2 엔드포인트·자격증명 설정은 {@link S3StorageConfig}가 만드는 {@link S3Client}/{@link S3Presigner} 빈에 있다.
  */
 @Component
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
 @RequiredArgsConstructor
 public class S3FileStorageClient implements FileStorageClient {
 
