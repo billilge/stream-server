@@ -12,5 +12,4 @@ public interface FileService {
     void delete(Long fileId);
     Optional<File> findById(Long fileId);
     Map<Long, File> findAllByIdIn(List<Long> fileIds);
-    String publicBaseUrl();
 }

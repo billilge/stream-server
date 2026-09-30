@@ -72,11 +72,6 @@ class FileServiceImpl implements FileService {
             .collect(Collectors.toMap(File::getId, Function.identity()));
     }
 
-    @Override
-    public String publicBaseUrl() {
-        return fileStorageClient.publicBaseUrl();
-    }
-
     private String generateFileKey(String originalName) {
         String extension = FileUploadPolicy.extractExtension(originalName);
         String key = UUID.randomUUID().toString();

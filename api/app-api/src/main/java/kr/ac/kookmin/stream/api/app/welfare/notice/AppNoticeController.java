@@ -44,11 +44,10 @@ public class AppNoticeController implements AppNoticeApi {
                 .filter(id -> id != null)
                 .toList();
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIds);
-        String publicBaseUrl = fileService.publicBaseUrl();
 
         CursorSliceResponse<NoticeListItemResponse> response = CursorSliceResponse.from(
                 result,
-                notice -> NoticeListItemResponse.from(notice, filesById, publicBaseUrl)
+                notice -> NoticeListItemResponse.from(notice, filesById)
         );
 
         return ApiResponse.success(response);
@@ -66,9 +65,7 @@ public class AppNoticeController implements AppNoticeApi {
                 notice.getAttachmentIds() == null ? List.of() : notice.getAttachmentIds()
         );
 
-        return ApiResponse.success(
-                NoticeDetailResponse.from(notice, imagesById, attachmentsById, fileService.publicBaseUrl())
-        );
+        return ApiResponse.success(NoticeDetailResponse.from(notice, imagesById, attachmentsById));
     }
 
     private static Long firstImageId(Notice notice) {

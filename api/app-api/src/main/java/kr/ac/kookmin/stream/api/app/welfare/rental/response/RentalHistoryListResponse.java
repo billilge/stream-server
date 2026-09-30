@@ -2,15 +2,15 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.common.FileUrlUtil;
+import kr.ac.kookmin.stream.api.common.WebConstants;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 
 public record RentalHistoryListResponse(List<History> histories) {
 
-    public static RentalHistoryListResponse from(List<RentalRecord> records, String publicBaseUrl) {
-        return new RentalHistoryListResponse(records.stream().map(record -> History.from(record, publicBaseUrl)).toList());
+    public static RentalHistoryListResponse from(List<RentalRecord> records) {
+        return new RentalHistoryListResponse(records.stream().map(History::from).toList());
     }
 
     public record History(
@@ -22,10 +22,10 @@ public record RentalHistoryListResponse(List<History> histories) {
         RentalStatus status
     ) {
 
-        public static History from(RentalRecord record, String publicBaseUrl) {
+        public static History from(RentalRecord record) {
             RentalHistory history = record.history();
             String imageKey = record.itemImageKey();
-            String imageUrl = imageKey == null ? null : FileUrlUtil.buildPublicUrl(publicBaseUrl, imageKey);
+            String imageUrl = imageKey == null ? null : WebConstants.buildStorageUrl(imageKey);
             return new History(
                 history.getId(),
                 record.itemName(),

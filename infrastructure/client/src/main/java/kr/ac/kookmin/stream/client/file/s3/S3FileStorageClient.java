@@ -51,9 +51,4 @@ public class S3FileStorageClient implements FileStorageClient {
             .key(fileKey)
             .build());
     }
-
-    @Override
-    public String publicBaseUrl() {
-        return properties.publicBaseUrl();
-    }
 }

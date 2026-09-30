@@ -2,13 +2,13 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.common.FileUrlUtil;
+import kr.ac.kookmin.stream.api.common.WebConstants;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 
 public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
 
-    public static ReturnRequiredListResponse from(List<RentalRecord> records, String publicBaseUrl) {
-        return new ReturnRequiredListResponse(records.stream().map(record -> Rental.from(record, publicBaseUrl)).toList());
+    public static ReturnRequiredListResponse from(List<RentalRecord> records) {
+        return new ReturnRequiredListResponse(records.stream().map(Rental::from).toList());
     }
 
     public record Rental(
@@ -18,9 +18,9 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
         LocalDateTime dueAt
     ) {
 
-        public static Rental from(RentalRecord record, String publicBaseUrl) {
+        public static Rental from(RentalRecord record) {
             String imageKey = record.itemImageKey();
-            String imageUrl = imageKey == null ? null : FileUrlUtil.buildPublicUrl(publicBaseUrl, imageKey);
+            String imageUrl = imageKey == null ? null : WebConstants.buildStorageUrl(imageKey);
             return new Rental(
                 record.history().getId(),
                 record.itemName(),
