@@ -8,5 +8,6 @@ import org.springframework.context.annotation.Profile;
 public record LocalFileStorageProperties(
     String basePath,
     String baseUrl,
+    String publicBaseUrl,
     long uploadUrlExpirySeconds
 ) {}

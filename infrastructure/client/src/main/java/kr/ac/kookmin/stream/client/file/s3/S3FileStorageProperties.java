@@ -9,5 +9,6 @@ public record S3FileStorageProperties(
     String endpoint,
     String accessKey,
     String secretKey,
+    String publicBaseUrl,
     long uploadUrlExpirySeconds
 ) {}

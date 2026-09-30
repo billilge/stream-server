@@ -4,8 +4,13 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
-import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.file.client.FileStorageClient;
+import kr.ac.kookmin.stream.file.domain.FileUrl;
+import kr.ac.kookmin.stream.file.domain.UploadUrl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -59,5 +64,15 @@ public class S3FileStorageClient implements FileStorageClient {
             .bucket(properties.bucket())
             .key(fileKey)
             .build());
+    }
+
+    @Override
+    public FileUrl publicUrl(String fileKey) {
+        return new FileUrl(FileStorageClient.buildPublicUrl(properties.publicBaseUrl(), fileKey));
+    }
+
+    @Override
+    public Map<String, FileUrl> publicUrls(List<String> fileKeys) {
+        return fileKeys.stream().collect(Collectors.toMap(Function.identity(), this::publicUrl, (a, b) -> a));
     }
 }

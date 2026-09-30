@@ -7,8 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.internal.domain.file.domain.UploadUrl;
-import kr.ac.kookmin.stream.internal.domain.file.client.FileStorageClient;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.file.client.FileStorageClient;
+import kr.ac.kookmin.stream.file.domain.FileUrl;
+import kr.ac.kookmin.stream.file.domain.UploadUrl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -50,6 +55,16 @@ public class LocalFileStorageClient implements FileStorageClient {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public FileUrl publicUrl(String fileKey) {
+        return new FileUrl(FileStorageClient.buildPublicUrl(properties.publicBaseUrl(), fileKey));
+    }
+
+    @Override
+    public Map<String, FileUrl> publicUrls(List<String> fileKeys) {
+        return fileKeys.stream().collect(Collectors.toMap(Function.identity(), this::publicUrl, (a, b) -> a));
     }
 
     private Path resolvePath(String fileKey) {
