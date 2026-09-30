@@ -10,6 +10,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     Optional<MemberJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
+    Optional<MemberJpaEntity> findByStudentIdAndIsDeletedFalse(String studentId);
+
     List<MemberJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
 
     @Query("""
