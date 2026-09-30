@@ -1,8 +1,8 @@
-package kr.ac.kookmin.stream.api.admin.file;
+package kr.ac.kookmin.stream.api.common.file;
 
 import jakarta.validation.Valid;
-import kr.ac.kookmin.stream.api.admin.file.request.FileUploadUrlIssueRequest;
-import kr.ac.kookmin.stream.api.admin.file.response.FileUploadUrlIssueResponse;
+import kr.ac.kookmin.stream.api.common.file.request.FileUploadUrlIssueRequest;
+import kr.ac.kookmin.stream.api.common.file.response.FileUploadUrlIssueResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.common.PrincipalProvider;
 import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueResult;
@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/admin/files")
+@RequestMapping("/v1/files")
 @RequiredArgsConstructor
-public class AdminFileController implements AdminFileApi {
+public class FileController implements FileApi {
 
     private final FileService fileService;
     private final PrincipalProvider principalProvider;

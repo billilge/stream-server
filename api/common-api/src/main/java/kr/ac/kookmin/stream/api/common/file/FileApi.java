@@ -1,22 +1,23 @@
-package kr.ac.kookmin.stream.api.admin.file;
+package kr.ac.kookmin.stream.api.common.file;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ac.kookmin.stream.api.admin.file.request.FileUploadUrlIssueRequest;
-import kr.ac.kookmin.stream.api.admin.file.response.FileUploadUrlIssueResponse;
+import kr.ac.kookmin.stream.api.common.file.request.FileUploadUrlIssueRequest;
+import kr.ac.kookmin.stream.api.common.file.response.FileUploadUrlIssueResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 
 /**
- * 운영진 파일 API의 문서 명세. 구현은 {@link AdminFileController}가 맡는다.
+ * 파일 API의 문서 명세. 구현은 {@link FileController}가 맡는다.
  * <p>
+ * role 무관 공통 엔드포인트라 admin-api/app-api가 아니라 common-api에 둔다(ADMIN·STUDENT 둘 다 사용).
  * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다. 경로 매핑과
  * 파라미터 바인딩(@{@code RequestBody}, @{@code PathVariable} 등)은 구현체에 둔다.
  */
-@Tag(name = "파일", description = "운영진 파일 업로드 URL 발급·삭제")
-public interface AdminFileApi {
+@Tag(name = "파일", description = "파일 업로드 URL 발급·삭제")
+public interface FileApi {
 
     /** 업로드용 presigned URL 발급. 파일 형식·크기 정책을 통과하면 업로드 URL을 내려준다. */
     @Operation(summary = "파일 업로드 URL 발급",

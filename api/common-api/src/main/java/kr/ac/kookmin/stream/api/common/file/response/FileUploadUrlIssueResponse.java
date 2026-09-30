@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.api.admin.file.response;
+package kr.ac.kookmin.stream.api.common.file.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueResult;

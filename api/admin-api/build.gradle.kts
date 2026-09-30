@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":api:common-api"))
     implementation(project(":core:common"))
     implementation(project(":core:domain:internal"))
-    implementation(project(":core:domain:file"))
     implementation(project(":core:domain:member"))
     implementation(project(":core:domain:welfare"))
     implementation(project(":gateway:auth"))
