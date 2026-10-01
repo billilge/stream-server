@@ -77,8 +77,8 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         rentalHistoryRepository.save(history);
     }
 
-    // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)의
-    // 트랜잭션 안에서 호출되므로, 재고 락 조회 이후에 고정된 스냅샷을 그대로 공유해서 쓴다.
+    // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는
+    // LockExecutor가 시도마다 연 트랜잭션 안에서 호출되므로, 그 시도의 스냅샷을 그대로 공유해서 쓴다.
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryRepository.existsActiveRental(itemId, memberId);
