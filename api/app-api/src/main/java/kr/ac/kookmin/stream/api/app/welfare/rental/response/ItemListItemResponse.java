@@ -19,7 +19,7 @@ public record ItemListItemResponse(
 
     public static ItemListItemResponse from(Item item) {
         ReturnPolicy returnPolicy = item.getReturnPolicy();
-        String imageUrl = item.getImageKey() == null ? null : StorageUrlBuilder.build(item.getImageKey());
+        String imageUrl = StorageUrlBuilder.build(item.getImageKey());
         return new ItemListItemResponse(
             item.getId(),
             item.getName(),

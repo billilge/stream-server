@@ -19,8 +19,7 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
     ) {
 
         public static Rental from(RentalRecord record) {
-            String imageKey = record.itemImageKey();
-            String imageUrl = imageKey == null ? null : StorageUrlBuilder.build(imageKey);
+            String imageUrl = StorageUrlBuilder.build(record.itemImageKey());
             return new Rental(
                 record.history().getId(),
                 record.itemName(),

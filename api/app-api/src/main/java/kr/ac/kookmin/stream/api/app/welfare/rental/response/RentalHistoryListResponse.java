@@ -24,8 +24,7 @@ public record RentalHistoryListResponse(List<History> histories) {
 
         public static History from(RentalRecord record) {
             RentalHistory history = record.history();
-            String imageKey = record.itemImageKey();
-            String imageUrl = imageKey == null ? null : StorageUrlBuilder.build(imageKey);
+            String imageUrl = StorageUrlBuilder.build(record.itemImageKey());
             return new History(
                 history.getId(),
                 record.itemName(),

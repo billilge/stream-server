@@ -21,14 +21,13 @@ public record NoticeListItemResponse(
         Long thumbnailId = notice.getImageIds() == null || notice.getImageIds().isEmpty()
             ? null
             : notice.getImageIds().get(0);
-        File thumbnailFile = thumbnailId == null ? null : filesById.get(thumbnailId);
 
         return new NoticeListItemResponse(
             notice.getId(),
             notice.getTitle(),
             notice.getCategory(),
             notice.getCreatedAt(),
-            thumbnailFile == null ? null : StorageUrlBuilder.build(thumbnailFile.getFileKey()),
+            StorageUrlBuilder.build(thumbnailId, filesById),
             notice.isPinned()
         );
     }
