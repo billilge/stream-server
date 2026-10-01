@@ -19,10 +19,9 @@ public interface ItemService {
     /**
      * 재고를 차감한다.
      * <p>
-     * 동시성 보호(락)는 아직 없다 — 동시에 들어온 두 요청이 같은 물품의 재고를 동시에 통과해
-     * 재고가 음수로 내려갈 수 있는 경합이 이론적으로 남아있다. 이 프로젝트 규모에서 실제로
-     * 문제된 적은 없어 보이는 레거시(billilge/backend)와 같은 수준으로, 일단 보호 없이 간다
-     * (`billilge-rental-apply-review-fixes.md` 참고 — 필요해지면 별도로 다시 도입한다).
+     * 읽은 재고 값과 비교하는 낙관적 락으로 동시 차감을 감지한다. 그 사이 다른 트랜잭션이 재고를 바꿨으면
+     * 커밋할 때 {@code OptimisticLockingFailureException}으로 실패한다. 호출부는 {@code LockExecutor}로 감싸
+     * 시도마다 새 트랜잭션에서 실행해야 충돌한 요청이 다시 시도된다.
      */
     Item decreaseStock(Long itemId, int amount);
 }
