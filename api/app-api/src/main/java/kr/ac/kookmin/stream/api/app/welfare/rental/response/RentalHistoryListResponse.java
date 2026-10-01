@@ -2,7 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.api.common.WebConstants;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -25,7 +25,7 @@ public record RentalHistoryListResponse(List<History> histories) {
         public static History from(RentalRecord record) {
             RentalHistory history = record.history();
             String imageKey = record.itemImageKey();
-            String imageUrl = imageKey == null ? null : WebConstants.buildStorageUrl(imageKey);
+            String imageUrl = imageKey == null ? null : StorageUrlBuilder.build(imageKey);
             return new History(
                 history.getId(),
                 record.itemName(),

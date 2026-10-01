@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.app.welfare.notice.response;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import kr.ac.kookmin.stream.api.common.WebConstants;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -53,14 +53,14 @@ public record NoticeDetailResponse(
     public record Image(Long fileId, String fileUrl) {
 
         public static Image of(Long fileId, File file) {
-            return new Image(fileId, WebConstants.buildStorageUrl(file.getFileKey()));
+            return new Image(fileId, StorageUrlBuilder.build(file.getFileKey()));
         }
     }
 
     public record Attachment(Long fileId, String fileName, String fileUrl) {
 
         public static Attachment of(Long fileId, File file) {
-            return new Attachment(fileId, file.getOriginalName(), WebConstants.buildStorageUrl(file.getFileKey()));
+            return new Attachment(fileId, file.getOriginalName(), StorageUrlBuilder.build(file.getFileKey()));
         }
     }
 }
