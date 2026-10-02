@@ -517,6 +517,32 @@ public class S3FileStorageClient implements FileStorageClient { ... }
 public class LocalFileStorageClient implements FileStorageClient { ... }
 ```
 
+- **단, 요청마다 구현체를 골라 써야 하는 포트는 구현체를 모두 Bean으로 띄우고 레지스트리로 고른다.** 설정값으로 하나를 고르는 위 경우와 달리, 여러 구현체가 동시에 쓰이는 경우다(예: 로그인 provider별 `OAuthClient` — 요청 경로의 `{provider}`로 고른다). 포트에 자신의 키를 돌려주는 메서드를 두고, 도메인의 `service.impl`에 둔 package-private 레지스트리가 `List<포트>`를 주입받아 `EnumMap`으로 모은다. 같은 키의 구현체가 둘이면 기동 시 실패시키고, 없는 키를 요청하면 도메인 `ErrorCode`로 400을 던진다. 새 구현체를 추가할 때 서비스·UseCase·컨트롤러는 고치지 않는다.
+
+```java
+// core:domain:auth — domain/oauth/client (공개 포트)
+public interface OAuthClient {
+    OAuthProvider provider();
+    OAuthUserInfo fetchUserInfo(OAuthLoginCommand command);
+}
+
+// core:domain:auth — domain/oauth/service/impl (비공개)
+@Component
+class OAuthClientRegistry {
+
+    private final Map<OAuthProvider, OAuthClient> clients;
+
+    OAuthClientRegistry(List<OAuthClient> clients) {
+        this.clients = clients.stream().collect(Collectors.toMap(
+            OAuthClient::provider, Function.identity(),
+            (first, second) -> { throw new IllegalStateException("OAuthClient 구현체가 중복됐습니다: " + first.provider()); },
+            () -> new EnumMap<>(OAuthProvider.class)));
+    }
+
+    OAuthClient get(OAuthProvider provider) { ... }   // 없으면 BusinessException(UNSUPPORTED_OAUTH_PROVIDER)
+}
+```
+
 - **외부 SDK 클라이언트(`S3Client`, `S3Presigner` 등)는 구현체 생성자에서 만들지 않고, 같은 패키지의 설정 클래스(`@Configuration`)에서 `@Bean`으로 등록해 주입받는다.** 설정 클래스에도 구현체와 같은 `@ConditionalOnProperty`를 붙인다. SDK 클라이언트는 `close()`가 필요한 자원인데, 빈으로 등록하면 종료 시 스프링이 대신 호출한다.
 
 ```java
