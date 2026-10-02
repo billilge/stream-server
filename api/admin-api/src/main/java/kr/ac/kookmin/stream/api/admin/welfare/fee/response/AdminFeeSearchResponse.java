@@ -22,7 +22,7 @@ public record AdminFeeSearchResponse(
             status.getMemberId(),
             member != null ? member.getName() : ApiConstants.WITHDRAWN_MEMBER_LABEL,
             member != null ? member.getStudentId() : null,
-            member != null ? member.getDepartment().name() : null,
+            member != null ? member.getDepartment().displayName() : null,
             status.getStatus().name(),
             status.getCreatedAt(),
             status.getReviewedAt()
