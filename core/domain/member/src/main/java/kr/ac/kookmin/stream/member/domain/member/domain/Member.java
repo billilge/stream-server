@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.member.domain.member.domain;
 
+import java.util.Objects;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.Role;
 import lombok.AccessLevel;
@@ -42,10 +43,16 @@ public class Member {
         return new Member(id, studentId, name, department, academicStatus, email, fcmToken, role, councilDepartment);
     }
 
-    // 로그인할 때마다 provider의 최신 이름·학부·학적 상태로 갱신한다
-    public void updateProfile(String name, Department department, String academicStatus) {
+    // 로그인할 때마다 provider의 최신 이름·학부·학적 상태로 갱신한다. 바뀐 값이 있으면 true를 돌려준다
+    public boolean updateProfile(String name, Department department, String academicStatus) {
+        if (Objects.equals(this.name, name)
+            && this.department == department
+            && Objects.equals(this.academicStatus, academicStatus)) {
+            return false;
+        }
         this.name = name;
         this.department = department;
         this.academicStatus = academicStatus;
+        return true;
     }
 }

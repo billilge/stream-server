@@ -72,7 +72,10 @@ class MemberServiceImpl implements MemberService {
     }
 
     private Member applyProfile(Member member, MemberProfileCommand command) {
-        member.updateProfile(command.name(), Department.fromMajor(command.major()), command.academicStatus());
+        boolean changed = member.updateProfile(command.name(), Department.fromMajor(command.major()), command.academicStatus());
+        if (!changed) {
+            return member;
+        }
         return memberRepository.save(member);
     }
 }
