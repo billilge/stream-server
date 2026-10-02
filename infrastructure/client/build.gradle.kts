@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:domain:auth"))
     implementation(project(":core:domain:internal"))
+    implementation(project(":core:domain:member"))
 
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarter)
@@ -16,6 +17,8 @@ dependencies {
 
     implementation(platform(libs.awsSdkBom))
     implementation(libs.awsS3)
+
+    implementation(libs.firebaseAdmin)
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)

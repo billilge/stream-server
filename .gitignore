@@ -39,3 +39,6 @@ out/
 .DS_Store
 
 docs/plans
+
+# Firebase 서비스 계정 키 (env로 주입하고 파일은 커밋하지 않는다)
+*firebase-adminsdk*.json
