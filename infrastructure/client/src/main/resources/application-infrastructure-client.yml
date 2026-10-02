@@ -12,6 +12,23 @@ file:
       access-key: ${R2_ACCESS_KEY:}
       secret-key: ${R2_SECRET_KEY:}
       upload-url-expiry-seconds: ${S3_UPLOAD_URL_EXPIRY_SECONDS:600}
+# KConnect 측 요청으로 API 명세(주소·경로·응답 필드)는 환경 변수로만 주입하고 저장소에 남기지 않는다
+oauth:
+  kconnect:
+    base-url: ${KCONNECT_BASE_URL:}
+    token-path: ${KCONNECT_TOKEN_PATH:}
+    client-id: ${KCONNECT_CLIENT_ID:}
+    client-secret: ${KCONNECT_CLIENT_SECRET:}
+    allowed-redirect-uris: ${KCONNECT_ALLOWED_REDIRECT_URIS:kmustream://oauth/kconnect}
+    user-info:
+      path: ${KCONNECT_USER_INFO_PATH:}
+      id-field: ${KCONNECT_USER_INFO_ID_FIELD:}
+      student-id-field: ${KCONNECT_USER_INFO_STUDENT_ID_FIELD:}
+      name-field: ${KCONNECT_USER_INFO_NAME_FIELD:}
+      major-field: ${KCONNECT_USER_INFO_MAJOR_FIELD:}
+      academic-status-field: ${KCONNECT_USER_INFO_ACADEMIC_STATUS_FIELD:}
+    connect-timeout: 3s
+    read-timeout: 5s
 
 push:
   type: ${PUSH_TYPE:log}

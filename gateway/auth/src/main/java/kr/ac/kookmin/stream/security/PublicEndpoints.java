@@ -22,6 +22,9 @@ public enum PublicEndpoints {
         "/swagger-ui/**",
         "/swagger-ui.html",
         "/v3/api-docs/**"
+    )),
+    AUTH(List.of(
+        "/v1/auth/login/*"
     ));
 
     private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())

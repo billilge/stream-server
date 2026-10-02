@@ -1,0 +1,29 @@
+package kr.ac.kookmin.stream.api.app.welfare.rental.response;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
+
+public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
+
+    public static ReturnRequiredListResponse from(List<RentalRecord> records) {
+        return new ReturnRequiredListResponse(records.stream().map(Rental::from).toList());
+    }
+
+    public record Rental(
+        Long rentalHistoryId,
+        String itemName,
+        String itemImageUrl,
+        LocalDateTime dueAt
+    ) {
+
+        public static Rental from(RentalRecord record) {
+            return new Rental(
+                record.history().getId(),
+                record.itemName(),
+                ItemImageUrl.from(record.itemImageKey()),
+                record.dueAt()
+            );
+        }
+    }
+}

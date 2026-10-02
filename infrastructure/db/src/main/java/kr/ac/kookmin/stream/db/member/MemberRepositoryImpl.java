@@ -19,6 +19,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public Optional<Member> findByStudentId(String studentId) {
+        return memberJpaRepository.findByStudentIdAndIsDeletedFalse(studentId).map(MemberJpaEntity::toDomain);
+    }
+
+    @Override
     public List<Member> findAllByIds(List<Long> ids) {
         if (ids.isEmpty()) {
             return List.of();
@@ -31,5 +36,10 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public List<Long> searchIdsByKeyword(String keyword) {
         return memberJpaRepository.searchIdsByKeyword(keyword);
+    }
+
+    @Override
+    public Member save(Member member) {
+        return memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain();
     }
 }
