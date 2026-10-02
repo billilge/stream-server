@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.member.domain.member.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -47,21 +48,31 @@ class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public Member updateProfile(Long id, MemberProfileCommand command) {
-        Member member = getById(id);
-        member.updateProfile(command.name(), Department.fromMajor(command.major()), command.academicStatus());
-        return memberRepository.save(member);
+        return applyProfile(getById(id), command);
     }
 
     @Override
     @Transactional
     public Member registerOrUpdateByStudentId(MemberProfileCommand command) {
-        Department department = Department.fromMajor(command.major());
-        Member member = memberRepository.findByStudentId(command.studentId())
-            .map(existing -> {
-                existing.updateProfile(command.name(), department, command.academicStatus());
-                return existing;
-            })
-            .orElseGet(() -> Member.create(command.studentId(), command.name(), department, command.academicStatus()));
+        Optional<Member> found = memberRepository.findByStudentId(command.studentId());
+        if (found.isEmpty()) {
+            return register(command);
+        }
+        return applyProfile(found.get(), command);
+    }
+
+    private Member register(MemberProfileCommand command) {
+        Member member = Member.create(
+            command.studentId(),
+            command.name(),
+            Department.fromMajor(command.major()),
+            command.academicStatus()
+        );
+        return memberRepository.save(member);
+    }
+
+    private Member applyProfile(Member member, MemberProfileCommand command) {
+        member.updateProfile(command.name(), Department.fromMajor(command.major()), command.academicStatus());
         return memberRepository.save(member);
     }
 }
