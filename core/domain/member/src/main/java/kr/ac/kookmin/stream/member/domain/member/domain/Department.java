@@ -17,8 +17,11 @@ public enum Department {
 
     /** 소속 문자열을 학부로 바꾼다. 소프트웨어융합대학 전공이 아니면 가입할 수 없다. */
     public static Department fromMajor(String major) {
+        if (major == null) {
+            throw new BusinessException(MemberErrorCode.DEPARTMENT_NOT_ALLOWED);
+        }
         return Arrays.stream(values())
-            .filter(department -> major != null && major.contains(department.majorName))
+            .filter(department -> major.contains(department.majorName))
             .findFirst()
             .orElseThrow(() -> new BusinessException(MemberErrorCode.DEPARTMENT_NOT_ALLOWED));
     }
