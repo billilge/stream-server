@@ -33,7 +33,6 @@ class OAuthServiceImpl implements OAuthService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Long> findMemberId(OAuthProvider provider, String providerUserId) {
         return oauthAccountRepository.findByProviderAndProviderUserId(provider, providerUserId)
             .map(OAuthAccount::getMemberId);
