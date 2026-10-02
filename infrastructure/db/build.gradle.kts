@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":core:domain:event"))
     implementation(project(":core:domain:welfare"))
     implementation(project(":core:domain:internal"))
+    implementation(project(":core:domain:file"))
 
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarterDataJpa)

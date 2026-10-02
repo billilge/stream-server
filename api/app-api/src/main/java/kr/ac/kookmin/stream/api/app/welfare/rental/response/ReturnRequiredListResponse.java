@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 
 public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
@@ -18,10 +19,11 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
     ) {
 
         public static Rental from(RentalRecord record) {
+            String imageUrl = StorageUrlBuilder.build(record.itemImageKey());
             return new Rental(
                 record.history().getId(),
                 record.itemName(),
-                ItemImageUrl.from(record.itemImageKey()),
+                imageUrl,
                 record.dueAt()
             );
         }

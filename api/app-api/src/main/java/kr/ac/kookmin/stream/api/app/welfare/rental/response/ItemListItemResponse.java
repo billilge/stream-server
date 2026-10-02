@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.app.welfare.rental.response;
 
 import java.time.format.DateTimeFormatter;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
@@ -18,13 +19,14 @@ public record ItemListItemResponse(
 
     public static ItemListItemResponse from(Item item) {
         ReturnPolicy returnPolicy = item.getReturnPolicy();
+        String imageUrl = StorageUrlBuilder.build(item.getImageKey());
         return new ItemListItemResponse(
             item.getId(),
             item.getName(),
             item.getCategory(),
             item.getType(),
             item.getCount(),
-            ItemImageUrl.from(item.getImageKey()),
+            imageUrl,
             returnPolicy == null ? null : ReturnPolicyResponse.from(returnPolicy)
         );
     }

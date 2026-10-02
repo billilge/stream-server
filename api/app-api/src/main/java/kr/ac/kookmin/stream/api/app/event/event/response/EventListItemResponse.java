@@ -1,8 +1,11 @@
 package kr.ac.kookmin.stream.api.app.event.event.response;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.file.domain.File;
 
 public record EventListItemResponse(
     Long eventId,
@@ -16,26 +19,17 @@ public record EventListItemResponse(
     Integer daysUntilDeadline
 ) {
 
-    public static EventListItemResponse from(EventSummary summary) {
+    public static EventListItemResponse from(EventSummary summary, Map<Long, File> filesById) {
         return new EventListItemResponse(
             summary.eventId(),
             summary.title(),
             summary.target(),
             summary.eventStartAt(),
-            thumbnailUrlOf(summary.thumbnailFileId()),
+            StorageUrlBuilder.build(summary.thumbnailFileId(), filesById),
             summary.applyStartAt(),
             summary.applyEndAt(),
             summary.recruitStatus(),
             summary.daysUntilDeadline()
         );
-    }
-
-    /**
-     * 대표 이미지 파일 id를 공개 URL로 바꾼다.
-     * <p>
-     * 파일 키 → 공개 URL 조립(#17)이 아직 없어 현재는 항상 비어 있다. #17이 머지되면 이 메서드만 채우면 된다.
-     */
-    private static String thumbnailUrlOf(Long thumbnailFileId) {
-        return null;
     }
 }

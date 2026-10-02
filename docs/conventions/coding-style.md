@@ -486,36 +486,17 @@ lombok.copyableAnnotations += org.springframework.beans.factory.annotation.Quali
 Repository(2-6절)와 같은 구조다 — `core:domain`에 인터페이스(공개), `infrastructure:client`에 구현체.
 
 ```java
-// core:domain:internal — domain/file/client (공개)
+// core:domain:file — client (공개)
 public interface FileStorageClient {
     UploadUrl issuePresignedUrl(String fileKey, String contentType);
-    void write(String fileKey, InputStream content);
     void deleteObject(String fileKey);
+    String publicBaseUrl();
 }
 ```
 
-- **구현체가 여러 개이고 그중 일부 메서드가 특정 구현체에서 의미가 없으면, 인터페이스를 쪼개지 않고 그 구현체에서 `UnsupportedOperationException` + 사유 주석으로 막는다.** 인터페이스 분리는 그 구현체가 계속 쓰일 때만 이득이 크다 — 임시 구현체처럼 나중에 통째로 걷어낼 코드라면 지금 쪼개봤자 걷어낼 때 그 분리도 같이 없어진다.
+- **구현체가 여러 개이고 그중 일부 메서드가 특정 구현체에서 의미가 없으면, 인터페이스를 쪼개지 않고 그 구현체에서 `UnsupportedOperationException` + 사유 주석으로 막는다.** 인터페이스 분리는 그 구현체가 계속 쓰일 때만 이득이 크다 — 임시 구현체처럼 나중에 통째로 걷어낼 코드라면 지금 쪼개봤자 걷어낼 때 그 분리도 같이 없어진다. 반대로 그 메서드를 호출하는 곳이 아예 없어지면(예: 임시 구현체 전용이었던 메서드), 포트에서도 메서드 자체를 지운다 — 예외를 던지는 코드로만 남겨두지 않는다.
 
-```java
-// infrastructure:client — S3FileStorageClient
-// S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일 바이트를 받을 일이 없다
-@Override
-public void write(String fileKey, InputStream content) {
-    throw new UnsupportedOperationException("S3는 클라이언트가 presigned URL로 직접 업로드하므로 서버가 파일을 받지 않는다");
-}
-```
-
-- **한 포트에 구현체가 여러 개면 `@ConditionalOnProperty`로 하나만 Bean으로 띄운다**(`@Profile`이 아니라 — 로컬/운영을 나누는 게 아니라 같은 환경 안에서 설정값으로 고르는 것이므로).
-
-```java
-@Component
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
-public class S3FileStorageClient implements FileStorageClient { ... }
-
-@Component
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
-public class LocalFileStorageClient implements FileStorageClient { ... }
-```
+- **한 포트에 구현체가 여러 개면 `@ConditionalOnProperty`로 하나만 Bean으로 띄운다**(`@Profile`이 아니라 — 로컬/운영을 나누는 게 아니라 같은 환경 안에서 설정값으로 고르는 것이므로). 구현체가 하나뿐이면 이 어노테이션 자체가 필요 없다 — 나중에 두 번째 구현체가 생기는 시점에 다시 붙인다.
 
 - **단, 요청마다 구현체를 골라 써야 하는 포트는 구현체를 모두 Bean으로 띄우고 레지스트리로 고른다.** 설정값으로 하나를 고르는 위 경우와 달리, 여러 구현체가 동시에 쓰이는 경우다(예: 로그인 provider별 `OAuthClient` — 요청 경로의 `{provider}`로 고른다). 포트에 자신의 키를 돌려주는 메서드를 두고, 도메인의 `service.impl`에 둔 package-private 레지스트리가 `List<포트>`를 주입받아 `EnumMap`으로 모은다. 같은 키의 구현체가 둘이면 기동 시 실패시키고, 없는 키를 요청하면 도메인 `ErrorCode`로 400을 던진다. 새 구현체를 추가할 때 서비스·UseCase·컨트롤러는 고치지 않는다.
 
@@ -543,12 +524,11 @@ class OAuthClientRegistry {
 }
 ```
 
-- **외부 SDK 클라이언트(`S3Client`, `S3Presigner` 등)는 구현체 생성자에서 만들지 않고, 같은 패키지의 설정 클래스(`@Configuration`)에서 `@Bean`으로 등록해 주입받는다.** 설정 클래스에도 구현체와 같은 `@ConditionalOnProperty`를 붙인다. SDK 클라이언트는 `close()`가 필요한 자원인데, 빈으로 등록하면 종료 시 스프링이 대신 호출한다.
+- **외부 SDK 클라이언트(`S3Client`, `S3Presigner` 등)는 구현체 생성자에서 만들지 않고, 같은 패키지의 설정 클래스(`@Configuration`)에서 `@Bean`으로 등록해 주입받는다.** SDK 클라이언트는 `close()`가 필요한 자원인데, 빈으로 등록하면 종료 시 스프링이 대신 호출한다. 구현체가 `@ConditionalOnProperty`로 골라지는 상황이라면 설정 클래스에도 같은 조건을 붙인다.
 
 ```java
 // infrastructure:client — client/file/s3
 @Configuration
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
 public class S3StorageConfig {
 
     @Bean
@@ -559,7 +539,6 @@ public class S3StorageConfig {
 }
 
 @Component
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
 @RequiredArgsConstructor
 public class S3FileStorageClient implements FileStorageClient {
 
@@ -569,16 +548,7 @@ public class S3FileStorageClient implements FileStorageClient {
 }
 ```
 
-- **임시 구현체(추후 다른 구현체로 완전히 교체될 코드)에는 "무엇으로 전환하면 이 코드를 지운다"는 클래스 주석을 남긴다.** 그 임시 구현체에 딸린 전용 엔드포인트·메서드(예: 로컬 전용 업로드 수신 API)도 같은 문구로 표시해서, 실제 전환 작업을 할 때 검색 한 번으로 같이 지울 대상을 찾을 수 있게 한다.
-
-```java
-/**
- * 로컬 디스크 기반 임시 구현체. S3 연동 시 이 클래스와 "임시 로컬 업로드 엔드포인트"를 함께 제거한다.
- */
-@Component
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "local", matchIfMissing = true)
-public class LocalFileStorageClient implements FileStorageClient { ... }
-```
+- **임시 구현체(추후 다른 구현체로 완전히 교체될 코드)에는 "무엇으로 전환하면 이 코드를 지운다"는 클래스 주석을 남긴다.** 그 임시 구현체에 딸린 전용 엔드포인트·메서드도 같은 문구로 표시해서, 실제 전환 작업을 할 때 검색 한 번으로 같이 지울 대상을 찾을 수 있게 한다. (R2 연동 전 `LocalFileStorageClient`가 이렇게 표시돼 있었고, 실제로 연동 후 그 주석 그대로 함께 제거됐다.)
 
 ---
 
