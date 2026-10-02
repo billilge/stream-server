@@ -7,9 +7,11 @@ description = "학생 앱 — STUDENT, /v1/app/**"
 dependencies {
     implementation(project(":api:common-api"))
     implementation(project(":core:common"))
+    implementation(project(":core:domain:auth"))
     implementation(project(":core:domain:event"))
     implementation(project(":core:domain:internal"))
     implementation(project(":core:domain:file"))
+    implementation(project(":core:domain:member"))
     implementation(project(":core:domain:welfare"))
     implementation(project(":gateway:auth"))
     implementation(project(":gateway:logging"))
