@@ -49,7 +49,13 @@ public class StreamAiChatClient implements ChatClient {
     private final RestClient streamAiRestClient;
 
     private final StreamAiProperties properties;
-    private final ObjectMapper objectMapper;
+
+    /**
+     * 빈을 주입받지 않고 직접 만든다. 스프링이 만들어 주는 매퍼는 Jackson 3(tools.jackson)인데
+     * 이 모듈이 선언한 의존성은 Jackson 2(com.fasterxml)다. 여기서 하는 일은 고정된 모양의
+     * JSON 한 줄에서 필드 하나를 꺼내는 것뿐이라 앱의 직렬화 설정과 무관하다.
+     */
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void stream(long memberId, List<ChatTurn> history, ChatEventListener listener) {

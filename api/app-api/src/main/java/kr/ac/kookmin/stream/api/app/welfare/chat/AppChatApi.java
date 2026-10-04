@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.chat.request.ChatMessageCreateRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 학생 앱 챗봇 API의 문서 명세. 구현은 {@link AppChatController}가 맡는다.
@@ -41,5 +41,6 @@ public interface AppChatApi {
         description = "질문을 보내고 답변을 조각으로 받는다. 응답은 JSON 한 번이 아니라 "
             + "text/event-stream이며 delta·bubble·done·error 네 이벤트가 온다. "
             + "지난 대화는 서버가 DB에서 꺼내 함께 보내므로 요청에는 이번 질문만 담는다.")
-    ResponseEntity<StreamingResponseBody> sendMessage(AppApiUser apiUser, ChatMessageCreateRequest request);
+    void sendMessage(AppApiUser apiUser, ChatMessageCreateRequest request, HttpServletResponse response)
+        throws IOException;
 }
