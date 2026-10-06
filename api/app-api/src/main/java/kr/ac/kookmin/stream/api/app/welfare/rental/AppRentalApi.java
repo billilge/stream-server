@@ -53,8 +53,9 @@ public interface AppRentalApi {
     @Operation(summary = "대여 신청",
         description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)과 이미 지난 시각은 제외된다. "
             + "이미 대여 중인 같은 물품이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
-            + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+            + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다. "
+            + "같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"MEMBER_IS_NOT_PAYER"})
     @ApiErrorCode(
         type = RentalErrorCode.class,
