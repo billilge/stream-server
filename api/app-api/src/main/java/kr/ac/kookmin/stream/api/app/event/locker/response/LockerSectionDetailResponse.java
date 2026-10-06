@@ -36,7 +36,7 @@ public record LockerSectionDetailResponse(
             detail.section().getId(),
             detail.section().getLabel(),
             detail.layout() == null ? null : Layout.from(detail.layout()),
-            photo == null ? null : StorageUrlBuilder.build(photo.getFileKey()),
+            StorageUrlBuilder.build(photo),
             detail.lockers().stream()
                 .map(locker -> LockerResponse.of(locker, appliedLockerIds.contains(locker.getId()), myLockerId))
                 .toList()

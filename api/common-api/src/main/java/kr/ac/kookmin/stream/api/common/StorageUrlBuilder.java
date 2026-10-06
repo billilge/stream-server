@@ -10,6 +10,13 @@ public final class StorageUrlBuilder {
     }
 
     /**
+     * file이 null이면(없거나 삭제된 파일) null을 돌려준다.
+     */
+    public static String build(File file) {
+        return file == null ? null : build(file.getFileKey());
+    }
+
+    /**
      * fileId가 null이거나 filesById에 없으면(삭제된 파일) null을 돌려준다.
      */
     public static String build(Long fileId, Map<Long, File> filesById) {
