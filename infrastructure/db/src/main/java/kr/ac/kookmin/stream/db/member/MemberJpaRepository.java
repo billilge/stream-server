@@ -12,6 +12,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     Optional<MemberJpaEntity> findByStudentIdAndIsDeletedFalse(String studentId);
 
+    boolean existsByPhoneNumberAndIsDeletedFalse(String phoneNumber);
+
     List<MemberJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
 
     @Query("""

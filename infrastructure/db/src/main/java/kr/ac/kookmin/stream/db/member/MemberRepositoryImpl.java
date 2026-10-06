@@ -24,6 +24,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return memberJpaRepository.existsByPhoneNumberAndIsDeletedFalse(phoneNumber);
+    }
+
+    @Override
     public List<Member> findAllByIds(List<Long> ids) {
         if (ids.isEmpty()) {
             return List.of();
