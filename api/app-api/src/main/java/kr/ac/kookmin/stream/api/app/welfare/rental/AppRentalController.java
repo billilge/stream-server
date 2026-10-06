@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.app.welfare.rental;
 
 import jakarta.validation.Valid;
+import java.time.LocalTime;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.ItemListParams;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.RentalApplyRequest;
@@ -12,6 +13,7 @@ import kr.ac.kookmin.stream.api.app.welfare.rental.usecase.RentalApplyUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
@@ -69,7 +71,7 @@ public class AppRentalController implements AppRentalApi {
     @PostMapping("/histories")
     public ApiResponse<Void> applyRental(AppApiUser apiUser, @Valid @RequestBody RentalApplyRequest request) {
         // DB에 안 닿는 순수 검증은 트랜잭션(UseCase) 진입 전에 끝낸다 — 잘못된 요청이 커넥션을 잡지 않게 한다
-        RentalTimeValidator.validate(request.rentAtHour(), request.rentAtMinute());
+        RentalTimeValidator.validate(request.rentAtHour(), request.rentAtMinute(), LocalTime.now(DateUtil.KST));
         rentalApplyUseCase.apply(
             apiUser.userId(),
             request.itemId(),
