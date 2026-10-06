@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Pattern;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 import kr.ac.kookmin.stream.member.domain.member.domain.TermType;
 
@@ -23,18 +22,23 @@ public record MemberSignUpRequest(
     List<@NotNull(message = "약관 동의 항목이 비어 있습니다.") TermAgreementRequest> termAgreements
 ) {
 
-    // 같은 약관이 두 번 오면 IllegalArgumentException → GlobalExceptionHandler가 INVALID_INPUT(400)으로 응답한다
     public MemberSignUpCommand toCommand() {
-        Map<TermType, Boolean> agreements = termAgreements.stream()
-            .collect(Collectors.toMap(
-                TermAgreementRequest::termType,
-                TermAgreementRequest::agreed,
-                (first, second) -> {
-                    throw new IllegalArgumentException("같은 약관의 동의 여부가 중복되었습니다.");
-                },
-                () -> new EnumMap<>(TermType.class)
-            ));
+        validateTermTypesNotDuplicated();
+
+        Map<TermType, Boolean> agreements = new EnumMap<>(TermType.class);
+        termAgreements.forEach(agreement -> agreements.put(agreement.termType(), agreement.agreed()));
         return new MemberSignUpCommand(phoneNumber, agreements);
+    }
+
+    // 같은 약관이 두 번 오면 IllegalArgumentException → GlobalExceptionHandler가 INVALID_INPUT(400)으로 응답한다
+    private void validateTermTypesNotDuplicated() {
+        long distinctTermTypeCount = termAgreements.stream()
+            .map(TermAgreementRequest::termType)
+            .distinct()
+            .count();
+        if (distinctTermTypeCount != termAgreements.size()) {
+            throw new IllegalArgumentException("같은 약관의 동의 여부가 중복되었습니다.");
+        }
     }
 
     public record TermAgreementRequest(

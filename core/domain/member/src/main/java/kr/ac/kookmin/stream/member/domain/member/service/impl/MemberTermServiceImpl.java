@@ -38,12 +38,7 @@ class MemberTermServiceImpl implements MemberTermService {
     @Override
     @Transactional
     public void agree(Long memberId, Map<TermType, Boolean> termAgreements) {
-        boolean requiredTermsAgreed = Arrays.stream(TermType.values())
-            .filter(TermType::required)
-            .allMatch(termType -> Boolean.TRUE.equals(termAgreements.get(termType)));
-        if (!requiredTermsAgreed) {
-            throw new BusinessException(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED);
-        }
+        validateRequiredTermsAgreed(termAgreements);
 
         Map<TermType, MemberTermAgreement> existingAgreements = memberTermAgreementRepository.findAllByMemberId(memberId)
             .stream()
@@ -53,6 +48,15 @@ class MemberTermServiceImpl implements MemberTermService {
             .map(entry -> toAgreement(memberId, entry.getKey(), entry.getValue(), existingAgreements, now))
             .toList();
         memberTermAgreementRepository.saveAll(agreements);
+    }
+
+    private void validateRequiredTermsAgreed(Map<TermType, Boolean> termAgreements) {
+        boolean requiredTermsAgreed = Arrays.stream(TermType.values())
+            .filter(TermType::required)
+            .allMatch(termType -> Boolean.TRUE.equals(termAgreements.get(termType)));
+        if (!requiredTermsAgreed) {
+            throw new BusinessException(MemberErrorCode.REQUIRED_TERMS_NOT_AGREED);
+        }
     }
 
     private MemberTermAgreement toAgreement(

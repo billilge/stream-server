@@ -69,14 +69,8 @@ class MemberServiceImpl implements MemberService {
     @Transactional
     public Member signUp(Long memberId, MemberSignUpCommand command) {
         Member member = getById(memberId);
-        if (isSignedUp(member)) {
-            throw new BusinessException(MemberErrorCode.ALREADY_SIGNED_UP);
-        }
-        // 필수 약관이 늘어 다시 가입하는 회원은 자기 번호를 그대로 보낼 수 있으므로 같은 번호면 중복 검사를 건너뛴다
-        if (!command.phoneNumber().equals(member.getPhoneNumber())
-            && memberRepository.existsByPhoneNumber(command.phoneNumber())) {
-            throw new BusinessException(MemberErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
-        }
+        validateNotSignedUp(member);
+        validatePhoneNumberNotDuplicated(member, command.phoneNumber());
 
         member.registerPhoneNumber(command.phoneNumber());
         Member saved = memberRepository.save(member);
@@ -92,6 +86,22 @@ class MemberServiceImpl implements MemberService {
     // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
     private boolean isSignedUp(Member member) {
         return member.hasPhoneNumber() && memberTermService.hasAgreedRequiredTerms(member.getId());
+    }
+
+    private void validateNotSignedUp(Member member) {
+        if (isSignedUp(member)) {
+            throw new BusinessException(MemberErrorCode.ALREADY_SIGNED_UP);
+        }
+    }
+
+    // 필수 약관이 늘어 다시 가입하는 회원은 자기 번호를 그대로 보낼 수 있으므로 같은 번호면 중복 검사를 건너뛴다
+    private void validatePhoneNumberNotDuplicated(Member member, String phoneNumber) {
+        if (phoneNumber.equals(member.getPhoneNumber())) {
+            return;
+        }
+        if (memberRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new BusinessException(MemberErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+        }
     }
 
     private Member register(MemberProfileCommand command) {
