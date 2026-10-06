@@ -45,7 +45,6 @@ class LockerServiceImpl implements LockerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public LockerSectionDetail getSectionDetail(Long lockerPeriodId, Long sectionId) {
         requirePublishedPeriod(lockerPeriodId);
         LockerSection section = lockerRepository.findSectionById(sectionId)
