@@ -78,7 +78,8 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     }
 
     // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)의
-    // 트랜잭션 안에서 호출되므로, 재고 락 조회 이후에 고정된 스냅샷을 그대로 공유해서 쓴다.
+    // 트랜잭션 안에서 호출되면 그 스냅샷을 그대로 공유한다 — 다만 지금은 재고 차감에 락이 없어
+    // 중복 대여 확인도 동시 요청끼리 직렬화되지 않는다(billilge-rental-apply-review-fixes.md 참고).
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryRepository.existsActiveRental(itemId, memberId);
