@@ -31,12 +31,8 @@ public class LockerSectionLayoutJpaEntity extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "json")
     private String layout;
 
-    /**
-     * layout 형식 버전. 낙관적 락용 {@code @Version}이 아니다.
-     * 컬럼이 SMALLINT라 스키마 검증이 INTEGER를 기대하지 않도록 JDBC 타입을 지정한다.
-     */
-    @JdbcTypeCode(SqlTypes.SMALLINT)
-    @Column(nullable = false)
+    /** layout 형식 버전. 낙관적 락용 {@code @Version}이 아니다. */
+    @Column(nullable = false, columnDefinition = "SMALLINT")
     private int version;
 
     @Column(name = "photo_file_id", nullable = false)
