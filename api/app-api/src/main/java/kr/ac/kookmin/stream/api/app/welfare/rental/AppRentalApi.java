@@ -51,7 +51,7 @@ public interface AppRentalApi {
 
     /** 대여 신청. 회비 납부·재고·중복 대여·대여 가능 시간을 검증한 뒤 이력을 만든다. */
     @Operation(summary = "대여 신청",
-        description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)은 제외된다. "
+        description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)과 이미 지난 시각은 제외된다. "
             + "이미 대여 중인 같은 물품이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
             + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다. "
             + "같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
@@ -61,7 +61,7 @@ public interface AppRentalApi {
         type = RentalErrorCode.class,
         codes = {
             "ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
-            "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK"
+            "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK", "INVALID_RENTAL_TIME_PAST"
         }
     )
     ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);

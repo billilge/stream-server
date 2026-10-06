@@ -17,6 +17,7 @@ public enum RentalErrorCode implements ErrorCode {
     RENTAL_ITEM_DUPLICATED(ErrorStatus.BAD_REQUEST, "이미 대여 중인 물품입니다."),
     INVALID_RENTAL_TIME_RANGE(ErrorStatus.BAD_REQUEST, "대여 가능 시간이 아니에요. 10시-17시 사이로 선택해 주세요."),
     INVALID_RENTAL_TIME_LUNCH_BREAK(ErrorStatus.BAD_REQUEST, "점심시간(12시-13시)에는 대여가 불가능해요."),
+    INVALID_RENTAL_TIME_PAST(ErrorStatus.BAD_REQUEST, "이미 지난 시간이에요. 현재 시각 이후로 선택해 주세요."),
     RENTAL_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 대여 이력입니다.");
 
     private final int status;
