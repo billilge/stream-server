@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerApplyRequest;
@@ -14,9 +15,12 @@ import kr.ac.kookmin.stream.api.app.event.locker.response.MyLockerApplicationLis
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
+import kr.ac.kookmin.stream.file.domain.File;
+import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -39,6 +43,7 @@ public class AppLockerController implements AppLockerApi {
 
     private final LockerService lockerService;
     private final LockerApplicationService lockerApplicationService;
+    private final FileService fileService;
 
     @Override
     @GetMapping("/sections")
@@ -63,13 +68,17 @@ public class AppLockerController implements AppLockerApi {
         @Valid @ModelAttribute LockerPeriodParams params
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
-        List<Locker> lockers = lockerService.getSectionDetail(lockerPeriodId, sectionId).lockers();
+        LockerSectionDetail detail = lockerService.getSectionDetail(lockerPeriodId, sectionId);
+        // 배치 구조를 아직 등록하지 않은 구역이면 사진도 없다
+        File photo = Optional.ofNullable(detail.layout())
+            .flatMap(layout -> fileService.findById(layout.getPhotoFileId()))
+            .orElse(null);
         Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
         Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)
             .orElse(null);
 
-        return ApiResponse.success(LockerSectionDetailResponse.of(lockers, appliedLockerIds, myLockerId));
+        return ApiResponse.success(LockerSectionDetailResponse.of(detail, photo, appliedLockerIds, myLockerId));
     }
 
     @Override

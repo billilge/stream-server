@@ -5,10 +5,8 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 
 public record LockerResponse(
     Long lockerId,
-    String lockerLabel,
     int lockerNumber,
-    int rowNo,
-    int columnNo,
+    String lockerLabel,
     boolean isAvailable,
     boolean isMine
 ) {
@@ -20,10 +18,8 @@ public record LockerResponse(
     public static LockerResponse of(Locker locker, boolean applied, Long myLockerId) {
         return new LockerResponse(
             locker.getId(),
-            locker.getLockerLabel(),
             locker.getLockerNumber(),
-            locker.getRowNo(),
-            locker.getColumnNo(),
+            locker.getLockerLabel(),
             locker.isSelectable(applied),
             Objects.equals(locker.getId(), myLockerId)
         );

@@ -35,10 +35,12 @@ public interface AppLockerApi {
         @ParameterObject LockerPeriodParams params
     );
 
-    /** 구역에 속한 사물함의 배치 정보와 선택 가능 여부. */
+    /** 구역의 칸 배치 구조·사진과 사물함 선택 가능 여부. */
     @Operation(summary = "사물함 구역 상세 조회",
-        description = "구역에 속한 사물함의 배치도 위치와 선택 가능 여부를 조회한다. "
-            + "사물함이 사용 가능한 상태이고 해당 회차에 신청되지 않은 경우에만 선택할 수 있다.")
+        description = "구역의 칸 배치 구조(layout)와 실제 사진, 구역에 속한 사물함의 선택 가능 여부를 조회한다. "
+            + "layout의 칸 번호는 lockers[].lockerNumber와 같다. 배치 구조를 아직 등록하지 않은 구역이면 "
+            + "layout과 photoUrl이 null이다. 사물함이 사용 가능한 상태이고 해당 회차에 신청되지 않은 경우에만 "
+            + "선택할 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_SECTION_NOT_FOUND"})
     ApiResponse<LockerSectionDetailResponse> getSectionLockers(
