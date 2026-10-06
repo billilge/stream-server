@@ -9,6 +9,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.SectionAvailabilityStatus;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
@@ -44,11 +45,17 @@ class LockerServiceImpl implements LockerService {
     }
 
     @Override
-    public List<Locker> getSectionLockers(Long lockerPeriodId, Long sectionId) {
+    @Transactional(readOnly = true)
+    public LockerSectionDetail getSectionDetail(Long lockerPeriodId, Long sectionId) {
         requirePublishedPeriod(lockerPeriodId);
-        requireSection(sectionId);
+        LockerSection section = lockerRepository.findSectionById(sectionId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND));
 
-        return lockerRepository.findLockersBySectionId(sectionId);
+        return new LockerSectionDetail(
+            section,
+            lockerRepository.findLayoutBySectionId(sectionId).orElse(null),
+            lockerRepository.findLockersBySectionId(sectionId)
+        );
     }
 
     @Override
@@ -97,12 +104,6 @@ class LockerServiceImpl implements LockerService {
     private void requirePublishedPeriod(Long lockerPeriodId) {
         if (!lockerRepository.existsPublishedPeriod(lockerPeriodId)) {
             throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND);
-        }
-    }
-
-    private void requireSection(Long sectionId) {
-        if (!lockerRepository.existsSection(sectionId)) {
-            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
         }
     }
 }

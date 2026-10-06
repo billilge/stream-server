@@ -63,7 +63,7 @@ public class AppLockerController implements AppLockerApi {
         @Valid @ModelAttribute LockerPeriodParams params
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
-        List<Locker> lockers = lockerService.getSectionLockers(lockerPeriodId, sectionId);
+        List<Locker> lockers = lockerService.getSectionDetail(lockerPeriodId, sectionId).lockers();
         Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
         Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)

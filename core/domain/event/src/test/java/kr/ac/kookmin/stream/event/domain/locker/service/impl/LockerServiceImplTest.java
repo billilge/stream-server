@@ -15,6 +15,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.SectionAvailabilityStatus;
@@ -105,7 +106,7 @@ class LockerServiceImplTest {
 
     @Nested
     @DisplayName("구역 상세")
-    class GetSectionLockers {
+    class GetSectionDetail {
 
         @Test
         @DisplayName("구역의 사물함을 레포지토리가 준 순서대로 돌려준다")
@@ -117,7 +118,7 @@ class LockerServiceImplTest {
                     locker(12L, 1L, LockerStatus.DISABLED),
                     usable(13L, 1L));
 
-            List<Locker> lockers = service(repository).getSectionLockers(PERIOD_ID, 1L);
+            List<Locker> lockers = service(repository).getSectionDetail(PERIOD_ID, 1L).lockers();
 
             assertEquals(List.of(11L, 12L, 13L), lockers.stream().map(Locker::getId).toList());
         }
@@ -128,7 +129,7 @@ class LockerServiceImplTest {
             FakeLockerRepository repository = new FakeLockerRepository().withUnpublishedPeriod();
 
             BusinessException e = assertThrows(BusinessException.class,
-                () -> service(repository).getSectionLockers(PERIOD_ID, 1L));
+                () -> service(repository).getSectionDetail(PERIOD_ID, 1L));
 
             assertEquals(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND, e.getErrorCode());
         }
@@ -139,7 +140,7 @@ class LockerServiceImplTest {
             FakeLockerRepository repository = new FakeLockerRepository().withMissingSection();
 
             BusinessException e = assertThrows(BusinessException.class,
-                () -> service(repository).getSectionLockers(PERIOD_ID, 99L));
+                () -> service(repository).getSectionDetail(PERIOD_ID, 99L));
 
             assertEquals(LockerErrorCode.LOCKER_SECTION_NOT_FOUND, e.getErrorCode());
         }
@@ -246,13 +247,18 @@ class LockerServiceImplTest {
         }
 
         @Override
-        public boolean existsSection(Long sectionId) {
-            return sectionExists;
+        public List<LockerSection> findAllSections() {
+            return sections;
         }
 
         @Override
-        public List<LockerSection> findAllSections() {
-            return sections;
+        public Optional<LockerSection> findSectionById(Long sectionId) {
+            return sectionExists ? Optional.of(section(sectionId, "A-1")) : Optional.empty();
+        }
+
+        @Override
+        public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
+            return Optional.empty();
         }
 
         @Override
