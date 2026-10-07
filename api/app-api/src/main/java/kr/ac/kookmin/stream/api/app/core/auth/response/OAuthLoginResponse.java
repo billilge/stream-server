@@ -5,5 +5,6 @@ package kr.ac.kookmin.stream.api.app.core.auth.response;
  */
 public record OAuthLoginResponse(
     String accessToken,
+    String name,
     boolean signUpRequired
 ) {}

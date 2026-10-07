@@ -32,7 +32,7 @@ public class OAuthLoginUseCase {
         String accessToken = authTokenIssuer.issue(member.getId(), member.getRole(), member.getCouncilDepartment());
         // 회원을 이번에 만들었는지가 아니라 저장된 전화번호·동의 기록으로 판단한다. 회원가입 화면에서 이탈한 회원도 다시 가입 화면을 본다
         boolean signUpRequired = !memberService.isSignedUp(member.getId());
-        return new OAuthLoginResponse(accessToken, signUpRequired);
+        return new OAuthLoginResponse(accessToken, member.getName(), signUpRequired);
     }
 
     private Member findOrRegister(OAuthUserInfo userInfo) {
