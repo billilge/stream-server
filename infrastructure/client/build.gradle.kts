@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":core:domain:file"))
     implementation(project(":core:domain:internal"))
     implementation(project(":core:domain:member"))
+    implementation(project(":core:domain:welfare"))
 
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarter)

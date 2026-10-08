@@ -29,3 +29,13 @@ push:
   type: ${PUSH_TYPE:log}
   fcm:
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
+
+# AI 서버(stream-ai). 내부 토큰은 저장소에 남기지 않는다.
+# read-timeout은 조각 하나를 기다리는 시간이다. 전체 답변 시간이 아니라 조각 사이 간격 기준으로 잡는다.
+client:
+  stream-ai:
+    base-url: ${STREAM_AI_BASE_URL:http://localhost:8000}
+    chat-path: ${STREAM_AI_CHAT_PATH:/chat}
+    internal-token: ${STREAM_AI_INTERNAL_TOKEN:}
+    connect-timeout: 3s
+    read-timeout: 30s
