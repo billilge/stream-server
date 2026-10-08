@@ -51,9 +51,11 @@ class ChatServiceImpl implements ChatService {
         chatClient.stream(memberId, turns, collector);
 
         String answer = collector.answer();
-        // 실패했거나 답변이 비었다. 빈 답변을 남기면 다음 질문의 이력에 빈 턴이 섞인다.
+        // 실패했거나 답변이 비었다. 둘 다 저장하지 않는다.
+        // 몇 조각 받은 뒤 실패하면 텍스트는 있지만 중간에 끊긴 답변이다. 남기면 다음 질문의 이력에 섞인다.
+        // 빈 답변을 남기면 다음 질문의 이력에 빈 턴이 섞인다.
         // 실패 원인은 클라이언트가 이미 로그에 남겼다. core 도메인 모듈에는 로거가 없다.
-        if (answer.isBlank()) {
+        if (!collector.isCompleted() || answer.isBlank()) {
             return;
         }
         chatMessageRepository.save(ChatMessage.of(null, memberId, ChatTurn.MODEL, answer));
@@ -85,6 +87,9 @@ class ChatServiceImpl implements ChatService {
         private final ChatEventListener delegate;
         private final StringBuilder collected = new StringBuilder();
 
+        /** {@code done}을 받았는지. {@code error}로 끝났으면 false로 남는다. */
+        private boolean completed;
+
         private AnswerCollector(ChatEventListener delegate) {
             this.delegate = delegate;
         }
@@ -104,6 +109,7 @@ class ChatServiceImpl implements ChatService {
 
         @Override
         public void onDone() {
+            completed = true;
             delegate.onDone();
         }
 
@@ -114,6 +120,10 @@ class ChatServiceImpl implements ChatService {
 
         String answer() {
             return collected.toString().strip();
+        }
+
+        boolean isCompleted() {
+            return completed;
         }
     }
 }
