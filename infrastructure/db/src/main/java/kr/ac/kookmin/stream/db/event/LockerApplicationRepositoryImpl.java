@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
@@ -49,17 +49,10 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
             return lockerApplicationJpaRepository.saveAndFlush(LockerApplicationJpaEntity.from(application))
                 .toDomain();
         } catch (DataIntegrityViolationException e) {
-            if (isViolated(e, LOCKER_UNIQUE_CONSTRAINT)) {
+            if (ConstraintViolationUtil.isViolated(e, LOCKER_UNIQUE_CONSTRAINT)) {
                 throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
             }
             throw e;
         }
-    }
-
-    /** MySQL은 제약 이름 앞에 테이블명을 붙여 줄 수 있어 포함 여부로 비교한다. */
-    private boolean isViolated(DataIntegrityViolationException e, String constraintName) {
-        return e.getCause() instanceof ConstraintViolationException violation
-            && violation.getConstraintName() != null
-            && violation.getConstraintName().contains(constraintName);
     }
 }
