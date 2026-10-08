@@ -2,6 +2,8 @@ package kr.ac.kookmin.stream.welfare.domain.chat.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import kr.ac.kookmin.stream.welfare.domain.chat.client.ChatClient;
 import kr.ac.kookmin.stream.welfare.domain.chat.client.ChatEventListener;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatMessage;
@@ -27,8 +29,20 @@ class ChatServiceImpl implements ChatService {
      */
     private static final int HISTORY_LIMIT = 10;
 
+    private static final String BUSY_MESSAGE = "이전 답변이 아직 끝나지 않았습니다. 답변이 끝난 뒤에 다시 질문해 주세요.";
+
     private final ChatMessageRepository chatMessageRepository;
     private final ChatClient chatClient;
+
+    /**
+     * 지금 답변을 받고 있는 회원. 한 사람당 답변 하나만 진행한다.
+     * <p>
+     * 둘이 동시에 돌면 두 요청이 같은 이력을 읽어 가고, 저장 순서가 꼬여 다음 질문의 이력이 뒤섞인다.
+     * <p>
+     * 서버 메모리에 두므로 <b>백엔드가 한 대일 때만</b> 정확하다. 여러 대로 늘리면 Redis 같은
+     * 공용 저장소로 옮겨야 한다.
+     */
+    private final Set<Long> answeringMembers = ConcurrentHashMap.newKeySet();
 
     /**
      * 이 메서드에 {@code @Transactional}을 붙이지 않는다.
@@ -39,9 +53,27 @@ class ChatServiceImpl implements ChatService {
      * <p>
      * 그 대가로 질문만 남고 답변이 안 남는 경우가 생길 수 있다. 답변 생성이 실패한 경우이므로
      * 기록으로는 그게 맞다 — 무엇을 물었는지는 남아야 나중에 오답을 찾을 수 있다.
+     * <p>
+     * 이미 답변 중인 회원이 또 질문하면 {@code error} 이벤트로 거절하고 질문도 저장하지 않는다.
+     * 409 같은 상태 코드로 거절하지 않는 이유는, 컨트롤러가 이 메서드를 부르기 전에 이미
+     * {@code text/event-stream} 헤더를 정해 두어 JSON 에러 응답을 쓸 수 없기 때문이다.
      */
     @Override
     public void answer(long memberId, String question, ChatEventListener listener) {
+        if (!answeringMembers.add(memberId)) {
+            listener.onError(BUSY_MESSAGE);
+            return;
+        }
+        // 학생이 화면을 닫아 쓰기가 실패해도 예외가 올라오므로, 반드시 finally에서 풀어준다.
+        // 안 풀면 그 학생은 서버를 재시작할 때까지 질문할 수 없다.
+        try {
+            answerInTurn(memberId, question, listener);
+        } finally {
+            answeringMembers.remove(memberId);
+        }
+    }
+
+    private void answerInTurn(long memberId, String question, ChatEventListener listener) {
         List<ChatTurn> turns = loadRecentTurns(memberId);
         turns.add(ChatTurn.user(question));
 
