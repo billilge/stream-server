@@ -21,7 +21,7 @@ public interface AppAuthApi {
     @Operation(summary = "OAuth 로그인",
         description = """
             provider(현재 kconnect)에서 받은 code·codeVerifier·redirectUri로 로그인한다.
-            처음 로그인하면 회원이 만들어진다. termsAgreementRequired가 true면 필수 약관 동의가 필요하다.""")
+            처음 로그인하면 회원이 만들어진다. signUpRequired가 true면 회원가입(전화번호·필수 약관 동의)이 필요하다.""")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = OAuthErrorCode.class, codes = {
         "UNSUPPORTED_OAUTH_PROVIDER",

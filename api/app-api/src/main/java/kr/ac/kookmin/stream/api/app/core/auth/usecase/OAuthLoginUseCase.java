@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.auth.domain.oauth.service.OAuthService;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberProfileCommand;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
-import kr.ac.kookmin.stream.member.domain.member.service.MemberTermService;
 import kr.ac.kookmin.stream.security.AuthTokenIssuer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,6 @@ public class OAuthLoginUseCase {
 
     private final OAuthService oauthService;
     private final MemberService memberService;
-    private final MemberTermService memberTermService;
     private final AuthTokenIssuer authTokenIssuer;
 
     public OAuthLoginResponse login(OAuthLoginCommand command) {
@@ -32,9 +30,9 @@ public class OAuthLoginUseCase {
         Member member = findOrRegister(userInfo);
 
         String accessToken = authTokenIssuer.issue(member.getId(), member.getRole(), member.getCouncilDepartment());
-        // 회원을 이번에 만들었는지가 아니라 동의 기록으로 판단한다. 가입 후 동의하지 않고 이탈한 회원도 다시 약관 화면을 본다
-        boolean termsAgreementRequired = !memberTermService.hasAgreedRequiredTerms(member.getId());
-        return new OAuthLoginResponse(accessToken, termsAgreementRequired);
+        // 회원을 이번에 만들었는지가 아니라 저장된 전화번호·동의 기록으로 판단한다. 회원가입 화면에서 이탈한 회원도 다시 가입 화면을 본다
+        boolean signUpRequired = !memberService.isSignedUp(member.getId());
+        return new OAuthLoginResponse(accessToken, member.getName(), signUpRequired);
     }
 
     private Member findOrRegister(OAuthUserInfo userInfo) {

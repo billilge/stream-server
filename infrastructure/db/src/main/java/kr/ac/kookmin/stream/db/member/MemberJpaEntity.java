@@ -17,8 +17,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-// uk_members_active_student_id(V1)는 generated column active_student_id에 걸려 있다.
-// Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
+// uk_members_active_student_id(V1)·uk_members_active_phone_number(V16)는 generated column
+// active_student_id·active_phone_number에 걸려 있다. Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberJpaEntity extends BaseSoftDeleteEntity {
@@ -43,6 +43,9 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
 
     private String email;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     @Column(name = "fcm_token")
     private String fcmToken;
 
@@ -61,6 +64,7 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
         this.department = member.getDepartment();
         this.academicStatus = member.getAcademicStatus();
         this.email = member.getEmail();
+        this.phoneNumber = member.getPhoneNumber();
         this.fcmToken = member.getFcmToken();
         this.role = member.getRole();
         this.councilDepartment = member.getCouncilDepartment();
@@ -71,6 +75,7 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Member toDomain() {
-        return Member.of(id, studentId, name, department, academicStatus, email, fcmToken, role, councilDepartment);
+        return Member.of(
+            id, studentId, name, department, academicStatus, email, phoneNumber, fcmToken, role, councilDepartment);
     }
 }
