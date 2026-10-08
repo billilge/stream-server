@@ -23,6 +23,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplyCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
@@ -359,12 +360,17 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
-        public boolean existsSection(Long sectionId) {
+        public List<LockerSection> findAllSections() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public List<LockerSection> findAllSections() {
+        public Optional<LockerSection> findSectionById(Long sectionId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
             throw new UnsupportedOperationException();
         }
 

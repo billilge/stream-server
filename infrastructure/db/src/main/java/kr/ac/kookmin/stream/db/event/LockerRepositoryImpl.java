@@ -6,6 +6,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,16 +17,12 @@ public class LockerRepositoryImpl implements LockerRepository {
 
     private final LockerPeriodJpaRepository lockerPeriodJpaRepository;
     private final LockerSectionJpaRepository lockerSectionJpaRepository;
+    private final LockerSectionLayoutJpaRepository lockerSectionLayoutJpaRepository;
     private final LockerJpaRepository lockerJpaRepository;
 
     @Override
     public boolean existsPublishedPeriod(Long lockerPeriodId) {
         return lockerPeriodJpaRepository.existsByIdAndIsPublishedTrue(lockerPeriodId);
-    }
-
-    @Override
-    public boolean existsSection(Long sectionId) {
-        return lockerSectionJpaRepository.existsById(sectionId);
     }
 
     @Override
@@ -46,6 +43,18 @@ public class LockerRepositoryImpl implements LockerRepository {
         return lockerSectionJpaRepository.findAllByOrderByIdAsc().stream()
             .map(LockerSectionJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public Optional<LockerSection> findSectionById(Long sectionId) {
+        return lockerSectionJpaRepository.findById(sectionId)
+            .map(LockerSectionJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
+        return lockerSectionLayoutJpaRepository.findBySectionId(sectionId)
+            .map(LockerSectionLayoutJpaEntity::toDomain);
     }
 
     @Override
