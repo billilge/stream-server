@@ -67,4 +67,13 @@ public class Member {
     public boolean hasPhoneNumber() {
         return phoneNumber != null;
     }
+
+    // 앱이 Firebase에서 받은 등록 토큰으로 바꾼다. 바뀐 값이 있으면 true를 돌려준다
+    public boolean updateFcmToken(String fcmToken) {
+        if (Objects.equals(this.fcmToken, fcmToken)) {
+            return false;
+        }
+        this.fcmToken = fcmToken;
+        return true;
+    }
 }

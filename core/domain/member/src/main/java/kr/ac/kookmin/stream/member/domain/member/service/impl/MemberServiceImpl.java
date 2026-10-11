@@ -83,6 +83,18 @@ class MemberServiceImpl implements MemberService {
         return isSignedUp(getById(memberId));
     }
 
+    // 한 기기를 다른 계정으로 쓰게 되면 이전 회원의 알림이 새 사용자에게 가지 않도록, 다른 회원에게 남은 같은 토큰을 지운다.
+    // 이미 중복이 들어 있는 데이터도 정리하려고 자기 토큰이 그대로여도 매번 지운다
+    @Override
+    @Transactional
+    public void updateFcmToken(Long memberId, String fcmToken) {
+        Member member = getById(memberId);
+        memberRepository.clearFcmTokenOfOthers(memberId, fcmToken);
+        if (member.updateFcmToken(fcmToken)) {
+            memberRepository.save(member);
+        }
+    }
+
     // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
     private boolean isSignedUp(Member member) {
         return member.hasPhoneNumber() && memberTermService.hasAgreedRequiredTerms(member.getId());

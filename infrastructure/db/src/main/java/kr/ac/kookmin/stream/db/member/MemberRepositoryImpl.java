@@ -61,4 +61,9 @@ public class MemberRepositoryImpl implements MemberRepository {
             throw e;
         }
     }
+
+    @Override
+    public void clearFcmTokenOfOthers(Long memberId, String fcmToken) {
+        memberJpaRepository.clearFcmTokenOfOthers(memberId, fcmToken);
+    }
 }
