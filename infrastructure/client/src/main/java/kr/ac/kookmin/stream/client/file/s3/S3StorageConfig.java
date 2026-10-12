@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.client.file.s3;
 
 import java.net.URI;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -16,7 +15,6 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
  * R2에는 EC2 인스턴스 프로필 같은 자동 자격증명 체인이 없어, R2 API 토큰의 액세스 키·시크릿 키를 정적으로 주입한다.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "file.storage", name = "type", havingValue = "s3")
 public class S3StorageConfig {
 
     @Bean

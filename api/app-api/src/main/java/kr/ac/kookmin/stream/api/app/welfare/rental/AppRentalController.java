@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.rental;
 
 import jakarta.validation.Valid;
 import java.time.LocalTime;
+import java.util.List;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.ItemListParams;
 import kr.ac.kookmin.stream.api.app.welfare.rental.request.RentalApplyRequest;
@@ -15,6 +16,7 @@ import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalTimeValidator;
@@ -54,17 +56,15 @@ public class AppRentalController implements AppRentalApi {
         AppApiUser apiUser,
         @Valid @ModelAttribute RentalHistoryListParams params
     ) {
-        return ApiResponse.success(RentalHistoryListResponse.from(
-            rentalHistoryService.getHistories(apiUser.userId(), params.toStatus())
-        ));
+        List<RentalRecord> records = rentalHistoryService.getHistories(apiUser.userId(), params.toStatus());
+        return ApiResponse.success(RentalHistoryListResponse.from(records));
     }
 
     @Override
     @GetMapping("/histories/return-required")
     public ApiResponse<ReturnRequiredListResponse> getReturnRequired(AppApiUser apiUser) {
-        return ApiResponse.success(ReturnRequiredListResponse.from(
-            rentalHistoryService.getReturnRequiredRentals(apiUser.userId())
-        ));
+        List<RentalRecord> records = rentalHistoryService.getReturnRequiredRentals(apiUser.userId());
+        return ApiResponse.success(ReturnRequiredListResponse.from(records));
     }
 
     @Override

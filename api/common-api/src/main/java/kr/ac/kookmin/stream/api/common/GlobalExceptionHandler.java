@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +52,15 @@ public class GlobalExceptionHandler {
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), e.getMessage()));
+    }
+
+    // JSON 문법 오류, enum에 없는 값 등 요청 본문을 읽지 못한 경우. 파서 메시지는 내부 타입 이름을 담고 있어 응답에는 넣지 않는다
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotReadable(HttpMessageNotReadableException e) {
+        log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
+            MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
+        return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), "요청 본문 형식이 올바르지 않습니다."));
     }
 
     @ExceptionHandler(Exception.class)

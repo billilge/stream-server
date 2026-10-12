@@ -2,8 +2,11 @@ package kr.ac.kookmin.stream.api.app.event.event.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.file.domain.File;
 
 public record EventDetailResponse(
     Long eventId,
@@ -20,7 +23,10 @@ public record EventDetailResponse(
     List<Image> images
 ) {
 
-    public static EventDetailResponse from(EventDetail detail) {
+    /**
+     * 존재하지 않는(삭제된) fileId는 imagesById에 키가 없다 — 그런 항목은 목록에서 조용히 제외한다.
+     */
+    public static EventDetailResponse from(EventDetail detail, Map<Long, File> imagesById) {
         return new EventDetailResponse(
             detail.eventId(),
             detail.title(),
@@ -33,17 +39,17 @@ public record EventDetailResponse(
             detail.applyEndAt(),
             detail.recruitStatus(),
             detail.daysUntilDeadline(),
-            detail.imageIds().stream().map(Image::from).toList()
+            detail.imageIds().stream()
+                .filter(imagesById::containsKey)
+                .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
+                .toList()
         );
     }
 
     public record Image(Long fileId, String fileUrl) {
 
-        /**
-         * 파일 키 → 공개 URL 조립(#17)이 아직 없어 URL은 비어 있다. #17이 머지되면 이 팩토리만 채우면 된다.
-         */
-        public static Image from(Long fileId) {
-            return new Image(fileId, null);
+        public static Image of(Long fileId, File file) {
+            return new Image(fileId, StorageUrlBuilder.build(file.getFileKey()));
         }
     }
 }

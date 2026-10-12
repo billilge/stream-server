@@ -19,6 +19,7 @@ local-storage/
 .env
 .env.*
 !.env.example
+*firebase-adminsdk*.json
 
 # 문서·기타
 docs/

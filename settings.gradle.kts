@@ -7,6 +7,7 @@ include(
     "api:app-api",
     "core:common",
     "core:domain:event",
+    "core:domain:file",
     "core:domain:internal",
     "core:domain:welfare",
     "core:domain:auth",

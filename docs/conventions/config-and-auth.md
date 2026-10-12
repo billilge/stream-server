@@ -225,7 +225,7 @@ ApiResponse<Void> apply(
 public enum PublicEndpoints {
     HEALTH_CHECK(List.of("/actuator/health")),
     SWAGGER(List.of("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")),
-    AUTH(List.of("/auth/login"));   // 예: 로그인
+    AUTH(List.of("/v1/auth/login/*"));   // OAuth 로그인 (/v1/auth/login/{provider})
     // ...
 }
 ```

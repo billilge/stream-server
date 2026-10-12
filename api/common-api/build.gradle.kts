@@ -6,6 +6,7 @@ description = "role 무관 공통 인프라 — ApiResponse, GlobalExceptionHand
 
 dependencies {
     implementation(project(":core:common"))
+    implementation(project(":core:domain:file"))
     implementation(project(":gateway:auth"))
     implementation(project(":gateway:logging"))
 

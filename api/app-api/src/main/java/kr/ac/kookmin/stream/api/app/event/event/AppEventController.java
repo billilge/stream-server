@@ -1,6 +1,9 @@
 package kr.ac.kookmin.stream.api.app.event.event;
 
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
@@ -15,9 +18,12 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
+import kr.ac.kookmin.stream.file.domain.File;
+import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -43,6 +49,7 @@ public class AppEventController implements AppEventApi {
 
     private final EventService eventService;
     private final EventApplicationService eventApplicationService;
+    private final FileService fileService;
 
     @Override
     @GetMapping
@@ -51,7 +58,10 @@ public class AppEventController implements AppEventApi {
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
             params.toRecruitStatus(), params.toCursor(), params.sizeOrDefault());
-        return ApiResponse.success(CursorSliceResponse.from(result, EventListItemResponse::from));
+        Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIdsOf(result.content(), EventSummary::thumbnailFileId));
+
+        return ApiResponse.success(
+            CursorSliceResponse.from(result, summary -> EventListItemResponse.from(summary, filesById)));
     }
 
     @Override
@@ -62,8 +72,11 @@ public class AppEventController implements AppEventApi {
     ) {
         CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getMyApplications(
             apiUser.userId(), params.toCursor(), params.sizeOrDefault());
+        Map<Long, File> filesById = fileService.findAllByIdIn(
+            thumbnailIdsOf(result.content(), EventApplicationSummary::thumbnailFileId));
+
         return ApiResponse.success(
-            CursorSliceResponse.from(result, EventApplicationListItemResponse::from));
+            CursorSliceResponse.from(result, summary -> EventApplicationListItemResponse.from(summary, filesById)));
     }
 
     @Override
@@ -89,7 +102,10 @@ public class AppEventController implements AppEventApi {
     @Override
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailResponse> getEvent(@PathVariable Long eventId) {
-        return ApiResponse.success(EventDetailResponse.from(eventService.getPublishedEvent(eventId)));
+        EventDetail detail = eventService.getPublishedEvent(eventId);
+        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+
+        return ApiResponse.success(EventDetailResponse.from(detail, imagesById));
     }
 
     @Override
@@ -108,5 +124,9 @@ public class AppEventController implements AppEventApi {
         return ApiResponse.success(
             EventApplyResponse.from(eventApplicationService.apply(eventId, apiUser.userId(), request.toCommand()))
         );
+    }
+
+    private static <T> List<Long> thumbnailIdsOf(List<T> items, Function<T, Long> thumbnailFileId) {
+        return items.stream().map(thumbnailFileId).filter(id -> id != null).toList();
     }
 }

@@ -1,7 +1,10 @@
 package kr.ac.kookmin.stream.api.app.event.archive.response;
 
 import java.time.LocalDate;
+import java.util.Map;
+import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveSummary;
+import kr.ac.kookmin.stream.file.domain.File;
 
 public record ArchiveListItemResponse(
     Long archiveId,
@@ -11,22 +14,13 @@ public record ArchiveListItemResponse(
     String thumbnailUrl
 ) {
 
-    public static ArchiveListItemResponse from(ArchiveSummary summary) {
+    public static ArchiveListItemResponse from(ArchiveSummary summary, Map<Long, File> filesById) {
         return new ArchiveListItemResponse(
             summary.archiveId(),
             summary.title(),
             summary.startDate(),
             summary.endDate(),
-            thumbnailUrlOf(summary.thumbnailFileId())
+            StorageUrlBuilder.build(summary.thumbnailFileId(), filesById)
         );
-    }
-
-    /**
-     * 대표 이미지 파일 id를 공개 URL로 바꾼다.
-     * <p>
-     * 파일 키 → 공개 URL 조립이 아직 없어 현재는 항상 비어 있다. 조립이 생기면 이 메서드만 채우면 된다.
-     */
-    private static String thumbnailUrlOf(Long thumbnailFileId) {
-        return null;
     }
 }

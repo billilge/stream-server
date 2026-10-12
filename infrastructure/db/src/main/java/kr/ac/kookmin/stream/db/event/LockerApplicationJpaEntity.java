@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseCreatedTimeEntity;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import lombok.AccessLevel;
@@ -16,8 +17,17 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "locker_applications",
     indexes = {
-        @Index(name = "idx_locker_applications_locker_period_id_locker_id", columnList = "locker_period_id, locker_id"),
-        @Index(name = "idx_locker_applications_member_id", columnList = "member_id")
+        @Index(
+            name = "uk_locker_applications_locker_period_id_locker_id",
+            columnList = "locker_period_id, locker_id",
+            unique = true
+        ),
+        @Index(name = "idx_locker_applications_member_id_applied_at", columnList = "member_id, applied_at"),
+        @Index(
+            name = "uk_locker_applications_locker_period_id_member_id",
+            columnList = "locker_period_id, member_id",
+            unique = true
+        )
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,11 +47,15 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "locker_id", nullable = false)
     private Long lockerId;
 
+    @Column(name = "applied_at", nullable = false)
+    private LocalDateTime appliedAt;
+
     private LockerApplicationJpaEntity(LockerApplication application) {
         this.id = application.getId();
         this.lockerPeriodId = application.getLockerPeriodId();
         this.memberId = application.getMemberId();
         this.lockerId = application.getLockerId();
+        this.appliedAt = application.getAppliedAt();
     }
 
     public static LockerApplicationJpaEntity from(LockerApplication application) {
@@ -49,6 +63,6 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public LockerApplication toDomain() {
-        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId);
+        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId, appliedAt);
     }
 }
