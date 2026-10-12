@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeUpdateCommand;
 
@@ -41,8 +41,6 @@ public record NoticeUpdateRequest(
     Long updatedAt
 ) {
 
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
-
     public NoticeUpdateCommand toCommand() {
         return new NoticeUpdateCommand(
             title,
@@ -50,7 +48,7 @@ public record NoticeUpdateRequest(
             category,
             imageFileIds.stream().distinct().toList(),
             attachmentFileIds.stream().distinct().toList(),
-            LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), KST)
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), DateUtil.KST)
         );
     }
 }
