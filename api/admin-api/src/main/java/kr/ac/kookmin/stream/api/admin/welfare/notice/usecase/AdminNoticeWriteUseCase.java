@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.notice.usecase;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -38,7 +38,7 @@ public class AdminNoticeWriteUseCase {
     }
 
     private void requireFilesExist(List<Long> imageIds, List<Long> attachmentIds) {
-        Set<Long> fileIds = new LinkedHashSet<>(imageIds);
+        Set<Long> fileIds = new HashSet<>(imageIds);
         fileIds.addAll(attachmentIds);
 
         if (fileService.findAllByIdIn(List.copyOf(fileIds)).size() != fileIds.size()) {
