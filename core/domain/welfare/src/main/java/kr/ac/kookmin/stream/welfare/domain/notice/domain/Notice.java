@@ -39,14 +39,14 @@ public class Notice {
     }
 
     // 새 공지는 고정되지 않은 채로 등록한다. 생성·수정 시각은 DB가 채운다
-    public static Notice create(NoticeCreateCommand command) {
+    public static Notice create(Long createdBy, NoticeCreateCommand command) {
         return new Notice(
             null,
             command.title(),
             command.content(),
             command.category(),
             false,
-            command.createdBy(),
+            createdBy,
             command.attachmentIds(),
             command.imageIds(),
             null,

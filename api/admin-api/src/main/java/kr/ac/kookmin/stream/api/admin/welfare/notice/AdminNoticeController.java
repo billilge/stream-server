@@ -35,7 +35,7 @@ public class AdminNoticeController implements AdminNoticeApi {
         AdminApiUser apiUser,
         @Valid @RequestBody NoticeCreateRequest request
     ) {
-        Notice notice = adminNoticeWriteUseCase.create(request.toCommand(apiUser.userId()));
+        Notice notice = adminNoticeWriteUseCase.create(apiUser.userId(), request.toCommand());
         return ApiResponse.success(NoticeCreateResponse.from(notice));
     }
 

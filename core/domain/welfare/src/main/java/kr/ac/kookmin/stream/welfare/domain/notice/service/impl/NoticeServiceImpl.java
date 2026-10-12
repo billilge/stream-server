@@ -40,8 +40,8 @@ class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public Notice create(NoticeCreateCommand command) {
-        return noticeRepository.save(Notice.create(command));
+    public Notice create(Long createdBy, NoticeCreateCommand command) {
+        return noticeRepository.save(Notice.create(createdBy, command));
     }
 
     @Override

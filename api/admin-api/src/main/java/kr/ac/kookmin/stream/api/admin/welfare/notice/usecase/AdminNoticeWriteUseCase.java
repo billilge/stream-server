@@ -27,9 +27,9 @@ public class AdminNoticeWriteUseCase {
     private final NoticeService noticeService;
     private final FileService fileService;
 
-    public Notice create(NoticeCreateCommand command) {
+    public Notice create(Long createdBy, NoticeCreateCommand command) {
         requireFilesExist(command.imageIds(), command.attachmentIds());
-        return noticeService.create(command);
+        return noticeService.create(createdBy, command);
     }
 
     public Notice update(Long noticeId, NoticeUpdateCommand command) {

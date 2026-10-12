@@ -36,14 +36,13 @@ public record NoticeCreateRequest(
     List<@NotNull(message = "첨부 파일 ID는 비워 둘 수 없습니다.") Long> attachmentFileIds
 ) {
 
-    public NoticeCreateCommand toCommand(Long createdBy) {
+    public NoticeCreateCommand toCommand() {
         return new NoticeCreateCommand(
             title,
             content,
             category,
             imageFileIds.stream().distinct().toList(),
-            attachmentFileIds.stream().distinct().toList(),
-            createdBy
+            attachmentFileIds.stream().distinct().toList()
         );
     }
 }
