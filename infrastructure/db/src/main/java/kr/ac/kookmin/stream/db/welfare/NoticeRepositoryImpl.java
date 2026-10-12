@@ -33,4 +33,19 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     public Optional<Notice> findById(Long id) {
         return noticeJpaRepository.findByIdAndIsDeletedFalse(id).map(NoticeJpaEntity::toDomain);
     }
+
+    @Override
+    public Notice save(Notice notice) {
+        return noticeJpaRepository.save(NoticeJpaEntity.from(notice)).toDomain();
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        return noticeJpaRepository.findByIdAndIsDeletedFalse(id)
+            .map(entity -> {
+                entity.delete();
+                return true;
+            })
+            .orElse(false);
+    }
 }
