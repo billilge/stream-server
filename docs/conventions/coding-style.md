@@ -409,6 +409,28 @@ public class EventApplicationUseCase {
 }
 ```
 
+```java
+// api:app-api — 낙관적 락 충돌을 재시도하는 원자적 쓰기 (대여 신청)
+@Component
+@RequiredArgsConstructor
+public class RentalApplyUseCase {
+
+    private final LockExecutor lockExecutor;
+    private final PayerService payerService;
+    private final ItemService itemService;
+    private final RentalHistoryService rentalHistoryService;
+
+    // @Transactional을 걸지 않는다. lockExecutor가 시도마다 새 트랜잭션을 열고, 충돌하면 람다 전체를 다시 실행한다
+    public void apply(Long memberId, Long itemId, int count, ...) {
+        lockExecutor.executeOptimistic(() -> {
+            payerService.validatePayer(memberId);
+            Item item = itemService.decreaseStock(itemId, count);   // 물품 낙관적 락으로 동시 차감 감지
+            rentalHistoryService.create(item, memberId, count, ...);
+        });
+    }
+}
+```
+
 ### 2-10. 객체 생성 — 정적 팩토리 메서드
 
 객체는 `new`로 직접 만들지 않고 정적 팩토리 메서드로 생성한다. 생성자는 `private`(JPA처럼 프레임워크가 요구하면 `protected`)으로 감춘다.

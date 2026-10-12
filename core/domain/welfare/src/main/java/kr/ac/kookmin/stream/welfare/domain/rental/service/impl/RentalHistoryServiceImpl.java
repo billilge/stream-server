@@ -1,10 +1,14 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -13,6 +17,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryReposi
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +42,29 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
+    }
+
+    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
+    @Override
+    @Transactional
+    public void returnRental(Long memberId, Long historyId) {
+        RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        history.markReturned(LocalDateTime.now(DateUtil.KST));
+        rentalHistoryRepository.save(history);
+    }
+
+    // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는
+    // LockExecutor가 시도마다 연 트랜잭션 안에서 호출되므로, 그 시도의 스냅샷을 그대로 공유해서 쓴다.
+    @Override
+    public boolean existsActiveRental(Long itemId, Long memberId) {
+        return rentalHistoryRepository.existsActiveRental(itemId, memberId);
+    }
+
+    @Override
+    @Transactional
+    public RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
+        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, count, appliedAt, rentAt));
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {

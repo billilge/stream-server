@@ -35,10 +35,10 @@ root
 │   ├── admin-api/        # 운영진 콘솔 (ADMIN, /v1/admin/**)
 │   └── app-api/          # 학생 앱 (STUDENT, /v1/app/**)
 ├── core/                 # (빈 컨테이너 — 코드 없음)
-│   ├── common/           # 공유 커널 (순수 Java). verify 설정에서 shared module로 선언
+│   ├── common/           # 공유 커널 (순수 Java + spring-context·spring-tx). verify 설정에서 shared module로 선언
 │   │   ├── (common)      #   ApiResponse 규격, ErrorCode/CommonErrorCode/BusinessException, ErrorStatus,
 │   │   │                 #   PageResult/CursorSliceResult, PrincipalProvider·Role·Department, RegexPatterns,
-│   │   │                 #   OutboxWriter(아웃박스 쓰기 포트)
+│   │   │                 #   OutboxWriter(아웃박스 쓰기 포트), LockExecutor(낙관적 락 재시도 실행기)
 │   │   └── (common.event)#   크로스 도메인 이벤트 타입 (DomainEvent 마커 + 구체 이벤트)
 │   └── domain/           # (빈 컨테이너 — 코드 없음)
 │       ├── auth/         #   인증 (로그인·토큰 발급 흐름)
@@ -68,7 +68,7 @@ root
 | --- | --- | --- | --- |
 | `bootstrap` | 조립·기동 방식 | `@Modulithic` 메인, 최종 빈 조립, 스케줄링 활성화, 실행 설정, `bootJar` | 비즈니스 로직, 도메인 규칙 |
 | `api:*` | 클라이언트 요구(요청/응답 형태) | Controller, Request/Response DTO, 교차 도메인 `UseCase` | 비즈니스 규칙, 영속화, 보안 정책 구현 |
-| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입 | 특정 도메인 개념(`{Domain}Id` 등), Spring·JPA·web·security |
+| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입, 낙관적 락 재시도 실행기(`LockExecutor`) | 특정 도메인 개념(`{Domain}Id` 등), JPA·web·security, `spring-context`·`spring-tx` 외 Spring |
 | `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith core (`@ApplicationModule` 선언용 `spring-modulith-api`는 compileOnly로 허용) |
 | `gateway:*` | 횡단관심사 정책 | 인증/인가(`auth`), 요청 추적·access log(`logging`) | 도메인 규칙, 영속화 |
 | `infrastructure:*` | 외부 기술(구현 세부) | `{Domain}Repository`/`{Domain}Client` 구현, JPA Entity·Flyway(`db`), 외부 API 어댑터(`client`), 아웃박스 릴레이(`outbox`) | 비즈니스 규칙, 도메인 진입점 |
@@ -209,7 +209,7 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 {basePackage}.core.domain.member  // ❌ Gradle 경로를 반영하면 domain이 한 모듈로 뭉쳐 경계가 안 걸림
 ```
 
-- `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(어노테이션 없이 순수 Java 유지).
+- `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(Spring은 `spring-context`·`spring-tx`만 허용).
 - 도메인이 하나일 때부터 **일부러 위반을 만들어 `verify()`가 실패하는지** 확인한다.
 
 ### 4-3. 도메인 모듈의 패키지 구조 & 공개 경계
@@ -339,6 +339,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 - 서로 다른 도메인의 Service 2개 이상을 조합할 때만 UseCase를 만든다. **단일 도메인 흐름은 Controller가 그 `{Domain}Service`를 직접 참조**한다.
 - **트랜잭션은 원자성이 필요한 흐름에만 건다.** 유료 행사 신청(행사 정원 차감 + 회비/결제 반영)처럼 전부 성공/전부 실패해야 하는 경우에만 UseCase 메서드에 `@Transactional`을 선언한다(동일 DataSource 기준 한 트랜잭션). 운영진 대시보드 같은 조회 조합에는 트랜잭션을 걸지 않는다.
 - UseCase 트랜잭션이 도메인 Service를 감싸려면 `{Domain}Service`는 기본 전파(REQUIRED)를 쓴다. REQUIRES_NEW는 원자성을 깨므로 쓰지 않는다.
+- **낙관적 락 충돌을 재시도해야 하는 UseCase**(예: 대여 신청의 재고 차감)는 메서드에 `@Transactional`을 걸지 않고, `core:common`의 `LockExecutor.executeOptimistic()` 안에서 Service를 조합한다. 트랜잭션은 `LockExecutor`가 시도마다 새로 연다 — 같은 트랜잭션 안에서 재시도하면 1차 캐시와 REPEATABLE READ 스냅샷이 예전 값을 계속 돌려줘 매번 충돌하기 때문이다. 충돌하면 람다 전체가 처음부터 다시 실행되므로, 롤백되지 않는 부수효과(외부 API 호출 등)는 넣지 않는다. 이미 트랜잭션이 있는 곳에서 호출하면 `IllegalStateException`으로 실패한다.
 - 롤백 불가한 외부 부수효과(외부 결제 PG 호출 등)가 끼면 트랜잭션으로 원자성을 보장할 수 없다. 그런 UseCase에 한해 보상 로직을 명시한다.
 
 ### 6-2. 비동기 반응 — 이벤트 + 직접 구현 아웃박스
@@ -375,7 +376,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 | `api:common-api` | `core:domain:{도메인}` + `core:common` + `gateway:auth`(DepartmentAccessChecker) + `gateway:logging` + Spring MVC + validation |
 | `api:{client}-api` | `api:common-api` + `core:domain:{도메인}` + `core:common` + `gateway:auth` + `gateway:logging` + Spring MVC + validation |
 | `core:domain:{도메인}` | `core:common` + `spring-context`(DI) + `spring-tx` + `spring-modulith-api`(**compileOnly**, `@ApplicationModule` 선언용) + 순수 Java. **Modulith core·web·security·JPA 없음** |
-| `core:common` | 순수 Java / 유틸리티만. Spring·Modulith·web·security·JPA 없음 |
+| `core:common` | 순수 Java / 유틸리티 + `spring-context`(빈 등록) + `spring-tx`(`LockExecutor`의 트랜잭션). Modulith·web·security·JPA 없음 |
 | `gateway:auth` | `core:common` + Spring Security + `jjwt` + `spring-webmvc`(예외 위임) |
 | `gateway:logging` | `core:common` + `spring-web` + `spring-context` + slf4j 등 + Servlet API |
 | `infrastructure:db` | `core:domain:{도메인}` + `core:common` + JPA / Flyway / MySQL 드라이버 |
