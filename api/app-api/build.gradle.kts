@@ -19,6 +19,8 @@ dependencies {
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarterWebmvc)
     implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarterAspectj)
+    implementation(libs.springTx)
     implementation(libs.springdocStarterWebmvcUi)
 
     testImplementation(platform(libs.springBootDependenciesBom))

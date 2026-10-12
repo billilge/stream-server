@@ -21,5 +21,8 @@ dependencies {
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterDataJpaTest)
+    testImplementation(libs.springBootTestcontainers)
+    testImplementation(libs.testcontainersMysql)
+    testImplementation(libs.testcontainersJunitJupiter)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }

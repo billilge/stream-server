@@ -25,6 +25,7 @@ Java 21 + Spring Boot 4.1 + Spring Modulith 기반, 단일 학생회 플랫폼�
 - "새 도메인(예: 사물함) 추가" → `architecture.md`(모듈/경계) → `coding-style.md`(클래스) → `flyway-migration.md`(테이블)
 - "여러 도메인을 묶는 화면/처리" → `architecture.md` 6-1절 + `coding-style.md` 2-9절 (api의 UseCase)
 - "행사 유료 신청처럼 원자적 다중 도메인 쓰기" → `architecture.md` 6-1절 (UseCase + `@Transactional`)
+- "동시 수정 충돌(낙관적 락)을 재시도" → `architecture.md` 6-1절 (UseCase + `LockExecutor.executeOptimistic()`, `@Transactional` 없음)
 - "A 도메인 변화에 B가 반응" → `architecture.md` 6-2절 (이벤트 + 아웃박스)
 - "부서 권한으로 승인 제한" → `config-and-auth.md` 4-4절 (`DepartmentAccessChecker`)
 - "soft delete 컬럼 인덱스/유니크" → `flyway-migration.md` 3-4절
@@ -45,7 +46,8 @@ api/
 └── app-api                     # 학생 앱 (STUDENT, /v1/app/**)
 core/
 ├── common                      # ErrorCode/BusinessException/ErrorStatus, PrincipalProvider/Role/Department,
-│                               # PageResult/CursorSliceResult, OutboxWriter, common.event (shared module)
+│                               # PageResult/CursorSliceResult, OutboxWriter, LockExecutor, common.event (shared module)
+│                               # 순수 Java + spring-context·spring-tx만 허용
 └── domain/{auth,member,event,welfare,internal}
                                 # 모듈 안은 domain/{도메인}/{domain|repository|service|service.impl}
                                 # OPEN 모듈. service.impl만 비공개(package-private, ArchUnit이 검사)
