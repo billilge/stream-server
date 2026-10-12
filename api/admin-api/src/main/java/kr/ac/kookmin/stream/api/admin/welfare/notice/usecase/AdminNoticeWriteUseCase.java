@@ -1,8 +1,9 @@
 package kr.ac.kookmin.stream.api.admin.welfare.notice.usecase;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.file.service.FileService;
@@ -38,8 +39,8 @@ public class AdminNoticeWriteUseCase {
     }
 
     private void requireFilesExist(List<Long> imageIds, List<Long> attachmentIds) {
-        Set<Long> fileIds = new HashSet<>(imageIds);
-        fileIds.addAll(attachmentIds);
+        Set<Long> fileIds = Stream.concat(imageIds.stream(), attachmentIds.stream())
+            .collect(Collectors.toUnmodifiableSet());
 
         if (fileService.findAllByIdIn(List.copyOf(fileIds)).size() != fileIds.size()) {
             throw new BusinessException(FileErrorCode.FILE_NOT_FOUND);
