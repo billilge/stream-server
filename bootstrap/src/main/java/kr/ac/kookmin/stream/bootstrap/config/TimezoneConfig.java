@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.config;
+package kr.ac.kookmin.stream.bootstrap.config;
 
 import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
