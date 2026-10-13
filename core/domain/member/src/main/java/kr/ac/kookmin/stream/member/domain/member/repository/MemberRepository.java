@@ -11,4 +11,5 @@ public interface MemberRepository {
     List<Member> findAllByIds(List<Long> ids);
     List<Long> searchIdsByKeyword(String keyword);
     Member save(Member member);
+    void clearFcmTokenOfOthers(Long memberId, String fcmToken);
 }

@@ -15,4 +15,5 @@ public interface MemberService {
     Member registerOrUpdateByStudentId(MemberProfileCommand command);
     Member signUp(Long memberId, MemberSignUpCommand command);
     boolean isSignedUp(Long memberId);
+    void updateFcmToken(Long memberId, String fcmToken);
 }
