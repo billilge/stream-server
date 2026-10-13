@@ -201,7 +201,11 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 
 ### 4-2. 패키지 컨벤션 (탐지 규칙)
 
-- `@Modulithic` 메인 클래스는 `bootstrap`의 `{basePackage}`에 둔다.
+- 메인 클래스는 `{basePackage}.bootstrap`에 두고, 탐색 범위는 `{basePackage}`로 넓힌다. 기본값(메인 클래스 패키지)으로 두면 다른 모듈의 빈·JPA 엔티티·레포지토리·`@ConfigurationProperties`를 찾지 못한다.
+  - 빈: `@SpringBootApplication(scanBasePackages = ...)`
+  - JPA 엔티티·레포지토리: `@AutoConfigurationPackage(basePackages = ...)`
+  - 설정 바인딩: `@ConfigurationPropertiesScan(...)`
+  - Modulith 모듈 탐지: `ApplicationModules.of("{basePackage}")` (클래스를 넘기면 그 패키지가 루트가 된다)
 - **Gradle 경로와 Java 패키지는 별개다.** 도메인은 Gradle 상 `:core:domain:{도메인}`이지만 패키지는 루트 직속 형제로 둔다.
 
 ```
@@ -262,7 +266,7 @@ import org.springframework.modulith.ApplicationModule;
 // bootstrap/src/test/.../ModularityTests.java
 class ModularityTests {
 
-    private final ApplicationModules modules = ApplicationModules.of(Application.class);
+    private final ApplicationModules modules = ApplicationModules.of("{basePackage}");   // 메인 클래스 패키지(bootstrap)가 아닌 루트 기준
 
     @Test
     void verify() {
