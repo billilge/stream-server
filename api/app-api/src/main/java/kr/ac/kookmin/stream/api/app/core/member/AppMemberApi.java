@@ -20,7 +20,8 @@ public interface AppMemberApi {
     @Operation(summary = "회원가입",
         description = """
             로그인한 회원의 전화번호와 약관 동의 여부를 저장한다.
-            전화번호는 하이픈을 넣어도 되고 빼도 된다. 필수 약관(PRIVACY_POLICY, TERMS_OF_SERVICE)에 모두 동의해야 한다.""")
+            전화번호는 하이픈을 넣어도 되고 빼도 된다. 필수 약관(PRIVACY_POLICY, TERMS_OF_SERVICE)에 모두 동의해야 한다.
+            가입하면 알림 설정이 모두 켜진 상태로 만들어진다.""")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {
         "MEMBER_NOT_FOUND",
