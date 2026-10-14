@@ -2,6 +2,8 @@ package kr.ac.kookmin.stream.db.member;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -9,6 +11,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import kr.ac.kookmin.stream.db.common.BaseCreatedTimeEntity;
 import kr.ac.kookmin.stream.member.domain.notification.domain.Notification;
+import kr.ac.kookmin.stream.member.domain.notification.domain.NotificationType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -30,8 +33,9 @@ public class NotificationJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private String type;
+    private NotificationType type;
 
     @Column(name = "format_values")
     private String formatValues;
