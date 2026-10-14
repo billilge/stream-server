@@ -31,6 +31,14 @@ public class NotificationRecipientRepositoryImpl implements NotificationRecipien
         return toPushTargets(memberJpaRepository.findAllPushTargets());
     }
 
+    @Override
+    public int clearFcmTokens(Collection<String> fcmTokens) {
+        if (fcmTokens.isEmpty()) {
+            return 0;
+        }
+        return memberJpaRepository.clearFcmTokens(fcmTokens);
+    }
+
     private List<PushTarget> toPushTargets(List<PushTargetProjection> projections) {
         return projections.stream()
             .map(p -> new PushTarget(p.memberId(), p.fcmToken(), p.setting().toDomain()))

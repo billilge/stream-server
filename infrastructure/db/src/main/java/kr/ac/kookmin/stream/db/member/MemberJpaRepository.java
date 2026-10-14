@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long> {
 
@@ -57,4 +58,15 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
         AND m.id <> :memberId
         """)
     void clearFcmTokenOfOthers(@Param("memberId") Long memberId, @Param("fcmToken") String fcmToken);
+
+    // 발송 이후 새로 등록된 토큰까지 지우지 않도록 회원 ID가 아니라 FCM이 무효라고 한 토큰 값으로 지운다.
+    // 알림 발송 처리는 트랜잭션 밖에서 돌기 때문에 여기서 연다
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE MemberJpaEntity m
+        SET m.fcmToken = NULL
+        WHERE m.fcmToken IN :fcmTokens
+        """)
+    int clearFcmTokens(@Param("fcmTokens") Collection<String> fcmTokens);
 }
