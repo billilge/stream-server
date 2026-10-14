@@ -374,6 +374,8 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 
 ## 7. 모듈별 허용 의존성
 
+모든 모듈은 루트 `build.gradle.kts`의 `subprojects`에서 Lombok(compileOnly), `spring-modulith-api`(compileOnly), `spring-boot-starter-logging`(SLF4J 파사드 + Logback)을 공통으로 받는다. 아래 표는 그 밖의 의존성이다. 모듈별 `build.gradle.kts`에 공통 의존성을 다시 선언하지 않는다.
+
 | 모듈 | 허용 의존성 |
 | --- | --- |
 | `bootstrap` | 모든 `api:*` + `gateway:*` + `infrastructure:*` + `core:common` + Spring Boot 실행(Actuator, 스케줄링) + `spring-modulith-core`·ArchUnit(**test scope**) |
