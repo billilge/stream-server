@@ -65,7 +65,7 @@ class NotificationDispatcher {
             return;
         }
         notificationRepository.saveAll(recipients.stream()
-            .map(memberId -> Notification.create(memberId, type, formatValues))
+            .map(memberId -> Notification.create(memberId, type, formatValues, targetId))
             .toList());
 
         // 한 기기의 토큰이 여러 회원 행에 남아 있을 수 있어 토큰 단위로 중복을 지운다. 그대로 보내면 같은 기기에 여러 번 간다
