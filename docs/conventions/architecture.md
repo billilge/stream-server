@@ -355,18 +355,18 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
   EventServiceImpl → outboxWriter.record(event)              // core:common 포트
       ↓ 같은 트랜잭션에서 outbox 테이블에 저장 (원 비즈니스 쓰기와 원자적)
 릴레이 (infrastructure:outbox)
-  OutboxRelay(@Scheduled 폴러) → 미발행 레코드 조회
-      → applicationEventPublisher.publishEvent(event)        // 인프로세스 재발행
-      → 전달 성공 시 발행 완료 마킹, 실패 시 다음 폴에서 재시도
-구독 (예: welfare 도메인 — 공지/알림 반영)
-  @TransactionalEventListener void on(EventApplicationConfirmed e)  // spring-tx, Modulith 의존 없음
+  OutboxRelay(@Scheduled 폴러) → PENDING 레코드 조회
+      → applicationEventPublisher.publishEvent(event)        // 트랜잭션 밖에서 인프로세스 재발행, 리스너 동기 실행
+      → 리스너가 예외 없이 끝나면 PUBLISHED, 실패하면 attempts+1 후 다음 폴에서 재시도 (한도 초과 시 FAILED)
+구독 (예: member 도메인 — 푸시 알림)
+  @EventListener void on(EventApplied e)                     // spring-context, Modulith 의존 없음
 ```
 
-- **이벤트 타입은 `core:common.event`에 둔다.** 발행/구독 도메인이 서로를 의존하지 않고 이벤트 타입만 공유한다.
+- **이벤트 타입은 `core:common.event`에 두고 `DomainEvent`를 구현한다.** 발행/구독 도메인이 서로를 의존하지 않고 이벤트 타입만 공유한다. `common.event`는 `@NamedInterface("event")`로 열어 두었다(Modulith는 모듈의 하위 패키지를 비공개로 본다).
 - 이벤트는 **사실**이다. ID·원시값만 담고 애그리거트/값 타입을 싣지 않는다. 커맨드(요청)를 이벤트로 쓰지 않는다.
 - **발행은 `OutboxWriter` 포트로 기록**한다(원 비즈니스 트랜잭션과 원자적). 인프로세스 재발행은 릴레이만 수행한다.
-- **구독은 `@TransactionalEventListener`**(spring-tx)로 한다. `core:domain`에 Modulith 이벤트 의존을 넣지 않는다.
-- 소비 리스너는 **멱등**하게 작성한다(at-least-once).
+- **구독은 `@EventListener`**로 한다. 릴레이가 트랜잭션 밖에서 발행하므로 `@TransactionalEventListener`는 호출되지 않는다. 릴레이는 리스너가 끝난 뒤에 발행 완료로 표시하므로, 리스너가 예외를 던지면 재시도된다. `core:domain`에 Modulith 이벤트 의존을 넣지 않는다.
+- 소비 리스너는 **멱등**하게 작성한다(at-least-once). 리스너가 끝난 뒤 완료 표시 전에 서버가 내려가면 한 번 더 전달된다. 푸시 알림처럼 드문 중복을 감수할 수 있으면 그대로 둔다.
 - 아웃박스 테이블 스키마는 `flyway-migration.md`로 관리한다.
 - 최종적 일관성 경로다. "한 요청 안에서 쓰기 직후 결과를 즉시 조회해 응답에 실어야" 하면 이벤트가 아니라 6-1의 동기 UseCase로 처리한다.
 
