@@ -31,9 +31,8 @@ public class AppFeeController implements AppFeeApi {
     @GetMapping("/me")
     public ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser) {
         StudentTransferStatus transferStatus = studentTransferStatusService.getByMemberId(apiUser.userId());
-        FeeTransferInfo transferInfo = feeTransferUrlProvider.getTransferInfo(transferStatus.getRemainingSemesters());
 
-        return ApiResponse.success(FeeResponse.of(transferStatus, transferInfo));
+        return ApiResponse.success(FeeResponse.of(transferStatus, feeTransferUrlProvider.getAccount()));
     }
 
     @Override
