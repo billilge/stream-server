@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.locker.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,16 @@ public interface LockerRepository {
      * 게시된 운영 회차 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
      */
     List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds);
+
+    /**
+     * 게시된 운영 회차 중 신청 마감 일시가 {@code [from, to)}인 회차. 모집 마감 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 게시된 운영 회차 중 이용 종료일이 {@code usageEndAt}인 회차. 이용 기간 만료 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt);
 
     /**
      * 전체 구역을 식별자 오름차순으로 조회한다.
