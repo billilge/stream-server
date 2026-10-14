@@ -39,6 +39,11 @@ subprojects {
         // compileOnly 어노테이션 전용 — 경계 검증은 bootstrap 테스트가 수행한다.
         "compileOnly"(platform(rootProject.libs.springModulithBom))
         "compileOnly"(rootProject.libs.springModulithApi)
+
+        // 로깅 API(SLF4J)는 도메인 모듈을 포함한 모든 모듈이 같은 것을 쓰도록 공통 적용.
+        // 구현(Logback)은 bootstrap의 Spring Boot가 런타임에 붙인다. 버전은 Boot BOM이 관리한다
+        "implementation"(platform(rootProject.libs.springBootDependenciesBom))
+        "implementation"(rootProject.libs.slf4jApi)
     }
 
     tasks.withType<Test> {
