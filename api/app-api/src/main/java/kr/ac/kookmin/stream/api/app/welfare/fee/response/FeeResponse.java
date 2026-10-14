@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.response;
 
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccount;
+import kr.ac.kookmin.stream.api.app.welfare.fee.FeeTransferInfo;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
@@ -21,18 +21,23 @@ public record FeeResponse(
     LocalDateTime confirmedAt,
     String adminNote
 ) {
-    public static FeeResponse of(StudentTransferStatus transferStatus, FeeAccount account) {
+    /**
+     * 확인필요에서는 금액과 송금 링크를 내려주지 않는다. 아직 납부가 확인되지 않아 화면이 납부금액을
+     * "-"로 두고, 송금 링크를 다시 주면 "또 보내라"로 읽히기 때문이다.
+     * 재제출은 관리자가 납부 전으로 되돌린 뒤에 열린다.
+     */
+    public static FeeResponse of(StudentTransferStatus transferStatus, FeeTransferInfo transferInfo) {
         boolean paid = transferStatus.getStatus() == TransferStatus.PAID;
         boolean needsCheck = transferStatus.getStatus() == TransferStatus.NEEDS_CHECK;
 
         return new FeeResponse(
             transferStatus.getId(),
             transferStatus.getStatus().name(),
-            account.bank(),
-            account.accountNo(),
+            transferInfo.bank(),
+            transferInfo.accountNo(),
             transferStatus.getRemainingSemesters(),
-            account.transferAmount(),
-            account.transferLinkUrl(),
+            needsCheck ? null : transferInfo.transferAmount(),
+            needsCheck ? null : transferInfo.transferLinkUrl(),
             transferStatus.getRequestedAt(),
             // 납부 확인 시각은 PAID일 때의 처리 시각이다. 그 외 상태에서는 보여주지 않는다
             paid ? transferStatus.getReviewedAt() : null,

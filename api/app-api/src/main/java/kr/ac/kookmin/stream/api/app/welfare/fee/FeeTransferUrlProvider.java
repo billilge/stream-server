@@ -27,7 +27,7 @@ public class FeeTransferUrlProvider {
      * @param remainingSemesters 남은 학기 수. null이면 금액과 링크를 만들지 않는다
      *                           (아직 제출 전이거나, 확인필요라 금액을 보여주지 않는 경우)
      */
-    public FeeAccount getAccount(Integer remainingSemesters) {
+    public FeeTransferInfo getTransferInfo(Integer remainingSemesters) {
         String bank = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_BANK).orElse(null);
         String accountNo = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO).orElse(null);
 
@@ -36,7 +36,7 @@ public class FeeTransferUrlProvider {
         }
 
         if (remainingSemesters == null) {
-            return new FeeAccount(bank, accountNo, null, null);
+            return FeeTransferInfo.accountOnly(bank, accountNo);
         }
 
         long amountPerSemester = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_AMOUNT)
@@ -44,7 +44,7 @@ public class FeeTransferUrlProvider {
             .orElse(WelfareConstants.DEFAULT_TRANSFER_AMOUNT);
         long transferAmount = FeeAmountCalculator.calculate(remainingSemesters, amountPerSemester);
 
-        return new FeeAccount(bank, accountNo, transferAmount,
+        return new FeeTransferInfo(bank, accountNo, transferAmount,
             TossTransferLinkGenerator.generate(bank, accountNo, transferAmount));
     }
 }

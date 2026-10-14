@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.usecase;
 
 import java.util.Objects;
-import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccount;
+import kr.ac.kookmin.stream.api.app.welfare.fee.FeeTransferInfo;
 import kr.ac.kookmin.stream.api.app.welfare.fee.FeeTransferUrlProvider;
 import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeSubmitResponse;
@@ -42,15 +42,18 @@ public class FeeSubmitUseCase {
         validateProofImage(request.proofImageKey(), memberId);
 
         // 계좌가 없으면 송금 자체가 불가능하므로, 저장하기 전에 먼저 막는다
-        FeeAccount account = feeTransferUrlProvider.getAccount(remainingSemesters);
+        FeeTransferInfo transferInfo = feeTransferUrlProvider.getTransferInfo(remainingSemesters);
 
+        // 교체될 이전 키를 알려고 한 번 더 읽는다. submit이 돌려주게 하면 반환 타입에 값을 하나 더 얹어야 해서,
+        // 유니크 인덱스 조회 한 번을 받아들였다. 같은 학생의 동시 제출이 겹치면 낡은 키를 볼 수 있는데,
+        // 그때 생기는 건 고아 파일 하나뿐이라 파일 정리 배치가 걷어간다.
         String previousProofImageKey = studentTransferStatusService.getByMemberId(memberId).getProofImageKey();
         StudentTransferStatus saved =
             studentTransferStatusService.submit(memberId, remainingSemesters, request.proofImageKey());
 
         deletePreviousProofImage(previousProofImageKey, saved.getProofImageKey());
 
-        return FeeSubmitResponse.of(remainingSemesters, account);
+        return FeeSubmitResponse.of(remainingSemesters, transferInfo);
     }
 
     private int validateRemainingSemesters(Integer remainingSemesters) {
