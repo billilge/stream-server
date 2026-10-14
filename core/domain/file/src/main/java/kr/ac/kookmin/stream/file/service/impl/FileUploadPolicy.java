@@ -22,7 +22,8 @@ final class FileUploadPolicy {
         FileCategory.NOTICE_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.EVENT_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.ARCHIVE_IMAGE, IMAGE_EXTENSIONS,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS
+        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS,
+        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_EXTENSIONS
     );
 
     private static final Map<FileCategory, Long> MAX_FILE_SIZE = Map.of(
@@ -31,7 +32,8 @@ final class FileUploadPolicy {
         FileCategory.NOTICE_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.EVENT_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.ARCHIVE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE
+        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE,
+        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_MAX_FILE_SIZE
     );
 
     private FileUploadPolicy() {}
