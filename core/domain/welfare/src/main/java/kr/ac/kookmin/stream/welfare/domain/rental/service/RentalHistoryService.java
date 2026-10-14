@@ -23,6 +23,12 @@ public interface RentalHistoryService {
     List<RentalRecord> getReturnRequiredRentals(Long memberId);
 
     /**
+     * 모든 회원의 반납해야 하는 대여를 조회한다. 반납 기한 임박·연체 알림 대상을 고를 때 쓴다.
+     * 반납 정책이 없는 물품의 대여는 기한을 계산할 수 없어 제외한다.
+     */
+    List<RentalRecord> getAllReturnRequiredRentals();
+
+    /**
      * 반납 신청. 본인 소유의 대여 중(RENTAL) 이력만 대상이며, 신청 즉시 반납 완료로 전이한다
      * (운영진의 최종 확인 단계가 없어서다).
      */
