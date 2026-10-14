@@ -43,7 +43,7 @@ public class StreamAiChatClient implements ChatClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void stream(long memberId, List<ChatTurn> history, ChatEventListener listener) {
+    public void stream(Long memberId, List<ChatTurn> history, ChatEventListener listener) {
         TerminalGuard guard = TerminalGuard.from(listener);
 
         try {

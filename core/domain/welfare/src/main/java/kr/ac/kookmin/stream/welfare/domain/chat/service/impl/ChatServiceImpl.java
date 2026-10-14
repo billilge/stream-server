@@ -32,7 +32,7 @@ class ChatServiceImpl implements ChatService {
      * 상태 코드로는 거절할 수 없다.
      */
     @Override
-    public void answer(long memberId, String question, ChatEventListener listener) {
+    public void answer(Long memberId, String question, ChatEventListener listener) {
         if (!chatAnswerLock.tryAcquire(memberId)) {
             listener.onError(BUSY_MESSAGE);
             return;
@@ -45,21 +45,21 @@ class ChatServiceImpl implements ChatService {
         }
     }
 
-    private void answerInTurn(long memberId, String question, ChatEventListener listener) {
+    private void answerInTurn(Long memberId, String question, ChatEventListener listener) {
         List<ChatTurn> turns = loadRecentTurns(memberId);
         turns.add(ChatTurn.user(question));
-        chatMessageRepository.save(ChatMessage.of(null, memberId, ChatTurn.USER, question));
+        chatMessageRepository.save(ChatMessage.create(memberId, ChatTurn.USER, question));
 
         AnswerCollector collector = AnswerCollector.from(listener);
         chatClient.stream(memberId, turns, collector);
 
         // 중간에 끊긴 답변이나 빈 답변은 다음 질문의 이력에 섞이므로 남기지 않는다. 실패 원인은 클라이언트가 로그로 남긴다
         collector.completedAnswer()
-            .ifPresent(answer -> chatMessageRepository.save(ChatMessage.of(null, memberId, ChatTurn.MODEL, answer)));
+            .ifPresent(answer -> chatMessageRepository.save(ChatMessage.create(memberId, ChatTurn.MODEL, answer)));
     }
 
     /** 최근 대화를 오래된 것부터 돌려준다. 저장소는 최신순으로 준다. */
-    private List<ChatTurn> loadRecentTurns(long memberId) {
+    private List<ChatTurn> loadRecentTurns(Long memberId) {
         List<ChatMessage> recent = chatMessageRepository.findRecentByMemberId(memberId, HISTORY_LIMIT);
 
         List<ChatTurn> turns = new ArrayList<>(recent.size() + 1);
@@ -68,7 +68,7 @@ class ChatServiceImpl implements ChatService {
             if (message.getContent() == null || message.getContent().isBlank()) {
                 continue;
             }
-            turns.add(new ChatTurn(message.getSenderType(), message.getContent()));
+            turns.add(ChatTurn.from(message));
         }
         return turns;
     }

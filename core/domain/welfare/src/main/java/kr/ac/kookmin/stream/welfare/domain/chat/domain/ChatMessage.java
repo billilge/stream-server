@@ -18,4 +18,8 @@ public class ChatMessage {
     public static ChatMessage of(Long id, Long memberId, String senderType, String content) {
         return new ChatMessage(id, memberId, senderType, content);
     }
+
+    public static ChatMessage create(Long memberId, String senderType, String content) {
+        return new ChatMessage(null, memberId, senderType, content);
+    }
 }
