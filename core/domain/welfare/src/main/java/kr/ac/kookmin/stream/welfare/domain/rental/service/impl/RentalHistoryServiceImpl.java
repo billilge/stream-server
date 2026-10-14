@@ -44,6 +44,14 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .toList();
     }
 
+    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다
+    @Override
+    public List<RentalRecord> getAllReturnRequiredRentals() {
+        return toRecords(rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL)).stream()
+            .filter(RentalRecord::isReturnRequired)
+            .toList();
+    }
+
     // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
     @Override
     @Transactional
