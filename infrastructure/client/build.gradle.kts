@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.springBootStarter)
     implementation(libs.springWeb)
     implementation(libs.jacksonDatabind)
+    implementation(libs.jackson3Databind)
 
     implementation(platform(libs.awsSdkBom))
     implementation(libs.awsS3)
