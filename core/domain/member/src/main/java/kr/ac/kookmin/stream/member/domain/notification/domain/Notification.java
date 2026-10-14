@@ -22,11 +22,13 @@ public class Notification {
     private NotificationType type;
     // 문구 값을 순서대로 이어 붙인 문자열. 값이 없으면 null
     private String formatValues;
+    // 알림을 눌렀을 때 이동할 대상의 ID. 무엇의 ID인지는 type이 정한다
+    private Long targetId;
     private boolean read;
 
-    public static Notification create(Long memberId, NotificationType type, List<String> formatValues) {
+    public static Notification create(Long memberId, NotificationType type, List<String> formatValues, Long targetId) {
         String joined = formatValues.isEmpty() ? null : String.join(FORMAT_VALUE_DELIMITER, formatValues);
-        return new Notification(null, memberId, type, joined, false);
+        return new Notification(null, memberId, type, joined, targetId, false);
     }
 
     public static Notification of(
@@ -34,9 +36,10 @@ public class Notification {
         Long memberId,
         NotificationType type,
         String formatValues,
+        Long targetId,
         boolean read
     ) {
-        return new Notification(id, memberId, type, formatValues, read);
+        return new Notification(id, memberId, type, formatValues, targetId, read);
     }
 
     public List<String> getFormatValueList() {
