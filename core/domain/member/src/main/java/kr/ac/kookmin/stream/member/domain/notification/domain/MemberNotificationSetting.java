@@ -34,6 +34,15 @@ public class MemberNotificationSetting {
         return new MemberNotificationSetting(id, memberId, rentalEnabled, eventEnabled, lockerEnabled, noticeEnabled);
     }
 
+    public boolean isEnabled(NotificationCategory category) {
+        return switch (category) {
+            case BILLILGE -> rentalEnabled;
+            case EVENT -> eventEnabled;
+            case LOCKER -> lockerEnabled;
+            case NOTICE -> noticeEnabled;
+        };
+    }
+
     // 바뀐 값이 있으면 true를 돌려준다
     public boolean update(MemberNotificationSettingUpdateCommand command) {
         if (this.rentalEnabled == command.rentalEnabled()
