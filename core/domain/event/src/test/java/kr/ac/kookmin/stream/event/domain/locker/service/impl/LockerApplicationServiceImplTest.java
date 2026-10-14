@@ -348,6 +348,16 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             batchLookups++;
             return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();
@@ -424,6 +434,11 @@ class LockerApplicationServiceImplTest {
 
         @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Long> findMemberIds(Long lockerPeriodId) {
             throw new UnsupportedOperationException();
         }
 
