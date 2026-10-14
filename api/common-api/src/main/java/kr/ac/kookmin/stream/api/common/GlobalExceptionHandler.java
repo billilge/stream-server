@@ -10,12 +10,18 @@ import kr.ac.kookmin.stream.common.ErrorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 에러 응답은 항상 JSON으로 Content-Type을 미리 정한다. 미리 정해 두면 콘텐츠 협상을 건너뛴다.
+ * 그러지 않으면 {@code produces = text/event-stream}인 챗봇 API처럼 JSON을 만들지 않는 핸들러에서
+ * {@code ApiResponse}를 쓸 컨버터를 찾지 못해 에러 본문이 나가지 않는다.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -31,7 +37,9 @@ public class GlobalExceptionHandler {
             log.warn("[requestId={}, userId={}] ({}) {}",
                 MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getErrorCode().name(), e.getMessage());
         }
-        return ResponseEntity.status(e.getErrorCode().status()).body(ApiResponse.error(e));
+        return ResponseEntity.status(e.getErrorCode().status())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(ApiResponse.error(e));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,6 +50,7 @@ public class GlobalExceptionHandler {
         log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
             MDC.get(REQUEST_ID), MDC.get(USER_ID), message);
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .contentType(MediaType.APPLICATION_JSON)
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), message));
     }
 
@@ -50,6 +59,7 @@ public class GlobalExceptionHandler {
         log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .contentType(MediaType.APPLICATION_JSON)
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), e.getMessage()));
     }
 
@@ -58,6 +68,7 @@ public class GlobalExceptionHandler {
         log.error("[requestId={}, userId={}] {}",
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage(), e);
         return ResponseEntity.status(ErrorStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
             .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
     }
 }
