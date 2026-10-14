@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.member.domain.notification.domain;
 
 import java.util.List;
+import kr.ac.kookmin.stream.common.JosaUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,7 +9,7 @@ import lombok.Getter;
  * 알림 종류와 문구. 제목은 문구표의 굵은 첫 문장, 본문은 둘째 문장이다. 한 문장짜리는 본문이 없다.
  * <p>
  * 문구의 {@code %s}에는 알림을 만들 때 넘긴 값 목록이 앞에서부터 들어간다. 제목과 본문은 같은 값 목록을 각각 처음부터 쓴다.
- * 조사는 "을(를)"처럼 적어 두면 앞 단어의 받침에 맞춰 바뀐다({@link Josa}).
+ * 조사는 "을(를)"처럼 적어 두면 앞 단어의 받침에 맞춰 바뀐다({@link JosaUtil}).
  * 상수 이름이 {@code notifications.type}에 저장되므로 이름을 바꾸면 쌓인 알림함 행을 읽지 못한다.
  */
 @Getter
@@ -38,15 +39,11 @@ public enum NotificationType {
     private final String body;
 
     public String formatTitle(List<String> formatValues) {
-        return format(title, formatValues);
+        return JosaUtil.format(title, formatValues);
     }
 
     // 본문이 없는 알림은 null
     public String formatBody(List<String> formatValues) {
-        return body == null ? null : format(body, formatValues);
-    }
-
-    private static String format(String template, List<String> formatValues) {
-        return Josa.format(template, formatValues);
+        return body == null ? null : JosaUtil.format(body, formatValues);
     }
 }
