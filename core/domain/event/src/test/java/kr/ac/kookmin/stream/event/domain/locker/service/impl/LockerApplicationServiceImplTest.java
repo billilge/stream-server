@@ -58,7 +58,8 @@ class LockerApplicationServiceImplTest {
     }
 
     private static LockerApplicationServiceImpl service(FakeLockerRepository repository) {
-        return new LockerApplicationServiceImpl(repository, repository.applications);
+        // 아웃박스 기록은 이 테스트의 관심사가 아니라 아무것도 하지 않는다
+        return new LockerApplicationServiceImpl(repository, repository.applications, event -> {});
     }
 
     private static LockerApplyCommand command() {
