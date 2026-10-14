@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCreateCommand;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final OutboxWriter outboxWriter;
 
     @Override
     @Transactional(readOnly = true)
@@ -39,9 +42,13 @@ class NoticeServiceImpl implements NoticeService {
             .orElseThrow(() -> new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND));
     }
 
+    // 공지 저장과 알림 이벤트 기록이 함께 커밋되도록 트랜잭션을 건다
     @Override
+    @Transactional
     public Notice create(Long createdBy, NoticeCreateCommand command) {
-        return noticeRepository.save(Notice.create(createdBy, command));
+        Notice notice = noticeRepository.save(Notice.create(createdBy, command));
+        outboxWriter.record(new NoticeCreated(notice.getId()));
+        return notice;
     }
 
     @Override
