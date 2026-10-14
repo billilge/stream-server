@@ -1,18 +1,21 @@
-package kr.ac.kookmin.stream.member.domain.notification.domain;
+package kr.ac.kookmin.stream.common;
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
- * 문구 템플릿의 {@code %s}에 값을 차례로 넣고, 템플릿에 적어 둔 "을(를)"·"이(가)"·"은(는)"·"과(와)"를
+ * 조사 유틸. 문구 템플릿의 {@code %s}에 값을 차례로 넣고, 템플릿에 적어 둔 "을(를)"·"이(가)"·"은(는)"·"과(와)"를
  * 앞 단어의 받침에 맞는 조사 하나로 바꾼다.
  * <p>
  * 앞 단어는 따옴표·괄호·문장부호·공백을 건너뛴 마지막 글자로 판단한다("'봄 축제!'을(를)" → "'봄 축제!'를").
  * 한글 음절과 숫자만 판단하고, 영문처럼 판단할 수 없으면 "을(를)" 표기를 그대로 둔다.
  * 값(행사명 등) 안에 같은 표기가 있어도 바꾸지 않도록 템플릿 부분만 바꾼다.
  */
-final class Josa {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class JosaUtil {
 
     private static final String PLACEHOLDER = "%s";
     private static final Pattern PARTICLE = Pattern.compile("(을|이|은|과)\\((를|가|는|와)\\)");
@@ -23,10 +26,7 @@ final class Josa {
     private static final char HANGUL_SYLLABLE_LAST = '힣';
     private static final int FINAL_CONSONANT_COUNT = 28;
 
-    private Josa() {
-    }
-
-    static String format(String template, List<String> values) {
+    public static String format(String template, List<String> values) {
         String[] segments = template.split(PLACEHOLDER, -1);
         StringBuilder formatted = new StringBuilder();
         for (int i = 0; i < segments.length; i++) {
