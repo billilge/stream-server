@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.LockerAssigned;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
@@ -25,6 +27,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
 
     private final LockerRepository lockerRepository;
     private final LockerApplicationRepository lockerApplicationRepository;
+    private final OutboxWriter outboxWriter;
 
     @Override
     @Transactional
@@ -35,6 +38,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
         LockerApplication application = lockerApplicationRepository.save(
             LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
         );
+        outboxWriter.record(new LockerAssigned(memberId, period.getId()));
         return new LockerApplicationResult(application, locker, period);
     }
 
