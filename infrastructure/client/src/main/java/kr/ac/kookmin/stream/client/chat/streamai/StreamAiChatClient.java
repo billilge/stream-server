@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 /**
  * AI 서버(stream-ai)에 질문을 보내고 답변을 SSE로 받아 넘긴다.
@@ -78,8 +79,9 @@ public class StreamAiChatClient implements ChatClient {
                     }
                     readEvents(response.getBody(), guard);
                     return null;
-                }, false);
-        } catch (Exception e) {
+                });
+        } catch (RestClientException e) {
+            // 리스너가 던진 예외(학생 연결 끊김)는 AI 서버 실패가 아니므로 잡지 않고 그대로 올려 보낸다
             log.error("AI 서버 호출에 실패했습니다.", e);
             guard.error(FALLBACK_ERROR_MESSAGE);
         }
@@ -103,6 +105,8 @@ public class StreamAiChatClient implements ChatClient {
      * 한 줄을 넘지 않는다. 그래서 줄 단위로 읽어도 쪼개지지 않는다.
      */
     private void readEvents(InputStream body, TerminalGuard guard) throws IOException {
+        // 다 읽기 전에 멈추면(리스너가 예외를 던지면) 여기서 닫아야 AI 서버 스트림이 바로 끊긴다.
+        // RestClient가 응답을 닫을 때는 남은 본문을 끝까지 읽어 버려 답변이 다 만들어질 때까지 기다리게 된다
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
             String event = null;
             String data = null;
