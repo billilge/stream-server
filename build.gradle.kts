@@ -40,10 +40,10 @@ subprojects {
         "compileOnly"(platform(rootProject.libs.springModulithBom))
         "compileOnly"(rootProject.libs.springModulithApi)
 
-        // 로깅 API(SLF4J)는 도메인 모듈을 포함한 모든 모듈이 같은 것을 쓰도록 공통 적용.
-        // 구현(Logback)은 bootstrap의 Spring Boot가 런타임에 붙인다. 버전은 Boot BOM이 관리한다
+        // 로깅은 도메인 모듈을 포함한 모든 모듈이 Spring Boot 기본 구성(SLF4J 파사드 + Logback)을 쓰도록 공통 적용.
+        // 버전은 Boot BOM이 관리한다
         "implementation"(platform(rootProject.libs.springBootDependenciesBom))
-        "implementation"(rootProject.libs.slf4jApi)
+        "implementation"(rootProject.libs.springBootStarterLogging)
     }
 
     tasks.withType<Test> {
