@@ -50,6 +50,14 @@ class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    public Member changeFeeStatus(Long memberId, String feeStatus) {
+        Member member = getById(memberId);
+        member.changeFeeStatus(feeStatus);
+        return memberRepository.save(member);
+    }
+
+    @Override
+    @Transactional
     public Member updateProfile(Long id, MemberProfileCommand command) {
         return applyProfile(getById(id), command);
     }
