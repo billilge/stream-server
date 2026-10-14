@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.client.chat;
+package kr.ac.kookmin.stream.client.chat.streamai;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

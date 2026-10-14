@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.client.chat;
+package kr.ac.kookmin.stream.client.chat.streamai;
 
 import java.time.Duration;
 import java.util.LinkedHashMap;
@@ -7,16 +7,11 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * AI 서버(stream-ai) 연동 설정.
+ * AI 서버(stream-ai) 연동 설정. internalToken은 AI 서버가 백엔드를 거친 요청인지 확인하는 값이라 환경 변수로만 받는다.
  * <p>
- * {@code internalToken}은 AI 서버가 "백엔드를 거친 요청"만 처리하기 위해 확인하는 값이다.
- * 코드에 두지 않고 환경 변수로만 받는다.
- * <p>
- * {@code readTimeout}은 <b>조각 하나를 기다리는 시간</b>이고 전체 응답 시간이 아니다.
- * SSE는 연결을 열어 둔 채 조각을 계속 보내므로, 조각 사이 간격보다 넉넉하면 된다.
- * 전체 길이에 맞춰 길게 잡으면 AI 서버가 멈췄을 때도 그만큼 기다린다.
+ * readTimeout은 전체 답변 시간이 아니라 조각 하나를 기다리는 시간이다. 전체 길이에 맞춰 길게 잡으면 AI 서버가 멈췄을 때도 그만큼 기다린다.
  */
-@ConfigurationProperties(prefix = "client.stream-ai")
+@ConfigurationProperties(prefix = "chat.stream-ai")
 public record StreamAiProperties(
     String baseUrl,
     String chatPath,
