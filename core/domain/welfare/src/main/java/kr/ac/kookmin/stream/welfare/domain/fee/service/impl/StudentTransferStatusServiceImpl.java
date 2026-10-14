@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import java.time.LocalDateTime;
+import kr.ac.kookmin.stream.common.DateUtil;
 import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -29,13 +30,21 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
+    public StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey) {
+        StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
+            .orElseGet(() -> StudentTransferStatus.create(memberId));
+        transferStatus.submit(remainingSemesters, proofImageKey);
+        return studentTransferStatusRepository.save(transferStatus);
+    }
+
+    // 행이 있어도 남은 학기 수가 없으면 제출 전이다(옛 흐름에서 만들어진 행이 여기 해당한다).
+    @Override
+    @Transactional
     public StudentTransferStatus requestConfirmation(Long memberId) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
-            .map(existing -> {
-                existing.requestConfirmation();
-                return existing;
-            })
-            .orElseGet(() -> StudentTransferStatus.create(memberId));
+            .filter(existing -> existing.getRemainingSemesters() != null)
+            .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
+        transferStatus.requestConfirmation(LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 

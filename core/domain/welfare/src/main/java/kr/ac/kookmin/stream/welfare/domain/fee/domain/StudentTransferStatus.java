@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.domain;
 
 import java.time.LocalDateTime;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,44 +15,79 @@ public class StudentTransferStatus {
     private Long id;
     private Long memberId;
     private TransferStatus status;
+    // 학생이 입력한 남은 학기 수와, 그 근거로 올린 학점이수현황 캡처. 제출 전에는 둘 다 null이다
+    private Integer remainingSemesters;
+    private String proofImageKey;
+    // 관리자가 확인필요로 처리하며 남긴 안내 문구. NEEDS_CHECK일 때만 값이 있다
+    private String adminNote;
+    private LocalDateTime requestedAt;
     private LocalDateTime reviewedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // 납부 정보를 처음 제출하는 회원. 상태는 납부 전에서 시작하고, 값은 submit이 채운다
     public static StudentTransferStatus create(Long memberId) {
-        return new StudentTransferStatus(null, memberId, TransferStatus.PENDING, null, null, null);
+        return new StudentTransferStatus(
+            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null);
     }
 
-    // 아직 확인 요청을 한 번도 보내지 않은 회원을 위한 가상의 기본값 (DB에 row가 없음, 저장하지 않는다)
+    // 아직 아무것도 제출하지 않아 DB에 row가 없는 회원을 위한 가상의 기본값 (저장하지 않는다).
+    // create와 상태가 같아졌으므로 둘의 차이는 "저장되는가" 하나뿐이다.
     public static StudentTransferStatus notRequested(Long memberId) {
-        return new StudentTransferStatus(null, memberId, TransferStatus.UNPAID, null, null, null);
+        return new StudentTransferStatus(
+            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null);
     }
 
     public static StudentTransferStatus of(
         Long id,
         Long memberId,
         TransferStatus status,
+        Integer remainingSemesters,
+        String proofImageKey,
+        String adminNote,
+        LocalDateTime requestedAt,
         LocalDateTime reviewedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {
-        return new StudentTransferStatus(id, memberId, status, reviewedAt, createdAt, updatedAt);
+        return new StudentTransferStatus(id, memberId, status, remainingSemesters, proofImageKey,
+            adminNote, requestedAt, reviewedAt, createdAt, updatedAt);
     }
 
-    // 확인 요청(POST /v1/app/fee) 시각은 별도 컬럼 없이 row의 created_at(최초 생성) 또는
-    // 재요청 시점의 updated_at으로 갈음한다 — student_transfer_statuses 테이블에 requested_at 컬럼을 두지 않기로 했다(ERD 기준).
-    // PAID는 최종 상태다 — 이미 승인된 회원이 다시 요청해도 상태를 되돌리지 않고 그대로 둔다.
-    public void requestConfirmation() {
-        if (status == TransferStatus.PAID) {
-            return;
-        }
+    /**
+     * 납부 정보(남은 학기 수·학점이수현황 캡처)를 제출한다. 상태는 납부 전 그대로다 —
+     * 송금 확인 요청({@link #requestConfirmation()})을 해야 납부확인중으로 넘어간다.
+     * <p>
+     * 납부 전에서만 가능하다. 확인필요로 처리된 회원은 직접 다시 제출하지 못하고,
+     * 관리자가 납부 전으로 되돌려야 한다(화면의 진입점이 "문의하기" 하나뿐이다).
+     */
+    public void submit(int remainingSemesters, String proofImageKey) {
+        requireUnpaid();
+
+        this.remainingSemesters = remainingSemesters;
+        this.proofImageKey = proofImageKey;
+    }
+
+    /**
+     * 송금 확인을 요청한다. 이전 처리 흔적(관리자 안내 문구·처리 시각)은 지워 새 요청으로 만든다.
+     */
+    public void requestConfirmation(LocalDateTime now) {
+        requireUnpaid();
 
         this.status = TransferStatus.PENDING;
+        this.requestedAt = now;
+        this.adminNote = null;
         this.reviewedAt = null;
     }
 
     public void review(TransferStatus reviewedStatus, LocalDateTime now) {
         this.status = reviewedStatus;
         this.reviewedAt = now;
+    }
+
+    private void requireUnpaid() {
+        if (status != TransferStatus.UNPAID) {
+            throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
+        }
     }
 }
