@@ -24,28 +24,6 @@ class MemberTermServiceImpl implements MemberTermService {
     private final MemberTermAgreementRepository memberTermAgreementRepository;
 
     @Override
-    public Set<Long> findMemberIdsAgreedRequiredTerms(List<Long> memberIds) {
-        if (memberIds.isEmpty()) {
-            return Set.of();
-        }
-
-        Map<Long, Set<TermType>> agreedByMemberId = memberTermAgreementRepository.findAllByMemberIdIn(memberIds).stream()
-            .filter(MemberTermAgreement::isAgreed)
-            .collect(Collectors.groupingBy(
-                MemberTermAgreement::getMemberId,
-                Collectors.mapping(MemberTermAgreement::getTermType, Collectors.toSet())));
-
-        Set<TermType> requiredTermTypes = Arrays.stream(TermType.values())
-            .filter(TermType::required)
-            .collect(Collectors.toSet());
-
-        return agreedByMemberId.entrySet().stream()
-            .filter(entry -> entry.getValue().containsAll(requiredTermTypes))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
     public boolean hasAgreedRequiredTerms(Long memberId) {
         Set<TermType> agreedTermTypes = memberTermAgreementRepository.findAllByMemberId(memberId).stream()
             .filter(MemberTermAgreement::isAgreed)

@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccount;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccountProvider;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
@@ -17,38 +16,47 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 납부자 목록. {@code member}와 {@code welfare} 두 도메인을 조합한다.
+ * 납부자 목록. {@code welfare}와 {@code member} 두 도메인을 조합한다.
  * <p>
- * <b>회원을 기준으로 페이징한다.</b> 납부 정보를 내지 않은 회원은 {@code student_transfer_statuses}에
- * 행이 없어서, 납부 쪽을 기준으로 조회하면 "납부 전" 학생이 목록에서 통째로 빠지기 때문이다.
- * 상태 필터도 같은 이유로 {@code members.fee_status}에 건다.
+ * 페이징과 상태 필터는 <b>회비 쪽에서</b> 한다. 모든 회원이 납부 상태 행을 갖기 때문에(로그인 때 생성,
+ * {@code V21}로 기존 회원 백필) 납부 전 회원도 그대로 걸린다. 회원 기준으로 뒤집으면 member 도메인이
+ * 회비 상태를 알아야 하는데, 회비 때문에 남의 도메인을 고치지 않으려고 방향을 이렇게 잡았다.
  * <p>
- * 트랜잭션을 걸지 않는다 — 쓰기가 없고, 세 조회가 어긋나도 한 줄의 납부 정보가 잠깐 최신이 아닐 뿐이다.
+ * member 쪽은 이미 공개된 조회 메서드만 쓴다 — 검색은 {@code searchIdsByKeyword}, 회원 정보는 {@code getMapByIds}.
+ * <p>
+ * 트랜잭션을 걸지 않는다. 쓰기가 없고, 조회 사이가 어긋나도 한 줄의 정보가 잠깐 최신이 아닐 뿐이다.
  */
 @Component
 @RequiredArgsConstructor
 public class AdminFeeSearchUseCase {
 
-    private final MemberService memberService;
     private final StudentTransferStatusService studentTransferStatusService;
+    private final MemberService memberService;
     private final FeeAccountProvider feeAccountProvider;
 
     public PageResult<AdminFeeSearchResponse> search(TransferStatus status, String keyword, PageOffset pageOffset) {
-        PageResult<Member> members =
-            memberService.searchByFeeStatus(status == null ? null : status.name(), keyword, pageOffset);
+        List<Long> memberIds = null;
+        if (keyword != null && !keyword.isBlank()) {
+            memberIds = memberService.searchIdsByKeyword(keyword);
+            if (memberIds.isEmpty()) {
+                return PageResult.empty(pageOffset.page(), pageOffset.size());
+            }
+        }
 
-        List<Long> memberIds = members.content().stream().map(Member::getId).toList();
-        Map<Long, StudentTransferStatus> transferStatusByMemberId =
-            studentTransferStatusService.findMapByMemberIds(memberIds);
-        Set<Long> signedUpMemberIds = memberService.findSignedUpMemberIds(memberIds);
+        PageResult<StudentTransferStatus> page = studentTransferStatusService.search(status, memberIds, pageOffset);
+        List<Long> pagedMemberIds = page.content().stream().map(StudentTransferStatus::getMemberId).toList();
 
+        // 탈퇴(소프트 삭제)한 회원은 빠지므로 그 회원의 행은 member가 null로 남는다
+        Map<Long, Member> membersById = memberService.getMapByIds(pagedMemberIds);
         // 학기당 금액은 줄마다 같으므로 목록당 한 번만 읽는다
         FeeAccount account = feeAccountProvider.getAccount();
 
-        return members.map(member -> AdminFeeSearchResponse.of(
-            member,
-            transferStatusByMemberId.get(member.getId()),
-            signedUpMemberIds.contains(member.getId()),
+        return page.map(transferStatus -> AdminFeeSearchResponse.of(
+            transferStatus,
+            membersById.get(transferStatus.getMemberId()),
+            // 가입 여부는 member가 아는 사실이라 member의 공개 메서드에 묻는다.
+            // 줄마다 한 번씩 부르므로 목록이 커지면 벌크 조회를 member 쪽에 요청할 자리다
+            memberService.isSignedUp(transferStatus.getMemberId()),
             account
         ));
     }

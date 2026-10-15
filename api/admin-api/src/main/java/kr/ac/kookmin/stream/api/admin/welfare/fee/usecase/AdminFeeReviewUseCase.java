@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 납부 상태 처리. 납부 상태, 회원 쪽 사본, 납부자 명부 셋이 어긋나면 안 되므로 한 트랜잭션으로 묶는다.
+ * 납부 상태 처리. 상태 변경과 납부자 명부 반영이 어긋나면 안 되므로 한 트랜잭션으로 묶는다.
  */
 @Component
 @RequiredArgsConstructor
@@ -32,7 +32,6 @@ public class AdminFeeReviewUseCase {
         StudentTransferStatus reviewed = studentTransferStatusService.review(transferStatusId, status, adminNote);
         Member member = memberService.getById(reviewed.getMemberId());
 
-        memberService.changeFeeStatus(member.getId(), reviewed.getStatus().name());
         payerService.sync(member.getId(), member.getName(), member.getStudentId(), reviewed.getStatus());
 
         return reviewed;

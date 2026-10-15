@@ -42,6 +42,15 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
+    public void createIfAbsent(Long memberId) {
+        if (studentTransferStatusRepository.findByMemberId(memberId).isPresent()) {
+            return;
+        }
+        studentTransferStatusRepository.save(StudentTransferStatus.create(memberId));
+    }
+
+    @Override
+    @Transactional
     public StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
             .orElseGet(() -> StudentTransferStatus.create(memberId));

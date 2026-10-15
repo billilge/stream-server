@@ -13,13 +13,6 @@ public class MemberTermAgreementRepositoryImpl implements MemberTermAgreementRep
     private final MemberTermAgreementJpaRepository memberTermAgreementJpaRepository;
 
     @Override
-    public List<MemberTermAgreement> findAllByMemberIdIn(List<Long> memberIds) {
-        return memberTermAgreementJpaRepository.findAllByMemberIdIn(memberIds).stream()
-            .map(MemberTermAgreementJpaEntity::toDomain)
-            .toList();
-    }
-
-    @Override
     public List<MemberTermAgreement> findAllByMemberId(Long memberId) {
         return memberTermAgreementJpaRepository.findAllByMemberId(memberId).stream()
             .map(MemberTermAgreementJpaEntity::toDomain)
