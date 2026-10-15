@@ -13,6 +13,8 @@ public interface StudentTransferStatusJpaRepository extends JpaRepository<Studen
 
     Optional<StudentTransferStatusJpaEntity> findByMemberId(Long memberId);
 
+    List<StudentTransferStatusJpaEntity> findAllByMemberIdIn(List<Long> memberIds);
+
     @Query(value = """
         SELECT r FROM StudentTransferStatusJpaEntity r
         WHERE (:status IS NULL OR r.status = :status)

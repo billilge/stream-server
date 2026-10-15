@@ -2,6 +2,9 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -26,6 +29,15 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     public StudentTransferStatus getByMemberId(Long memberId) {
         return studentTransferStatusRepository.findByMemberId(memberId)
             .orElseGet(() -> StudentTransferStatus.notRequested(memberId));
+    }
+
+    @Override
+    public Map<Long, StudentTransferStatus> findMapByMemberIds(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Map.of();
+        }
+        return studentTransferStatusRepository.findAllByMemberIds(memberIds).stream()
+            .collect(Collectors.toMap(StudentTransferStatus::getMemberId, Function.identity()));
     }
 
     @Override

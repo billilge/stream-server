@@ -1,26 +1,20 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import jakarta.validation.Valid;
-import java.util.Map;
-import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
-import kr.ac.kookmin.stream.api.common.dto.PageParams;
-import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.security.RequireDepartment;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAmountUpdateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeLinkUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAmountUpdateResponse;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeLinkUpdateResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeReviewUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeSearchUseCase;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.MemberFeeStatus;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminFeeController implements AdminFeeApi {
 
-    private final AdminConfigValueService adminConfigValueService;
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
+    private final FeeAccountProvider feeAccountProvider;
 
     @Override
     @GetMapping("/requests")
@@ -52,51 +46,43 @@ public class AdminFeeController implements AdminFeeApi {
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        TransferStatus transferStatus = TransferStatus.from(status);
-        PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(transferStatus, keyword, pageParams.toOffset());
+        PageResult<AdminFeeSearchResponse> result = adminFeeSearchUseCase.search(
+            TransferStatus.from(status), keyword, pageParams.toOffset());
 
-        return ApiResponse.success(
-                PageResponse.from(result, (vo) -> AdminFeeSearchResponse.of(vo.status(), vo.member()))
-        );
+        return ApiResponse.success(PageResponse.from(result, response -> response));
     }
 
     @Override
-    @PatchMapping("/requests/{transferStatusId}")
+    @PatchMapping("/requests/{studentTransferStatusId}")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeStatusUpdateResponse> updateStatus(
         AdminApiUser apiUser,
-        @PathVariable Long transferStatusId,
-        @Valid @RequestBody FeeStatusUpdateRequest request
+        @PathVariable Long studentTransferStatusId,
+        @RequestBody FeeStatusUpdateRequest request
     ) {
-        TransferStatus status = TransferStatus.from(request.status());
-        StudentTransferStatus reviewed = adminFeeReviewUseCase.review(transferStatusId, status);
+        StudentTransferStatus reviewed = adminFeeReviewUseCase.review(
+            studentTransferStatusId, TransferStatus.from(request.status()), request.adminNote());
 
         return ApiResponse.success(FeeStatusUpdateResponse.from(reviewed));
     }
 
     @Override
-    @PutMapping("/link")
+    @GetMapping("/account")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
-    public ApiResponse<FeeLinkUpdateResponse> updateLink(
-        AdminApiUser apiUser,
-        @Valid @RequestBody FeeLinkUpdateRequest request
-    ) {
-        adminConfigValueService.upsertValues(Map.of(
-            FeeConfigKeys.TRANSFER_BANK, request.bank(),
-            FeeConfigKeys.TRANSFER_ACCOUNT_NO, request.accountNo()
-        ));
-
-        return ApiResponse.success(FeeLinkUpdateResponse.of(request.bank(), request.accountNo()));
+    public ApiResponse<FeeAccountResponse> getAccount(AdminApiUser apiUser) {
+        return ApiResponse.success(FeeAccountResponse.from(feeAccountProvider.getAccount()));
     }
 
     @Override
-    @PutMapping("/amount")
+    @PutMapping("/account")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
-    public ApiResponse<FeeAmountUpdateResponse> updateAmount(
+    public ApiResponse<FeeAccountResponse> updateAccount(
         AdminApiUser apiUser,
-        @Valid @RequestBody FeeAmountUpdateRequest request
+        @RequestBody FeeAccountUpdateRequest request
     ) {
-        adminConfigValueService.upsertValue(FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(request.amount()));
-        return ApiResponse.success(FeeAmountUpdateResponse.of(request.amount()));
+        FeeAccountValidator.validate(request);
+        FeeAccount saved = feeAccountProvider.save(request.bank(), request.accountNo(), request.amount());
+
+        return ApiResponse.success(FeeAccountResponse.from(saved));
     }
 }

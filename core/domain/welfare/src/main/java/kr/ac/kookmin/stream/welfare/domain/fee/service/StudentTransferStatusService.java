@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.service;
 
 import java.util.List;
+import java.util.Map;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -18,6 +19,9 @@ public interface StudentTransferStatusService {
 
     /** 송금 확인을 요청한다. 납부 정보를 제출하지 않았으면 {@code FEE_REQUEST_NOT_FOUND}다. */
     StudentTransferStatus requestConfirmation(Long memberId);
+
+    /** 회원별 납부 상태. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 제출 전 회원은 빠진다. */
+    Map<Long, StudentTransferStatus> findMapByMemberIds(List<Long> memberIds);
 
     // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
