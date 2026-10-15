@@ -5,7 +5,6 @@ import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeConfirmResponse;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeSubmitResponse;
-import kr.ac.kookmin.stream.api.app.welfare.fee.usecase.FeeConfirmUseCase;
 import kr.ac.kookmin.stream.api.app.welfare.fee.usecase.FeeSubmitUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -25,7 +24,6 @@ public class AppFeeController implements AppFeeApi {
     private final StudentTransferStatusService studentTransferStatusService;
     private final FeeTransferUrlProvider feeTransferUrlProvider;
     private final FeeSubmitUseCase feeSubmitUseCase;
-    private final FeeConfirmUseCase feeConfirmUseCase;
 
     @Override
     @GetMapping("/me")
@@ -44,6 +42,7 @@ public class AppFeeController implements AppFeeApi {
     @Override
     @PostMapping("/requests/confirm")
     public ApiResponse<FeeConfirmResponse> requestConfirmation(AppApiUser apiUser) {
-        return ApiResponse.success(feeConfirmUseCase.confirm(apiUser.userId()));
+        return ApiResponse.success(
+            FeeConfirmResponse.from(studentTransferStatusService.requestConfirmation(apiUser.userId())));
     }
 }
