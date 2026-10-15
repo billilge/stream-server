@@ -46,7 +46,7 @@ public record AdminFeeSearchResponse(
             signedUp,
             transferStatus.getStatus().name(),
             transferStatus.getRemainingSemesters(),
-            account.transferAmountFor(transferStatus.getRemainingSemesters()),
+            account.calculateTransferAmount(transferStatus.getRemainingSemesters()),
             StorageUrlBuilder.build(transferStatus.getProofImageKey()),
             transferStatus.getRequestedAt(),
             // 납부 확인 시각은 납부완료일 때의 처리 시각이다

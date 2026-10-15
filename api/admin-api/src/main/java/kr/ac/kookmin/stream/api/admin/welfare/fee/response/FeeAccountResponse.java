@@ -11,6 +11,6 @@ public record FeeAccountResponse(
 ) {
     public static FeeAccountResponse from(FeeAccount account) {
         return new FeeAccountResponse(
-            account.bank(), account.accountNo(), account.amount(), account.transferLinkUrl());
+            account.bank(), account.accountNo(), account.amount(), account.generateTransferLinkUrl());
     }
 }

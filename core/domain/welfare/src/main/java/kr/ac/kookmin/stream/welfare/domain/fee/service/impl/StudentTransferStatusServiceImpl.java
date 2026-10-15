@@ -32,7 +32,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     }
 
     @Override
-    public Map<Long, StudentTransferStatus> findMapByMemberIds(List<Long> memberIds) {
+    public Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds) {
         if (memberIds.isEmpty()) {
             return Map.of();
         }

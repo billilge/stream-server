@@ -29,7 +29,7 @@ public interface StudentTransferStatusService {
     StudentTransferStatus requestConfirmation(Long memberId);
 
     /** 회원별 납부 상태. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 제출 전 회원은 빠진다. */
-    Map<Long, StudentTransferStatus> findMapByMemberIds(List<Long> memberIds);
+    Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds);
 
     // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
