@@ -9,6 +9,10 @@ import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -42,6 +46,22 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findAllByIdInAndIsDeletedFalse(ids).stream()
             .map(MemberJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public PageResult<Member> searchByFeeStatus(String feeStatus, String keyword, PageOffset pageOffset) {
+        Page<MemberJpaEntity> result = memberJpaRepository.searchByFeeStatus(
+            feeStatus,
+            keyword == null || keyword.isBlank() ? null : keyword,
+            PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(MemberJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
     }
 
     @Override

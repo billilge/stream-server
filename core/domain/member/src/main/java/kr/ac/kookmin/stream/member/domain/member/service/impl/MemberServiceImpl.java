@@ -2,6 +2,9 @@ package kr.ac.kookmin.stream.member.domain.member.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import java.util.Set;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -101,6 +104,25 @@ class MemberServiceImpl implements MemberService {
         if (member.updateFcmToken(fcmToken)) {
             memberRepository.save(member);
         }
+    }
+
+    @Override
+    public PageResult<Member> searchByFeeStatus(String feeStatus, String keyword, PageOffset pageOffset) {
+        return memberRepository.searchByFeeStatus(feeStatus, keyword, pageOffset);
+    }
+
+    // 회원마다 약관을 조회하면 목록 한 장에 쿼리가 페이지 크기만큼 늘어나므로 한 번에 가져와 짝짓는다
+    @Override
+    public Set<Long> findSignedUpMemberIds(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Set.of();
+        }
+        Set<Long> agreedMemberIds = memberTermService.findMemberIdsAgreedRequiredTerms(memberIds);
+
+        return memberRepository.findAllByIds(memberIds).stream()
+            .filter(member -> member.hasPhoneNumber() && agreedMemberIds.contains(member.getId()))
+            .map(Member::getId)
+            .collect(Collectors.toSet());
     }
 
     // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다

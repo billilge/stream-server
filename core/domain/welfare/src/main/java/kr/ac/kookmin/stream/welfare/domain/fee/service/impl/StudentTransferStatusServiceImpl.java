@@ -58,18 +58,11 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, TransferStatus status) {
-        if (status == TransferStatus.PENDING) {
-            throw new BusinessException(FeeErrorCode.INVALID_TRANSFER_STATUS);
-        }
-
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
-        if (transferStatus.getStatus() != TransferStatus.PENDING) {
-            throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REVIEWED);
-        }
 
-        transferStatus.review(status, LocalDateTime.now());
+        transferStatus.review(status, adminNote, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 }

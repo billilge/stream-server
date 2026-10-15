@@ -22,5 +22,6 @@ public interface StudentTransferStatusService {
     // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
 
-    StudentTransferStatus review(Long transferStatusId, TransferStatus status);
+    /** 관리자 처리. 이미 처리된 요청도 다시 바꿀 수 있다. adminNote는 확인필요일 때만 남는다. */
+    StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote);
 }
