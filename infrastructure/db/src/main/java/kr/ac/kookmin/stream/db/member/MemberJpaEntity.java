@@ -60,11 +60,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "council_department", length = 30)
     private CouncilDepartment councilDepartment;
 
-    // welfare의 student_transfer_statuses.status 사본. 관리자 납부자 목록이 회원 기준으로
-    // 검색·필터·페이징하려면 여기에도 있어야 한다(자세한 이유는 Member.feeStatus 주석)
-    @Column(name = "fee_status", nullable = false, length = 20)
-    private String feeStatus;
-
     private MemberJpaEntity(Member member) {
         this.id = member.getId();
         this.studentId = member.getStudentId();
@@ -76,7 +71,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
         this.fcmToken = member.getFcmToken();
         this.role = member.getRole();
         this.councilDepartment = member.getCouncilDepartment();
-        this.feeStatus = member.getFeeStatus();
     }
 
     public static MemberJpaEntity from(Member member) {
@@ -85,7 +79,6 @@ public class MemberJpaEntity extends BaseSoftDeleteEntity {
 
     public Member toDomain() {
         return Member.of(
-            id, studentId, name, department, academicStatus, email, phoneNumber, fcmToken,
-            role, councilDepartment, feeStatus);
+            id, studentId, name, department, academicStatus, email, phoneNumber, fcmToken, role, councilDepartment);
     }
 }
