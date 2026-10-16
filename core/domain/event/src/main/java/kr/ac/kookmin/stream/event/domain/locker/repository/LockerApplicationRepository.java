@@ -11,6 +11,11 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 public interface LockerApplicationRepository {
 
     /**
+     * 해당 운영 회차에 신청이 한 건이라도 있는지. 신청이 딸린 회차는 지울 수 없다.
+     */
+    boolean existsByPeriod(Long lockerPeriodId);
+
+    /**
      * 해당 운영 회차에 이 사물함이 이미 신청되었는지.
      */
     boolean existsByLocker(Long lockerPeriodId, Long lockerId);
