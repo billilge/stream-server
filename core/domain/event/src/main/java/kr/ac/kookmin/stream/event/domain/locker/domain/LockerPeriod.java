@@ -93,6 +93,16 @@ public class LockerPeriod {
     }
 
     /**
+     * 지금이 신청을 받는 기간인지. 신청 시작 일시부터 마감 일시까지 양 끝을 포함한다.
+     * <p>
+     * 사용 기간은 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감 일시를 늘리는 운영이 있어
+     * 두 기간이 겹칠 수 있다.
+     */
+    public boolean isApplyOpen(LocalDateTime now) {
+        return !now.isBefore(applyStartAt) && !now.isAfter(applyEndAt);
+    }
+
+    /**
      * 회차 범위(신청 시작일 ~ 사용 종료일)가 다른 회차와 겹치는지. 회차는 같은 시기에 둘이 돌 수 없다.
      */
     public boolean overlaps(LockerPeriod other) {
