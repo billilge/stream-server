@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface LockerApplicationJpaRepository extends JpaRepository<LockerApplicationJpaEntity, Long> {
 
+    boolean existsByLockerPeriodId(Long lockerPeriodId);
+
     boolean existsByLockerPeriodIdAndLockerId(Long lockerPeriodId, Long lockerId);
 
     List<LockerApplicationJpaEntity> findAllByMemberIdOrderByAppliedAtDescIdDesc(Long memberId);
