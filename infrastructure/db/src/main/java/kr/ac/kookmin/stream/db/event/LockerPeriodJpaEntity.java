@@ -8,20 +8,29 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
+import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
+// uk_locker_periods_active_semester(V20)는 generated column active_semester에 걸려 있다.
+// Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(name = "locker_periods")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LockerPeriodJpaEntity extends BaseTimeEntity {
+public class LockerPeriodJpaEntity extends BaseSoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "locker_period_id")
     private Long id;
+
+    // YEAR는 MySQL 데이터 타입 이름이라 컬럼명이 period_year다
+    @Column(name = "period_year", nullable = false, columnDefinition = "SMALLINT")
+    private int periodYear;
+
+    @Column(name = "semester", nullable = false, columnDefinition = "TINYINT")
+    private int semester;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -43,6 +52,8 @@ public class LockerPeriodJpaEntity extends BaseTimeEntity {
 
     private LockerPeriodJpaEntity(LockerPeriod period) {
         this.id = period.getId();
+        this.periodYear = period.getYear();
+        this.semester = period.getSemester();
         this.name = period.getName();
         this.applyStartAt = period.getApplyStartAt();
         this.applyEndAt = period.getApplyEndAt();
@@ -56,6 +67,7 @@ public class LockerPeriodJpaEntity extends BaseTimeEntity {
     }
 
     public LockerPeriod toDomain() {
-        return LockerPeriod.of(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, isPublished);
+        return LockerPeriod.of(
+            id, periodYear, semester, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, isPublished);
     }
 }
