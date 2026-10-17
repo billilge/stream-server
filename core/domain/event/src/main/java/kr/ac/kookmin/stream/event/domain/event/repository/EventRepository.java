@@ -19,8 +19,8 @@ public interface EventRepository {
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.
      * <p>
-     * 내 신청 내역처럼 이미 일어난 일을 보여주는 조회에 쓴다. 행사가 삭제돼도 신청 기록은 남아야 하고,
-     * 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
+     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 삭제된 행사의 신청은 {@link #findApplicationSlice}가
+     * 이미 걸러내므로 여기서 다시 거르지 않는다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
      */
     List<Event> findAllByIds(List<Long> eventIds);
 
