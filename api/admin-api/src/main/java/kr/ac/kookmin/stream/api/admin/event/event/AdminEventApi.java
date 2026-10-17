@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventSearchParams;
+import kr.ac.kookmin.stream.api.admin.event.event.request.EventUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventListItemResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventCreateResponse;
+import kr.ac.kookmin.stream.api.admin.event.event.response.EventUpdateResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -53,4 +55,20 @@ public interface AdminEventApi {
         description = "행사 정보와 신청서 질문 전체를 조회한다. 비공개 행사도 조회할 수 있다.")
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
     ApiResponse<AdminEventDetailResponse> getEvent(AdminApiUser apiUser, Long eventId);
+
+    /** 행사 수정. 요청의 수정 시각이 저장된 값과 다르면 거부한다. */
+    @Operation(summary = "행사 수정",
+        description = "행사 내용과 신청서 질문을 통째로 바꾼다. 수정 화면이 행사를 읽은 뒤 다른 관리자가 먼저 고쳤다면"
+            + "(수정 시각 불일치) 409로 거부한다. 신청 내역(취소 포함)이 있는 행사는 질문을 바꿀 수 없고, "
+            + "선착순 정원은 현재 신청자 수보다 줄일 수 없다. 공개 여부는 바꾸지 않는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(
+        type = EventErrorCode.class,
+        codes = {
+            "EVENT_NOT_FOUND", "EVENT_INVALID_PERIOD", "EVENT_INVALID_CAPACITY", "EVENT_INVALID_QUESTION",
+            "EVENT_QUESTIONS_LOCKED", "EVENT_CAPACITY_BELOW_APPLICANTS", "EVENT_UPDATE_CONFLICT"
+        }
+    )
+    @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
+    ApiResponse<EventUpdateResponse> updateEvent(AdminApiUser apiUser, Long eventId, EventUpdateRequest request);
 }

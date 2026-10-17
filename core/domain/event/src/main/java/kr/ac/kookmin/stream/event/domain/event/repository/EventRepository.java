@@ -22,6 +22,14 @@ public interface EventRepository {
 
     List<EventQuestion> saveQuestions(List<EventQuestion> questions);
 
+    /** 행사의 신청서 질문을 모두 지우고 주어진 질문으로 바꾼다. */
+    List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions);
+
+    /**
+     * 행사에 신청이 한 건이라도 있는지. 취소된 신청도 센다 — 취소돼도 답변이 질문 id·선택지 순서를 참조한다.
+     */
+    boolean existsApplicationByEventId(Long eventId);
+
     /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순(eventId 내림차순)으로 페이지 조회한다. 운영진 목록용이다.
      *

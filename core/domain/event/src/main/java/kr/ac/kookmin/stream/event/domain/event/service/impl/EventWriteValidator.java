@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,13 @@ import org.springframework.stereotype.Component;
 class EventWriteValidator {
 
     void validate(EventCreateCommand command) {
+        validatePeriod(command.eventStartAt(), command.eventEndAt());
+        validatePeriod(command.applyStartAt(), command.applyEndAt());
+        validateCapacity(command.recruitType(), command.capacity());
+        validateQuestions(command.questions());
+    }
+
+    void validate(EventUpdateCommand command) {
         validatePeriod(command.eventStartAt(), command.eventEndAt());
         validatePeriod(command.applyStartAt(), command.applyEndAt());
         validateCapacity(command.recruitType(), command.capacity());

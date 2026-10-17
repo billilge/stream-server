@@ -23,7 +23,10 @@ public enum EventErrorCode implements ErrorCode {
     EVENT_INVALID_RECRUIT_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 모집 상태입니다."),
     EVENT_INVALID_PERIOD(ErrorStatus.BAD_REQUEST, "종료 일시는 시작 일시보다 늦어야 합니다."),
     EVENT_INVALID_CAPACITY(ErrorStatus.BAD_REQUEST, "선착순 모집은 1명 이상의 정원을 입력해야 합니다."),
-    EVENT_INVALID_QUESTION(ErrorStatus.BAD_REQUEST, "선택형 질문에는 선택지를 1개 이상 입력해야 합니다.");
+    EVENT_INVALID_QUESTION(ErrorStatus.BAD_REQUEST, "선택형 질문에는 선택지를 1개 이상 입력해야 합니다."),
+    EVENT_QUESTIONS_LOCKED(ErrorStatus.CONFLICT, "신청 내역이 있는 행사는 신청서 질문을 수정할 수 없습니다."),
+    EVENT_CAPACITY_BELOW_APPLICANTS(ErrorStatus.CONFLICT, "정원을 현재 신청자 수보다 적게 줄일 수 없습니다."),
+    EVENT_UPDATE_CONFLICT(ErrorStatus.CONFLICT, "다른 관리자가 먼저 행사를 수정했습니다. 새로고침한 뒤 다시 수정해 주세요.");
 
     private final int status;
     private final String message;

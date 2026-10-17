@@ -23,7 +23,7 @@ class EventSummaryTest {
         return Event.of(
             1L, "행사", "설명", "학생회관",
             NOW.plusDays(30), NOW.plusDays(31), applyStartAt, applyEndAt,
-            recruitType, imageIds, capacity, false, true, 100L
+            recruitType, imageIds, capacity, false, true, 100L, null
         );
     }
 

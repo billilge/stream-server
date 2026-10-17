@@ -36,7 +36,7 @@ class EventServiceImplTest {
         return Event.of(
             id, "행사 " + id, "설명", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null
         );
     }
 
@@ -76,11 +76,11 @@ class EventServiceImplTest {
         Event full = Event.of(
             1L, "정원 3명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 3, false, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 3, false, true, 1L, null);
         Event roomy = Event.of(
             2L, "정원 100명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null);
 
         FakeEventRepository repository = new FakeEventRepository(
             List.of(full, roomy),
@@ -176,6 +176,16 @@ class EventServiceImplTest {
 
         @Override
         public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsApplicationByEventId(Long eventId) {
             throw new UnsupportedOperationException();
         }
 

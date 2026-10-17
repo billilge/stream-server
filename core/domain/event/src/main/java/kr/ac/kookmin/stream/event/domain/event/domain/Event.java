@@ -28,6 +28,8 @@ public class Event {
     private boolean feePaidOnly;
     private boolean published;
     private Long createdBy;
+    /** 마지막 수정 시각. DB가 채우며, 운영진 동시 수정 감지에 쓴다 */
+    private LocalDateTime updatedAt;
 
     public static Event of(
         Long id,
@@ -43,16 +45,18 @@ public class Event {
         int capacity,
         boolean feePaidOnly,
         boolean published,
-        Long createdBy
+        Long createdBy,
+        LocalDateTime updatedAt
     ) {
         return new Event(
             id, title, description, place, eventStartAt, eventEndAt, applyStartAt,
-            applyEndAt, recruitType, imageIds, capacity, feePaidOnly, published, createdBy
+            applyEndAt, recruitType, imageIds, capacity, feePaidOnly, published, createdBy, updatedAt
         );
     }
 
     /**
      * 새 행사를 만든다. 학생에게 바로 보이지 않도록 비공개로 시작한다. 상시 모집은 정원이 의미 없어 0으로 둔다.
+     * 수정 시각은 DB가 채운다.
      */
     public static Event create(Long createdBy, EventCreateCommand command) {
         return new Event(
@@ -69,8 +73,26 @@ public class Event {
             capacityOf(command.recruitType(), command.capacity()),
             command.feePaidOnly(),
             false,
-            createdBy
+            createdBy,
+            null
         );
+    }
+
+    /**
+     * 운영진이 입력한 값으로 행사 내용을 통째로 바꾼다. 공개 여부·작성자는 그대로 둔다.
+     */
+    public void update(EventUpdateCommand command) {
+        this.title = command.title();
+        this.description = command.description();
+        this.place = command.place();
+        this.eventStartAt = command.eventStartAt();
+        this.eventEndAt = command.eventEndAt();
+        this.applyStartAt = command.applyStartAt();
+        this.applyEndAt = command.applyEndAt();
+        this.recruitType = command.recruitType();
+        this.imageIds = command.imageIds();
+        this.capacity = capacityOf(command.recruitType(), command.capacity());
+        this.feePaidOnly = command.feePaidOnly();
     }
 
     /**

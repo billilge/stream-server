@@ -48,6 +48,17 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
+        eventQuestionJpaRepository.deleteAllByEventId(eventId);
+        return saveQuestions(questions);
+    }
+
+    @Override
+    public boolean existsApplicationByEventId(Long eventId) {
+        return eventApplicationJpaRepository.existsByEventId(eventId);
+    }
+
+    @Override
     public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
         Page<EventJpaEntity> result = eventJpaRepository.search(
             keyword, PageRequest.of(pageOffset.page(), pageOffset.size())

@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -53,5 +54,17 @@ public class EventQuestion {
             choice ? List.copyOf(command.options()) : List.of(),
             choice && command.otherOptionAllowed()
         );
+    }
+
+    /**
+     * 신청서에 보이는 내용이 같은지. 식별자·소속 행사·노출 순서 값은 보지 않는다(순서는 호출부가 목록 위치로 비교한다).
+     * 행사 수정 때 질문이 실제로 바뀌었는지 판단한다.
+     */
+    public boolean hasSameContentAs(EventQuestion other) {
+        return questionType == other.questionType
+            && required == other.required
+            && otherOptionAllowed == other.otherOptionAllowed
+            && Objects.equals(questionText, other.questionText)
+            && Objects.equals(options, other.options);
     }
 }

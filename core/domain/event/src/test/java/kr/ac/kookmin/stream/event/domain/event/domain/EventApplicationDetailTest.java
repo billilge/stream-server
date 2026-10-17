@@ -23,7 +23,7 @@ class EventApplicationDetailTest {
         return Event.of(
             15L, "동문패널톡", "설명", "미래관 419호",
             APPLIED_AT.plusDays(30), APPLIED_AT.plusDays(31), APPLIED_AT.minusDays(7), APPLIED_AT.plusDays(3),
-            RecruitType.OPEN, List.of(7L), 0, false, true, 100L
+            RecruitType.OPEN, List.of(7L), 0, false, true, 100L, null
         );
     }
 

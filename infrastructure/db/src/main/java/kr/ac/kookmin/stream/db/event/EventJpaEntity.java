@@ -99,6 +99,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     public Event toDomain() {
         return Event.of(id, title, description, place, eventStartAt, eventEndAt,
             applyStartAt, applyEndAt, recruitType, imageIds, capacity, feePaidOnly,
-            isPublished, createdBy);
+            isPublished, createdBy, getUpdatedAt());
     }
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -15,7 +16,8 @@ import kr.ac.kookmin.stream.file.domain.File;
 /**
  * 수정 화면의 초기값. 필드 이름은 등록·수정 요청 본문과 맞춘다.
  *
- * @param capacity 선착순 모집의 정원. 상시 모집이면 {@code null}
+ * @param capacity  선착순 모집의 정원. 상시 모집이면 {@code null}
+ * @param updatedAt 마지막 수정 시각(KST 기준 epoch 밀리초). 수정 요청에 그대로 돌려보내 동시 수정을 감지한다
  */
 public record AdminEventDetailResponse(
     Long eventId,
@@ -33,7 +35,8 @@ public record AdminEventDetailResponse(
     RecruitStatus recruitStatus,
     boolean isPublished,
     List<Image> images,
-    List<Question> questions
+    List<Question> questions,
+    long updatedAt
 ) {
 
     /**
@@ -60,7 +63,8 @@ public record AdminEventDetailResponse(
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
                 .toList(),
-            detail.questions().stream().map(Question::from).toList()
+            detail.questions().stream().map(Question::from).toList(),
+            event.getUpdatedAt().atZone(DateUtil.KST).toInstant().toEpochMilli()
         );
     }
 

@@ -5,9 +5,11 @@ import java.util.Map;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventSearchParams;
+import kr.ac.kookmin.stream.api.admin.event.event.request.EventUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventListItemResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventCreateResponse;
+import kr.ac.kookmin.stream.api.admin.event.event.response.EventUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.AdminEventWriteUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,5 +66,16 @@ public class AdminEventController implements AdminEventApi {
         Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
 
         return ApiResponse.success(AdminEventDetailResponse.from(detail, imagesById));
+    }
+
+    @Override
+    @PutMapping("/{eventId}")
+    public ApiResponse<EventUpdateResponse> updateEvent(
+        AdminApiUser apiUser,
+        @PathVariable Long eventId,
+        @Valid @RequestBody EventUpdateRequest request
+    ) {
+        Event event = adminEventWriteUseCase.update(eventId, request.toCommand());
+        return ApiResponse.success(EventUpdateResponse.from(event));
     }
 }

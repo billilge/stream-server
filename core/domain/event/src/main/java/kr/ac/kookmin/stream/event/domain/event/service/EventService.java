@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 
 /** 행사 자체의 조회와 운영진의 등록·수정. 신청·취소는 {@link EventApplicationService}가 맡는다. */
@@ -33,4 +34,11 @@ public interface EventService {
 
     /** 운영진 행사 상세. 비공개 행사도 조회한다. */
     EventManageDetail getEvent(Long eventId);
+
+    /**
+     * 운영진이 행사 내용을 통째로 바꾼다. 수정 화면이 읽은 뒤 다른 운영진이 먼저 고쳤다면
+     * {@code EVENT_UPDATE_CONFLICT}로 거부한다. 신청이 있는 행사는 신청서 질문을 바꿀 수 없고,
+     * 선착순 정원을 현재 신청자 수보다 줄일 수 없다.
+     */
+    Event update(Long eventId, EventUpdateCommand command);
 }

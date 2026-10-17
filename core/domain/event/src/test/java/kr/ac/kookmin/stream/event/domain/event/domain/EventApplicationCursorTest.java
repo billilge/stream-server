@@ -29,7 +29,7 @@ class EventApplicationCursorTest {
         Event event = Event.of(
             15L, "행사", "설명", "학생회관",
             APPLIED_AT.plusDays(30), APPLIED_AT.plusDays(31), APPLIED_AT.minusDays(7), APPLIED_AT.plusDays(3),
-            RecruitType.OPEN, List.of(), 0, false, true, 100L
+            RecruitType.OPEN, List.of(), 0, false, true, 100L, null
         );
         EventApplication application = EventApplication.of(
             102L, 15L, 1L, EventApplicationStatus.APPLIED, APPLIED_AT, null);
