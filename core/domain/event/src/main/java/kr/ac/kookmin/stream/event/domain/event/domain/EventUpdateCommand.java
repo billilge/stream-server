@@ -21,5 +21,5 @@ public record EventUpdateCommand(
     List<Long> imageIds,
     List<EventQuestionCommand> questions,
     LocalDateTime expectedUpdatedAt
-) {
+) implements EventWriteCommand {
 }
