@@ -30,6 +30,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     @Transactional
     public LockerApplicationResult apply(Long memberId, LockerApplyCommand command) {
         LockerPeriod period = getPublishedPeriod(command.lockerPeriodId());
+        requireApplyOpen(period);
         Locker locker = getSelectableLocker(period.getId(), command.lockerId());
 
         LockerApplication application = lockerApplicationRepository.save(
@@ -90,6 +91,17 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     private LockerPeriod getPublishedPeriod(Long lockerPeriodId) {
         return lockerRepository.findPublishedPeriodById(lockerPeriodId)
             .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND));
+    }
+
+    /**
+     * 모집 기간 밖에는 신청을 받지 않는다. 게시 여부만 보면 운영진이 게시를 내리기 전까지 마감 뒤에도 신청이 들어오고,
+     * 사물함은 선착순 즉시 배정이라 그 신청이 남의 자리를 차지한다. 행사 신청({@code EventApplicationServiceImpl})도
+     * 같은 자리에서 모집 상태를 본다.
+     */
+    private void requireApplyOpen(LockerPeriod period) {
+        if (!period.isApplyOpen(LocalDateTime.now())) {
+            throw new BusinessException(LockerErrorCode.LOCKER_APPLY_NOT_OPEN);
+        }
     }
 
     /**
