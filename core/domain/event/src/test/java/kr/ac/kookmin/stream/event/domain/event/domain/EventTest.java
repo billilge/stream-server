@@ -289,4 +289,20 @@ class EventTest {
             assertNull(event(RecruitType.OPEN).capacityLimit());
         }
     }
+
+    @Nested
+    @DisplayName("공개 여부 변경")
+    class ChangePublished {
+
+        @Test
+        @DisplayName("공개 여부만 바꾼다")
+        void changesOnlyPublished() {
+            Event event = firstComeEvent();
+
+            event.changePublished(false);
+
+            assertFalse(event.isPublished());
+            assertEquals("2026 소융대 개강 행사", event.getTitle());
+        }
+    }
 }
