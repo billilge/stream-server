@@ -131,6 +131,14 @@ class EventServiceImpl implements EventService {
         return eventRepository.save(event);
     }
 
+    @Override
+    @Transactional
+    public void delete(Long eventId) {
+        if (!eventRepository.delete(eventId)) {
+            throw new BusinessException(EventErrorCode.EVENT_NOT_FOUND);
+        }
+    }
+
     private Event getEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));

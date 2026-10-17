@@ -81,4 +81,11 @@ public interface AdminEventApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
     ApiResponse<EventPublishResponse> changePublished(AdminApiUser apiUser, Long eventId, EventPublishRequest request);
+
+    /** 행사 삭제. 소프트 삭제라 데이터는 남지만 어디에도 보이지 않는다. */
+    @Operation(summary = "행사 삭제",
+        description = "행사를 삭제한다. 신청자가 있어도 지울 수 있으며, 행사와 그 신청 내역은 운영진 화면과 "
+            + "학생 앱(내 신청 내역 포함)에서 보이지 않게 된다. 데이터는 지우지 않고 복구 기능은 없다.")
+    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
+    ApiResponse<Void> deleteEvent(AdminApiUser apiUser, Long eventId);
 }

@@ -50,4 +50,9 @@ public interface EventService {
 
     /** 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다. */
     Event changePublished(Long eventId, boolean published);
+
+    /**
+     * 행사를 삭제한다. 신청자가 있어도 지울 수 있으며, 삭제한 행사는 운영진 화면과 학생 앱 어디에도 보이지 않는다.
+     */
+    void delete(Long eventId);
 }

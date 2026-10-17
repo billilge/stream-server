@@ -175,6 +175,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public boolean delete(Long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
             throw new UnsupportedOperationException();
         }

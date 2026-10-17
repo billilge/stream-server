@@ -38,6 +38,16 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public boolean delete(Long id) {
+        return eventJpaRepository.findByIdAndIsDeletedFalse(id)
+            .map(entity -> {
+                entity.delete();
+                return true;
+            })
+            .orElse(false);
+    }
+
+    @Override
     public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
         List<EventQuestionJpaEntity> entities = questions.stream()
             .map(EventQuestionJpaEntity::from)

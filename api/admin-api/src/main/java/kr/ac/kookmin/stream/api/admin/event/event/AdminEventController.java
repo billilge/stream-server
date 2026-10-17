@@ -24,6 +24,7 @@ import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -98,5 +99,12 @@ public class AdminEventController implements AdminEventApi {
     ) {
         Event event = eventService.changePublished(eventId, request.isPublished());
         return ApiResponse.success(EventPublishResponse.from(event));
+    }
+
+    @Override
+    @DeleteMapping("/{eventId}")
+    public ApiResponse<Void> deleteEvent(AdminApiUser apiUser, @PathVariable Long eventId) {
+        eventService.delete(eventId);
+        return ApiResponse.success();
     }
 }

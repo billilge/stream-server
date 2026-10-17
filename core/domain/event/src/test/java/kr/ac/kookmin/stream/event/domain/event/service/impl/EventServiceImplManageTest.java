@@ -418,6 +418,11 @@ class EventServiceImplManageTest {
         }
 
         @Override
+        public boolean delete(Long id) {
+            return events.remove(id) != null;
+        }
+
+        @Override
         public List<EventQuestion> saveQuestions(List<EventQuestion> saved) {
             saved.forEach(question ->
                 questions.computeIfAbsent(question.getEventId(), key -> new ArrayList<>()).add(question));

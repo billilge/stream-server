@@ -20,6 +20,13 @@ public interface EventRepository {
 
     Event save(Event event);
 
+    /**
+     * 행사를 삭제 표시한다(soft delete). 신청·답변은 남긴다.
+     *
+     * @return 삭제할 행사가 있었는지. 없거나 이미 삭제됐으면 {@code false}
+     */
+    boolean delete(Long id);
+
     List<EventQuestion> saveQuestions(List<EventQuestion> questions);
 
     /** 행사의 신청서 질문을 모두 지우고 주어진 질문으로 바꾼다. */
