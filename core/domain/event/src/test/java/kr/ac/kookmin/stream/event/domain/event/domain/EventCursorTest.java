@@ -29,7 +29,7 @@ class EventCursorTest {
         Event event = Event.of(
             42L, "행사", "설명", "학생회관",
             EVENT_START_AT, EVENT_START_AT.plusHours(2), EVENT_START_AT.minusDays(7), EVENT_START_AT.minusDays(1),
-            RecruitType.OPEN, List.of(), 0, RecruitStatus.OPEN, true, 100L
+            RecruitType.OPEN, List.of(), 0, true, 100L
         );
 
         assertEquals(new EventCursor(EVENT_START_AT, 42L), EventCursor.of(event));

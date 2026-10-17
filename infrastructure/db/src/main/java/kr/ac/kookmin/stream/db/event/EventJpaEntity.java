@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -67,10 +66,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     @Column(nullable = false)
     private int capacity;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "recruit_status", nullable = false, length = 30)
-    private RecruitStatus recruitStatus;
-
     @Column(name = "is_published", nullable = false)
     private boolean isPublished;
 
@@ -89,7 +84,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.recruitType = event.getRecruitType();
         this.imageIds = event.getImageIds();
         this.capacity = event.getCapacity();
-        this.recruitStatus = event.getRecruitStatus();
         this.isPublished = event.isPublished();
         this.createdBy = event.getCreatedBy();
     }
@@ -100,7 +94,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
 
     public Event toDomain() {
         return Event.of(id, title, description, place, eventStartAt, eventEndAt,
-            applyStartAt, applyEndAt, recruitType, imageIds, capacity, recruitStatus, isPublished,
+            applyStartAt, applyEndAt, recruitType, imageIds, capacity, isPublished,
             createdBy);
     }
 }
