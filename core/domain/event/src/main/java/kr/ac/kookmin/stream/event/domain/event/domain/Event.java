@@ -118,6 +118,13 @@ public class Event {
     }
 
     /**
+     * 운영진 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
+     */
+    public Integer capacityLimit() {
+        return recruitType == RecruitType.FIRST_COME ? capacity : null;
+    }
+
+    /**
      * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
      */
     public boolean isCapacityFull(long appliedCount) {

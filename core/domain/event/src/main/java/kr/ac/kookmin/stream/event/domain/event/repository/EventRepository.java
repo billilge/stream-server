@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -19,6 +21,13 @@ public interface EventRepository {
     Event save(Event event);
 
     List<EventQuestion> saveQuestions(List<EventQuestion> questions);
+
+    /**
+     * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순(eventId 내림차순)으로 페이지 조회한다. 운영진 목록용이다.
+     *
+     * @param keyword 제목 부분 일치 검색어. {@code null}이면 거르지 않는다
+     */
+    PageResult<Event> findPage(String keyword, PageOffset pageOffset);
 
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.

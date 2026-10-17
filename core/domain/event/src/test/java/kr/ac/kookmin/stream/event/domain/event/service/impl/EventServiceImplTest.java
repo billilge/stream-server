@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -169,6 +171,11 @@ class EventServiceImplTest {
 
         @Override
         public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
             throw new UnsupportedOperationException();
         }
 

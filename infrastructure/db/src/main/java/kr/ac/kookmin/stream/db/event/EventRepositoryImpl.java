@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -16,6 +18,8 @@ import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -41,6 +45,20 @@ public class EventRepositoryImpl implements EventRepository {
         return eventQuestionJpaRepository.saveAll(entities).stream()
             .map(EventQuestionJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+        Page<EventJpaEntity> result = eventJpaRepository.search(
+            keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
     }
 
     @Override
