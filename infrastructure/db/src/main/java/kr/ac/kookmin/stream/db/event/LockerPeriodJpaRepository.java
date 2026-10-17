@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpaEntity, Long> {
 
-    boolean existsByIdAndIsPublishedTrue(Long id);
+    List<LockerPeriodJpaEntity> findAllByIsDeletedFalseOrderByApplyStartAtDesc();
 
-    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrue(Long id);
+    Optional<LockerPeriodJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrue(Collection<Long> ids);
+    boolean existsByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrueAndIsDeletedFalse(Collection<Long> ids);
 }

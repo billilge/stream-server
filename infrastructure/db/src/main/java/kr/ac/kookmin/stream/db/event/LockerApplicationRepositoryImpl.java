@@ -21,6 +21,11 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     private final LockerApplicationJpaRepository lockerApplicationJpaRepository;
 
     @Override
+    public boolean existsByPeriod(Long lockerPeriodId) {
+        return lockerApplicationJpaRepository.existsByLockerPeriodId(lockerPeriodId);
+    }
+
+    @Override
     public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
         return lockerApplicationJpaRepository.existsByLockerPeriodIdAndLockerId(lockerPeriodId, lockerId);
     }
