@@ -15,15 +15,15 @@ class EventApplicationDetailTest {
 
     private static final EventQuestion CHOICE_QUESTION = EventQuestion.of(
         1L, 15L, "관심 분야를 선택해 주세요.", QuestionType.MULTIPLE_CHOICE, true, 0,
-        List.of("텍스트1", "텍스트2", "텍스트3"));
+        List.of("텍스트1", "텍스트2", "텍스트3"), false);
     private static final EventQuestion TEXT_QUESTION = EventQuestion.of(
-        2L, 15L, "궁금한 점을 남겨 주세요.", QuestionType.LONG_TEXT, false, 1, List.of());
+        2L, 15L, "궁금한 점을 남겨 주세요.", QuestionType.LONG_TEXT, false, 1, List.of(), false);
 
     private static Event event() {
         return Event.of(
             15L, "동문패널톡", "설명", "미래관 419호",
             APPLIED_AT.plusDays(30), APPLIED_AT.plusDays(31), APPLIED_AT.minusDays(7), APPLIED_AT.plusDays(3),
-            RecruitType.OPEN, List.of(7L), 0, true, 100L
+            RecruitType.OPEN, List.of(7L), 0, false, true, 100L
         );
     }
 

@@ -24,6 +24,8 @@ public class Event {
     private RecruitType recruitType;
     private List<Long> imageIds;
     private int capacity;
+    /** 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업) */
+    private boolean feePaidOnly;
     private boolean published;
     private Long createdBy;
 
@@ -39,12 +41,13 @@ public class Event {
         RecruitType recruitType,
         List<Long> imageIds,
         int capacity,
+        boolean feePaidOnly,
         boolean published,
         Long createdBy
     ) {
         return new Event(
             id, title, description, place, eventStartAt, eventEndAt, applyStartAt,
-            applyEndAt, recruitType, imageIds, capacity, published, createdBy
+            applyEndAt, recruitType, imageIds, capacity, feePaidOnly, published, createdBy
         );
     }
 

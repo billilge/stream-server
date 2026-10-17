@@ -34,7 +34,7 @@ class EventServiceImplTest {
         return Event.of(
             id, "행사 " + id, "설명", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, true, 1L
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L
         );
     }
 
@@ -74,11 +74,11 @@ class EventServiceImplTest {
         Event full = Event.of(
             1L, "정원 3명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 3, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 3, false, true, 1L);
         Event roomy = Event.of(
             2L, "정원 100명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L);
 
         FakeEventRepository repository = new FakeEventRepository(
             List.of(full, roomy),

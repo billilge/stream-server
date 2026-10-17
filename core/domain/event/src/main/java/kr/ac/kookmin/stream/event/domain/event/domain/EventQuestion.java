@@ -18,6 +18,8 @@ public class EventQuestion {
     private boolean required;
     private int displayOrder;
     private List<String> options;
+    /** 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙이는지. 학생 앱 노출·답변 저장은 아직 없다(후속 작업) */
+    private boolean otherOptionAllowed;
 
     public static EventQuestion of(
         Long id,
@@ -26,8 +28,11 @@ public class EventQuestion {
         QuestionType questionType,
         boolean required,
         int displayOrder,
-        List<String> options
+        List<String> options,
+        boolean otherOptionAllowed
     ) {
-        return new EventQuestion(id, eventId, questionText, questionType, required, displayOrder, options);
+        return new EventQuestion(
+            id, eventId, questionText, questionType, required, displayOrder, options, otherOptionAllowed
+        );
     }
 }

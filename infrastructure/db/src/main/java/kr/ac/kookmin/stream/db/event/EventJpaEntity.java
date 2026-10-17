@@ -66,6 +66,9 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     @Column(nullable = false)
     private int capacity;
 
+    @Column(name = "fee_paid_only", nullable = false)
+    private boolean feePaidOnly;
+
     @Column(name = "is_published", nullable = false)
     private boolean isPublished;
 
@@ -84,6 +87,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.recruitType = event.getRecruitType();
         this.imageIds = event.getImageIds();
         this.capacity = event.getCapacity();
+        this.feePaidOnly = event.isFeePaidOnly();
         this.isPublished = event.isPublished();
         this.createdBy = event.getCreatedBy();
     }
@@ -94,7 +98,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
 
     public Event toDomain() {
         return Event.of(id, title, description, place, eventStartAt, eventEndAt,
-            applyStartAt, applyEndAt, recruitType, imageIds, capacity, isPublished,
-            createdBy);
+            applyStartAt, applyEndAt, recruitType, imageIds, capacity, feePaidOnly,
+            isPublished, createdBy);
     }
 }
