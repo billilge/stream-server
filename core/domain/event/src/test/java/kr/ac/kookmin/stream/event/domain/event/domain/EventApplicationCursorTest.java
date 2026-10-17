@@ -27,9 +27,9 @@ class EventApplicationCursorTest {
     @DisplayName("신청 내역으로부터 정렬 키를 그대로 딴다")
     void fromSummary() {
         Event event = Event.of(
-            15L, "행사", "설명", "전교생", "학생회관",
+            15L, "행사", "설명", "학생회관",
             APPLIED_AT.plusDays(30), APPLIED_AT.plusDays(31), APPLIED_AT.minusDays(7), APPLIED_AT.plusDays(3),
-            RecruitType.OPEN, List.of(), 0, RecruitStatus.OPEN, true, 100L
+            RecruitType.OPEN, List.of(), 0, true, 100L
         );
         EventApplication application = EventApplication.of(
             102L, 15L, 1L, EventApplicationStatus.APPLIED, APPLIED_AT, null);

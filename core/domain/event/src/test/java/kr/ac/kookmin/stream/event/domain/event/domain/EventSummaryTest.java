@@ -18,43 +18,32 @@ class EventSummaryTest {
         LocalDateTime applyEndAt,
         RecruitType recruitType,
         int capacity,
-        RecruitStatus recruitStatus,
         List<Long> imageIds
     ) {
         return Event.of(
-            1L, "행사", "설명", "전교생", "학생회관",
+            1L, "행사", "설명", "학생회관",
             NOW.plusDays(30), NOW.plusDays(31), applyStartAt, applyEndAt,
-            recruitType, imageIds, capacity, recruitStatus, true, 100L
+            recruitType, imageIds, capacity, true, 100L
         );
     }
 
     private static Event openEvent() {
-        return event(NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
+        return event(NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, List.of());
     }
 
     /**
      * 모집 상태 판정 규칙 자체는 {@code EventTest}가 덮는다.
-     * 여기서는 EventSummary가 저장값을 그대로 베끼지 않고 Event의 계산을 거치는지만 확인한다.
+     * 여기서는 EventSummary가 Event의 계산을 거치는지만 확인한다.
      */
     @Nested
     @DisplayName("모집 상태 위임")
     class RecruitStatusDelegation {
 
         @Test
-        @DisplayName("저장된 모집 상태가 아니라 조회 시점 기준으로 계산한 값을 싣는다")
-        void computesInsteadOfCopying() {
-            Event event = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.BEFORE_OPEN, List.of());
-
-            assertEquals(RecruitStatus.BEFORE_OPEN, event.getRecruitStatus());
-            assertEquals(RecruitStatus.OPEN, EventSummary.of(event, 0, NOW).recruitStatus());
-        }
-
-        @Test
         @DisplayName("신청자 수를 함께 넘겨 정원 마감까지 반영한다")
         void passesApplicantCount() {
             Event event = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.FIRST_COME, 10, RecruitStatus.OPEN, List.of());
+                NOW.minusDays(1), NOW.plusDays(3), RecruitType.FIRST_COME, 10, List.of());
 
             assertEquals(RecruitStatus.OPEN, EventSummary.of(event, 9, NOW).recruitStatus());
             assertEquals(RecruitStatus.CLOSED, EventSummary.of(event, 10, NOW).recruitStatus());
@@ -72,9 +61,9 @@ class EventSummaryTest {
         @DisplayName("모집 중이면 Event가 계산한 값을 싣고, 그 외에는 비운다")
         void carriesEventCalculation() {
             Event open = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
+                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, List.of());
             Event closed = event(
-                NOW.minusDays(5), NOW.minusDays(1), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
+                NOW.minusDays(5), NOW.minusDays(1), RecruitType.OPEN, 0, List.of());
 
             assertEquals(
                 open.daysUntilDeadline(NOW, RecruitStatus.OPEN),
@@ -91,7 +80,7 @@ class EventSummaryTest {
         @DisplayName("이미지 목록의 첫 번째를 대표로 쓴다")
         void firstImage() {
             Event event = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of(7L, 8L, 9L));
+                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, List.of(7L, 8L, 9L));
 
             assertEquals(7L, EventSummary.of(event, 0, NOW).thumbnailFileId());
         }
@@ -100,9 +89,9 @@ class EventSummaryTest {
         @DisplayName("이미지가 없으면 대표 이미지도 없다")
         void noImage() {
             Event empty = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, List.of());
+                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, List.of());
             Event nullImages = event(
-                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, RecruitStatus.OPEN, null);
+                NOW.minusDays(1), NOW.plusDays(3), RecruitType.OPEN, 0, null);
 
             assertNull(EventSummary.of(empty, 0, NOW).thumbnailFileId());
             assertNull(EventSummary.of(nullImages, 0, NOW).thumbnailFileId());

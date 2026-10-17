@@ -17,17 +17,17 @@ class EventTest {
     private static final LocalDateTime APPLY_END_AT = LocalDateTime.of(2026, 9, 10, 18, 0);
     private static final int CAPACITY = 30;
 
-    private static Event event(RecruitType recruitType, RecruitStatus recruitStatus) {
+    private static Event event(RecruitType recruitType) {
         return Event.of(
-            1L, "2026 소융대 개강 행사", "설명", "소융대 재학생", "101호",
+            1L, "2026 소융대 개강 행사", "설명", "101호",
             LocalDateTime.of(2026, 9, 15, 18, 0), LocalDateTime.of(2026, 9, 15, 20, 0),
             APPLY_START_AT, APPLY_END_AT,
-            recruitType, List.of(), CAPACITY, recruitStatus, true, 1L
+            recruitType, List.of(), CAPACITY, true, 1L
         );
     }
 
     private static Event firstComeEvent() {
-        return event(RecruitType.FIRST_COME, RecruitStatus.OPEN);
+        return event(RecruitType.FIRST_COME);
     }
 
     @Nested
@@ -69,16 +69,6 @@ class EventTest {
         }
 
         @Test
-        @DisplayName("운영진이 강제 마감했으면 기간 안이어도 CLOSED다")
-        void forceClosedBeatsPeriod() {
-            Event forceClosed = event(RecruitType.FIRST_COME, RecruitStatus.CLOSED);
-            assertEquals(
-                RecruitStatus.CLOSED,
-                forceClosed.calculateRecruitStatus(APPLY_START_AT.plusDays(1), 0)
-            );
-        }
-
-        @Test
         @DisplayName("선착순 모집은 정원이 차면 CLOSED다")
         void firstComeClosesWhenFull() {
             assertEquals(
@@ -90,7 +80,7 @@ class EventTest {
         @Test
         @DisplayName("상시 모집은 정원을 넘겨도 OPEN이다")
         void openRecruitIgnoresCapacity() {
-            Event openRecruit = event(RecruitType.OPEN, RecruitStatus.OPEN);
+            Event openRecruit = event(RecruitType.OPEN);
             assertEquals(
                 RecruitStatus.OPEN,
                 openRecruit.calculateRecruitStatus(APPLY_START_AT.plusDays(1), CAPACITY + 100)
@@ -156,7 +146,7 @@ class EventTest {
         @Test
         @DisplayName("상시 모집은 정원 제한이 없다")
         void openRecruitIsNeverFull() {
-            assertFalse(event(RecruitType.OPEN, RecruitStatus.OPEN).isCapacityFull(CAPACITY + 100));
+            assertFalse(event(RecruitType.OPEN).isCapacityFull(CAPACITY + 100));
         }
     }
 
@@ -174,13 +164,6 @@ class EventTest {
         @DisplayName("신청 기간이 끝났으면 정원이 차도 거짓이다")
         void periodEndedTakesPrecedence() {
             assertFalse(firstComeEvent().isClosedByCapacityOnly(APPLY_END_AT.plusSeconds(1), CAPACITY));
-        }
-
-        @Test
-        @DisplayName("강제 마감이면 정원이 차도 거짓이다")
-        void forceClosedTakesPrecedence() {
-            Event forceClosed = event(RecruitType.FIRST_COME, RecruitStatus.CLOSED);
-            assertFalse(forceClosed.isClosedByCapacityOnly(APPLY_START_AT.plusDays(1), CAPACITY));
         }
 
         @Test
