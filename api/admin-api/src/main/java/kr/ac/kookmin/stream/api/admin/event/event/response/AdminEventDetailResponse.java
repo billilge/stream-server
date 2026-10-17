@@ -41,8 +41,9 @@ public record AdminEventDetailResponse(
 
     /**
      * 존재하지 않는(삭제된) fileId는 imagesById에 키가 없다 — 그런 항목은 목록에서 조용히 제외한다.
+     * 모집 상태는 저장값이 아니라 {@code now} 기준으로 행사가 계산한다.
      */
-    public static AdminEventDetailResponse from(EventManageDetail detail, Map<Long, File> imagesById) {
+    public static AdminEventDetailResponse of(EventManageDetail detail, Map<Long, File> imagesById, LocalDateTime now) {
         Event event = detail.event();
         return new AdminEventDetailResponse(
             event.getId(),
@@ -57,7 +58,7 @@ public record AdminEventDetailResponse(
             event.capacityLimit(),
             event.isFeePaidOnly(),
             detail.applicantCount(),
-            detail.recruitStatus(),
+            event.calculateRecruitStatus(now, detail.applicantCount()),
             event.isPublished(),
             detail.imageIds().stream()
                 .filter(imagesById::containsKey)

@@ -15,7 +15,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventManageSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
@@ -81,26 +80,24 @@ class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResult<EventManageSummary> getEvents(String keyword, PageOffset pageOffset) {
-        PageResult<Event> page = eventRepository.findPage(keyword, pageOffset);
+    public PageResult<Event> getEvents(String keyword, PageOffset pageOffset) {
+        return eventRepository.findPage(keyword, pageOffset);
+    }
 
-        // 신청자 수는 한 번에 모아 조회한다. 행사마다 따로 세면 페이지 크기만큼 쿼리가 더 나간다
-        Map<Long, Long> applicantCounts = eventRepository.countAppliedByEventIds(
-            page.content().stream().map(Event::getId).toList());
-        LocalDateTime now = LocalDateTime.now();
-
-        return page.map(event -> EventManageSummary.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now));
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getApplicantCounts(List<Long> eventIds) {
+        return eventRepository.countAppliedByEventIds(eventIds);
     }
 
     @Override
     @Transactional(readOnly = true)
     public EventManageDetail getEvent(Long eventId) {
         Event event = getEventOrThrow(eventId);
-        return EventManageDetail.of(
+        return new EventManageDetail(
             event,
             eventRepository.findQuestionsByEventId(eventId),
-            eventRepository.countAppliedByEventId(eventId),
-            LocalDateTime.now()
+            eventRepository.countAppliedByEventId(eventId)
         );
     }
 

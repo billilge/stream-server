@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.event.event;
 
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
@@ -15,6 +16,7 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.File;
@@ -55,8 +57,13 @@ public class AdminEventController implements AdminEventApi {
         @Valid @ModelAttribute EventSearchParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        return ApiResponse.success(PageResponse.from(
-            eventService.getEvents(params.toKeyword(), pageParams.toOffset()), AdminEventListItemResponse::from));
+        PageResult<Event> events = eventService.getEvents(params.toKeyword(), pageParams.toOffset());
+        Map<Long, Long> applicantCounts = eventService.getApplicantCounts(
+            events.content().stream().map(Event::getId).toList());
+        LocalDateTime now = LocalDateTime.now();
+
+        return ApiResponse.success(PageResponse.from(events, event ->
+            AdminEventListItemResponse.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now)));
     }
 
     @Override
@@ -65,7 +72,7 @@ public class AdminEventController implements AdminEventApi {
         EventManageDetail detail = eventService.getEvent(eventId);
         Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
 
-        return ApiResponse.success(AdminEventDetailResponse.from(detail, imagesById));
+        return ApiResponse.success(AdminEventDetailResponse.of(detail, imagesById, LocalDateTime.now()));
     }
 
     @Override

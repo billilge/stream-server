@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.service;
 
+import java.util.List;
+import java.util.Map;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -8,7 +10,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventManageSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
@@ -26,11 +27,16 @@ public interface EventService {
     Event create(Long createdBy, EventCreateCommand command);
 
     /**
-     * 운영진 행사 목록. 비공개 행사도 담는다.
+     * 운영진 행사 목록. 비공개 행사도 담는다. 신청자 수는 {@link #getApplicantCounts}로 따로 조회해 조합한다.
      *
      * @param keyword 제목 부분 일치 검색어. {@code null}이면 거르지 않는다
      */
-    PageResult<EventManageSummary> getEvents(String keyword, PageOffset pageOffset);
+    PageResult<Event> getEvents(String keyword, PageOffset pageOffset);
+
+    /**
+     * 행사별 유효(APPLIED) 신청자 수. 신청이 한 건도 없는 행사는 결과에 담기지 않는다.
+     */
+    Map<Long, Long> getApplicantCounts(List<Long> eventIds);
 
     /** 운영진 행사 상세. 비공개 행사도 조회한다. */
     EventManageDetail getEvent(Long eventId);

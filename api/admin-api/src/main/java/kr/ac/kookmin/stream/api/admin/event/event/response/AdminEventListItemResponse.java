@@ -1,7 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.event.event.response;
 
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventManageSummary;
+import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 
@@ -20,17 +20,20 @@ public record AdminEventListItemResponse(
     LocalDateTime applyEndAt
 ) {
 
-    public static AdminEventListItemResponse from(EventManageSummary summary) {
+    /**
+     * 모집 상태는 저장값이 아니라 {@code now} 기준으로 행사가 계산한다. 목록 전체가 같은 시각을 봐야 하므로 호출부가 넘긴다.
+     */
+    public static AdminEventListItemResponse of(Event event, long applicantCount, LocalDateTime now) {
         return new AdminEventListItemResponse(
-            summary.eventId(),
-            summary.title(),
-            summary.applicantCount(),
-            summary.recruitType(),
-            summary.capacity(),
-            summary.recruitStatus(),
-            summary.published(),
-            summary.applyStartAt(),
-            summary.applyEndAt()
+            event.getId(),
+            event.getTitle(),
+            applicantCount,
+            event.getRecruitType(),
+            event.capacityLimit(),
+            event.calculateRecruitStatus(now, applicantCount),
+            event.isPublished(),
+            event.getApplyStartAt(),
+            event.getApplyEndAt()
         );
     }
 }

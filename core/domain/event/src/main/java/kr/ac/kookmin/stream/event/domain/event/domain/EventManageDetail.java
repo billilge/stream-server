@@ -1,25 +1,19 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 운영진 행사 상세. 수정 화면의 초기값으로 쓰므로 행사 전체와 신청서 질문을 그대로 담고,
- * 조회 시점의 신청자 수와 모집 상태를 덧붙인다.
+ * 운영진 행사 상세에 필요한 도메인 객체 묶음. 화면에 맞춘 값(모집 상태 등)은 담지 않고,
+ * 응답을 만드는 쪽이 행사의 계산 메서드로 꺼낸다.
  *
- * @param questions 노출 순서대로 정렬된 신청서 질문
+ * @param questions      노출 순서대로 정렬된 신청서 질문
+ * @param applicantCount 유효(APPLIED) 신청자 수
  */
 public record EventManageDetail(
     Event event,
     List<EventQuestion> questions,
-    long applicantCount,
-    RecruitStatus recruitStatus
+    long applicantCount
 ) {
-
-    public static EventManageDetail of(Event event, List<EventQuestion> questions, long applicantCount,
-        LocalDateTime now) {
-        return new EventManageDetail(event, questions, applicantCount, event.calculateRecruitStatus(now, applicantCount));
-    }
 
     /** 행사 이미지 id. 이미지가 없으면 {@code null}이 아니라 빈 목록이다. */
     public List<Long> imageIds() {
