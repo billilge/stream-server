@@ -37,4 +37,16 @@ public record Feedback(
     ) {
         return new Feedback(id, year, round, question, questionedAt, answer, answeredAt, createdBy, answeredBy);
     }
+
+    public boolean isAnswered() {
+        return answer != null;
+    }
+
+    /**
+     * 답변을 단다. 이미 답변이 있으면 덮어쓴다 — 답변 수정이 같은 경로로 들어오기 때문이다.
+     * record라 값을 바꾸지 않고 새 인스턴스를 돌려준다.
+     */
+    public Feedback withAnswer(String answer, Long answeredBy, LocalDateTime answeredAt) {
+        return new Feedback(id, year, round, question, questionedAt, answer, answeredAt, createdBy, answeredBy);
+    }
 }
