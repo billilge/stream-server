@@ -90,8 +90,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
     @Transactional(readOnly = true)
     public EventApplicationDetail getMyApplication(Long applicationId, Long memberId) {
         EventApplication application = getMyApplicationOrThrow(applicationId, memberId);
-        Event event = eventRepository.findById(application.getEventId())
-            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+        Event event = getEventOrThrow(application.getEventId());
 
         // 질문은 행사 것을 쓰고 답변만 이 신청 것을 붙인다. 취소 후 재신청이면 신청마다 답변이 따로 있다
         return EventApplicationDetail.of(
@@ -110,8 +109,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
         }
 
-        Event event = eventRepository.findById(application.getEventId())
-            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+        Event event = getEventOrThrow(application.getEventId());
 
         // 마감 판정과 취소 시각이 같은 시각을 봐야 마감 직전 취소가 마감 이후로 기록되지 않는다
         LocalDateTime now = LocalDateTime.now();
