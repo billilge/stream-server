@@ -7,6 +7,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -14,11 +16,13 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 class EventApplicationServiceImpl implements EventApplicationService {
 
     private final EventRepository eventRepository;
+    private final EventApplicationRepository eventApplicationRepository;
     private final EventApplyAnswerValidator eventApplyAnswerValidator;
 
     @Override
@@ -44,17 +49,17 @@ class EventApplicationServiceImpl implements EventApplicationService {
     public EventApplicationResult apply(Long eventId, Long memberId, EventApplyCommand command) {
         Event event = getOpenEvent(eventId);
 
-        if (eventRepository.existsAppliedByEventIdAndMemberId(eventId, memberId)) {
+        if (eventApplicationRepository.existsAppliedByEventIdAndMemberId(eventId, memberId)) {
             throw new BusinessException(EventErrorCode.ALREADY_APPLIED);
         }
 
         List<EventQuestion> questions = eventRepository.findQuestionsByEventId(eventId);
         eventApplyAnswerValidator.validate(questions, command);
 
-        EventApplication application = eventRepository.saveApplication(
+        EventApplication application = eventApplicationRepository.save(
             EventApplication.create(eventId, memberId, LocalDateTime.now())
         );
-        eventRepository.saveAnswers(toAnswers(application.getId(), command));
+        eventApplicationRepository.saveAnswers(toAnswers(application.getId(), command));
 
         return new EventApplicationResult(application.getId(), event);
     }
@@ -67,7 +72,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
         int size
     ) {
         // 다음 페이지가 있는지 알려면 한 건 더 읽어봐야 한다
-        List<EventApplication> fetched = eventRepository.findApplicationSlice(memberId, cursor, size + 1);
+        List<EventApplication> fetched = eventApplicationRepository.findSliceByMemberId(memberId, cursor, size + 1);
 
         // 행사는 한 번에 모아 조회한다. 신청마다 따로 읽으면 페이지 크기만큼 쿼리가 더 나간다
         Map<Long, Event> events = eventRepository.findAllByIds(
@@ -87,15 +92,14 @@ class EventApplicationServiceImpl implements EventApplicationService {
     @Transactional(readOnly = true)
     public EventApplicationDetail getMyApplication(Long applicationId, Long memberId) {
         EventApplication application = getMyApplicationOrThrow(applicationId, memberId);
-        Event event = eventRepository.findById(application.getEventId())
-            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+        Event event = getEventOrThrow(application.getEventId());
 
         // 질문은 행사 것을 쓰고 답변만 이 신청 것을 붙인다. 취소 후 재신청이면 신청마다 답변이 따로 있다
         return EventApplicationDetail.of(
             event,
             application,
             eventRepository.findQuestionsByEventId(event.getId()),
-            eventRepository.findAnswersByApplicationId(applicationId)
+            eventApplicationRepository.findAnswersByApplicationId(applicationId)
         );
     }
 
@@ -107,8 +111,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
         }
 
-        Event event = eventRepository.findById(application.getEventId())
-            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+        Event event = getEventOrThrow(application.getEventId());
 
         // 마감 판정과 취소 시각이 같은 시각을 봐야 마감 직전 취소가 마감 이후로 기록되지 않는다
         LocalDateTime now = LocalDateTime.now();
@@ -118,12 +121,46 @@ class EventApplicationServiceImpl implements EventApplicationService {
         }
 
         application.cancel(now);
-        eventRepository.saveApplication(application);
+        eventApplicationRepository.save(application);
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
+    @Override
+    public PageResult<EventApplication> getApplications(
+        Long eventId,
+        EventApplicationStatus status,
+        List<Long> memberIds,
+        PageOffset pageOffset
+    ) {
+        getEventOrThrow(eventId);
+        return eventApplicationRepository.findPageByEventId(eventId, status, memberIds, pageOffset);
+    }
+
+    @Override
+    public Map<Long, List<EventApplicationAnswer>> getAnswersByApplicationIds(List<Long> applicationIds) {
+        return eventApplicationRepository.findAnswersByApplicationIds(applicationIds).stream()
+            .collect(Collectors.groupingBy(EventApplicationAnswer::getEventApplicationId));
+    }
+
+    @Override
+    public long countApplications(Long eventId) {
+        return eventApplicationRepository.countByEventId(eventId);
+    }
+
+    @Override
+    public EventApplication getApplication(Long eventId, Long applicationId) {
+        getEventOrThrow(eventId);
+        return eventApplicationRepository.findByIdAndEventId(applicationId, eventId)
+            .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
+    }
+
+    private Event getEventOrThrow(Long eventId) {
+        return eventRepository.findById(eventId)
+            .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
+    }
+
     private EventApplication getMyApplicationOrThrow(Long applicationId, Long memberId) {
-        return eventRepository.findApplicationByIdAndMemberId(applicationId, memberId)
+        return eventApplicationRepository.findByIdAndMemberId(applicationId, memberId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
     }
 
@@ -138,7 +175,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        long appliedCount = eventRepository.countAppliedByEventId(eventId);
+        long appliedCount = eventApplicationRepository.countAppliedByEventId(eventId);
         if (event.calculateRecruitStatus(now, appliedCount) != RecruitStatus.OPEN) {
             throw new BusinessException(event.isClosedByCapacityOnly(now, appliedCount)
                 ? EventErrorCode.CAPACITY_FULL

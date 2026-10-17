@@ -139,6 +139,11 @@ public class Event {
         return imageIds == null || imageIds.isEmpty() ? null : imageIds.getFirst();
     }
 
+    /** 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 그대로 둔다. */
+    public void changePublished(boolean published) {
+        this.published = published;
+    }
+
     /**
      * 운영진 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
      */

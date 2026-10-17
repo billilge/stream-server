@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
+import kr.ac.kookmin.stream.api.admin.event.event.request.EventPublishRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventSearchParams;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventListItemResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventCreateResponse;
+import kr.ac.kookmin.stream.api.admin.event.event.response.EventPublishResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.AdminEventWriteUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -22,8 +24,10 @@ import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -84,5 +88,23 @@ public class AdminEventController implements AdminEventApi {
     ) {
         Event event = adminEventWriteUseCase.update(eventId, request.toCommand());
         return ApiResponse.success(EventUpdateResponse.from(event));
+    }
+
+    @Override
+    @PatchMapping("/{eventId}/publish")
+    public ApiResponse<EventPublishResponse> changePublished(
+        AdminApiUser apiUser,
+        @PathVariable Long eventId,
+        @Valid @RequestBody EventPublishRequest request
+    ) {
+        Event event = eventService.changePublished(eventId, request.isPublished());
+        return ApiResponse.success(EventPublishResponse.from(event));
+    }
+
+    @Override
+    @DeleteMapping("/{eventId}")
+    public ApiResponse<Void> deleteEvent(AdminApiUser apiUser, @PathVariable Long eventId) {
+        eventService.delete(eventId);
+        return ApiResponse.success();
     }
 }

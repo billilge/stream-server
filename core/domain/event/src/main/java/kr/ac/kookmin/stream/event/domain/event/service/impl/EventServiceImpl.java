@@ -21,6 +21,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
+import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final EventApplicationRepository eventApplicationRepository;
     private final EventWriteValidator eventWriteValidator;
 
     @Override
@@ -47,7 +49,7 @@ class EventServiceImpl implements EventService {
         List<Event> fetched = eventRepository.findPublishedSlice(recruitStatus, cursor, size + 1, now);
 
         // 신청자 수는 한 번에 모아 조회한다. 행사마다 따로 세면 페이지 크기만큼 쿼리가 더 나간다
-        Map<Long, Long> applicantCounts = eventRepository.countAppliedByEventIds(
+        Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
             fetched.stream().limit(size).map(Event::getId).toList());
 
         return CursorSliceResult.ofSlice(
@@ -65,7 +67,7 @@ class EventServiceImpl implements EventService {
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        return EventDetail.of(event, eventRepository.countAppliedByEventId(eventId), now);
+        return EventDetail.of(event, eventApplicationRepository.countAppliedByEventId(eventId), now);
     }
 
     @Override
@@ -87,7 +89,7 @@ class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public Map<Long, Long> getApplicantCounts(List<Long> eventIds) {
-        return eventRepository.countAppliedByEventIds(eventIds);
+        return eventApplicationRepository.countAppliedByEventIds(eventIds);
     }
 
     @Override
@@ -97,7 +99,7 @@ class EventServiceImpl implements EventService {
         return new EventManageDetail(
             event,
             eventRepository.findQuestionsByEventId(eventId),
-            eventRepository.countAppliedByEventId(eventId)
+            eventApplicationRepository.countAppliedByEventId(eventId)
         );
     }
 
@@ -112,7 +114,7 @@ class EventServiceImpl implements EventService {
         List<EventQuestion> questions = toQuestions(eventId, command.questions());
         if (questionsChanged(eventRepository.findQuestionsByEventId(eventId), questions)) {
             // 답변이 질문 id·선택지 순서로 저장돼 있어 신청이 생긴 뒤 바꾸면 기존 답변의 뜻이 달라진다
-            if (eventRepository.existsApplicationByEventId(eventId)) {
+            if (eventApplicationRepository.existsByEventId(eventId)) {
                 throw new BusinessException(EventErrorCode.EVENT_QUESTIONS_LOCKED);
             }
             eventRepository.replaceQuestions(eventId, questions);
@@ -121,6 +123,22 @@ class EventServiceImpl implements EventService {
 
         event.update(command);
         return eventRepository.save(event);
+    }
+
+    @Override
+    @Transactional
+    public Event changePublished(Long eventId, boolean published) {
+        Event event = getEventOrThrow(eventId);
+        event.changePublished(published);
+        return eventRepository.save(event);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long eventId) {
+        if (!eventRepository.delete(eventId)) {
+            throw new BusinessException(EventErrorCode.EVENT_NOT_FOUND);
+        }
     }
 
     private Event getEventOrThrow(Long eventId) {
@@ -139,7 +157,7 @@ class EventServiceImpl implements EventService {
     // 이미 받은 신청을 정원 밖으로 밀어낼 수는 없다. 상시 모집은 인원 제한이 없어 보지 않는다
     private void validateCapacityNotBelowApplicants(Long eventId, EventUpdateCommand command) {
         if (command.recruitType() == RecruitType.FIRST_COME
-            && command.capacity() < eventRepository.countAppliedByEventId(eventId)) {
+            && command.capacity() < eventApplicationRepository.countAppliedByEventId(eventId)) {
             throw new BusinessException(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS);
         }
     }

@@ -10,19 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -31,7 +25,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.QuestionType;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
-import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,7 +48,9 @@ class EventServiceImplManageTest {
         "전화번호", QuestionType.SHORT_TEXT, true, List.of(), false);
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
-    private final EventServiceImpl service = new EventServiceImpl(repository, new EventWriteValidator());
+    private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
+    private final EventServiceImpl service =
+        new EventServiceImpl(repository, applicationRepository, new EventWriteValidator());
 
     private static Event savedEvent(RecruitType recruitType, int capacity) {
         return Event.of(
@@ -156,7 +151,7 @@ class EventServiceImplManageTest {
         void returnsBundle() {
             repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
             repository.questions.put(EVENT_ID, savedQuestions(PHONE, SPORTS));
-            repository.appliedCounts.put(EVENT_ID, 3L);
+            applicationRepository.appliedCounts.put(EVENT_ID, 3L);
 
             EventManageDetail detail = service.getEvent(EVENT_ID);
 
@@ -244,7 +239,7 @@ class EventServiceImplManageTest {
             @DisplayName("선착순 정원을 현재 신청자 수보다 줄일 수 없다")
             void rejectsBelowApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 10L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 10L);
 
                 assertRejected(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS, () -> service.update(EVENT_ID,
                     updateCommand(RecruitType.FIRST_COME, 9, List.of(SPORTS), UPDATED_AT)));
@@ -254,7 +249,7 @@ class EventServiceImplManageTest {
             @DisplayName("신청자 수와 같은 정원까지는 줄일 수 있다")
             void allowsEqualToApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 10L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 10L);
 
                 service.update(EVENT_ID, updateCommand(RecruitType.FIRST_COME, 10, List.of(SPORTS), UPDATED_AT));
 
@@ -265,7 +260,7 @@ class EventServiceImplManageTest {
             @DisplayName("상시 모집에서 선착순으로 바꿀 때도 신청자 수 이상이어야 한다")
             void switchingToFirstComeChecksApplicants() {
                 givenEvent(RecruitType.OPEN, 0, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 30L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 30L);
 
                 assertRejected(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS, () -> service.update(EVENT_ID,
                     updateCommand(RecruitType.FIRST_COME, 20, List.of(SPORTS), UPDATED_AT)));
@@ -275,7 +270,7 @@ class EventServiceImplManageTest {
             @DisplayName("상시 모집은 신청자 수와 상관없이 수정할 수 있다")
             void openRecruitIgnoresApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 300L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 300L);
 
                 assertDoesNotThrow(() -> service.update(EVENT_ID,
                     updateCommand(RecruitType.OPEN, null, List.of(SPORTS), UPDATED_AT)));
@@ -291,7 +286,7 @@ class EventServiceImplManageTest {
             void keepsQuestionsWhenUnchanged() {
                 List<EventQuestion> original = savedQuestions(PHONE, SPORTS);
                 givenEvent(RecruitType.FIRST_COME, 100, original);
-                repository.applicationExists = true;
+                applicationRepository.applicationExists = true;
 
                 service.update(EVENT_ID, updateCommand(List.of(PHONE, SPORTS)));
 
@@ -338,7 +333,7 @@ class EventServiceImplManageTest {
             @DisplayName("신청(취소 포함)이 있으면 질문을 바꿀 수 없고 행사도 저장하지 않는다")
             void lockedWhenApplicationExists() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.applicationExists = true;
+                applicationRepository.applicationExists = true;
 
                 assertRejected(EventErrorCode.EVENT_QUESTIONS_LOCKED,
                     () -> service.update(EVENT_ID, updateCommand(List.of(SPORTS, PHONE))));
@@ -367,8 +362,8 @@ class EventServiceImplManageTest {
         @Test
         @DisplayName("신청자 수는 행사 id 목록으로 한 번에 조회한다")
         void countsApplicantsAtOnce() {
-            repository.appliedCounts.put(1L, 3L);
-            repository.appliedCounts.put(2L, 5L);
+            applicationRepository.appliedCounts.put(1L, 3L);
+            applicationRepository.appliedCounts.put(2L, 5L);
 
             assertEquals(Map.of(1L, 3L, 2L, 5L), service.getApplicantCounts(List.of(1L, 2L)));
         }
@@ -379,7 +374,7 @@ class EventServiceImplManageTest {
     void detailApplicantCountFeedsRecruitStatus() {
         repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 3));
         repository.questions.put(EVENT_ID, List.of());
-        repository.appliedCounts.put(EVENT_ID, 3L);
+        applicationRepository.appliedCounts.put(EVENT_ID, 3L);
 
         EventManageDetail detail = service.getEvent(EVENT_ID);
 
@@ -387,129 +382,65 @@ class EventServiceImplManageTest {
             detail.event().calculateRecruitStatus(APPLY_START_AT.plusDays(1), detail.applicantCount()));
     }
 
-    /** 운영진 등록·조회·수정에 쓰는 메서드만 메모리로 흉내 내고, 나머지는 이 테스트가 건드리지 않는다. */
-    private static final class InMemoryEventRepository implements EventRepository {
+    @Nested
+    @DisplayName("공개 상태 변경")
+    class ChangePublished {
 
-        private final Map<Long, Event> events = new HashMap<>();
-        private final Map<Long, List<EventQuestion>> questions = new HashMap<>();
-        private final Map<Long, Long> appliedCounts = new HashMap<>();
-        private boolean applicationExists;
-        private boolean questionsReplaced;
-        private boolean updatedAtTouched;
-        private String requestedKeyword;
-        private PageOffset requestedPageOffset;
-        private long nextId = 1;
+        @Test
+        @DisplayName("공개 여부를 바꿔 저장하고 다른 내용은 그대로 둔다")
+        void changesOnlyPublished() {
+            repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
 
-        @Override
-        public Optional<Event> findById(Long id) {
-            return Optional.ofNullable(events.get(id));
+            Event changed = service.changePublished(EVENT_ID, false);
+
+            assertFalse(changed.isPublished());
+            assertFalse(repository.events.get(EVENT_ID).isPublished());
+            assertEquals("체육대회", repository.events.get(EVENT_ID).getTitle());
         }
 
-        @Override
-        public Event save(Event event) {
-            Long id = event.getId() == null ? nextId++ : event.getId();
-            Event saved = Event.of(
-                id, event.getTitle(), event.getDescription(), event.getPlace(), event.getEventStartAt(),
-                event.getEventEndAt(), event.getApplyStartAt(), event.getApplyEndAt(), event.getRecruitType(),
-                event.getImageIds(), event.getCapacity(), event.isFeePaidOnly(), event.isPublished(),
-                event.getCreatedBy(), event.getUpdatedAt());
-            events.put(id, saved);
-            return saved;
+        @Test
+        @DisplayName("이미 그 상태여도 성공으로 본다")
+        void idempotent() {
+            repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
+
+            assertTrue(service.changePublished(EVENT_ID, true).isPublished());
         }
 
-        @Override
-        public List<EventQuestion> saveQuestions(List<EventQuestion> saved) {
-            saved.forEach(question ->
-                questions.computeIfAbsent(question.getEventId(), key -> new ArrayList<>()).add(question));
-            return saved;
+        @Test
+        @DisplayName("없거나 삭제된 행사는 찾을 수 없다")
+        void notFound() {
+            assertRejected(EventErrorCode.EVENT_NOT_FOUND, () -> service.changePublished(EVENT_ID, true));
+        }
+    }
+
+    @Nested
+    @DisplayName("삭제")
+    class Delete {
+
+        @Test
+        @DisplayName("행사를 지운다")
+        void deletes() {
+            repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
+
+            service.delete(EVENT_ID);
+
+            assertTrue(repository.findById(EVENT_ID).isEmpty());
         }
 
-        @Override
-        public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> replaced) {
-            questionsReplaced = true;
-            questions.put(eventId, replaced);
-            return replaced;
+        @Test
+        @DisplayName("신청자가 있어도 지울 수 있다")
+        void deletesEvenWithApplications() {
+            repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
+            applicationRepository.applicationExists = true;
+            applicationRepository.appliedCounts.put(EVENT_ID, 12L);
+
+            assertDoesNotThrow(() -> service.delete(EVENT_ID));
         }
 
-        @Override
-        public boolean existsApplicationByEventId(Long eventId) {
-            return applicationExists;
-        }
-
-        @Override
-        public void touchUpdatedAt(Long eventId) {
-            updatedAtTouched = true;
-        }
-
-        @Override
-        public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
-            requestedKeyword = keyword;
-            requestedPageOffset = pageOffset;
-            List<Event> content = List.copyOf(events.values());
-            return PageResult.of(content, pageOffset.page(), pageOffset.size(), content.size());
-        }
-
-        @Override
-        public List<EventQuestion> findQuestionsByEventId(Long eventId) {
-            return questions.getOrDefault(eventId, List.of());
-        }
-
-        @Override
-        public long countAppliedByEventId(Long eventId) {
-            return appliedCounts.getOrDefault(eventId, 0L);
-        }
-
-        @Override
-        public Map<Long, Long> countAppliedByEventIds(List<Long> eventIds) {
-            Map<Long, Long> counts = new HashMap<>();
-            eventIds.stream().filter(appliedCounts::containsKey).forEach(id -> counts.put(id, appliedCounts.get(id)));
-            return counts;
-        }
-
-        @Override
-        public List<Event> findAllByIds(List<Long> eventIds) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<Event> findPublishedById(Long id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<Event> findPublishedSlice(
-            RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean existsAppliedByEventIdAndMemberId(Long eventId, Long memberId) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public EventApplication saveApplication(EventApplication application) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<EventApplicationAnswer> saveAnswers(List<EventApplicationAnswer> answers) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<EventApplication> findApplicationSlice(Long memberId, EventApplicationCursor cursor, int limit) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<EventApplication> findApplicationByIdAndMemberId(Long applicationId, Long memberId) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
-            throw new UnsupportedOperationException();
+        @Test
+        @DisplayName("없거나 이미 삭제된 행사는 찾을 수 없다")
+        void notFound() {
+            assertRejected(EventErrorCode.EVENT_NOT_FOUND, () -> service.delete(EVENT_ID));
         }
     }
 }
