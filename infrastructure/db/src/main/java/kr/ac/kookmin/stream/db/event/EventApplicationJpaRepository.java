@@ -13,6 +13,8 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
 
     long countByEventIdAndStatus(Long eventId, EventApplicationStatus status);
 
+    boolean existsByEventId(Long eventId);
+
     boolean existsByEventIdAndMemberIdAndStatus(Long eventId, Long memberId, EventApplicationStatus status);
 
     Optional<EventApplicationJpaEntity> findByIdAndMemberId(Long id, Long memberId);

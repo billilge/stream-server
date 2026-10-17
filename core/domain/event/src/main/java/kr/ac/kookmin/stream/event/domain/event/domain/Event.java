@@ -24,8 +24,12 @@ public class Event {
     private RecruitType recruitType;
     private List<Long> imageIds;
     private int capacity;
+    /** 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업) */
+    private boolean feePaidOnly;
     private boolean published;
     private Long createdBy;
+    /** 마지막 수정 시각. DB가 채우며, 운영진 동시 수정 감지에 쓴다 */
+    private LocalDateTime updatedAt;
 
     public static Event of(
         Long id,
@@ -39,13 +43,56 @@ public class Event {
         RecruitType recruitType,
         List<Long> imageIds,
         int capacity,
+        boolean feePaidOnly,
         boolean published,
-        Long createdBy
+        Long createdBy,
+        LocalDateTime updatedAt
     ) {
         return new Event(
             id, title, description, place, eventStartAt, eventEndAt, applyStartAt,
-            applyEndAt, recruitType, imageIds, capacity, published, createdBy
+            applyEndAt, recruitType, imageIds, capacity, feePaidOnly, published, createdBy, updatedAt
         );
+    }
+
+    /**
+     * 새 행사를 만든다. 학생에게 바로 보이지 않도록 비공개로 시작한다. 상시 모집은 정원이 의미 없어 0으로 둔다.
+     * 수정 시각은 DB가 채운다.
+     */
+    public static Event create(Long createdBy, EventCreateCommand command) {
+        return new Event(
+            null,
+            command.title(),
+            command.description(),
+            command.place(),
+            command.eventStartAt(),
+            command.eventEndAt(),
+            command.applyStartAt(),
+            command.applyEndAt(),
+            command.recruitType(),
+            command.imageIds(),
+            capacityOf(command.recruitType(), command.capacity()),
+            command.feePaidOnly(),
+            false,
+            createdBy,
+            null
+        );
+    }
+
+    /**
+     * 운영진이 입력한 값으로 행사 내용을 통째로 바꾼다. 공개 여부·작성자는 그대로 둔다.
+     */
+    public void update(EventUpdateCommand command) {
+        this.title = command.title();
+        this.description = command.description();
+        this.place = command.place();
+        this.eventStartAt = command.eventStartAt();
+        this.eventEndAt = command.eventEndAt();
+        this.applyStartAt = command.applyStartAt();
+        this.applyEndAt = command.applyEndAt();
+        this.recruitType = command.recruitType();
+        this.imageIds = command.imageIds();
+        this.capacity = capacityOf(command.recruitType(), command.capacity());
+        this.feePaidOnly = command.feePaidOnly();
     }
 
     /**
@@ -93,6 +140,13 @@ public class Event {
     }
 
     /**
+     * 운영진 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
+     */
+    public Integer capacityLimit() {
+        return recruitType == RecruitType.FIRST_COME ? capacity : null;
+    }
+
+    /**
      * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
      */
     public boolean isCapacityFull(long appliedCount) {
@@ -107,6 +161,10 @@ public class Event {
         return !isBeforeApplyPeriod(now)
             && !isAfterApplyPeriod(now)
             && isCapacityFull(appliedCount);
+    }
+
+    private static int capacityOf(RecruitType recruitType, Integer capacity) {
+        return recruitType == RecruitType.FIRST_COME ? capacity : 0;
     }
 
     private boolean isBeforeApplyPeriod(LocalDateTime now) {

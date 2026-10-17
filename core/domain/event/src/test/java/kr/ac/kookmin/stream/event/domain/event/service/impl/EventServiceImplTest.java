@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -34,7 +36,7 @@ class EventServiceImplTest {
         return Event.of(
             id, "행사 " + id, "설명", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, true, 1L
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null
         );
     }
 
@@ -45,7 +47,7 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L)),
             Map.of(1L, 3L, 2L, 7L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 20).content();
 
         // 정원 100명이라 신청자 수가 모집 상태를 바꾸지 않는다. 짝이 맞는지는 D-Day가 아니라 아래에서 직접 본다
@@ -61,7 +63,7 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L)),
             Map.of(1L, 3L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 20).content();
 
         assertEquals(2, content.size());
@@ -74,17 +76,17 @@ class EventServiceImplTest {
         Event full = Event.of(
             1L, "정원 3명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 3, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 3, false, true, 1L, null);
         Event roomy = Event.of(
             2L, "정원 100명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null);
 
         FakeEventRepository repository = new FakeEventRepository(
             List.of(full, roomy),
             Map.of(1L, 3L, 2L, 3L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 20).content();
 
         assertEquals(RecruitStatus.CLOSED, content.get(0).recruitStatus());
@@ -97,7 +99,7 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(
             List.of(event(1L), event(2L), event(3L)), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 2);
 
         assertEquals(3, repository.requestedLimit);
@@ -111,7 +113,7 @@ class EventServiceImplTest {
     void noCursorOnLastPage() {
         FakeEventRepository repository = new FakeEventRepository(List.of(event(1L), event(2L)), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 2);
 
         assertFalse(result.hasNext());
@@ -124,7 +126,7 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(
             List.of(), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, new EventWriteValidator())
             .getPublishedEvents(null, null, 20);
 
         assertTrue(result.content().isEmpty());
@@ -159,6 +161,36 @@ class EventServiceImplTest {
 
         @Override
         public Optional<Event> findById(Long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Event save(Event event) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsApplicationByEventId(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void touchUpdatedAt(Long eventId) {
             throw new UnsupportedOperationException();
         }
 

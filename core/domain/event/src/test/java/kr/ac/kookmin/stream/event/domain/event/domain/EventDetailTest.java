@@ -18,7 +18,7 @@ class EventDetailTest {
         return Event.of(
             15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            recruitType, imageIds, 30, true, 1L
+            recruitType, imageIds, 30, false, true, 1L, null
         );
     }
 

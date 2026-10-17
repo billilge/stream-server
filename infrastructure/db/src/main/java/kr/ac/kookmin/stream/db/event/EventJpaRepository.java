@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,6 +17,29 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
     Optional<EventJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
     Optional<EventJpaEntity> findByIdAndIsDeletedFalseAndIsPublishedTrue(Long id);
+
+    /**
+     * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순으로 페이지 조회한다. 운영진 목록용이다.
+     */
+    @Query(
+        value = """
+            SELECT e FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%'))
+            ORDER BY e.id DESC
+            """,
+        countQuery = """
+            SELECT COUNT(e) FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%'))
+            """
+    )
+    Page<EventJpaEntity> search(@Param("keyword") String keyword, Pageable pageable);
+
+    // updated_at은 엔티티에서 읽기 전용(updatable = false)이라 네이티브 쿼리로 직접 올린다
+    @Modifying
+    @Query(value = "UPDATE events SET updated_at = CURRENT_TIMESTAMP WHERE event_id = :eventId", nativeQuery = true)
+    void touchUpdatedAt(@Param("eventId") Long eventId);
 
     /**
      * 게시된 행사를 (event_start_at, event_id) keyset 커서로 조회한다.

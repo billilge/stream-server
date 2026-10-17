@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -16,6 +18,8 @@ import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +31,51 @@ public class EventRepositoryImpl implements EventRepository {
     private final EventQuestionJpaRepository eventQuestionJpaRepository;
     private final EventApplicationJpaRepository eventApplicationJpaRepository;
     private final EventApplicationAnswerJpaRepository eventApplicationAnswerJpaRepository;
+
+    @Override
+    public Event save(Event event) {
+        return eventJpaRepository.save(EventJpaEntity.from(event)).toDomain();
+    }
+
+    @Override
+    public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
+        List<EventQuestionJpaEntity> entities = questions.stream()
+            .map(EventQuestionJpaEntity::from)
+            .toList();
+        return eventQuestionJpaRepository.saveAll(entities).stream()
+            .map(EventQuestionJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
+        eventQuestionJpaRepository.deleteAllByEventId(eventId);
+        return saveQuestions(questions);
+    }
+
+    @Override
+    public boolean existsApplicationByEventId(Long eventId) {
+        return eventApplicationJpaRepository.existsByEventId(eventId);
+    }
+
+    @Override
+    public void touchUpdatedAt(Long eventId) {
+        eventJpaRepository.touchUpdatedAt(eventId);
+    }
+
+    @Override
+    public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+        Page<EventJpaEntity> result = eventJpaRepository.search(
+            keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
+    }
 
     @Override
     public Optional<Event> findById(Long id) {
