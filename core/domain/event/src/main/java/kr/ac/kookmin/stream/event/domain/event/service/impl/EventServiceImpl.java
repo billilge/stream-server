@@ -3,12 +3,16 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final EventWriteValidator eventWriteValidator;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,5 +60,22 @@ class EventServiceImpl implements EventService {
 
         LocalDateTime now = LocalDateTime.now();
         return EventDetail.of(event, eventRepository.countAppliedByEventId(eventId), now);
+    }
+
+    @Override
+    @Transactional
+    public Event create(Long createdBy, EventCreateCommand command) {
+        eventWriteValidator.validate(command);
+
+        Event event = eventRepository.save(Event.create(createdBy, command));
+        eventRepository.saveQuestions(toQuestions(event.getId(), command.questions()));
+        return event;
+    }
+
+    // 신청서에 보이는 순서는 요청 목록의 순서를 따른다
+    private static List<EventQuestion> toQuestions(Long eventId, List<EventQuestionCommand> commands) {
+        return IntStream.range(0, commands.size())
+            .mapToObj(index -> EventQuestion.create(eventId, index + 1, commands.get(index)))
+            .toList();
     }
 }

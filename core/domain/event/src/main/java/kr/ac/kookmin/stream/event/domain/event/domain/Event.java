@@ -52,6 +52,28 @@ public class Event {
     }
 
     /**
+     * 새 행사를 만든다. 학생에게 바로 보이지 않도록 비공개로 시작한다. 상시 모집은 정원이 의미 없어 0으로 둔다.
+     */
+    public static Event create(Long createdBy, EventCreateCommand command) {
+        return new Event(
+            null,
+            command.title(),
+            command.description(),
+            command.place(),
+            command.eventStartAt(),
+            command.eventEndAt(),
+            command.applyStartAt(),
+            command.applyEndAt(),
+            command.recruitType(),
+            command.imageIds(),
+            capacityOf(command.recruitType(), command.capacity()),
+            command.feePaidOnly(),
+            false,
+            createdBy
+        );
+    }
+
+    /**
      * 현재 시각과 신청자 수를 반영한 모집 상태를 계산한다.
      * <p>
      * 모집 상태는 저장하지 않고 신청 기간과 잔여 정원으로만 판정한다.
@@ -110,6 +132,10 @@ public class Event {
         return !isBeforeApplyPeriod(now)
             && !isAfterApplyPeriod(now)
             && isCapacityFull(appliedCount);
+    }
+
+    private static int capacityOf(RecruitType recruitType, Integer capacity) {
+        return recruitType == RecruitType.FIRST_COME ? capacity : 0;
     }
 
     private boolean isBeforeApplyPeriod(LocalDateTime now) {

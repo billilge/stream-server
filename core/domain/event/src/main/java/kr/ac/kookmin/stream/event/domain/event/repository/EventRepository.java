@@ -16,6 +16,10 @@ public interface EventRepository {
 
     Optional<Event> findById(Long id);
 
+    Event save(Event event);
+
+    List<EventQuestion> saveQuestions(List<EventQuestion> questions);
+
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.
      * <p>

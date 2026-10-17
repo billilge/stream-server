@@ -29,6 +29,21 @@ public class EventRepositoryImpl implements EventRepository {
     private final EventApplicationAnswerJpaRepository eventApplicationAnswerJpaRepository;
 
     @Override
+    public Event save(Event event) {
+        return eventJpaRepository.save(EventJpaEntity.from(event)).toDomain();
+    }
+
+    @Override
+    public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
+        List<EventQuestionJpaEntity> entities = questions.stream()
+            .map(EventQuestionJpaEntity::from)
+            .toList();
+        return eventQuestionJpaRepository.saveAll(entities).stream()
+            .map(EventQuestionJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public Optional<Event> findById(Long id) {
         return eventJpaRepository.findByIdAndIsDeletedFalse(id).map(EventJpaEntity::toDomain);
     }

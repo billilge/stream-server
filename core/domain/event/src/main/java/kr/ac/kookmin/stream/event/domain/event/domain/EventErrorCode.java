@@ -20,7 +20,10 @@ public enum EventErrorCode implements ErrorCode {
     CANCEL_DEADLINE_PASSED(ErrorStatus.CONFLICT, "신청이 마감되어 취소할 수 없습니다."),
     INVALID_ANSWER(ErrorStatus.BAD_REQUEST, "신청서 답변 형식이 올바르지 않습니다."),
     EVENT_INVALID_CURSOR(ErrorStatus.BAD_REQUEST, "유효하지 않은 커서입니다."),
-    EVENT_INVALID_RECRUIT_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 모집 상태입니다.");
+    EVENT_INVALID_RECRUIT_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 모집 상태입니다."),
+    EVENT_INVALID_PERIOD(ErrorStatus.BAD_REQUEST, "종료 일시는 시작 일시보다 늦어야 합니다."),
+    EVENT_INVALID_CAPACITY(ErrorStatus.BAD_REQUEST, "선착순 모집은 1명 이상의 정원을 입력해야 합니다."),
+    EVENT_INVALID_QUESTION(ErrorStatus.BAD_REQUEST, "선택형 질문에는 선택지를 1개 이상 입력해야 합니다.");
 
     private final int status;
     private final String message;

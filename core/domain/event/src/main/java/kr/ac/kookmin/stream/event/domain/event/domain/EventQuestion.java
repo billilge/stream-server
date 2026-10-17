@@ -35,4 +35,23 @@ public class EventQuestion {
             id, eventId, questionText, questionType, required, displayOrder, options, otherOptionAllowed
         );
     }
+
+    /**
+     * 새 질문을 만든다. 텍스트형 질문에 딸려 온 선택지·'기타' 여부는 의미가 없으므로 버린다.
+     *
+     * @param displayOrder 신청서에서 몇 번째로 보일지. 1부터 센다
+     */
+    public static EventQuestion create(Long eventId, int displayOrder, EventQuestionCommand command) {
+        boolean choice = command.questionType().isChoice();
+        return new EventQuestion(
+            null,
+            eventId,
+            command.questionText(),
+            command.questionType(),
+            command.required(),
+            displayOrder,
+            choice ? List.copyOf(command.options()) : List.of(),
+            choice && command.otherOptionAllowed()
+        );
+    }
 }
