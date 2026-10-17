@@ -38,12 +38,17 @@ public class FeedbackRoundJpaEntity extends BaseTimeEntity {
     @Column(name = "closes_at", nullable = false)
     private LocalDateTime closesAt;
 
+    // 답변을 학생에게 공개한 시각. null이면 아직 임시저장 단계라 학생 앱에 보이지 않는다
+    @Column(name = "answers_published_at")
+    private LocalDateTime answersPublishedAt;
+
     private FeedbackRoundJpaEntity(FeedbackRound feedbackRound) {
         this.id = feedbackRound.id();
         this.year = feedbackRound.year();
         this.round = feedbackRound.round();
         this.opensAt = feedbackRound.opensAt();
         this.closesAt = feedbackRound.closesAt();
+        this.answersPublishedAt = feedbackRound.answersPublishedAt();
     }
 
     public static FeedbackRoundJpaEntity from(FeedbackRound feedbackRound) {
@@ -51,6 +56,6 @@ public class FeedbackRoundJpaEntity extends BaseTimeEntity {
     }
 
     public FeedbackRound toDomain() {
-        return FeedbackRound.of(id, year, round, opensAt, closesAt);
+        return FeedbackRound.of(id, year, round, opensAt, closesAt, answersPublishedAt);
     }
 }
