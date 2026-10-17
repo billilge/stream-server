@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.List;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import lombok.AccessLevel;
@@ -35,15 +36,17 @@ public class LockerSectionLayoutJpaEntity extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "SMALLINT")
     private int version;
 
-    @Column(name = "photo_file_id", nullable = false)
-    private Long photoFileId;
+    /** 구역 실제 사진. 배열 순서가 노출 순서다. 파일 목록을 JSON으로 두는 건 notices.image_ids와 같은 방식이다. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "photo_file_ids", columnDefinition = "json")
+    private List<Long> photoFileIds;
 
     private LockerSectionLayoutJpaEntity(LockerSectionLayout sectionLayout) {
         this.id = sectionLayout.getId();
         this.sectionId = sectionLayout.getSectionId();
         this.layout = sectionLayout.getLayout();
         this.version = sectionLayout.getVersion();
-        this.photoFileId = sectionLayout.getPhotoFileId();
+        this.photoFileIds = sectionLayout.getPhotoFileIds();
     }
 
     public static LockerSectionLayoutJpaEntity from(LockerSectionLayout sectionLayout) {
@@ -51,6 +54,7 @@ public class LockerSectionLayoutJpaEntity extends BaseTimeEntity {
     }
 
     public LockerSectionLayout toDomain() {
-        return LockerSectionLayout.of(id, sectionId, layout, version, photoFileId);
+        // 사진을 한 장도 등록하지 않은 구역은 컬럼이 NULL이다. 읽는 쪽이 매번 null을 보지 않도록 빈 목록으로 바꾼다
+        return LockerSectionLayout.of(id, sectionId, layout, version, photoFileIds == null ? List.of() : photoFileIds);
     }
 }
