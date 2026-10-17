@@ -4,11 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
+import kr.ac.kookmin.stream.api.admin.event.event.request.EventPublishRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventSearchParams;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventListItemResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventCreateResponse;
+import kr.ac.kookmin.stream.api.admin.event.event.response.EventPublishResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.EventUpdateResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
@@ -24,7 +26,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * <p>
  * 접근은 {@code ADMIN} role이면 된다. 부서 제한은 두지 않았다.
  */
-@Tag(name = "행사 관리", description = "운영진 행사 등록·조회·수정")
+@Tag(name = "행사 관리", description = "운영진 행사 등록·조회·수정·공개 전환·삭제")
 public interface AdminEventApi {
 
     /** 행사 등록. 작성자는 토큰의 관리자로 정해진다. */
@@ -71,4 +73,12 @@ public interface AdminEventApi {
     )
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<EventUpdateResponse> updateEvent(AdminApiUser apiUser, Long eventId, EventUpdateRequest request);
+
+    /** 공개 상태 변경. 공개한 행사만 학생 앱 목록·상세에 보인다. */
+    @Operation(summary = "행사 공개 상태 변경",
+        description = "행사를 학생 앱에 공개하거나 비공개로 돌린다. 이미 그 상태여도 성공으로 응답한다. "
+            + "비공개로 돌려도 기존 신청 내역은 유지된다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
+    ApiResponse<EventPublishResponse> changePublished(AdminApiUser apiUser, Long eventId, EventPublishRequest request);
 }

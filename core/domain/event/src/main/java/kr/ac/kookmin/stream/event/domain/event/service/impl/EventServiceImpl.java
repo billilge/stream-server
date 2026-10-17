@@ -123,6 +123,14 @@ class EventServiceImpl implements EventService {
         return eventRepository.save(event);
     }
 
+    @Override
+    @Transactional
+    public Event changePublished(Long eventId, boolean published) {
+        Event event = getEventOrThrow(eventId);
+        event.changePublished(published);
+        return eventRepository.save(event);
+    }
+
     private Event getEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));

@@ -47,4 +47,7 @@ public interface EventService {
      * 선착순 정원을 현재 신청자 수보다 줄일 수 없다.
      */
     Event update(Long eventId, EventUpdateCommand command);
+
+    /** 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다. */
+    Event changePublished(Long eventId, boolean published);
 }
