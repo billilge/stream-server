@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -34,6 +35,11 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
             """
     )
     Page<EventJpaEntity> search(@Param("keyword") String keyword, Pageable pageable);
+
+    // updated_at은 엔티티에서 읽기 전용(updatable = false)이라 네이티브 쿼리로 직접 올린다
+    @Modifying
+    @Query(value = "UPDATE events SET updated_at = CURRENT_TIMESTAMP WHERE event_id = :eventId", nativeQuery = true)
+    void touchUpdatedAt(@Param("eventId") Long eventId);
 
     /**
      * 게시된 행사를 (event_start_at, event_id) keyset 커서로 조회한다.

@@ -59,6 +59,11 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public void touchUpdatedAt(Long eventId) {
+        eventJpaRepository.touchUpdatedAt(eventId);
+    }
+
+    @Override
     public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
         Page<EventJpaEntity> result = eventJpaRepository.search(
             keyword, PageRequest.of(pageOffset.page(), pageOffset.size())

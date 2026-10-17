@@ -31,6 +31,12 @@ public interface EventRepository {
     boolean existsApplicationByEventId(Long eventId);
 
     /**
+     * 행사의 수정 시각을 지금으로 갱신한다. 신청서 질문만 바뀌면 events 행의 값이 그대로라
+     * DB가 updated_at을 올리지 않으므로, 동시 수정 감지를 위해 직접 올린다.
+     */
+    void touchUpdatedAt(Long eventId);
+
+    /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순(eventId 내림차순)으로 페이지 조회한다. 운영진 목록용이다.
      *
      * @param keyword 제목 부분 일치 검색어. {@code null}이면 거르지 않는다

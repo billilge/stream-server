@@ -190,6 +190,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public void touchUpdatedAt(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Optional<Event> findPublishedById(Long id) {
             throw new UnsupportedOperationException();
         }

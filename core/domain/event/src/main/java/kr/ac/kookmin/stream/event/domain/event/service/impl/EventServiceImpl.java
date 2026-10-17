@@ -119,6 +119,7 @@ class EventServiceImpl implements EventService {
                 throw new BusinessException(EventErrorCode.EVENT_QUESTIONS_LOCKED);
             }
             eventRepository.replaceQuestions(eventId, questions);
+            eventRepository.touchUpdatedAt(eventId);
         }
 
         event.update(command);
