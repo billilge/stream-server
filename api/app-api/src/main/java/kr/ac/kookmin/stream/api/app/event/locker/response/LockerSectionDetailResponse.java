@@ -3,6 +3,8 @@ package kr.ac.kookmin.stream.api.app.event.locker.response;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
@@ -10,25 +12,25 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.file.domain.File;
 
 /**
- * @param layout   칸 배치 구조. 배치 구조를 아직 등록하지 않은 구역이면 {@code null}
- * @param photoUrl 구역 실제 사진. 배치 구조를 아직 등록하지 않았거나 사진 파일이 삭제됐으면 {@code null}
+ * @param layout    칸 배치 구조. 배치 구조를 아직 등록하지 않은 구역이면 {@code null}
+ * @param photoUrls 구역 실제 사진. 노출 순서대로 담고, 없으면 빈 목록이다
  */
 public record LockerSectionDetailResponse(
     Long sectionId,
     String section,
     Layout layout,
-    String photoUrl,
+    List<String> photoUrls,
     List<LockerResponse> lockers
 ) {
 
     /**
-     * @param photo            구역 사진 파일. 배치 구조를 아직 등록하지 않았거나 파일이 삭제됐으면 {@code null}
+     * @param photosById       구역 사진 파일. 삭제된 파일은 키가 없어 목록에서 조용히 빠진다
      * @param appliedLockerIds 해당 운영 회차에 이미 신청된 사물함 식별자
      * @param myLockerId       조회한 회원이 신청한 사물함. 신청하지 않았으면 {@code null}
      */
     public static LockerSectionDetailResponse of(
         LockerSectionDetail detail,
-        File photo,
+        Map<Long, File> photosById,
         Set<Long> appliedLockerIds,
         Long myLockerId
     ) {
@@ -36,11 +38,24 @@ public record LockerSectionDetailResponse(
             detail.section().getId(),
             detail.section().getLabel(),
             detail.layout() == null ? null : Layout.from(detail.layout()),
-            StorageUrlBuilder.build(photo),
+            toPhotoUrls(detail, photosById),
             detail.lockers().stream()
                 .map(locker -> LockerResponse.of(locker, appliedLockerIds.contains(locker.getId()), myLockerId))
                 .toList()
         );
+    }
+
+    /**
+     * 배치 구조를 등록하지 않은 구역이면 사진도 없다. 학생 앱은 사진을 보여주기만 하므로 파일 식별자 없이 URL만 담는다.
+     */
+    private static List<String> toPhotoUrls(LockerSectionDetail detail, Map<Long, File> photosById) {
+        if (detail.layout() == null) {
+            return List.of();
+        }
+        return detail.layout().getPhotoFileIds().stream()
+            .map(fileId -> StorageUrlBuilder.build(fileId, photosById))
+            .filter(Objects::nonNull)
+            .toList();
     }
 
     /**
