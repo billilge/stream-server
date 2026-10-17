@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.welfare.domain.feedback.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
@@ -37,11 +38,15 @@ class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional
     public Feedback create(Long memberId, String question) {
-        FeedbackRound openRound = feedbackRoundRepository.findOpenAt(LocalDateTime.now())
+        // 시각을 한 번만 읽어 회차 판정과 질문 시각에 같은 값을 쓴다. 두 번 읽으면 자정 경계에서
+        // "9월 회차로 판정했는데 질문 시각은 10월"이 될 수 있다
+        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+
+        FeedbackRound openRound = feedbackRoundRepository.findOpenAt(now)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_OPEN));
 
-        Feedback feedback = Feedback.create(openRound.year(), openRound.round(), question, memberId);
-        return feedbackRepository.save(feedback);
+        return feedbackRepository.save(
+            Feedback.create(openRound.year(), openRound.round(), question, memberId, now));
     }
 
     @Override
