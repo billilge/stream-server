@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.admin.event.event;
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventApplicationSearchParams;
+import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationListResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.AdminEventApplicationQueryUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -31,5 +32,16 @@ public class AdminEventApplicationController implements AdminEventApplicationApi
     ) {
         return ApiResponse.success(AdminEventApplicationListResponse.from(adminEventApplicationQueryUseCase.getApplicants(
             eventId, params.toKeyword(), params.toStatus(), pageParams.toOffset())));
+    }
+
+    @Override
+    @GetMapping("/{applicationId}")
+    public ApiResponse<AdminEventApplicationDetailResponse> getApplication(
+        AdminApiUser apiUser,
+        @PathVariable Long eventId,
+        @PathVariable Long applicationId
+    ) {
+        return ApiResponse.success(AdminEventApplicationDetailResponse.from(
+            adminEventApplicationQueryUseCase.getApplicant(eventId, applicationId)));
     }
 }

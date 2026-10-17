@@ -147,6 +147,13 @@ class EventApplicationServiceImpl implements EventApplicationService {
         return eventRepository.countApplicationsByEventId(eventId);
     }
 
+    @Override
+    public EventApplication getApplication(Long eventId, Long applicationId) {
+        getEventOrThrow(eventId);
+        return eventRepository.findApplicationByIdAndEventId(applicationId, eventId)
+            .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
+    }
+
     private Event getEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));

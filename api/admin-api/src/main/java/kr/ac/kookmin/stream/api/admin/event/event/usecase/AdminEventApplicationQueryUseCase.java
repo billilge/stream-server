@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
@@ -53,6 +54,21 @@ public class AdminEventApplicationQueryUseCase {
             members.get(application.getMemberId()),
             answers.getOrDefault(application.getId(), List.of())
         )));
+    }
+
+    public EventApplicantDetail getApplicant(Long eventId, Long applicationId) {
+        EventManageDetail event = eventService.getEvent(eventId);
+        EventApplication application = eventApplicationService.getApplication(eventId, applicationId);
+        List<EventApplicationAnswer> answers = eventApplicationService
+            .getAnswersByApplicationIds(List.of(applicationId))
+            .getOrDefault(applicationId, List.of());
+        Member member = memberService.getMapByIds(List.of(application.getMemberId())).get(application.getMemberId());
+
+        return new EventApplicantDetail(
+            application,
+            member,
+            EventApplicationDetail.of(event.event(), application, event.questions(), answers)
+        );
     }
 
     // 검색어에 맞는 회원이 없으면 신청을 조회할 필요도 없다

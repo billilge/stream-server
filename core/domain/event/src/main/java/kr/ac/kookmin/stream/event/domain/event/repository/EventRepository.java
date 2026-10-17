@@ -125,6 +125,9 @@ public interface EventRepository {
     /** 여러 신청의 답변을 한 번에 조회한다. 신청마다 따로 읽으면 페이지 크기만큼 쿼리가 더 나간다. */
     List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds);
 
+    /** 한 행사에 속한 신청 한 건을 조회한다. 다른 행사의 신청은 없는 것으로 본다. */
+    Optional<EventApplication> findApplicationByIdAndEventId(Long applicationId, Long eventId);
+
     /** 한 행사의 신청 수. 취소된 신청도 센다. */
     long countApplicationsByEventId(Long eventId);
 }

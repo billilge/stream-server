@@ -45,6 +45,8 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
 
     Optional<EventApplicationJpaEntity> findByIdAndMemberId(Long id, Long memberId);
 
+    Optional<EventApplicationJpaEntity> findByIdAndEventId(Long id, Long eventId);
+
     /**
      * 한 회원의 신청 내역을 (applied_at, event_application_id) keyset 커서로 최신순 조회한다.
      * 취소된 신청도 이력으로 함께 내려간다. 삭제된 행사의 신청은 신청 내역과 함께 지운 것으로 보고 제외한다.

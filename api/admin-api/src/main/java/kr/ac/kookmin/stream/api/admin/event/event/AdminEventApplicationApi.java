@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventApplicationSearchParams;
+import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
@@ -33,4 +34,11 @@ public interface AdminEventApplicationApi {
         @ParameterObject EventApplicationSearchParams params,
         @ParameterObject PageParams pageParams
     );
+
+    /** 신청자 상세. 표에서 잘린 답변을 질문 전체와 함께 확인한다. */
+    @Operation(summary = "행사 신청자 상세 조회",
+        description = "신청 한 건의 신청자 정보와, 행사 질문 전체에 이 신청의 답변을 붙여 조회한다. 답하지 않은 질문도 "
+            + "빈 답변으로 함께 내려간다. 다른 행사의 신청이면 찾을 수 없다.")
+    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND", "APPLICATION_NOT_FOUND"})
+    ApiResponse<AdminEventApplicationDetailResponse> getApplication(AdminApiUser apiUser, Long eventId, Long applicationId);
 }

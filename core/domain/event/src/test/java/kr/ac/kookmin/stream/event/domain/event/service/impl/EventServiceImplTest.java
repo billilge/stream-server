@@ -264,6 +264,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public Optional<EventApplication> findApplicationByIdAndEventId(Long applicationId, Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public long countApplicationsByEventId(Long eventId) {
             throw new UnsupportedOperationException();
         }

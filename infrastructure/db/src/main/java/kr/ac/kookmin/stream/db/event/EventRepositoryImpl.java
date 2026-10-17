@@ -220,6 +220,12 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public Optional<EventApplication> findApplicationByIdAndEventId(Long applicationId, Long eventId) {
+        return eventApplicationJpaRepository.findByIdAndEventId(applicationId, eventId)
+            .map(EventApplicationJpaEntity::toDomain);
+    }
+
+    @Override
     public long countApplicationsByEventId(Long eventId) {
         return eventApplicationJpaRepository.countByEventId(eventId);
     }

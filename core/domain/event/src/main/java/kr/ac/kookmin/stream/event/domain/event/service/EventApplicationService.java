@@ -50,4 +50,9 @@ public interface EventApplicationService {
 
     /** 한 행사의 신청 수. 취소된 신청도 센다. */
     long countApplications(Long eventId);
+
+    /**
+     * 운영진 신청자 상세. 그 행사에 속한 신청만 조회한다.
+     */
+    EventApplication getApplication(Long eventId, Long applicationId);
 }
