@@ -47,6 +47,8 @@ springJdbc = { module = "org.springframework:spring-jdbc" }
 
 jakartaServletApi = { module = "jakarta.servlet:jakarta.servlet-api" }
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+# Jackson 3 — Spring Boot 4가 만드는 매퍼 빈과 같은 계열
+jackson3Databind = { module = "tools.jackson.core:jackson-databind" }
 slf4jApi = { module = "org.slf4j:slf4j-api" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }

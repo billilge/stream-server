@@ -10,11 +10,13 @@ dependencies {
     implementation(project(":core:domain:file"))
     implementation(project(":core:domain:internal"))
     implementation(project(":core:domain:member"))
+    implementation(project(":core:domain:welfare"))
 
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarter)
     implementation(libs.springWeb)
     implementation(libs.jacksonDatabind)
+    implementation(libs.jackson3Databind)
 
     implementation(platform(libs.awsSdkBom))
     implementation(libs.awsS3)
