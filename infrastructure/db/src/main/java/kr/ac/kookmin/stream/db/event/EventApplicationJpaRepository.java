@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,31 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
     long countByEventIdAndStatus(Long eventId, EventApplicationStatus status);
 
     boolean existsByEventId(Long eventId);
+
+    long countByEventId(Long eventId);
+
+    @Query(
+        value = """
+            SELECT a FROM EventApplicationJpaEntity a
+            WHERE a.eventId = :eventId
+            AND (:status IS NULL OR a.status = :status)
+            AND (:filterByMember = false OR a.memberId IN :memberIds)
+            ORDER BY a.appliedAt ASC, a.id ASC
+            """,
+        countQuery = """
+            SELECT COUNT(a) FROM EventApplicationJpaEntity a
+            WHERE a.eventId = :eventId
+            AND (:status IS NULL OR a.status = :status)
+            AND (:filterByMember = false OR a.memberId IN :memberIds)
+            """
+    )
+    Page<EventApplicationJpaEntity> searchByEventId(
+        @Param("eventId") Long eventId,
+        @Param("status") EventApplicationStatus status,
+        @Param("filterByMember") boolean filterByMember,
+        @Param("memberIds") List<Long> memberIds,
+        Pageable pageable
+    );
 
     boolean existsByEventIdAndMemberIdAndStatus(Long eventId, Long memberId, EventApplicationStatus status);
 

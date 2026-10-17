@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
@@ -107,4 +108,23 @@ public interface EventRepository {
     Optional<EventApplication> findApplicationByIdAndMemberId(Long applicationId, Long memberId);
 
     List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId);
+
+    /**
+     * 한 행사의 신청을 신청 시각 오름차순(동일 시각은 applicationId 오름차순)으로 페이지 조회한다. 취소된 신청도 담는다.
+     *
+     * @param status    {@code null}이면 상태로 거르지 않는다
+     * @param memberIds {@code null}이면 신청자로 거르지 않는다
+     */
+    PageResult<EventApplication> findApplicationPage(
+        Long eventId,
+        EventApplicationStatus status,
+        List<Long> memberIds,
+        PageOffset pageOffset
+    );
+
+    /** 여러 신청의 답변을 한 번에 조회한다. 신청마다 따로 읽으면 페이지 크기만큼 쿼리가 더 나간다. */
+    List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds);
+
+    /** 한 행사의 신청 수. 취소된 신청도 센다. */
+    long countApplicationsByEventId(Long eventId);
 }

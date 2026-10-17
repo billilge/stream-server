@@ -16,6 +16,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
@@ -248,6 +249,22 @@ class EventServiceImplTest {
 
         @Override
         public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<EventApplication> findApplicationPage(
+            Long eventId, EventApplicationStatus status, List<Long> memberIds, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long countApplicationsByEventId(Long eventId) {
             throw new UnsupportedOperationException();
         }
     }

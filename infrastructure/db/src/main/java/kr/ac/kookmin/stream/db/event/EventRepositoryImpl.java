@@ -189,6 +189,42 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public PageResult<EventApplication> findApplicationPage(
+        Long eventId,
+        EventApplicationStatus status,
+        List<Long> memberIds,
+        PageOffset pageOffset
+    ) {
+        boolean filterByMember = memberIds != null;
+        Page<EventApplicationJpaEntity> result = eventApplicationJpaRepository.searchByEventId(
+            eventId, status, filterByMember, filterByMember ? memberIds : List.of(),
+            PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(EventApplicationJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
+    }
+
+    @Override
+    public List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds) {
+        if (applicationIds.isEmpty()) {
+            return List.of();
+        }
+        return eventApplicationAnswerJpaRepository.findAllByEventApplicationIdIn(applicationIds).stream()
+            .map(EventApplicationAnswerJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public long countApplicationsByEventId(Long eventId) {
+        return eventApplicationJpaRepository.countByEventId(eventId);
+    }
+
+    @Override
     public List<EventApplicationAnswer> saveAnswers(List<EventApplicationAnswer> answers) {
         List<EventApplicationAnswerJpaEntity> entities = answers.stream()
             .map(EventApplicationAnswerJpaEntity::from)
