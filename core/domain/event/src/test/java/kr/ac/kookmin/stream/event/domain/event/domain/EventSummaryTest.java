@@ -22,7 +22,7 @@ class EventSummaryTest {
         List<Long> imageIds
     ) {
         return Event.of(
-            1L, "행사", "설명", "전교생", "학생회관",
+            1L, "행사", "설명", "학생회관",
             NOW.plusDays(30), NOW.plusDays(31), applyStartAt, applyEndAt,
             recruitType, imageIds, capacity, recruitStatus, true, 100L
         );

@@ -42,9 +42,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String target;
-
     private String place;
 
     @Column(name = "event_start_at", nullable = false)
@@ -84,7 +81,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.id = event.getId();
         this.title = event.getTitle();
         this.description = event.getDescription();
-        this.target = event.getTarget();
         this.place = event.getPlace();
         this.eventStartAt = event.getEventStartAt();
         this.eventEndAt = event.getEventEndAt();
@@ -103,7 +99,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Event toDomain() {
-        return Event.of(id, title, description, target, place, eventStartAt, eventEndAt,
+        return Event.of(id, title, description, place, eventStartAt, eventEndAt,
             applyStartAt, applyEndAt, recruitType, imageIds, capacity, recruitStatus, isPublished,
             createdBy);
     }

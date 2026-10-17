@@ -32,7 +32,7 @@ class EventServiceImplTest {
 
     private static Event event(Long id) {
         return Event.of(
-            id, "행사 " + id, "설명", "전교생", "101호",
+            id, "행사 " + id, "설명", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
             RecruitType.FIRST_COME, List.of(), 100, RecruitStatus.OPEN, true, 1L
         );
@@ -72,11 +72,11 @@ class EventServiceImplTest {
     @DisplayName("정원이 찬 행사만 마감으로 바뀐다")
     void appliesCountPerEvent() {
         Event full = Event.of(
-            1L, "정원 3명", "설명", "전교생", "101호",
+            1L, "정원 3명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
             RecruitType.FIRST_COME, List.of(), 3, RecruitStatus.OPEN, true, 1L);
         Event roomy = Event.of(
-            2L, "정원 100명", "설명", "전교생", "101호",
+            2L, "정원 100명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
             RecruitType.FIRST_COME, List.of(), 100, RecruitStatus.OPEN, true, 1L);
 

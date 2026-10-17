@@ -16,7 +16,6 @@ public class Event {
     private Long id;
     private String title;
     private String description;
-    private String target;
     private String place;
     private LocalDateTime eventStartAt;
     private LocalDateTime eventEndAt;
@@ -33,7 +32,6 @@ public class Event {
         Long id,
         String title,
         String description,
-        String target,
         String place,
         LocalDateTime eventStartAt,
         LocalDateTime eventEndAt,
@@ -47,7 +45,7 @@ public class Event {
         Long createdBy
     ) {
         return new Event(
-            id, title, description, target, place, eventStartAt, eventEndAt, applyStartAt,
+            id, title, description, place, eventStartAt, eventEndAt, applyStartAt,
             applyEndAt, recruitType, imageIds, capacity, recruitStatus, published, createdBy
         );
     }

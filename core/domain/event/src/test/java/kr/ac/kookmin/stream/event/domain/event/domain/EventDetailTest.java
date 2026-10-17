@@ -16,7 +16,7 @@ class EventDetailTest {
 
     private static Event event(RecruitType recruitType, RecruitStatus recruitStatus, List<Long> imageIds) {
         return Event.of(
-            15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "소융대 재학생", "101호",
+            15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
             recruitType, imageIds, 30, recruitStatus, true, 1L
         );
@@ -34,7 +34,6 @@ class EventDetailTest {
         assertEquals(15L, detail.eventId());
         assertEquals("2026 소융대 개강 행사", detail.title());
         assertEquals("소융대 재학생을 위한 개강 행사입니다.", detail.description());
-        assertEquals("소융대 재학생", detail.target());
         assertEquals("101호", detail.place());
         assertEquals(NOW.plusDays(10), detail.eventStartAt());
         assertEquals(NOW.plusDays(10).plusHours(2), detail.eventEndAt());
