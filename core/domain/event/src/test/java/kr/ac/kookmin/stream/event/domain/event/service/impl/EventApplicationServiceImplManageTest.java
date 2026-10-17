@@ -31,8 +31,9 @@ class EventApplicationServiceImplManageTest {
     private static final LocalDateTime APPLIED_AT = LocalDateTime.of(2026, 10, 3, 14, 0);
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
+    private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
     private final EventApplicationServiceImpl service =
-        new EventApplicationServiceImpl(repository, new EventApplyAnswerValidator());
+        new EventApplicationServiceImpl(repository, applicationRepository, new EventApplyAnswerValidator());
 
     private static Event event(Long id) {
         return Event.of(
@@ -44,7 +45,7 @@ class EventApplicationServiceImplManageTest {
 
     private void givenApplication(Long id, Long eventId, Long memberId, EventApplicationStatus status,
         LocalDateTime appliedAt) {
-        repository.applications.put(id, EventApplication.of(id, eventId, memberId, status, appliedAt,
+        applicationRepository.applications.put(id, EventApplication.of(id, eventId, memberId, status, appliedAt,
             status == EventApplicationStatus.CANCELED ? appliedAt.plusHours(1) : null));
     }
 
@@ -125,9 +126,9 @@ class EventApplicationServiceImplManageTest {
     @Test
     @DisplayName("답변은 신청별로 묶어 돌려주고, 답변이 없는 신청은 담지 않는다")
     void groupsAnswersByApplication() {
-        repository.answers.add(EventApplicationAnswer.of(1L, 11L, 201L, "010-1234-5678", null));
-        repository.answers.add(EventApplicationAnswer.of(2L, 11L, 202L, null, List.of(0)));
-        repository.answers.add(EventApplicationAnswer.of(3L, 12L, 201L, "010-2345-6789", null));
+        applicationRepository.answers.add(EventApplicationAnswer.of(1L, 11L, 201L, "010-1234-5678", null));
+        applicationRepository.answers.add(EventApplicationAnswer.of(2L, 11L, 202L, null, List.of(0)));
+        applicationRepository.answers.add(EventApplicationAnswer.of(3L, 12L, 201L, "010-2345-6789", null));
 
         Map<Long, List<EventApplicationAnswer>> answers = service.getAnswersByApplicationIds(List.of(11L, 12L, 13L));
 

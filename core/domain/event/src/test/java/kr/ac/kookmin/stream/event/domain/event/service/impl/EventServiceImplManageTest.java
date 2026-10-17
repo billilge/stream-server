@@ -48,7 +48,9 @@ class EventServiceImplManageTest {
         "전화번호", QuestionType.SHORT_TEXT, true, List.of(), false);
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
-    private final EventServiceImpl service = new EventServiceImpl(repository, new EventWriteValidator());
+    private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
+    private final EventServiceImpl service =
+        new EventServiceImpl(repository, applicationRepository, new EventWriteValidator());
 
     private static Event savedEvent(RecruitType recruitType, int capacity) {
         return Event.of(
@@ -149,7 +151,7 @@ class EventServiceImplManageTest {
         void returnsBundle() {
             repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
             repository.questions.put(EVENT_ID, savedQuestions(PHONE, SPORTS));
-            repository.appliedCounts.put(EVENT_ID, 3L);
+            applicationRepository.appliedCounts.put(EVENT_ID, 3L);
 
             EventManageDetail detail = service.getEvent(EVENT_ID);
 
@@ -237,7 +239,7 @@ class EventServiceImplManageTest {
             @DisplayName("선착순 정원을 현재 신청자 수보다 줄일 수 없다")
             void rejectsBelowApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 10L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 10L);
 
                 assertRejected(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS, () -> service.update(EVENT_ID,
                     updateCommand(RecruitType.FIRST_COME, 9, List.of(SPORTS), UPDATED_AT)));
@@ -247,7 +249,7 @@ class EventServiceImplManageTest {
             @DisplayName("신청자 수와 같은 정원까지는 줄일 수 있다")
             void allowsEqualToApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 10L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 10L);
 
                 service.update(EVENT_ID, updateCommand(RecruitType.FIRST_COME, 10, List.of(SPORTS), UPDATED_AT));
 
@@ -258,7 +260,7 @@ class EventServiceImplManageTest {
             @DisplayName("상시 모집에서 선착순으로 바꿀 때도 신청자 수 이상이어야 한다")
             void switchingToFirstComeChecksApplicants() {
                 givenEvent(RecruitType.OPEN, 0, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 30L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 30L);
 
                 assertRejected(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS, () -> service.update(EVENT_ID,
                     updateCommand(RecruitType.FIRST_COME, 20, List.of(SPORTS), UPDATED_AT)));
@@ -268,7 +270,7 @@ class EventServiceImplManageTest {
             @DisplayName("상시 모집은 신청자 수와 상관없이 수정할 수 있다")
             void openRecruitIgnoresApplicants() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.appliedCounts.put(EVENT_ID, 300L);
+                applicationRepository.appliedCounts.put(EVENT_ID, 300L);
 
                 assertDoesNotThrow(() -> service.update(EVENT_ID,
                     updateCommand(RecruitType.OPEN, null, List.of(SPORTS), UPDATED_AT)));
@@ -284,7 +286,7 @@ class EventServiceImplManageTest {
             void keepsQuestionsWhenUnchanged() {
                 List<EventQuestion> original = savedQuestions(PHONE, SPORTS);
                 givenEvent(RecruitType.FIRST_COME, 100, original);
-                repository.applicationExists = true;
+                applicationRepository.applicationExists = true;
 
                 service.update(EVENT_ID, updateCommand(List.of(PHONE, SPORTS)));
 
@@ -331,7 +333,7 @@ class EventServiceImplManageTest {
             @DisplayName("신청(취소 포함)이 있으면 질문을 바꿀 수 없고 행사도 저장하지 않는다")
             void lockedWhenApplicationExists() {
                 givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-                repository.applicationExists = true;
+                applicationRepository.applicationExists = true;
 
                 assertRejected(EventErrorCode.EVENT_QUESTIONS_LOCKED,
                     () -> service.update(EVENT_ID, updateCommand(List.of(SPORTS, PHONE))));
@@ -360,8 +362,8 @@ class EventServiceImplManageTest {
         @Test
         @DisplayName("신청자 수는 행사 id 목록으로 한 번에 조회한다")
         void countsApplicantsAtOnce() {
-            repository.appliedCounts.put(1L, 3L);
-            repository.appliedCounts.put(2L, 5L);
+            applicationRepository.appliedCounts.put(1L, 3L);
+            applicationRepository.appliedCounts.put(2L, 5L);
 
             assertEquals(Map.of(1L, 3L, 2L, 5L), service.getApplicantCounts(List.of(1L, 2L)));
         }
@@ -372,7 +374,7 @@ class EventServiceImplManageTest {
     void detailApplicantCountFeedsRecruitStatus() {
         repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 3));
         repository.questions.put(EVENT_ID, List.of());
-        repository.appliedCounts.put(EVENT_ID, 3L);
+        applicationRepository.appliedCounts.put(EVENT_ID, 3L);
 
         EventManageDetail detail = service.getEvent(EVENT_ID);
 
@@ -429,8 +431,8 @@ class EventServiceImplManageTest {
         @DisplayName("신청자가 있어도 지울 수 있다")
         void deletesEvenWithApplications() {
             repository.events.put(EVENT_ID, savedEvent(RecruitType.FIRST_COME, 100));
-            repository.applicationExists = true;
-            repository.appliedCounts.put(EVENT_ID, 12L);
+            applicationRepository.applicationExists = true;
+            applicationRepository.appliedCounts.put(EVENT_ID, 12L);
 
             assertDoesNotThrow(() -> service.delete(EVENT_ID));
         }

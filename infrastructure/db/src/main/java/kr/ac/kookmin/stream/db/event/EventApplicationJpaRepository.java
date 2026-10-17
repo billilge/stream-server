@@ -66,4 +66,15 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
         @Param("cursorApplicationId") Long cursorApplicationId,
         Pageable pageable
     );
+
+    @Query("""
+        SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountProjection(a.eventId, COUNT(a))
+        FROM EventApplicationJpaEntity a
+        WHERE a.eventId IN :eventIds AND a.status = :appliedStatus
+        GROUP BY a.eventId
+        """)
+    List<EventApplicantCountProjection> countApplicantsByEventIds(
+        @Param("eventIds") List<Long> eventIds,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus
+    );
 }

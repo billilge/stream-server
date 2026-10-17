@@ -22,6 +22,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 class EventApplicationServiceImpl implements EventApplicationService {
 
     private final EventRepository eventRepository;
+    private final EventApplicationRepository eventApplicationRepository;
     private final EventApplyAnswerValidator eventApplyAnswerValidator;
 
     @Override
@@ -47,17 +49,17 @@ class EventApplicationServiceImpl implements EventApplicationService {
     public EventApplicationResult apply(Long eventId, Long memberId, EventApplyCommand command) {
         Event event = getOpenEvent(eventId);
 
-        if (eventRepository.existsAppliedByEventIdAndMemberId(eventId, memberId)) {
+        if (eventApplicationRepository.existsAppliedByEventIdAndMemberId(eventId, memberId)) {
             throw new BusinessException(EventErrorCode.ALREADY_APPLIED);
         }
 
         List<EventQuestion> questions = eventRepository.findQuestionsByEventId(eventId);
         eventApplyAnswerValidator.validate(questions, command);
 
-        EventApplication application = eventRepository.saveApplication(
+        EventApplication application = eventApplicationRepository.save(
             EventApplication.create(eventId, memberId, LocalDateTime.now())
         );
-        eventRepository.saveAnswers(toAnswers(application.getId(), command));
+        eventApplicationRepository.saveAnswers(toAnswers(application.getId(), command));
 
         return new EventApplicationResult(application.getId(), event);
     }
@@ -70,7 +72,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
         int size
     ) {
         // 다음 페이지가 있는지 알려면 한 건 더 읽어봐야 한다
-        List<EventApplication> fetched = eventRepository.findApplicationSlice(memberId, cursor, size + 1);
+        List<EventApplication> fetched = eventApplicationRepository.findSliceByMemberId(memberId, cursor, size + 1);
 
         // 행사는 한 번에 모아 조회한다. 신청마다 따로 읽으면 페이지 크기만큼 쿼리가 더 나간다
         Map<Long, Event> events = eventRepository.findAllByIds(
@@ -97,7 +99,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             event,
             application,
             eventRepository.findQuestionsByEventId(event.getId()),
-            eventRepository.findAnswersByApplicationId(applicationId)
+            eventApplicationRepository.findAnswersByApplicationId(applicationId)
         );
     }
 
@@ -119,7 +121,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
         }
 
         application.cancel(now);
-        eventRepository.saveApplication(application);
+        eventApplicationRepository.save(application);
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
@@ -131,24 +133,24 @@ class EventApplicationServiceImpl implements EventApplicationService {
         PageOffset pageOffset
     ) {
         getEventOrThrow(eventId);
-        return eventRepository.findApplicationPage(eventId, status, memberIds, pageOffset);
+        return eventApplicationRepository.findPageByEventId(eventId, status, memberIds, pageOffset);
     }
 
     @Override
     public Map<Long, List<EventApplicationAnswer>> getAnswersByApplicationIds(List<Long> applicationIds) {
-        return eventRepository.findAnswersByApplicationIds(applicationIds).stream()
+        return eventApplicationRepository.findAnswersByApplicationIds(applicationIds).stream()
             .collect(Collectors.groupingBy(EventApplicationAnswer::getEventApplicationId));
     }
 
     @Override
     public long countApplications(Long eventId) {
-        return eventRepository.countApplicationsByEventId(eventId);
+        return eventApplicationRepository.countByEventId(eventId);
     }
 
     @Override
     public EventApplication getApplication(Long eventId, Long applicationId) {
         getEventOrThrow(eventId);
-        return eventRepository.findApplicationByIdAndEventId(applicationId, eventId)
+        return eventApplicationRepository.findByIdAndEventId(applicationId, eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
     }
 
@@ -158,7 +160,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
     }
 
     private EventApplication getMyApplicationOrThrow(Long applicationId, Long memberId) {
-        return eventRepository.findApplicationByIdAndMemberId(applicationId, memberId)
+        return eventApplicationRepository.findByIdAndMemberId(applicationId, memberId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
     }
 
@@ -173,7 +175,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        long appliedCount = eventRepository.countAppliedByEventId(eventId);
+        long appliedCount = eventApplicationRepository.countAppliedByEventId(eventId);
         if (event.calculateRecruitStatus(now, appliedCount) != RecruitStatus.OPEN) {
             throw new BusinessException(event.isClosedByCapacityOnly(now, appliedCount)
                 ? EventErrorCode.CAPACITY_FULL

@@ -2,15 +2,10 @@ package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -29,8 +24,6 @@ public class EventRepositoryImpl implements EventRepository {
 
     private final EventJpaRepository eventJpaRepository;
     private final EventQuestionJpaRepository eventQuestionJpaRepository;
-    private final EventApplicationJpaRepository eventApplicationJpaRepository;
-    private final EventApplicationAnswerJpaRepository eventApplicationAnswerJpaRepository;
 
     @Override
     public Event save(Event event) {
@@ -61,11 +54,6 @@ public class EventRepositoryImpl implements EventRepository {
     public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
         eventQuestionJpaRepository.deleteAllByEventId(eventId);
         return saveQuestions(questions);
-    }
-
-    @Override
-    public boolean existsApplicationByEventId(Long eventId) {
-        return eventApplicationJpaRepository.existsByEventId(eventId);
     }
 
     @Override
@@ -127,116 +115,9 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public Map<Long, Long> countAppliedByEventIds(List<Long> eventIds) {
-        if (eventIds.isEmpty()) {
-            return Map.of();
-        }
-        return eventJpaRepository.countApplicantsByEventIds(eventIds, EventApplicationStatus.APPLIED).stream()
-            .collect(Collectors.toMap(
-                EventApplicantCountProjection::eventId,
-                EventApplicantCountProjection::applicantCount));
-    }
-
-    @Override
     public List<EventQuestion> findQuestionsByEventId(Long eventId) {
         return eventQuestionJpaRepository.findAllByEventIdOrderByDisplayOrderAsc(eventId).stream()
             .map(EventQuestionJpaEntity::toDomain)
-            .toList();
-    }
-
-    @Override
-    public long countAppliedByEventId(Long eventId) {
-        return eventApplicationJpaRepository.countByEventIdAndStatus(eventId, EventApplicationStatus.APPLIED);
-    }
-
-    @Override
-    public boolean existsAppliedByEventIdAndMemberId(Long eventId, Long memberId) {
-        return eventApplicationJpaRepository.existsByEventIdAndMemberIdAndStatus(
-            eventId, memberId, EventApplicationStatus.APPLIED
-        );
-    }
-
-    @Override
-    public EventApplication saveApplication(EventApplication application) {
-        return eventApplicationJpaRepository.save(EventApplicationJpaEntity.from(application)).toDomain();
-    }
-
-    @Override
-    public List<EventApplication> findApplicationSlice(
-        Long memberId,
-        EventApplicationCursor cursor,
-        int limit
-    ) {
-        return eventApplicationJpaRepository.findSliceByMemberId(
-            memberId,
-            cursor == null ? null : cursor.appliedAt(),
-            cursor == null ? null : cursor.applicationId(),
-            Pageable.ofSize(limit)
-        ).stream().map(EventApplicationJpaEntity::toDomain).toList();
-    }
-
-    @Override
-    public Optional<EventApplication> findApplicationByIdAndMemberId(Long applicationId, Long memberId) {
-        return eventApplicationJpaRepository.findByIdAndMemberId(applicationId, memberId)
-            .map(EventApplicationJpaEntity::toDomain);
-    }
-
-    @Override
-    public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
-        return eventApplicationAnswerJpaRepository.findAllByEventApplicationId(applicationId).stream()
-            .map(EventApplicationAnswerJpaEntity::toDomain)
-            .toList();
-    }
-
-    @Override
-    public PageResult<EventApplication> findApplicationPage(
-        Long eventId,
-        EventApplicationStatus status,
-        List<Long> memberIds,
-        PageOffset pageOffset
-    ) {
-        boolean filterByMember = memberIds != null;
-        Page<EventApplicationJpaEntity> result = eventApplicationJpaRepository.searchByEventId(
-            eventId, status, filterByMember, filterByMember ? memberIds : List.of(),
-            PageRequest.of(pageOffset.page(), pageOffset.size())
-        );
-
-        return PageResult.of(
-            result.getContent().stream().map(EventApplicationJpaEntity::toDomain).toList(),
-            result.getNumber(),
-            result.getSize(),
-            result.getTotalElements()
-        );
-    }
-
-    @Override
-    public List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds) {
-        if (applicationIds.isEmpty()) {
-            return List.of();
-        }
-        return eventApplicationAnswerJpaRepository.findAllByEventApplicationIdIn(applicationIds).stream()
-            .map(EventApplicationAnswerJpaEntity::toDomain)
-            .toList();
-    }
-
-    @Override
-    public Optional<EventApplication> findApplicationByIdAndEventId(Long applicationId, Long eventId) {
-        return eventApplicationJpaRepository.findByIdAndEventId(applicationId, eventId)
-            .map(EventApplicationJpaEntity::toDomain);
-    }
-
-    @Override
-    public long countApplicationsByEventId(Long eventId) {
-        return eventApplicationJpaRepository.countByEventId(eventId);
-    }
-
-    @Override
-    public List<EventApplicationAnswer> saveAnswers(List<EventApplicationAnswer> answers) {
-        List<EventApplicationAnswerJpaEntity> entities = answers.stream()
-            .map(EventApplicationAnswerJpaEntity::from)
-            .toList();
-        return eventApplicationAnswerJpaRepository.saveAll(entities).stream()
-            .map(EventApplicationAnswerJpaEntity::toDomain)
             .toList();
     }
 }
