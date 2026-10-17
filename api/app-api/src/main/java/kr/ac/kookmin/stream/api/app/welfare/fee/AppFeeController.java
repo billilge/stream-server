@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppFeeController implements AppFeeApi {
 
     private final StudentTransferStatusService studentTransferStatusService;
-    private final FeeTransferUrlProvider feeTransferUrlProvider;
+    private final FeeAccountProvider feeAccountProvider;
     private final FeeSubmitUseCase feeSubmitUseCase;
 
     @Override
@@ -30,7 +30,7 @@ public class AppFeeController implements AppFeeApi {
     public ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser) {
         StudentTransferStatus transferStatus = studentTransferStatusService.getByMemberId(apiUser.userId());
 
-        return ApiResponse.success(FeeResponse.of(transferStatus, feeTransferUrlProvider.getAccount()));
+        return ApiResponse.success(FeeResponse.of(transferStatus, feeAccountProvider.getAccount()));
     }
 
     @Override

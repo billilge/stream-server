@@ -12,12 +12,12 @@ import kr.ac.kookmin.stream.welfare.domain.fee.service.TossTransferLinkGenerator
 public record FeeAccount(String bank, String accountNo, long amountPerSemester) {
 
     /** 이 학생이 보낼 금액. 남은 학기 수 × 학기당 회비. */
-    public long transferAmountFor(int remainingSemesters) {
+    public long calculateTransferAmount(int remainingSemesters) {
         return FeeAmountCalculator.calculate(remainingSemesters, amountPerSemester);
     }
 
     /** 금액이 붙은 토스 송금 링크. */
-    public String transferLinkFor(long transferAmount) {
+    public String generateTransferLinkUrl(long transferAmount) {
         return TossTransferLinkGenerator.generate(bank, accountNo, transferAmount);
     }
 }

@@ -11,10 +11,10 @@ public record FeeSubmitResponse(
     String transferLinkUrl
 ) {
     public static FeeSubmitResponse of(int remainingSemesters, FeeAccount account) {
-        long transferAmount = account.transferAmountFor(remainingSemesters);
+        long transferAmount = account.calculateTransferAmount(remainingSemesters);
 
         return new FeeSubmitResponse(
             account.bank(), account.accountNo(), remainingSemesters,
-            transferAmount, account.transferLinkFor(transferAmount));
+            transferAmount, account.generateTransferLinkUrl(transferAmount));
     }
 }

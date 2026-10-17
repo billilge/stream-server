@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class FeeTransferUrlProvider {
+public class FeeAccountProvider {
 
     private final AdminConfigValueService adminConfigValueService;
 
