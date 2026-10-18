@@ -6,18 +6,24 @@ import java.util.Map;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodParams;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerStatusChangeRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionListResponse;
+import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerStatusChangeResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
+import kr.ac.kookmin.stream.event.domain.locker.service.AdminLockerService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminLockerSectionController implements AdminLockerSectionApi {
 
     private final LockerService lockerService;
+    private final AdminLockerService adminLockerService;
     private final FileService fileService;
 
     @Override
@@ -55,5 +62,17 @@ public class AdminLockerSectionController implements AdminLockerSectionApi {
 
         return ApiResponse.success(
             AdminLockerSectionDetailResponse.of(detail, photosById, appliedLockerIds));
+    }
+
+    @Override
+    @PatchMapping("/{sectionId}/lockers/status")
+    public ApiResponse<AdminLockerStatusChangeResponse> changeLockerStatus(
+        AdminApiUser apiUser,
+        @PathVariable Long sectionId,
+        @Valid @RequestBody LockerStatusChangeRequest request
+    ) {
+        List<Locker> lockers = adminLockerService.changeLockerStatus(
+            sectionId, request.lockerIds(), request.lockerStatus());
+        return ApiResponse.success(AdminLockerStatusChangeResponse.from(lockers));
     }
 }
