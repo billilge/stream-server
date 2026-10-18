@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.common;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -31,5 +33,20 @@ public final class DateUtil {
      */
     public static LocalDate startOfNextYear(Integer year) {
         return year == null ? null : LocalDate.of(year + 1, FIRST_MONTH, FIRST_DAY);
+    }
+
+    /**
+     * DB의 시각(한국 시간 기준 {@code LocalDateTime})을 epoch 밀리초로 바꾼다. 시각을 클라이언트에 내려줄 때 쓰고,
+     * 돌려받는 쪽은 {@link #fromEpochMillis(long)}로 되돌린다. 두 방향이 같은 기준(KST)이어야 값이 어긋나지 않는다.
+     */
+    public static long toEpochMillis(LocalDateTime dateTime) {
+        return dateTime.atZone(KST).toInstant().toEpochMilli();
+    }
+
+    /**
+     * {@link #toEpochMillis(LocalDateTime)}의 반대 방향. epoch 밀리초를 한국 시간 기준 {@code LocalDateTime}으로 바꾼다.
+     */
+    public static LocalDateTime fromEpochMillis(long epochMillis) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), KST);
     }
 }
