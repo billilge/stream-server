@@ -7,7 +7,7 @@ import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodUpdateReq
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerPeriodDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerPeriodListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
-import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
+import kr.ac.kookmin.stream.event.domain.locker.service.AdminLockerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,12 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminLockerPeriodController implements AdminLockerPeriodApi {
 
-    private final LockerService lockerService;
+    private final AdminLockerService adminLockerService;
 
     @Override
     @GetMapping
     public ApiResponse<AdminLockerPeriodListResponse> getLockerPeriods(AdminApiUser apiUser) {
-        return ApiResponse.success(AdminLockerPeriodListResponse.from(lockerService.getAllPeriods()));
+        return ApiResponse.success(AdminLockerPeriodListResponse.from(adminLockerService.getAllPeriods()));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class AdminLockerPeriodController implements AdminLockerPeriodApi {
         @PathVariable Long lockerPeriodId
     ) {
         return ApiResponse.success(
-            AdminLockerPeriodDetailResponse.from(lockerService.getPeriodById(lockerPeriodId)));
+            AdminLockerPeriodDetailResponse.from(adminLockerService.getPeriodById(lockerPeriodId)));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class AdminLockerPeriodController implements AdminLockerPeriodApi {
         AdminApiUser apiUser,
         @Valid @RequestBody LockerPeriodCreateRequest request
     ) {
-        lockerService.createPeriod(request.toCommand());
+        adminLockerService.createPeriod(request.toCommand());
         return ApiResponse.success();
     }
 
@@ -58,14 +58,14 @@ public class AdminLockerPeriodController implements AdminLockerPeriodApi {
         @PathVariable Long lockerPeriodId,
         @Valid @RequestBody LockerPeriodUpdateRequest request
     ) {
-        lockerService.updatePeriod(lockerPeriodId, request.toCommand());
+        adminLockerService.updatePeriod(lockerPeriodId, request.toCommand());
         return ApiResponse.success();
     }
 
     @Override
     @DeleteMapping("/{lockerPeriodId}")
     public ApiResponse<Void> deleteLockerPeriod(AdminApiUser apiUser, @PathVariable Long lockerPeriodId) {
-        lockerService.deletePeriod(lockerPeriodId);
+        adminLockerService.deletePeriod(lockerPeriodId);
         return ApiResponse.success();
     }
 }
