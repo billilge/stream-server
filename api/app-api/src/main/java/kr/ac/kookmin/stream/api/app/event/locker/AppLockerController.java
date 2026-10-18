@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerApplyRequest;
@@ -17,7 +16,6 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
@@ -72,11 +70,8 @@ public class AppLockerController implements AppLockerApi {
         Long lockerPeriodId = params.lockerPeriodId();
         LockerSectionDetail detail = lockerService.getSectionDetail(lockerPeriodId, sectionId);
         // 배치 구조를 아직 등록하지 않은 구역이면 사진도 없다
-        Map<Long, File> photosById = Optional.ofNullable(detail.layout())
-            .map(LockerSectionLayout::getPhotoFileIds)
-            .filter(photoFileIds -> !photoFileIds.isEmpty())
-            .map(fileService::findAllByIdIn)
-            .orElseGet(Map::of);
+        Map<Long, File> photosById = fileService.findAllByIdIn(
+            detail.layout() == null ? List.of() : detail.layout().getPhotoFileIds());
         Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
         Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)
