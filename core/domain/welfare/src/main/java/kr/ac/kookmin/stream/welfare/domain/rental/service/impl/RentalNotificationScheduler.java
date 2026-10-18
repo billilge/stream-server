@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 대여 반납 알림을 아웃박스에 기록한다.
  * <ul>
  *   <li>반납 기한 임박: 10분마다 돌며, "반납 기한 1시간 전" 시각이 직전 실행 이후부터 지금까지 사이에 든 대여를 고른다.</li>
- *   <li>반납 연체: 매일 10시에 기한이 지난 대여를 고른다. 반납할 때까지 매일 간다.</li>
+ *   <li>반납 연체: 주말을 뺀 매일 10시에 기한이 지난 대여를 고른다. 반납할 때까지 평일마다 간다.</li>
  * </ul>
  * 발송 기록을 따로 남기지 않으므로, 서버가 그 시각에 내려가 있었으면 그 회차 알림은 건너뛴다.
  */
@@ -48,7 +48,7 @@ class RentalNotificationScheduler {
         }
     }
 
-    @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "Asia/Seoul")
     @Transactional
     public void recordOverdue() {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
