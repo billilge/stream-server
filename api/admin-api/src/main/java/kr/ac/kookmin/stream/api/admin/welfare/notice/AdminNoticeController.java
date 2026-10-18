@@ -16,7 +16,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
-import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
+import kr.ac.kookmin.stream.welfare.domain.notice.service.AdminNoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminNoticeController implements AdminNoticeApi {
 
-    private final NoticeService noticeService;
+    private final AdminNoticeService adminNoticeService;
     private final AdminNoticeReadUseCase adminNoticeReadUseCase;
     private final AdminNoticeWriteUseCase adminNoticeWriteUseCase;
 
@@ -46,7 +46,7 @@ public class AdminNoticeController implements AdminNoticeApi {
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Notice> result = noticeService.search(keyword, pageParams.toOffset());
+        PageResult<Notice> result = adminNoticeService.search(keyword, pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, AdminNoticeListItemResponse::from));
     }
 
@@ -80,7 +80,7 @@ public class AdminNoticeController implements AdminNoticeApi {
     @Override
     @DeleteMapping("/{noticeId}")
     public ApiResponse<Void> deleteNotice(AdminApiUser apiUser, @PathVariable Long noticeId) {
-        noticeService.delete(noticeId);
+        adminNoticeService.delete(noticeId);
         return ApiResponse.success();
     }
 
@@ -91,7 +91,7 @@ public class AdminNoticeController implements AdminNoticeApi {
         @PathVariable Long noticeId,
         @Valid @RequestBody NoticePinRequest request
     ) {
-        noticeService.changePinned(noticeId, request.pinned());
+        adminNoticeService.changePinned(noticeId, request.pinned());
         return ApiResponse.success();
     }
 }

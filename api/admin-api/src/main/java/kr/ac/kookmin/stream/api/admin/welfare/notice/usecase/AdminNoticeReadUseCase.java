@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.notice.usecase;
 import java.util.List;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
-import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
+import kr.ac.kookmin.stream.welfare.domain.notice.service.AdminNoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminNoticeReadUseCase {
 
-    private final NoticeService noticeService;
+    private final AdminNoticeService adminNoticeService;
     private final FileService fileService;
 
     public AdminNoticeDetail getDetail(Long noticeId) {
-        Notice notice = noticeService.getNotice(noticeId);
+        Notice notice = adminNoticeService.getNotice(noticeId);
 
         return new AdminNoticeDetail(
             notice,

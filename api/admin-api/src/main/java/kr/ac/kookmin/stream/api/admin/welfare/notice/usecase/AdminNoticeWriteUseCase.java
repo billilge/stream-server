@@ -10,7 +10,7 @@ import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCreateCommand;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeUpdateCommand;
-import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
+import kr.ac.kookmin.stream.welfare.domain.notice.service.AdminNoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +25,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminNoticeWriteUseCase {
 
-    private final NoticeService noticeService;
+    private final AdminNoticeService adminNoticeService;
     private final FileService fileService;
 
     public Notice create(Long createdBy, NoticeCreateCommand command) {
         requireFilesExist(command.imageIds(), command.attachmentIds());
-        return noticeService.create(createdBy, command);
+        return adminNoticeService.create(createdBy, command);
     }
 
     public Notice update(Long noticeId, NoticeUpdateCommand command) {
         requireFilesExist(command.imageIds(), command.attachmentIds());
-        return noticeService.update(noticeId, command);
+        return adminNoticeService.update(noticeId, command);
     }
 
     private void requireFilesExist(List<Long> imageIds, List<Long> attachmentIds) {
