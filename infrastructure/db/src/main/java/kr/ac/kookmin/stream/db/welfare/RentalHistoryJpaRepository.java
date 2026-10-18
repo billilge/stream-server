@@ -20,6 +20,8 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
         @Param("status") RentalStatus status
     );
 
+    List<RentalHistoryJpaEntity> findAllByRentalStatus(RentalStatus rentalStatus);
+
     boolean existsByItemIdAndMemberIdAndRentalStatus(Long itemId, Long memberId, RentalStatus rentalStatus);
 
     Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatus(Long id, Long memberId, RentalStatus rentalStatus);

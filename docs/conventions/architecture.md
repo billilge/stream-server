@@ -367,6 +367,9 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 - **발행은 `OutboxWriter` 포트로 기록**한다(원 비즈니스 트랜잭션과 원자적). 인프로세스 재발행은 릴레이만 수행한다.
 - **구독은 `@EventListener`**로 한다. 릴레이가 트랜잭션 밖에서 발행하므로 `@TransactionalEventListener`는 호출되지 않는다. 릴레이는 리스너가 끝난 뒤에 발행 완료로 표시하므로, 리스너가 예외를 던지면 재시도된다. `core:domain`에 Modulith 이벤트 의존을 넣지 않는다.
 - 소비 리스너는 **멱등**하게 작성한다(at-least-once). 리스너가 끝난 뒤 완료 표시 전에 서버가 내려가면 한 번 더 전달된다. 푸시 알림처럼 드문 중복을 감수할 수 있으면 그대로 둔다.
+- **정해진 시각에 기록할 이벤트**(예: 행사 전날·반납 기한 임박 알림)는 그 데이터를 가진 도메인의 `service.impl`에 package-private `@Scheduled` 컴포넌트(`{Domain}NotificationScheduler`)를 두고, 대상만 골라 `OutboxWriter`로 기록한다. 다른 도메인을 조회해야 하는 판단(예: 회원 전체 − 신청자)은 이벤트에 필요한 ID를 실어 구독 측에서 한다.
+  - cron에는 `zone = "Asia/Seoul"`을 명시하고, 기록이 트랜잭션 안에서 일어나도록 메서드에 `@Transactional`을 건다.
+  - 발송 기록을 따로 남기지 않고 날짜·시간 구간으로 대상을 고른다. 서버가 그 시각에 내려가 있었으면 그 회차는 건너뛴다.
 - 아웃박스 테이블 스키마는 `flyway-migration.md`로 관리한다.
 - 최종적 일관성 경로다. "한 요청 안에서 쓰기 직후 결과를 즉시 조회해 응답에 실어야" 하면 이벤트가 아니라 6-1의 동기 UseCase로 처리한다.
 

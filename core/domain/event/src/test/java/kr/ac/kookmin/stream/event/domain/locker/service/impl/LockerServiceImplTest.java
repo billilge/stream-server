@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -292,6 +294,16 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             throw new UnsupportedOperationException();
         }
@@ -305,6 +317,11 @@ class LockerServiceImplTest {
         @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
             return appliedLockerIds;
+        }
+
+        @Override
+        public List<Long> findMemberIds(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
