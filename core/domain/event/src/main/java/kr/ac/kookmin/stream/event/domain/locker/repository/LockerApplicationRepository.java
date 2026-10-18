@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +35,11 @@ public interface LockerApplicationRepository {
      * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
      */
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
+
+    /**
+     * 해당 사물함들의 신청 전체. 어느 운영 회차에 배정됐는지 보려고 읽는다.
+     */
+    List<LockerApplication> findByLockerIds(Collection<Long> lockerIds);
 
     /**
      * 회원의 사물함 신청 전체를 신청 일시 최신순으로 조회한다.
