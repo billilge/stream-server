@@ -20,7 +20,7 @@ class NotificationEventListener {
 
     private final NotificationDispatcher notificationDispatcher;
 
-    // 알림을 누르면 신청 내역 상세로 가야 하므로 행사가 아니라 신청 ID를 대상으로 준다
+    // 신청·취소 알림은 누르면 신청 내역 상세로 가야 하므로 행사가 아니라 신청 ID를 대상으로 준다
     @EventListener
     public void on(EventApplied event) {
         notificationDispatcher.dispatch(
@@ -30,7 +30,7 @@ class NotificationEventListener {
     @EventListener
     public void on(EventApplicationCanceled event) {
         notificationDispatcher.dispatch(
-            NotificationType.EVENT_APPLICATION_CANCELED, List.of(event.eventTitle()), event.eventId(), List.of(event.memberId()));
+            NotificationType.EVENT_APPLICATION_CANCELED, List.of(event.eventTitle()), event.applicationId(), List.of(event.memberId()));
     }
 
     @EventListener

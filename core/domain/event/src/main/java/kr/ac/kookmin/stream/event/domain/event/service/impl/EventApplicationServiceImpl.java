@@ -124,7 +124,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
         application.cancel(now);
         eventRepository.saveApplication(application);
-        outboxWriter.record(new EventApplicationCanceled(memberId, event.getId(), event.getTitle()));
+        outboxWriter.record(new EventApplicationCanceled(memberId, event.getId(), application.getId(), event.getTitle()));
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
