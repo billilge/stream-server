@@ -5,40 +5,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
-
-    /**
-     * 운영 회차 전체를 신청 시작 일시 최신순으로 조회한다. 아직 게시하지 않은 회차도 포함하므로 운영진 경로에서만 쓴다.
-     */
-    List<LockerPeriodSummary> getAllPeriods();
-
-    /**
-     * 운영 회차 한 건. 아직 게시하지 않은 회차도 포함하므로 운영진 경로에서만 쓴다.
-     */
-    LockerPeriodSummary getPeriodById(Long lockerPeriodId);
-
-    /**
-     * 운영 회차를 새로 만든다. 같은 학기가 이미 있거나 다른 회차와 기간이 겹치면 거부한다.
-     * 만들어진 회차는 바로 게시 상태가 된다.
-     */
-    void createPeriod(LockerPeriodCreateCommand command);
-
-    /**
-     * 운영 회차의 신청·사용 기간을 바꾼다. 종료된 회차는 바꿀 수 없고, 진행 중인 회차는 신청 시작일을 바꿀 수 없다.
-     * 다른 회차와 기간이 겹쳐도 거부한다.
-     */
-    void updatePeriod(Long lockerPeriodId, LockerPeriodUpdateCommand command);
-
-    /**
-     * 운영 회차를 소프트 삭제한다. 신청이 한 건이라도 있으면 거부한다.
-     */
-    void deletePeriod(Long lockerPeriodId);
 
     /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
