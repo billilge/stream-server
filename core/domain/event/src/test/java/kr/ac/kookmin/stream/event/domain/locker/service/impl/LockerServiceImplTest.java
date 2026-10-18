@@ -324,6 +324,11 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public void saveLockers(List<Locker> lockers) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             throw new UnsupportedOperationException();
         }
@@ -350,6 +355,11 @@ class LockerServiceImplTest {
         }
 
         // 아래는 사물함 신청(LockerApplicationService)용 메서드라 이 테스트에서는 쓰지 않는다
+
+        @Override
+        public List<LockerApplication> findByLockerIds(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public boolean existsByPeriod(Long lockerPeriodId) {

@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +44,16 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     @Override
     public Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId) {
         return lockerApplicationJpaRepository.findLockerIdByLockerPeriodIdAndMemberId(lockerPeriodId, memberId);
+    }
+
+    @Override
+    public List<LockerApplication> findByLockerIds(Collection<Long> lockerIds) {
+        if (lockerIds.isEmpty()) {
+            return List.of();
+        }
+        return lockerApplicationJpaRepository.findAllByLockerIdIn(lockerIds).stream()
+            .map(LockerApplicationJpaEntity::toDomain)
+            .toList();
     }
 
     @Override
