@@ -38,14 +38,14 @@ public class Notice {
         return new Notice(id, title, content, category, pinned, createdBy, attachmentIds, imageIds, createdAt, updatedAt);
     }
 
-    // 새 공지는 고정되지 않은 채로 등록한다. 생성·수정 시각은 DB가 채운다
+    // 생성·수정 시각은 DB가 채운다
     public static Notice create(Long createdBy, NoticeCreateCommand command) {
         return new Notice(
             null,
             command.title(),
             command.content(),
             command.category(),
-            false,
+            command.pinned(),
             createdBy,
             command.attachmentIds(),
             command.imageIds(),
@@ -60,6 +60,7 @@ public class Notice {
         this.category = command.category();
         this.attachmentIds = command.attachmentIds();
         this.imageIds = command.imageIds();
+        this.pinned = command.pinned();
     }
 
     public void changePinned(boolean pinned) {

@@ -7,6 +7,7 @@ public record NoticeCreateCommand(
     String content,
     NoticeCategory category,
     List<Long> imageIds,
-    List<Long> attachmentIds
+    List<Long> attachmentIds,
+    boolean pinned
 ) {
 }

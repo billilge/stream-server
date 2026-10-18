@@ -33,7 +33,11 @@ public record NoticeCreateRequest(
 
     @Schema(description = "첨부 파일 ID 목록", example = "[201]")
     @NotNull(message = "첨부 파일 목록을 입력해 주세요.")
-    List<@NotNull(message = "첨부 파일 ID는 비워 둘 수 없습니다.") Long> attachmentFileIds
+    List<@NotNull(message = "첨부 파일 ID는 비워 둘 수 없습니다.") Long> attachmentFileIds,
+
+    @Schema(description = "상단 고정 여부", example = "false")
+    @NotNull(message = "고정 여부를 입력해 주세요.")
+    Boolean pinned
 ) {
 
     public NoticeCreateCommand toCommand() {
@@ -42,7 +46,8 @@ public record NoticeCreateRequest(
             content,
             category,
             imageFileIds.stream().distinct().toList(),
-            attachmentFileIds.stream().distinct().toList()
+            attachmentFileIds.stream().distinct().toList(),
+            pinned
         );
     }
 }

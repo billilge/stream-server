@@ -12,6 +12,7 @@ public record NoticeUpdateCommand(
     NoticeCategory category,
     List<Long> imageIds,
     List<Long> attachmentIds,
+    boolean pinned,
     LocalDateTime expectedUpdatedAt
 ) {
 }
