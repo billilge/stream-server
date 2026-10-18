@@ -92,4 +92,9 @@ public interface LockerRepository {
      * 식별자에 해당하는 사물함. 지난 신청 이력의 사물함 이름을 보여줘야 하므로 삭제된 사물함도 포함한다.
      */
     List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds);
+
+    /**
+     * 사물함 여러 건을 저장한다. 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
+     */
+    void saveLockers(List<Locker> lockers);
 }
