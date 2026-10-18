@@ -59,7 +59,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             EventApplication.create(eventId, memberId, LocalDateTime.now())
         );
         eventRepository.saveAnswers(toAnswers(application.getId(), command));
-        outboxWriter.record(new EventApplied(memberId, eventId, event.getTitle()));
+        outboxWriter.record(new EventApplied(memberId, eventId, application.getId(), event.getTitle()));
 
         return new EventApplicationResult(application.getId(), event);
     }
