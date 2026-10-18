@@ -1,13 +1,22 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import kr.ac.kookmin.stream.event.domain.locker.service.AdminLockerService;
@@ -63,6 +72,66 @@ class AdminLockerServiceImpl implements AdminLockerService {
         }
         if (!lockerRepository.deletePeriod(lockerPeriodId)) {
             throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND);
+        }
+    }
+
+    @Override
+    @Transactional
+    public List<Locker> changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status) {
+        List<Locker> lockers = findLockersInSection(sectionId, lockerIds);
+        if (status == LockerStatus.DISABLED) {
+            requireNotInUse(lockerIds);
+        }
+
+        // 이미 그 상태인 사물함은 저장하지 않는다. 36칸 구역에서 두 칸만 바꿔도 전체를 쓰지 않도록 한다
+        lockerRepository.saveLockers(lockers.stream()
+            .filter(locker -> locker.changeStatus(status))
+            .toList());
+        return lockers;
+    }
+
+    /**
+     * 요청한 사물함을 구역 소속으로 확인하고 돌려준다. 하나라도 그 구역에 없으면 아무것도 바꾸지 않도록 여기서 끊는다.
+     */
+    private List<Locker> findLockersInSection(Long sectionId, List<Long> lockerIds) {
+        Map<Long, Locker> lockersInSection = lockerRepository.findLockersBySectionId(sectionId).stream()
+            .collect(Collectors.toMap(Locker::getId, Function.identity()));
+
+        return lockerIds.stream()
+            .map(lockerId -> {
+                Locker locker = lockersInSection.get(lockerId);
+                if (locker == null) {
+                    throw new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION);
+                }
+                return locker;
+            })
+            .toList();
+    }
+
+    /**
+     * 아직 배정 상태인 신청이 걸린 사물함이 하나라도 있으면 끊는다.
+     * <p>
+     * 배정인지 만료인지는 내 신청 내역 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
+     * 저장소는 신청과 회차를 읽어 오기만 한다.
+     */
+    private void requireNotInUse(List<Long> lockerIds) {
+        List<LockerApplication> applications = lockerApplicationRepository.findByLockerIds(lockerIds);
+        if (applications.isEmpty()) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        Set<Long> assignedPeriodIds = lockerRepository.findPublishedPeriodsByIds(applications.stream()
+                .map(LockerApplication::getLockerPeriodId)
+                .collect(Collectors.toSet())).stream()
+            .filter(period -> LockerApplicationStatus.from(period, today) == LockerApplicationStatus.ASSIGNED)
+            .map(LockerPeriod::getId)
+            .collect(Collectors.toSet());
+
+        boolean inUse = applications.stream()
+            .anyMatch(application -> assignedPeriodIds.contains(application.getLockerPeriodId()));
+        if (inUse) {
+            throw new BusinessException(LockerErrorCode.LOCKER_IN_USE);
         }
     }
 
