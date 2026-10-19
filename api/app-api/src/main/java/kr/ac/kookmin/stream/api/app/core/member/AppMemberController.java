@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.core.member.request.FcmTokenUpdateRequest;
 import kr.ac.kookmin.stream.api.app.core.member.request.MemberSignUpRequest;
+import kr.ac.kookmin.stream.api.app.core.member.request.PhoneNumberUpdateRequest;
+import kr.ac.kookmin.stream.api.app.core.member.usecase.MemberSignUpUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppMemberController implements AppMemberApi {
 
     private final MemberService memberService;
+    private final MemberSignUpUseCase memberSignUpUseCase;
 
     @Override
     @PostMapping("/sign-up")
@@ -26,7 +29,7 @@ public class AppMemberController implements AppMemberApi {
         AppApiUser apiUser,
         @Valid @RequestBody MemberSignUpRequest request
     ) {
-        memberService.signUp(apiUser.userId(), request.toCommand());
+        memberSignUpUseCase.signUp(apiUser.userId(), request.toCommand());
         return ApiResponse.success();
     }
 
@@ -37,6 +40,16 @@ public class AppMemberController implements AppMemberApi {
         @Valid @RequestBody FcmTokenUpdateRequest request
     ) {
         memberService.updateFcmToken(apiUser.userId(), request.fcmToken());
+        return ApiResponse.success();
+    }
+
+    @Override
+    @PatchMapping("/me/phone-number")
+    public ApiResponse<Void> updatePhoneNumber(
+        AppApiUser apiUser,
+        @Valid @RequestBody PhoneNumberUpdateRequest request
+    ) {
+        memberService.updatePhoneNumber(apiUser.userId(), request.toCommand());
         return ApiResponse.success();
     }
 }

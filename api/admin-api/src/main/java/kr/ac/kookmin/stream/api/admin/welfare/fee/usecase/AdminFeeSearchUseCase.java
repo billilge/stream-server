@@ -2,8 +2,8 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
 import java.util.List;
 import java.util.Map;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.AdminFeeAccountProvider;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccount;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccountProvider;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -32,7 +32,7 @@ public class AdminFeeSearchUseCase {
 
     private final StudentTransferStatusService studentTransferStatusService;
     private final MemberService memberService;
-    private final FeeAccountProvider feeAccountProvider;
+    private final AdminFeeAccountProvider adminFeeAccountProvider;
 
     public PageResult<AdminFeeSearchResponse> search(TransferStatus status, String keyword, PageOffset pageOffset) {
         List<Long> memberIds = null;
@@ -49,7 +49,7 @@ public class AdminFeeSearchUseCase {
         // 탈퇴(소프트 삭제)한 회원은 빠지므로 그 회원의 행은 member가 null로 남는다
         Map<Long, Member> membersById = memberService.getMapByIds(pagedMemberIds);
         // 학기당 금액은 줄마다 같으므로 목록당 한 번만 읽는다
-        FeeAccount account = feeAccountProvider.getAccount();
+        FeeAccount account = adminFeeAccountProvider.getAccount();
 
         return page.map(transferStatus -> AdminFeeSearchResponse.of(
             transferStatus,
