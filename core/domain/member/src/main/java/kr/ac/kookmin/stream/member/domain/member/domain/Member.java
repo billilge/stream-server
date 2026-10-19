@@ -68,6 +68,15 @@ public class Member {
         return phoneNumber != null;
     }
 
+    // 회원이 바꾼 전화번호로 갱신한다. 바뀐 값이 있으면 true를 돌려준다
+    public boolean updatePhoneNumber(String phoneNumber) {
+        if (Objects.equals(this.phoneNumber, phoneNumber)) {
+            return false;
+        }
+        this.phoneNumber = phoneNumber;
+        return true;
+    }
+
     // 앱이 Firebase에서 받은 등록 토큰으로 바꾼다. 바뀐 값이 있으면 true를 돌려준다
     public boolean updateFcmToken(String fcmToken) {
         if (Objects.equals(this.fcmToken, fcmToken)) {

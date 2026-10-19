@@ -14,6 +14,9 @@ public interface RentalHistoryRepository {
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
 
+    /** 모든 회원의 대여 이력 중 해당 상태인 것. 반납 알림 대상을 고를 때 쓴다. */
+    List<RentalHistory> findAllByStatus(RentalStatus status);
+
     RentalHistory save(RentalHistory history);
 
     /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */

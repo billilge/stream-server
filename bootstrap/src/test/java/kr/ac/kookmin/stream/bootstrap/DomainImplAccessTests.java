@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.bootstrap;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
