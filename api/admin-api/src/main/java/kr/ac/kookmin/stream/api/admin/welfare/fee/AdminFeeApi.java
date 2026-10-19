@@ -41,7 +41,7 @@ public interface AdminFeeApi {
     @Operation(summary = "학생회비 납부 상태 수정",
         description = "납부 상태를 바꾼다. 잘못 처리한 경우를 되돌릴 수 있도록 이미 처리한 요청도 다시 바꿀 수 있다. "
             + "확인필요(REJECTED)로 바꿀 때는 학생에게 보여줄 안내 문구가 필요하다. "
-            + "확인필요 학생은 직접 재제출할 수 없으므로, 다시 내게 하려면 납부 전(UNPAID)으로 되돌린다.")
+            + "확인필요로 돌려받은 학생은 안내 문구를 보고 학기 인증부터 다시 낼 수 있다.")
     @ApiErrorCode(type = FeeErrorCode.class,
         codes = {"INVALID_TRANSFER_STATUS", "INVALID_ADMIN_NOTE", "FEE_REQUEST_NOT_FOUND"})
     ApiResponse<FeeStatusUpdateResponse> updateStatus(

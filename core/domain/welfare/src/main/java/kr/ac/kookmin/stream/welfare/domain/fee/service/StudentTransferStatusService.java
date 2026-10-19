@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -9,16 +10,16 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
 public interface StudentTransferStatusService {
 
-    StudentTransferStatus getByMemberId(Long memberId);
+    /** 회원의 납부 요청. 한 번도 요청하지 않은 회원(미납부)이면 비어 있다. */
+    Optional<StudentTransferStatus> findByMemberId(Long memberId);
 
     /**
-     * 납부 정보(남은 학기 수·학점이수현황 캡처)를 저장한다. 상태는 납부 전 그대로다.
-     * 행이 없으면 만들고, 있으면 이전 입력값을 덮어쓴다.
+     * 학기 인증과 송금 완료를 한 번에 받아 납부확인중으로 만든다. 처음이면 새로 만들고, 반려된 요청이면 다시 낸다.
+     * 납부확인중·납부완료면 {@code FEE_REQUEST_ALREADY_REQUESTED}다.
+     *
+     * @param amount 요청 시점에 안내한 납부 금액
      */
-    StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey);
-
-    /** 송금 확인을 요청한다. 납부 정보를 제출하지 않았으면 {@code FEE_REQUEST_NOT_FOUND}다. */
-    StudentTransferStatus requestConfirmation(Long memberId);
+    StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount);
 
     /** 회원별 납부 상태. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 제출 전 회원은 빠진다. */
     Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds);

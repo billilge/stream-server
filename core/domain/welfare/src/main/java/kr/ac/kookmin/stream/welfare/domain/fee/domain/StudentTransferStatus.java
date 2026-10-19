@@ -15,7 +15,7 @@ public class StudentTransferStatus {
     private Long id;
     private Long memberId;
     private TransferStatus status;
-    // 학생이 입력한 남은 학기 수와, 그 근거로 올린 학점이수현황 캡처. 제출 전에는 둘 다 null이다
+    // 학생이 입력한 남은 학기 수와, 그 근거로 올린 학점이수현황 캡처
     private Integer remainingSemesters;
     private String proofImageKey;
     // 요청 시점에 안내한 납부 금액(남은 학기 수 × 그때의 학기당 회비). 운영진이 학기당 회비를 바꿔도 그대로다
@@ -27,17 +27,19 @@ public class StudentTransferStatus {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 납부 정보를 처음 제출하는 회원. 상태는 납부 전에서 시작하고, 값은 submit이 채운다
-    public static StudentTransferStatus create(Long memberId) {
-        return new StudentTransferStatus(
-            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null, null);
-    }
-
-    // 아직 아무것도 제출하지 않아 DB에 row가 없는 회원을 위한 가상의 기본값 (저장하지 않는다).
-    // create와 상태가 같아졌으므로 둘의 차이는 "저장되는가" 하나뿐이다.
-    public static StudentTransferStatus notRequested(Long memberId) {
-        return new StudentTransferStatus(
-            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null, null);
+    /**
+     * 송금을 마친 학생의 첫 납부 요청. 학기 인증(남은 학기 수·학점이수현황 캡처)과 송금 완료를
+     * 한 번에 받으므로 바로 납부확인중이 된다.
+     */
+    public static StudentTransferStatus request(
+        Long memberId,
+        int remainingSemesters,
+        String proofImageKey,
+        long amount,
+        LocalDateTime now
+    ) {
+        return new StudentTransferStatus(null, memberId, TransferStatus.PENDING, remainingSemesters, proofImageKey,
+            amount, null, now, null, null, null);
     }
 
     public static StudentTransferStatus of(
@@ -58,28 +60,22 @@ public class StudentTransferStatus {
     }
 
     /**
-     * 납부 정보(남은 학기 수·학점이수현황 캡처)를 제출한다. 상태는 납부 전 그대로다 —
-     * 송금 확인 요청({@link #requestConfirmation()})을 해야 납부확인중으로 넘어간다.
+     * 반려된 학생이 학기 인증부터 다시 납부한다. 이전 요청의 입력값과 처리 흔적(안내 문구·처리 시각)을
+     * 지우고 새 요청으로 만든다.
      * <p>
-     * 납부 전에서만 가능하다. 확인필요로 처리된 회원은 직접 다시 제출하지 못하고,
-     * 관리자가 납부 전으로 되돌려야 한다(화면의 진입점이 "문의하기" 하나뿐이다).
+     * 반려에서만 가능하다. 납부확인중이면 이미 운영진에게 요청이 가 있고, 납부완료면 더 낼 것이 없다.
      */
-    public void submit(int remainingSemesters, String proofImageKey) {
-        requireUnpaid();
-
-        this.remainingSemesters = remainingSemesters;
-        this.proofImageKey = proofImageKey;
-    }
-
-    /**
-     * 송금 확인을 요청한다. 이전 처리 흔적(관리자 안내 문구·처리 시각)은 지워 새 요청으로 만든다.
-     */
-    public void requestConfirmation(LocalDateTime now) {
-        requireUnpaid();
+    public void resubmit(int remainingSemesters, String proofImageKey, long amount, LocalDateTime now) {
+        if (status != TransferStatus.REJECTED) {
+            throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
+        }
 
         this.status = TransferStatus.PENDING;
-        this.requestedAt = now;
+        this.remainingSemesters = remainingSemesters;
+        this.proofImageKey = proofImageKey;
+        this.amount = amount;
         this.adminNote = null;
+        this.requestedAt = now;
         this.reviewedAt = null;
     }
 
@@ -93,11 +89,5 @@ public class StudentTransferStatus {
         this.status = reviewedStatus;
         this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;
-    }
-
-    private void requireUnpaid() {
-        if (status != TransferStatus.UNPAID) {
-            throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
-        }
     }
 }
