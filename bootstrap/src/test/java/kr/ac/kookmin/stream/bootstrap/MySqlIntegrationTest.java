@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.bootstrap;
 
 import java.util.Map;
 import org.springframework.boot.test.context.SpringBootTest;

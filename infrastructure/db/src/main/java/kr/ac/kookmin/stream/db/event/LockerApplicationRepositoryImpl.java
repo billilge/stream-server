@@ -31,6 +31,11 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     }
 
     @Override
+    public List<Long> findMemberIds(Long lockerPeriodId) {
+        return lockerApplicationJpaRepository.findMemberIdsByLockerPeriodId(lockerPeriodId);
+    }
+
+    @Override
     public Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId) {
         return lockerApplicationJpaRepository.findLockerIdByLockerPeriodIdAndMemberId(lockerPeriodId, memberId);
     }

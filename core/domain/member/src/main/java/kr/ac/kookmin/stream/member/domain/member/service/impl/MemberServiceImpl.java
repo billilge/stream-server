@@ -9,6 +9,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.member.domain.member.domain.Department;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
+import kr.ac.kookmin.stream.member.domain.member.domain.MemberPhoneNumberUpdateCommand;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberProfileCommand;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
@@ -95,6 +96,16 @@ class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Override
+    @Transactional
+    public void updatePhoneNumber(Long memberId, MemberPhoneNumberUpdateCommand command) {
+        Member member = getById(memberId);
+        validatePhoneNumberNotDuplicated(member, command.phoneNumber());
+        if (member.updatePhoneNumber(command.phoneNumber())) {
+            memberRepository.save(member);
+        }
+    }
+
     // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
     private boolean isSignedUp(Member member) {
         return member.hasPhoneNumber() && memberTermService.hasAgreedRequiredTerms(member.getId());
@@ -106,7 +117,7 @@ class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 필수 약관이 늘어 다시 가입하는 회원은 자기 번호를 그대로 보낼 수 있으므로 같은 번호면 중복 검사를 건너뛴다
+    // 필수 약관이 늘어 다시 가입하거나 같은 번호로 변경을 요청하는 회원은 자기 번호를 그대로 보낼 수 있으므로 같은 번호면 중복 검사를 건너뛴다
     private void validatePhoneNumberNotDuplicated(Member member, String phoneNumber) {
         if (phoneNumber.equals(member.getPhoneNumber())) {
             return;
