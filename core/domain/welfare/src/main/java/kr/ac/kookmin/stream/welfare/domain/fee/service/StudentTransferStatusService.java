@@ -10,8 +10,8 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
 public interface StudentTransferStatusService {
 
-    /** 회원의 납부 요청. 한 번도 요청하지 않은 회원(미납부)이면 비어 있다. */
-    Optional<StudentTransferStatus> findByMemberId(Long memberId);
+    /** 회원의 최신 납부 요청 — 곧 회원의 지금 상태다. 한 번도 요청하지 않은 회원(미납부)이면 비어 있다. */
+    Optional<StudentTransferStatus> findLatestByMemberId(Long memberId);
 
     /**
      * 학기 인증과 송금 완료를 한 번에 받아 납부확인중으로 만든다. 처음이면 새로 만들고, 반려된 요청이면 다시 낸다.
@@ -21,7 +21,7 @@ public interface StudentTransferStatusService {
      */
     StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount);
 
-    /** 회원별 납부 상태. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 한 번도 요청하지 않은 회원은 빠진다. */
+    /** 회원별 최신 납부 요청. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 한 번도 요청하지 않은 회원은 빠진다. */
     Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds);
 
     // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음

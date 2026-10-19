@@ -27,8 +27,8 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(PR#67/#69 원칙 — 조회니까 붙이는 게 아니라 실제 이득이 있을 때만 붙인다).
     @Override
-    public Optional<StudentTransferStatus> findByMemberId(Long memberId) {
-        return studentTransferStatusRepository.findByMemberId(memberId);
+    public Optional<StudentTransferStatus> findLatestByMemberId(Long memberId) {
+        return studentTransferStatusRepository.findLatestByMemberId(memberId);
     }
 
     @Override
@@ -36,7 +36,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
         if (memberIds.isEmpty()) {
             return Map.of();
         }
-        return studentTransferStatusRepository.findAllByMemberIds(memberIds).stream()
+        return studentTransferStatusRepository.findLatestByMemberIds(memberIds).stream()
             .collect(Collectors.toMap(StudentTransferStatus::getMemberId, Function.identity()));
     }
 
@@ -44,7 +44,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     @Transactional
     public StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount) {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
-        StudentTransferStatus transferStatus = studentTransferStatusRepository.findByMemberId(memberId)
+        StudentTransferStatus transferStatus = studentTransferStatusRepository.findLatestByMemberId(memberId)
             .map(existing -> {
                 existing.resubmit(remainingSemesters, proofImageKey, amount, now);
                 return existing;

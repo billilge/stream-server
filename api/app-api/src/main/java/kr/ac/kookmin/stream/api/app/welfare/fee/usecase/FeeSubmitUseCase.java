@@ -47,7 +47,7 @@ public class FeeSubmitUseCase {
         // 반려 후 다시 내면 이전 요청을 덮어쓰므로, 교체될 이전 키를 알려고 한 번 더 읽는다. request가 돌려주게 하면
         // 반환 타입에 값을 하나 더 얹어야 해서, 유니크 인덱스 조회 한 번을 받아들였다. 같은 학생의 동시 요청이 겹치면
         // 낡은 키를 볼 수 있는데, 그때 생기는 건 고아 파일 하나뿐이라 파일 정리 배치가 걷어간다.
-        String previousProofImageKey = studentTransferStatusService.findByMemberId(memberId)
+        String previousProofImageKey = studentTransferStatusService.findLatestByMemberId(memberId)
             .map(StudentTransferStatus::getProofImageKey)
             .orElse(null);
         StudentTransferStatus saved =
