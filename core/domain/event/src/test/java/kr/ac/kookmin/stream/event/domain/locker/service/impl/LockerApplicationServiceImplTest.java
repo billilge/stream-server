@@ -58,7 +58,8 @@ class LockerApplicationServiceImplTest {
     }
 
     private static LockerApplicationServiceImpl service(FakeLockerRepository repository) {
-        return new LockerApplicationServiceImpl(repository, repository.applications);
+        // 아웃박스 기록은 이 테스트의 관심사가 아니라 아무것도 하지 않는다
+        return new LockerApplicationServiceImpl(repository, repository.applications, event -> {});
     }
 
     private static LockerApplyCommand command() {
@@ -347,6 +348,16 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             batchLookups++;
             return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();
@@ -423,6 +434,11 @@ class LockerApplicationServiceImplTest {
 
         @Override
         public Set<Long> findAppliedLockerIds(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Long> findMemberIds(Long lockerPeriodId) {
             throw new UnsupportedOperationException();
         }
 

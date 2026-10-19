@@ -35,7 +35,7 @@ public class AdminFeeController implements AdminFeeApi {
 
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
-    private final FeeAccountProvider feeAccountProvider;
+    private final AdminFeeAccountProvider adminFeeAccountProvider;
 
     @Override
     @GetMapping("/requests")
@@ -70,7 +70,7 @@ public class AdminFeeController implements AdminFeeApi {
     @GetMapping("/account")
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeAccountResponse> getAccount(AdminApiUser apiUser) {
-        return ApiResponse.success(FeeAccountResponse.from(feeAccountProvider.getAccount()));
+        return ApiResponse.success(FeeAccountResponse.from(adminFeeAccountProvider.getAccount()));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class AdminFeeController implements AdminFeeApi {
         @RequestBody FeeAccountUpdateRequest request
     ) {
         FeeAccountValidator.validate(request);
-        FeeAccount saved = feeAccountProvider.save(request.bank(), request.accountNo(), request.amount());
+        FeeAccount saved = adminFeeAccountProvider.save(request.bank(), request.accountNo(), request.amount());
 
         return ApiResponse.success(FeeAccountResponse.from(saved));
     }

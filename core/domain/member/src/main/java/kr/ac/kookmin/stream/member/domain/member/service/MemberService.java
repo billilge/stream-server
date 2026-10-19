@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.member.domain.member.service;
 import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
+import kr.ac.kookmin.stream.member.domain.member.domain.MemberPhoneNumberUpdateCommand;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberProfileCommand;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 
@@ -16,4 +17,5 @@ public interface MemberService {
     Member signUp(Long memberId, MemberSignUpCommand command);
     boolean isSignedUp(Long memberId);
     void updateFcmToken(Long memberId, String fcmToken);
+    void updatePhoneNumber(Long memberId, MemberPhoneNumberUpdateCommand command);
 }

@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream;
+package kr.ac.kookmin.stream.bootstrap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
