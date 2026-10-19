@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
-import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeAmountCalculator;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.TossTransferLinkGenerator;
 
 /**
@@ -23,10 +22,5 @@ public record FeeAccount(String bank, String accountNo, long amount) {
     /** 금액이 빠진 송금 기본 링크. 계좌가 설정되기 전이면 null이다. */
     public String generateTransferLinkUrl() {
         return isConfigured() ? TossTransferLinkGenerator.generate(bank, accountNo, null) : null;
-    }
-
-    /** 남은 학기 수를 낸 학생의 납부 금액. 아직 내지 않았으면 null이다. */
-    public Long calculateTransferAmount(Integer remainingSemesters) {
-        return remainingSemesters == null ? null : FeeAmountCalculator.calculate(remainingSemesters, amount);
     }
 }

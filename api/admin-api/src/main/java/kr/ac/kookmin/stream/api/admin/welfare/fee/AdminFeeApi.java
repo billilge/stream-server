@@ -24,10 +24,10 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "학생회비 (운영진)", description = "학생회비 납부 관리")
 public interface AdminFeeApi {
 
-    /** 납부자 목록. 회원 기준이라 납부 정보를 내지 않은 "납부 전" 회원도 포함된다. */
+    /** 납부 요청 목록. 납부를 요청한 회원만 나온다. */
     @Operation(summary = "학생회비 납부자 목록 조회",
-        description = "이름·학번 검색과 납부 상태 필터로 회원을 조회한다. 납부 정보를 내지 않은 회원도 "
-            + "납부 전으로 함께 나오며, 그런 행은 studentTransferStatusId를 비롯한 납부 값이 모두 null이다.")
+        description = "이름·학번 검색과 납부 상태 필터로 납부를 요청한 회원을 조회한다. "
+            + "한 번도 요청하지 않은 회원은 나오지 않는다. 금액은 요청 시점에 학생에게 안내한 값이다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_TRANSFER_STATUS"})
     ApiResponse<PageResponse<AdminFeeSearchResponse>> getRequests(
