@@ -14,8 +14,8 @@ public interface StudentTransferStatusService {
     Optional<StudentTransferStatus> findLatestByMemberId(Long memberId);
 
     /**
-     * 학기 인증과 송금 완료를 한 번에 받아 납부확인중으로 만든다. 처음이면 새로 만들고, 반려된 요청이면 다시 낸다.
-     * 납부확인중·납부완료면 {@code FEE_REQUEST_ALREADY_REQUESTED}다.
+     * 학기 인증과 송금 완료를 한 번에 받아 납부확인중인 새 요청을 만든다. 처음이든 반려 뒤든 늘 새 행이고,
+     * 이전 요청은 그대로 남는다. 최신 요청이 납부확인중·납부완료면 {@code FEE_REQUEST_ALREADY_REQUESTED}다.
      *
      * @param amount 요청 시점에 안내한 납부 금액
      */

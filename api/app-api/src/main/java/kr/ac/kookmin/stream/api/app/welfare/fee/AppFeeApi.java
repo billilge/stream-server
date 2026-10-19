@@ -34,7 +34,8 @@ public interface AppFeeApi {
     @Operation(summary = "학생회비 납부 요청",
         description = "토스로 송금을 마친 학생이 남은 학기 수와 학점이수현황 캡처를 함께 보내 운영진의 확인을 요청한다. "
             + "요청 시점의 금액(남은 학기 수 × 학기당 회비)을 함께 남긴다. "
-            + "처음 내는 학생과 확인필요로 돌려받은 학생만 요청할 수 있고, 돌려받은 학생은 이전 요청을 덮어쓴다.")
+            + "처음 내는 학생과 확인필요로 돌려받은 학생만 요청할 수 있다. 돌려받은 학생이 다시 내면 새 요청으로 쌓이고 "
+            + "이전 요청은 그대로 남는다.")
     @ApiErrorCode(type = FeeErrorCode.class,
         codes = {"INVALID_REMAINING_SEMESTERS", "INVALID_PROOF_IMAGE", "FEE_ACCOUNT_NOT_FOUND",
             "FEE_REQUEST_ALREADY_REQUESTED"})

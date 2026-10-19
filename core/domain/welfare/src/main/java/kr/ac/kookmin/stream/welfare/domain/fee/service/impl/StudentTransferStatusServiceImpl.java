@@ -43,13 +43,13 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     @Override
     @Transactional
     public StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
-        StudentTransferStatus transferStatus = studentTransferStatusRepository.findLatestByMemberId(memberId)
-            .map(existing -> {
-                existing.resubmit(remainingSemesters, proofImageKey, amount, now);
-                return existing;
-            })
-            .orElseGet(() -> StudentTransferStatus.request(memberId, remainingSemesters, proofImageKey, amount, now));
+        // 반려된 요청 뒤에만 새 요청을 받는다. 이전 요청은 고치지 않고 이력으로 남긴다
+        studentTransferStatusRepository.findLatestByMemberId(memberId)
+            .ifPresent(StudentTransferStatus::validateRequestable);
+
+        // 같은 회원의 동시 요청은 위 검사를 함께 통과할 수 있다. 그때는 진행 중 요청 유니크(V26)가 두 번째 저장을 막는다
+        StudentTransferStatus transferStatus = StudentTransferStatus.request(
+            memberId, remainingSemesters, proofImageKey, amount, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 
