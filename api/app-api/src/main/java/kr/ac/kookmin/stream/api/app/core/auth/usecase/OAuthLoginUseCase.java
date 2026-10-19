@@ -8,7 +8,6 @@ import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberProfileCommand;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.security.AuthTokenIssuer;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,15 +24,10 @@ public class OAuthLoginUseCase {
     private final OAuthService oauthService;
     private final MemberService memberService;
     private final AuthTokenIssuer authTokenIssuer;
-    private final StudentTransferStatusService studentTransferStatusService;
 
     public OAuthLoginResponse login(OAuthLoginCommand command) {
         OAuthUserInfo userInfo = oauthService.authenticate(command);
         Member member = findOrRegister(userInfo);
-
-        // 모든 회원이 납부 상태 행을 갖게 해서, 관리자 납부자 목록이 납부 전 회원까지 보여줄 수 있게 한다.
-        // 회비가 자기 테이블에서 전원을 다루므로 member 도메인은 회비를 몰라도 된다.
-        studentTransferStatusService.createIfAbsent(member.getId());
 
         String accessToken = authTokenIssuer.issue(member.getId(), member.getRole(), member.getCouncilDepartment());
         // 회원을 이번에 만들었는지가 아니라 저장된 전화번호·동의 기록으로 판단한다. 회원가입 화면에서 이탈한 회원도 다시 가입 화면을 본다

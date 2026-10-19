@@ -12,14 +12,6 @@ public interface StudentTransferStatusService {
     StudentTransferStatus getByMemberId(Long memberId);
 
     /**
-     * 회원의 납부 상태 행을 만든다. 이미 있으면 아무것도 하지 않는다.
-     * <p>
-     * 모든 회원이 행을 갖게 해서 관리자 목록이 납부 전 회원까지 보여줄 수 있게 한다. 행이 없는 회원을
-     * 목록에 넣으려면 회원 기준으로 조회해야 하고, 그러면 member 도메인이 회비를 알아야 한다.
-     */
-    void createIfAbsent(Long memberId);
-
-    /**
      * 납부 정보(남은 학기 수·학점이수현황 캡처)를 저장한다. 상태는 납부 전 그대로다.
      * 행이 없으면 만들고, 있으면 이전 입력값을 덮어쓴다.
      */
