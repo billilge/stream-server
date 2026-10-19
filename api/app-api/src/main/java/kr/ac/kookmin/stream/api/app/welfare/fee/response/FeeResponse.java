@@ -28,7 +28,7 @@ public record FeeResponse(
      */
     public static FeeResponse of(StudentTransferStatus transferStatus, FeeAccount account) {
         Integer remainingSemesters = transferStatus.getRemainingSemesters();
-        boolean payable = remainingSemesters != null && transferStatus.getStatus() != TransferStatus.NEEDS_CHECK;
+        boolean payable = remainingSemesters != null && transferStatus.getStatus() != TransferStatus.REJECTED;
 
         Long transferAmount = payable ? account.calculateTransferAmount(remainingSemesters) : null;
 
@@ -43,7 +43,7 @@ public record FeeResponse(
             transferStatus.getRequestedAt(),
             // 납부 확인 시각은 PAID일 때의 처리 시각이다. 그 외 상태에서는 보여주지 않는다
             transferStatus.getStatus() == TransferStatus.PAID ? transferStatus.getReviewedAt() : null,
-            transferStatus.getStatus() == TransferStatus.NEEDS_CHECK ? transferStatus.getAdminNote() : null
+            transferStatus.getStatus() == TransferStatus.REJECTED ? transferStatus.getAdminNote() : null
         );
     }
 }

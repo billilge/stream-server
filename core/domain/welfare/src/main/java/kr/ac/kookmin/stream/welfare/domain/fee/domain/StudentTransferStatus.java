@@ -88,7 +88,7 @@ public class StudentTransferStatus {
      */
     public void review(TransferStatus reviewedStatus, String adminNote, LocalDateTime now) {
         this.status = reviewedStatus;
-        this.adminNote = reviewedStatus == TransferStatus.NEEDS_CHECK ? adminNote : null;
+        this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;
     }
 
