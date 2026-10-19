@@ -18,6 +18,8 @@ public class StudentTransferStatus {
     // 학생이 입력한 남은 학기 수와, 그 근거로 올린 학점이수현황 캡처. 제출 전에는 둘 다 null이다
     private Integer remainingSemesters;
     private String proofImageKey;
+    // 요청 시점에 안내한 납부 금액(남은 학기 수 × 그때의 학기당 회비). 운영진이 학기당 회비를 바꿔도 그대로다
+    private Long amount;
     // 관리자가 확인필요로 처리하며 남긴 안내 문구. REJECTED일 때만 값이 있다
     private String adminNote;
     private LocalDateTime requestedAt;
@@ -28,14 +30,14 @@ public class StudentTransferStatus {
     // 납부 정보를 처음 제출하는 회원. 상태는 납부 전에서 시작하고, 값은 submit이 채운다
     public static StudentTransferStatus create(Long memberId) {
         return new StudentTransferStatus(
-            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null);
+            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null, null);
     }
 
     // 아직 아무것도 제출하지 않아 DB에 row가 없는 회원을 위한 가상의 기본값 (저장하지 않는다).
     // create와 상태가 같아졌으므로 둘의 차이는 "저장되는가" 하나뿐이다.
     public static StudentTransferStatus notRequested(Long memberId) {
         return new StudentTransferStatus(
-            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null);
+            null, memberId, TransferStatus.UNPAID, null, null, null, null, null, null, null, null);
     }
 
     public static StudentTransferStatus of(
@@ -44,6 +46,7 @@ public class StudentTransferStatus {
         TransferStatus status,
         Integer remainingSemesters,
         String proofImageKey,
+        Long amount,
         String adminNote,
         LocalDateTime requestedAt,
         LocalDateTime reviewedAt,
@@ -51,7 +54,7 @@ public class StudentTransferStatus {
         LocalDateTime updatedAt
     ) {
         return new StudentTransferStatus(id, memberId, status, remainingSemesters, proofImageKey,
-            adminNote, requestedAt, reviewedAt, createdAt, updatedAt);
+            amount, adminNote, requestedAt, reviewedAt, createdAt, updatedAt);
     }
 
     /**
