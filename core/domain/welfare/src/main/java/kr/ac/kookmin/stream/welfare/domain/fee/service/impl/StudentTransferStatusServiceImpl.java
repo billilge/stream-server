@@ -66,8 +66,20 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
+        requireLatest(transferStatus);
 
         transferStatus.review(status, adminNote, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
+    }
+
+    // 지난 요청은 이력이라 바꾸지 않는다. 회원의 지금 상태는 최신 요청 하나뿐이고, 지난 요청을 되살리면
+    // 회원당 진행 중 요청이 둘이 될 수 있다
+    private void requireLatest(StudentTransferStatus transferStatus) {
+        boolean latest = studentTransferStatusRepository.findLatestByMemberId(transferStatus.getMemberId())
+            .map(found -> found.getId().equals(transferStatus.getId()))
+            .orElse(false);
+        if (!latest) {
+            throw new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_LATEST);
+        }
     }
 }
