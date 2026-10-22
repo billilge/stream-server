@@ -30,7 +30,7 @@ public record FeeResponse(
         Integer remainingSemesters = transferStatus.getRemainingSemesters();
         boolean payable = remainingSemesters != null && transferStatus.getStatus() != TransferStatus.NEEDS_CHECK;
 
-        Long transferAmount = payable ? account.transferAmountFor(remainingSemesters) : null;
+        Long transferAmount = payable ? account.calculateTransferAmount(remainingSemesters) : null;
 
         return new FeeResponse(
             transferStatus.getId(),
@@ -39,7 +39,7 @@ public record FeeResponse(
             account.accountNo(),
             remainingSemesters,
             transferAmount,
-            transferAmount == null ? null : account.transferLinkFor(transferAmount),
+            transferAmount == null ? null : account.generateTransferLinkUrl(transferAmount),
             transferStatus.getRequestedAt(),
             // 납부 확인 시각은 PAID일 때의 처리 시각이다. 그 외 상태에서는 보여주지 않는다
             transferStatus.getStatus() == TransferStatus.PAID ? transferStatus.getReviewedAt() : null,

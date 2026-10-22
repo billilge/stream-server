@@ -2,6 +2,9 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -26,6 +29,24 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     public StudentTransferStatus getByMemberId(Long memberId) {
         return studentTransferStatusRepository.findByMemberId(memberId)
             .orElseGet(() -> StudentTransferStatus.notRequested(memberId));
+    }
+
+    @Override
+    public Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Map.of();
+        }
+        return studentTransferStatusRepository.findAllByMemberIds(memberIds).stream()
+            .collect(Collectors.toMap(StudentTransferStatus::getMemberId, Function.identity()));
+    }
+
+    @Override
+    @Transactional
+    public void createIfAbsent(Long memberId) {
+        if (studentTransferStatusRepository.findByMemberId(memberId).isPresent()) {
+            return;
+        }
+        studentTransferStatusRepository.save(StudentTransferStatus.create(memberId));
     }
 
     @Override
@@ -58,18 +79,11 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, TransferStatus status) {
-        if (status == TransferStatus.PENDING) {
-            throw new BusinessException(FeeErrorCode.INVALID_TRANSFER_STATUS);
-        }
-
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
-        if (transferStatus.getStatus() != TransferStatus.PENDING) {
-            throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REVIEWED);
-        }
 
-        transferStatus.review(status, LocalDateTime.now());
+        transferStatus.review(status, adminNote, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 }
