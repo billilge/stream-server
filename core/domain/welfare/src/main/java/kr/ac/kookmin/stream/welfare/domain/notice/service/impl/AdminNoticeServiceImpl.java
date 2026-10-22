@@ -2,6 +2,8 @@ package kr.ac.kookmin.stream.welfare.domain.notice.service.impl;
 
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCreateCommand;
@@ -19,6 +21,15 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
 
     private final NoticeRepository noticeRepository;
     private final OutboxWriter outboxWriter;
+
+    // 목록과 전체 개수를 두 문장으로 조회한다. 저장소의 @Query 메서드에는 트랜잭션이 붙지 않으므로, 두 조회가 같은 스냅샷을
+    // 보도록 읽기 트랜잭션으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.strip();
+        return noticeRepository.search(normalizedKeyword, pageOffset);
+    }
 
     // 공지 저장과 알림 이벤트 기록이 함께 커밋되도록 트랜잭션을 건다
     @Override
