@@ -283,7 +283,7 @@ Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
 - **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
 - 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 `service.impl` 협력 객체)에서 하고 `BusinessException`을 던진다.
 - 트랜잭션 경계는 Service 메서드에. 조회 전용은 `@Transactional(readOnly = true)`, 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절).
-- **운영진 전용 기능은 학생 앱이 쓰는 `{Domain}Service`와 분리해 `Admin{Domain}Service`로 둔다.** 같은 도메인 모듈의 `service`/`service.impl`에 두고 `{Domain}Repository`를 공유하며, 두 서비스는 서로 호출하지 않는다(`architecture.md` 레이어 규칙 4). 운영진 전용 서비스가 필요한 도메인부터 점진적으로 나누고, 분리하기 전의 도메인은 `{Domain}Service` 하나로 둔다. 다른 도메인 조합(예: 공지에 붙일 파일 확인)은 서비스가 아니라 `api:admin-api`의 UseCase가 맡는다. 예: 공지는 학생용 조회를 `NoticeService`, 운영진의 목록·상세·작성·수정·삭제·고정을 `AdminNoticeService`가 맡는다.
+- **운영진 전용 기능은 학생 앱이 쓰는 `{Domain}Service`와 분리해 `Admin{Domain}Service`로 둔다.** 같은 도메인 모듈의 `service`/`service.impl`에 두고 `{Domain}Repository`를 공유하며, 두 서비스는 서로 호출하지 않는다(`architecture.md` 레이어 규칙 4). 운영진 전용 서비스가 필요한 도메인부터 점진적으로 나누고, 분리하기 전의 도메인은 `{Domain}Service` 하나로 둔다. 다른 도메인 조합(예: 공지에 붙일 파일 확인)은 서비스가 아니라 `api:admin-api`의 UseCase가 맡는다. 예: 공지는 조회를 `NoticeService`(학생 앱과 운영진 공용), 운영진의 작성·수정·삭제를 `AdminNoticeService`가 맡는다.
 
 ```java
 // core:domain:member — domain/member/service (공개)

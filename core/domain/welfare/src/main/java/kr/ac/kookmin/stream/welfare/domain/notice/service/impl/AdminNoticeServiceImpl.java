@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.OutboxWriter;
-import kr.ac.kookmin.stream.common.PageOffset;
-import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCreateCommand;
@@ -24,21 +22,6 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
     private final NoticeRepository noticeRepository;
     private final OutboxWriter outboxWriter;
 
-    // 목록과 전체 개수를 두 번 조회하므로 같은 스냅샷에서 읽도록 읽기 트랜잭션으로 묶는다
-    @Override
-    @Transactional(readOnly = true)
-    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
-        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
-        return noticeRepository.search(normalizedKeyword, pageOffset);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Notice getNotice(Long id) {
-        return noticeRepository.findById(id)
-            .orElseThrow(() -> new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND));
-    }
-
     // 공지 저장과 알림 이벤트 기록이 함께 커밋되도록 트랜잭션을 건다
     @Override
     @Transactional
@@ -48,10 +31,13 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
         return notice;
     }
 
+    // 읽기와 저장을 한 트랜잭션으로 묶어야 NoticeJpaEntity의 낙관적 락이 동작한다. updatedAt 비교는 수정 화면이 읽은 뒤의
+    // 변경을, 낙관적 락은 이 메서드가 읽은 뒤 UPDATE 전의 변경을 막는다
     @Override
     @Transactional
     public Notice update(Long id, NoticeUpdateCommand command) {
-        Notice notice = getNotice(id);
+        Notice notice = noticeRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND));
         validateNotModified(notice, command.expectedUpdatedAt());
 
         notice.update(command);
@@ -64,14 +50,6 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
         if (!noticeRepository.delete(id)) {
             throw new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND);
         }
-    }
-
-    @Override
-    @Transactional
-    public void changePinned(Long id, boolean pinned) {
-        Notice notice = getNotice(id);
-        notice.changePinned(pinned);
-        noticeRepository.save(notice);
     }
 
     // updated_at이 초 단위 DATETIME이라 같은 초로 맞춰 비교한다. 수정 화면이 읽은 뒤 고쳐졌다면 시각이 달라진다

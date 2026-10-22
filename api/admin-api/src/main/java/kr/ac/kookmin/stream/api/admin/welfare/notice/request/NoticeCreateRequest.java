@@ -18,7 +18,7 @@ public record NoticeCreateRequest(
     String title,
 
     // content는 TEXT 컬럼(최대 65,535바이트)이다. 글자당 최대 4바이트로 잡아도 넘치지 않는 길이로 막는다
-    @Schema(description = "본문(HTML)", example = "<p>공지 내용입니다.</p>")
+    @Schema(description = "본문(일반 텍스트). 서식 없이 입력한 그대로 저장하며 줄바꿈도 보존한다", example = "공지 내용입니다.")
     @NotBlank(message = "본문을 입력해 주세요.")
     @Size(max = 16000, message = "본문은 16000자 이하로 입력해 주세요.")
     String content,

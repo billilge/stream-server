@@ -13,9 +13,11 @@ public record NoticeDetailResponse(
     String title,
     String content,
     NoticeCategory category,
+    boolean pinned,
     List<Image> images,
     List<Attachment> attachments,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {
 
     /**
@@ -44,9 +46,11 @@ public record NoticeDetailResponse(
             notice.getTitle(),
             notice.getContent(),
             notice.getCategory(),
+            notice.isPinned(),
             images,
             attachments,
-            notice.getCreatedAt()
+            notice.getCreatedAt(),
+            notice.getUpdatedAt()
         );
     }
 
