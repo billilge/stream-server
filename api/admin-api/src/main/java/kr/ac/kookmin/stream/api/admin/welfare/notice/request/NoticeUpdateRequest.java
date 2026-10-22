@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeUpdateCommand;
@@ -35,12 +34,7 @@ public record NoticeUpdateRequest(
 
     @Schema(description = "상단 고정 여부", example = "false")
     @NotNull(message = "고정 여부를 입력해 주세요.")
-    Boolean pinned,
-
-    @Schema(description = "공지 상세 조회가 내려준 수정 시각. 받은 값을 그대로 보낸다. 그 사이 다른 관리자가 고쳤다면 409",
-        example = "2026-10-22T10:00:00")
-    @NotNull(message = "수정 시각을 입력해 주세요.")
-    LocalDateTime updatedAt
+    Boolean pinned
 ) {
 
     public NoticeUpdateCommand toCommand() {
@@ -50,8 +44,7 @@ public record NoticeUpdateRequest(
             category,
             imageFileIds.stream().distinct().toList(),
             attachmentFileIds.stream().distinct().toList(),
-            pinned,
-            updatedAt
+            pinned
         );
     }
 }

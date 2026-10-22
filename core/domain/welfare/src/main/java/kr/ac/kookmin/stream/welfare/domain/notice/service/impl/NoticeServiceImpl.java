@@ -1,7 +1,5 @@
 package kr.ac.kookmin.stream.welfare.domain.notice.service.impl;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
@@ -50,14 +48,10 @@ class NoticeServiceImpl implements NoticeService {
         return notice;
     }
 
-    // 읽기와 저장을 한 트랜잭션으로 묶어야 NoticeJpaEntity의 낙관적 락이 동작한다. updatedAt 비교는 수정 화면이 읽은 뒤의
-    // 변경을, 낙관적 락은 이 메서드가 읽은 뒤 UPDATE 전의 변경을 막는다
     @Override
     @Transactional
     public Notice update(Long id, NoticeUpdateCommand command) {
         Notice notice = getNotice(id);
-        validateNotModified(notice, command.expectedUpdatedAt());
-
         notice.update(command);
         return noticeRepository.save(notice);
     }
@@ -67,14 +61,6 @@ class NoticeServiceImpl implements NoticeService {
     public void delete(Long id) {
         if (!noticeRepository.delete(id)) {
             throw new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND);
-        }
-    }
-
-    // updated_at이 초 단위 DATETIME이라 같은 초로 맞춰 비교한다. 수정 화면이 읽은 뒤 고쳐졌다면 시각이 달라진다
-    private void validateNotModified(Notice notice, LocalDateTime expectedUpdatedAt) {
-        LocalDateTime current = notice.getUpdatedAt().truncatedTo(ChronoUnit.SECONDS);
-        if (!current.equals(expectedUpdatedAt.truncatedTo(ChronoUnit.SECONDS))) {
-            throw new BusinessException(NoticeErrorCode.NOTICE_UPDATE_CONFLICT);
         }
     }
 }
