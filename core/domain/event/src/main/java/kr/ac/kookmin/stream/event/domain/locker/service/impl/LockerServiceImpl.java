@@ -89,12 +89,17 @@ class LockerServiceImpl implements LockerService {
         int availableCount = (int) lockers.stream()
             .filter(locker -> locker.isSelectable(appliedLockerIds.contains(locker.getId())))
             .count();
+        // 사용 중지된 사물함도 배정돼 있으면 센다. 배정 후 고장 난 칸이라 운영진이 다른 자리를 줘야 하는 대상이다
+        int assignedCount = (int) lockers.stream()
+            .filter(locker -> appliedLockerIds.contains(locker.getId()))
+            .count();
 
         return new LockerSectionSummary(
             section.getId(),
             section.getLabel(),
             availableCount,
             totalCount,
+            assignedCount,
             SectionAvailabilityStatus.from(availableCount, totalCount)
         );
     }

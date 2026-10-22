@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.domain;
 
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -22,9 +23,16 @@ public class LockerSectionLayout {
     private String layout;
     /** layout 형식 버전. 블록 종류·필드가 바뀌면 올려서 옛 앱이 모르는 형식을 알아채게 한다. */
     private int version;
-    private Long photoFileId;
+    /** 구역 실제 사진. 배열 순서가 노출 순서다. 등록하지 않았으면 빈 목록이다. */
+    private List<Long> photoFileIds;
 
-    public static LockerSectionLayout of(Long id, Long sectionId, String layout, int version, Long photoFileId) {
-        return new LockerSectionLayout(id, sectionId, layout, version, photoFileId);
+    public static LockerSectionLayout of(
+        Long id,
+        Long sectionId,
+        String layout,
+        int version,
+        List<Long> photoFileIds
+    ) {
+        return new LockerSectionLayout(id, sectionId, layout, version, photoFileIds);
     }
 }
