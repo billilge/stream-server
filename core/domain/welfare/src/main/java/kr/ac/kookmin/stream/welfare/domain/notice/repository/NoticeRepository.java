@@ -12,10 +12,10 @@ public interface NoticeRepository {
     CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size);
 
     /**
-     * 삭제되지 않은 공지를 고정 우선, 최신순으로 페이지 단위로 조회한다. 제목에 {@code keyword}가 들어 있는 공지만 고르고
-     * {@code keyword}가 null이면 조건 없이 모두 조회한다.
+     * 삭제되지 않은 공지를 고정 우선, 최신순으로 페이지 단위로 조회한다. {@code category}가 null이 아니면 그 종류만,
+     * 제목에 {@code keyword}가 들어 있는 공지만 고르고, 각각 null이면 그 조건 없이 조회한다.
      */
-    PageResult<Notice> search(String keyword, PageOffset pageOffset);
+    PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset);
 
     Optional<Notice> findById(Long id);
     Notice save(Notice notice);

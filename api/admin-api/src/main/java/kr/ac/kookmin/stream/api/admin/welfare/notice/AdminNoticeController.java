@@ -13,6 +13,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
+import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,10 +39,11 @@ public class AdminNoticeController implements AdminNoticeApi {
     @GetMapping
     public ApiResponse<PageResponse<AdminNoticeListItemResponse>> getNotices(
         AdminApiUser apiUser,
+        @RequestParam(required = false) String category,
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Notice> result = noticeService.search(keyword, pageParams.toOffset());
+        PageResult<Notice> result = noticeService.search(NoticeCategory.from(category), keyword, pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, AdminNoticeListItemResponse::from));
     }
 

@@ -39,9 +39,9 @@ class NoticeServiceImpl implements NoticeService {
     // 보도록 읽기 트랜잭션으로 묶는다
     @Override
     @Transactional(readOnly = true)
-    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
+    public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
         String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.strip();
-        return noticeRepository.search(normalizedKeyword, pageOffset);
+        return noticeRepository.search(category, normalizedKeyword, pageOffset);
     }
 
     @Override

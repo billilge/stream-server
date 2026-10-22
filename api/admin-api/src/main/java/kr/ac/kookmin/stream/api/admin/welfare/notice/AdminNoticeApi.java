@@ -29,13 +29,15 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "공지 관리", description = "운영진 공지 목록 조회·작성·수정·삭제")
 public interface AdminNoticeApi {
 
-    /** 공지 목록. 제목으로 검색하고 고정 공지를 먼저, 그다음 최신순으로 페이지 단위 조회한다. */
+    /** 공지 목록. 종류로 거르고 제목으로 검색하며, 고정 공지를 먼저, 그다음 최신순으로 페이지 단위 조회한다. */
     @Operation(summary = "공지 목록 조회",
-        description = "삭제되지 않은 공지를 고정 공지 우선, 최신순으로 페이지 단위로 조회한다. keyword를 주면 제목에 그 글자가 "
-            + "들어 있는 공지만 조회한다. page는 0부터 시작한다.")
+        description = "삭제되지 않은 공지를 고정 공지 우선, 최신순으로 페이지 단위로 조회한다. category(GENERAL, PARTNERSHIP)를 "
+            + "주면 그 종류만, keyword를 주면 제목에 그 글자가 들어 있는 공지만 조회하며 둘을 함께 쓸 수 있다. "
+            + "page는 0부터 시작한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<PageResponse<AdminNoticeListItemResponse>> getNotices(
         AdminApiUser apiUser,
+        String category,
         String keyword,
         @ParameterObject PageParams pageParams
     );

@@ -18,15 +18,21 @@ public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long
     @Query(value = """
         SELECT n FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
         AND (:keyword IS NULL OR LOCATE(:keyword, n.title) > 0)
         ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
         """,
         countQuery = """
         SELECT COUNT(n) FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
         AND (:keyword IS NULL OR LOCATE(:keyword, n.title) > 0)
         """)
-    Page<NoticeJpaEntity> search(@Param("keyword") String keyword, Pageable pageable);
+    Page<NoticeJpaEntity> search(
+        @Param("category") NoticeCategory category,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
 
     @Query("""
         SELECT n FROM NoticeJpaEntity n

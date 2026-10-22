@@ -34,9 +34,9 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     }
 
     @Override
-    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
+    public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
         Page<NoticeJpaEntity> result = noticeJpaRepository.search(
-            keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
+            category, keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(
