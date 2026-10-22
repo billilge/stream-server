@@ -19,13 +19,16 @@ import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
 @Tag(name = "공지", description = "공지사항 조회 (학생 앱·운영진 공용)")
 public interface AppNoticeApi {
 
-    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링한다. */
+    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링하고 제목으로 검색한다. */
     @Operation(summary = "공지 목록 조회",
-        description = "커서 기반으로 공지 목록을 조회한다. category로 분류를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
+        description = "커서 기반으로 공지 목록을 고정 공지 우선, 최신순으로 조회한다. category로 분류를 필터링하고, keyword를 주면 "
+            + "제목에 그 글자가 들어 있는 공지만 조회한다. cursor/size로 다음 페이지를 넘기며, 다음 페이지에도 같은 "
+            + "category와 keyword를 보낸다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
         String category,
+        String keyword,
         String cursor,
         int size
     );

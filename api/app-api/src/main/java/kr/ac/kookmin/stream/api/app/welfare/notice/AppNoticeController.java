@@ -33,11 +33,12 @@ public class AppNoticeController implements AppNoticeApi {
     @GetMapping
     public ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
             @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "cursor", required = false) String cursor,
             @RequestParam(name = "size", defaultValue = "20") int size
     ) {
         NoticeCursor noticeCursor = cursor == null ? null : NoticeCursor.from(CursorCodec.decode(cursor));
-        CursorSliceResult<Notice> result = noticeService.getNotices(NoticeCategory.from(category), noticeCursor, size);
+        CursorSliceResult<Notice> result = noticeService.getNotices(NoticeCategory.from(category), keyword, noticeCursor, size);
 
         List<Long> thumbnailIds = result.content().stream()
                 .map(AppNoticeController::firstImageId)
