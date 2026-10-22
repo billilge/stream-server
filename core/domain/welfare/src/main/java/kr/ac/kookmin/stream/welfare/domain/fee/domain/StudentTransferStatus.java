@@ -18,7 +18,7 @@ public class StudentTransferStatus {
     // 학생이 입력한 남은 학기 수와, 그 근거로 올린 학점이수현황 캡처. 제출 전에는 둘 다 null이다
     private Integer remainingSemesters;
     private String proofImageKey;
-    // 관리자가 확인필요로 처리하며 남긴 안내 문구. NEEDS_CHECK일 때만 값이 있다
+    // 관리자가 확인필요로 처리하며 남긴 안내 문구. REJECTED일 때만 값이 있다
     private String adminNote;
     private LocalDateTime requestedAt;
     private LocalDateTime reviewedAt;
@@ -88,7 +88,7 @@ public class StudentTransferStatus {
      */
     public void review(TransferStatus reviewedStatus, String adminNote, LocalDateTime now) {
         this.status = reviewedStatus;
-        this.adminNote = reviewedStatus == TransferStatus.NEEDS_CHECK ? adminNote : null;
+        this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;
     }
 

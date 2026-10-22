@@ -39,7 +39,7 @@ public class AdminFeeReviewUseCase {
 
     // 확인필요는 학생에게 보여줄 안내 문구가 있어야 의미가 있다. 그 외 상태에서는 문구를 받아도 버린다
     private void validateAdminNote(TransferStatus status, String adminNote) {
-        if (status != TransferStatus.NEEDS_CHECK) {
+        if (status != TransferStatus.REJECTED) {
             return;
         }
         if (adminNote == null || adminNote.isBlank() || adminNote.length() > MAX_ADMIN_NOTE_LENGTH) {

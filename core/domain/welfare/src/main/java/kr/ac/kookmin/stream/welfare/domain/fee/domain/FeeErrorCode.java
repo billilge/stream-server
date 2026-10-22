@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 public enum FeeErrorCode implements ErrorCode {
 
-    // 상태 문자열이 UNPAID/PENDING/PAID/NEEDS_CHECK가 아닌 경우에 쓴다
+    // 상태 문자열이 UNPAID/PENDING/PAID/REJECTED가 아닌 경우에 쓴다
     INVALID_TRANSFER_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 납부 상태입니다."),
     INVALID_REMAINING_SEMESTERS(ErrorStatus.BAD_REQUEST, "유효하지 않은 남은 학기 수입니다."),
     INVALID_PROOF_IMAGE(ErrorStatus.BAD_REQUEST, "유효하지 않은 인증 이미지입니다."),

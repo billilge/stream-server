@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * 안내 문구는 확인필요일 때만 필수라 Bean Validation 대신 UseCase에서 검증한다.
  */
 public record FeeStatusUpdateRequest(
-    @Schema(description = "변경할 납부 상태", example = "NEEDS_CHECK")
+    @Schema(description = "변경할 납부 상태", example = "REJECTED")
     String status,
 
     @Schema(description = "관리자 안내 문구 (최대 255자). 확인필요일 때 필수",
