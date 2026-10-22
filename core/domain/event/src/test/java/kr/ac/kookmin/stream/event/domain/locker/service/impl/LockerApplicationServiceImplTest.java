@@ -41,16 +41,18 @@ class LockerApplicationServiceImplTest {
     private static final Long MEMBER_ID = 100L;
     private static final Long LOCKER_ID = 11L;
 
+    /** 신청이 모집 기간 안에서만 되므로 기간을 현재 시각 기준으로 잡는다. 고정 날짜로 두면 그 기간이 지난 뒤 테스트가 깨진다. */
     private static LockerPeriod period() {
+        LocalDateTime now = LocalDateTime.now();
         return LockerPeriod.of(
             PERIOD_ID,
-            2026,
+            now.getYear(),
             2,
-            "2026-2학기",
-            LocalDateTime.of(2026, 8, 20, 10, 0),
-            LocalDateTime.of(2026, 8, 25, 18, 0),
-            LocalDate.of(2026, 9, 1),
-            LocalDate.of(2026, 12, 15),
+            "%d-2학기".formatted(now.getYear()),
+            now.minusDays(5),
+            now.plusDays(5),
+            now.toLocalDate().plusDays(12),
+            now.toLocalDate().plusMonths(4),
             true
         );
     }

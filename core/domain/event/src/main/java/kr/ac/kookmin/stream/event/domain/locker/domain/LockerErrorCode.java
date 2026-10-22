@@ -20,6 +20,7 @@ public enum LockerErrorCode implements ErrorCode {
     LOCKER_PERIOD_ALREADY_ENDED(ErrorStatus.CONFLICT, "종료된 회차는 수정할 수 없습니다."),
     LOCKER_PERIOD_APPLY_ALREADY_STARTED(ErrorStatus.CONFLICT, "신청이 시작된 회차는 신청 시작일을 바꿀 수 없습니다."),
     LOCKER_PERIOD_HAS_APPLICATIONS(ErrorStatus.CONFLICT, "신청이 있는 회차는 삭제할 수 없습니다."),
+    LOCKER_APPLY_NOT_OPEN(ErrorStatus.CONFLICT, "사물함 신청 기간이 아닙니다."),
     LOCKER_ALREADY_ASSIGNED(ErrorStatus.CONFLICT, "다른 사용자가 먼저 신청한 사물함입니다.");
 
     private final int status;
