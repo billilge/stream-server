@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 납부 상태 처리. 상태 변경과 납부자 명부 반영이 어긋나면 안 되므로 한 트랜잭션으로 묶는다.
+ * 서비스가 남기는 아웃박스 이벤트(납부 여부 변경)도 이 트랜잭션에 함께 커밋·롤백된다.
  */
 @Component
 @RequiredArgsConstructor

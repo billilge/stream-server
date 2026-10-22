@@ -30,6 +30,8 @@ public interface StudentTransferStatusService {
     /**
      * 관리자 처리. 이미 처리된 요청도 다시 바꿀 수 있다. adminNote는 확인필요일 때만 남는다.
      * 회원의 최신 요청만 바꿀 수 있고, 지난 요청이면 {@code FEE_REQUEST_NOT_LATEST}다.
+     * 납부 여부가 바뀌면(납부완료가 되거나 납부완료에서 벗어나면) 같은 트랜잭션에서 아웃박스에
+     * {@code MemberFeePaid} · {@code MemberFeePaymentCanceled}를 남긴다.
      */
     StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote);
 }
