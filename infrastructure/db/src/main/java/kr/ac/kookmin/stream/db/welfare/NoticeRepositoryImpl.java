@@ -20,9 +20,13 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     @Override
     public CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
-        List<NoticeJpaEntity> entities = cursor == null
-            ? noticeJpaRepository.findFirstSlice(category, pageable)
-            : noticeJpaRepository.findNextSlice(category, cursor.pinned(), cursor.createdAt(), cursor.id(), pageable);
+        List<NoticeJpaEntity> entities = noticeJpaRepository.findSlice(
+            category,
+            cursor == null ? null : cursor.pinned(),
+            cursor == null ? null : cursor.createdAt(),
+            cursor == null ? null : cursor.id(),
+            pageable
+        );
 
         return CursorSliceResult.ofSlice(
             entities, size, NoticeJpaEntity::toDomain, notice -> NoticeCursor.of(notice, category).format()
