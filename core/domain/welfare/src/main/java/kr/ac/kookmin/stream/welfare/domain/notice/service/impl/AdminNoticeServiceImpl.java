@@ -28,6 +28,7 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
     @Override
     @Transactional(readOnly = true)
     public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
+        // 공백뿐인 검색어는 검색하지 않는 것과 같다
         String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.strip();
         return noticeRepository.search(category, normalizedKeyword, pageOffset);
     }

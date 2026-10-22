@@ -14,19 +14,19 @@ public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long
 
     Optional<NoticeJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    // keyword는 제목 부분 일치 검색이다. 검색어 안의 %·_는 LIKE의 와일드카드로 해석된다(이스케이프하지 않는다)
+    // keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
         SELECT n FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
         AND (:category IS NULL OR n.category = :category)
-        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%'))
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
         """,
         countQuery = """
         SELECT COUNT(n) FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
         AND (:category IS NULL OR n.category = :category)
-        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%'))
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         """)
     Page<NoticeJpaEntity> search(
         @Param("category") NoticeCategory category,

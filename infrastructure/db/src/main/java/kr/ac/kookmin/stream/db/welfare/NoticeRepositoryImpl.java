@@ -5,6 +5,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCursor;
@@ -36,7 +37,7 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     @Override
     public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
         Page<NoticeJpaEntity> result = noticeJpaRepository.search(
-            category, keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
+            category, LikePatterns.escape(keyword), PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(
