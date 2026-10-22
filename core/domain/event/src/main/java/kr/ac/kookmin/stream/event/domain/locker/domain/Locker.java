@@ -42,4 +42,17 @@ public class Locker {
     public boolean isSelectable(boolean applied) {
         return status == LockerStatus.AVAILABLE && !applied;
     }
+
+    /**
+     * 사물함 자체 상태를 바꾼다. 바뀐 값이 있으면 true를 돌려준다.
+     * <p>
+     * 운영진이 여러 칸을 한 번에 바꾸므로, 이미 그 상태인 사물함은 저장하지 않도록 바뀌었는지 알려준다.
+     */
+    public boolean changeStatus(LockerStatus status) {
+        if (this.status == status) {
+            return false;
+        }
+        this.status = status;
+        return true;
+    }
 }
