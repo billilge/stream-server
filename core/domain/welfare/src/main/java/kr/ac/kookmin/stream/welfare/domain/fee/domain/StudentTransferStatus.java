@@ -28,8 +28,8 @@ public class StudentTransferStatus {
     private LocalDateTime updatedAt;
 
     /**
-     * 송금을 마친 학생의 첫 납부 요청. 학기 인증(남은 학기 수·학점이수현황 캡처)과 송금 완료를
-     * 한 번에 받으므로 바로 납부확인중이 된다.
+     * 송금을 마친 학생의 납부 요청. 학기 인증(남은 학기 수·학점이수현황 캡처)과 송금 완료를 한 번에 받으므로
+     * 바로 납부확인중이 된다. 처음 내든 반려 뒤 다시 내든 늘 새 요청(행)이고, 이전 요청은 이력으로 남는다.
      */
     public static StudentTransferStatus request(
         Long memberId,
@@ -60,23 +60,13 @@ public class StudentTransferStatus {
     }
 
     /**
-     * 반려된 학생이 학기 인증부터 다시 납부한다. 이전 요청의 입력값과 처리 흔적(안내 문구·처리 시각)을
-     * 지우고 새 요청으로 만든다.
-     * <p>
-     * 반려에서만 가능하다. 납부확인중이면 이미 운영진에게 요청이 가 있고, 납부완료면 더 낼 것이 없다.
+     * 이 요청 다음에 새 납부 요청을 받을 수 있는지 본다. 반려된 요청 뒤에만 다시 낼 수 있다 —
+     * 납부확인중이면 이미 운영진에게 요청이 가 있고, 납부완료면 더 낼 것이 없다.
      */
-    public void resubmit(int remainingSemesters, String proofImageKey, long amount, LocalDateTime now) {
+    public void validateRequestable() {
         if (status != TransferStatus.REJECTED) {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
         }
-
-        this.status = TransferStatus.PENDING;
-        this.remainingSemesters = remainingSemesters;
-        this.proofImageKey = proofImageKey;
-        this.amount = amount;
-        this.adminNote = null;
-        this.requestedAt = now;
-        this.reviewedAt = null;
     }
 
     /**

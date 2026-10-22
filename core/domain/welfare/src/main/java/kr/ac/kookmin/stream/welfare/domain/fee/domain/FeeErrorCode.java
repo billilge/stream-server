@@ -22,6 +22,7 @@ public enum FeeErrorCode implements ErrorCode {
     FEE_ACCOUNT_NOT_FOUND(ErrorStatus.NOT_FOUND, "학생회비 납부 계좌가 등록되지 않았습니다."),
     FEE_REQUEST_NOT_FOUND(ErrorStatus.NOT_FOUND, "제출된 납부 정보가 없습니다."),
     FEE_REQUEST_ALREADY_REQUESTED(ErrorStatus.CONFLICT, "이미 납부 확인을 요청했거나 납부가 완료되었습니다."),
+    FEE_REQUEST_NOT_LATEST(ErrorStatus.CONFLICT, "회원의 최신 납부 요청만 처리할 수 있습니다."),
     MEMBER_IS_NOT_PAYER(ErrorStatus.BAD_REQUEST, "회비를 납부한 회원만 이용할 수 있습니다.");
 
     private final int status;

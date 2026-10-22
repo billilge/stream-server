@@ -36,7 +36,7 @@ public class AppFeeController implements AppFeeApi {
             : FeeAmountCalculator.validateRemainingSemesters(remainingSemesters);
         FeeAccount account = feeAccountProvider.getAccount();
 
-        FeeResponse response = studentTransferStatusService.findByMemberId(apiUser.userId())
+        FeeResponse response = studentTransferStatusService.findLatestByMemberId(apiUser.userId())
             .map(transferStatus -> FeeResponse.of(transferStatus, account, semesters))
             .orElseGet(() -> FeeResponse.notRequested(account, semesters));
         return ApiResponse.success(response);
