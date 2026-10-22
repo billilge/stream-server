@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeUpdateCommand;
 
@@ -37,10 +37,10 @@ public record NoticeUpdateRequest(
     @NotNull(message = "고정 여부를 입력해 주세요.")
     Boolean pinned,
 
-    @Schema(description = "수정 화면이 공지를 읽었을 때의 수정 시각(KST 기준 epoch 밀리초). 그 사이 다른 관리자가 고쳤다면 409",
-        example = "1756339200000")
+    @Schema(description = "공지 상세 조회가 내려준 수정 시각. 받은 값을 그대로 보낸다. 그 사이 다른 관리자가 고쳤다면 409",
+        example = "2026-10-22T10:00:00")
     @NotNull(message = "수정 시각을 입력해 주세요.")
-    Long updatedAt
+    LocalDateTime updatedAt
 ) {
 
     public NoticeUpdateCommand toCommand() {
@@ -51,7 +51,7 @@ public record NoticeUpdateRequest(
             imageFileIds.stream().distinct().toList(),
             attachmentFileIds.stream().distinct().toList(),
             pinned,
-            DateUtil.fromEpochMillis(updatedAt)
+            updatedAt
         );
     }
 }
