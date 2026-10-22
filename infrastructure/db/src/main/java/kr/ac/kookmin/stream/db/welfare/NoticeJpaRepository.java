@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,26 @@ import org.springframework.data.repository.query.Param;
 public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long> {
 
     Optional<NoticeJpaEntity> findByIdAndIsDeletedFalse(Long id);
+
+    // keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
+    @Query(value = """
+        SELECT n FROM NoticeJpaEntity n
+        WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(n) FROM NoticeJpaEntity n
+        WHERE n.isDeleted = false
+        AND (:category IS NULL OR n.category = :category)
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    Page<NoticeJpaEntity> search(
+        @Param("category") NoticeCategory category,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
 
     // 커서가 없으면(cursorId가 null) 첫 페이지, 있으면 그 다음부터 조회한다. 커서의 세 값(pinned, createdAt, id)은 함께 넘긴다.
     // 정렬이 pinned DESC, createdAt DESC, id DESC라 "다음"은 정렬상 뒤쪽이다. boolean은 0/1로 바꿔 비교한다
