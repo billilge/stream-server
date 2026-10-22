@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
+import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCreateCommand;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeUpdateCommand;
@@ -26,9 +27,9 @@ class AdminNoticeServiceImpl implements AdminNoticeService {
     // 보도록 읽기 트랜잭션으로 묶는다
     @Override
     @Transactional(readOnly = true)
-    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
+    public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
         String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.strip();
-        return noticeRepository.search(normalizedKeyword, pageOffset);
+        return noticeRepository.search(category, normalizedKeyword, pageOffset);
     }
 
     // 공지 저장과 알림 이벤트 기록이 함께 커밋되도록 트랜잭션을 건다
