@@ -51,6 +51,8 @@ class NoticeServiceImpl implements NoticeService {
         return notice;
     }
 
+    // 읽기와 저장을 한 트랜잭션으로 묶어야 NoticeJpaEntity의 낙관적 락이 동작한다. updatedAt 비교는 수정 화면이 읽은 뒤의
+    // 변경을, 낙관적 락은 이 메서드가 읽은 뒤 UPDATE 전의 변경을 막는다
     @Override
     @Transactional
     public Notice update(Long id, NoticeUpdateCommand command) {
