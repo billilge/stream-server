@@ -282,7 +282,7 @@ Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
 - `{Domain}Service`는 공개 인터페이스(`service`), `{Domain}ServiceImpl`는 구현체(`service.impl`). `service.impl` 안의 클래스는 구현체·협력 객체 모두 **package-private**으로 선언한다(package-private `@Service`도 빈 등록됨). ArchUnit(`DomainImplAccessTests`)이 public 클래스와 외부 참조를 잡는다.
 - **`{Domain}ServiceImpl`가 `{Domain}Repository`를 직접 참조**한다.
 - 비즈니스 규칙 검증은 `{Domain}ServiceImpl`(또는 `service.impl` 협력 객체)에서 하고 `BusinessException`을 던진다.
-- 트랜잭션 경계는 Service 메서드에. 조회 전용은 `@Transactional(readOnly = true)`, 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절).
+- 트랜잭션 경계는 쓰기 Service 메서드에. 교차 도메인 UseCase가 감쌀 수 있게 **기본 전파(REQUIRED)** 를 쓴다(`architecture.md` 6-1절). 조회 메서드에는 `@Transactional(readOnly = true)`를 붙이지 않는다(트랜잭션 설정 SQL만 늘어난다).
 - **운영진 전용 기능은 학생 앱이 쓰는 `{Domain}Service`와 분리해 `Admin{Domain}Service`로 둔다.** 같은 도메인 모듈의 `service`/`service.impl`에 두고 `{Domain}Repository`를 공유하며, 두 서비스는 서로 호출하지 않는다(`architecture.md` 레이어 규칙 4). 운영진 전용 서비스가 필요한 도메인부터 점진적으로 나누고, 분리하기 전의 도메인은 `{Domain}Service` 하나로 둔다. 다른 도메인 조합(예: 공지에 붙일 파일 확인)은 서비스가 아니라 `api:admin-api`의 UseCase가 맡는다. 예: 공지는 학생 앱 조회와 상세 조회를 `NoticeService`(운영진도 상세 조회에 공용), 운영진의 목록 조회·작성·수정·삭제를 `AdminNoticeService`가 맡는다.
 
 ```java
@@ -313,7 +313,6 @@ class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Member getById(Long id) {
         return memberRepository.findById(id)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -371,7 +370,7 @@ public class AppMemberController implements AppMemberApi {
 
 - **서로 다른 도메인의 `{Domain}Service` 2개 이상**을 조합할 때만 만든다. `api:{client}-api`에 두고 공개 `{Domain}Service`만 조합한다.
 - **`{도메인}` 아래 `usecase` 하위 패키지에 둔다**(`{basePackage}.api.{client}.{팀}.{도메인}.usecase`, `request`/`response`와 동일 계층, `architecture.md` 2-2절). 컨트롤러는 `{도메인}` 패키지 바로 아래 있으므로 UseCase와 계층이 분리된다.
-- 트랜잭션은 원자성이 필요한 흐름에만. 조회 조합은 걸지 않거나 `readOnly`, 원자적 쓰기에만 `@Transactional`(`architecture.md` 6-1절).
+- 트랜잭션은 원자성이 필요한 흐름에만. 조회 조합에는 걸지 않고, 원자적 쓰기에만 `@Transactional`(`architecture.md` 6-1절).
 
 ```java
 // api:admin-api — 조회 조합 (운영진 대시보드)
@@ -383,7 +382,6 @@ public class AdminDashboardUseCase {
     private final EventService eventService;
     private final NoticeService noticeService;
 
-    @Transactional(readOnly = true)
     public AdminDashboardResponse getDashboard() {
         long memberCount = memberService.countActive();
         List<Event> upcoming = eventService.findUpcoming();
