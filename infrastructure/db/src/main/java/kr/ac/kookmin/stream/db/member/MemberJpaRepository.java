@@ -19,10 +19,12 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     List<MemberJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
 
+    // keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query("""
         SELECT m.id FROM MemberJpaEntity m
         WHERE m.isDeleted = false
-        AND (m.name LIKE CONCAT('%', :keyword, '%') OR m.studentId LIKE CONCAT('%', :keyword, '%'))
+        AND (m.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            OR m.studentId LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         """)
     List<Long> searchIdsByKeyword(@Param("keyword") String keyword);
 

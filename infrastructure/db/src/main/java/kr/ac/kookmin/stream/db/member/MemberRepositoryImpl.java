@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
@@ -46,7 +47,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public List<Long> searchIdsByKeyword(String keyword) {
-        return memberJpaRepository.searchIdsByKeyword(keyword);
+        return memberJpaRepository.searchIdsByKeyword(LikePatterns.escape(keyword));
     }
 
     @Override
