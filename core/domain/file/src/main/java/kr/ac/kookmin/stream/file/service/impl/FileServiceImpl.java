@@ -64,6 +64,11 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
+    public Optional<File> findByFileKey(String fileKey) {
+        return fileRepository.findByFileKey(fileKey);
+    }
+
+    @Override
     public Map<Long, File> findAllByIdIn(List<Long> fileIds) {
         if (fileIds.isEmpty()) {
             return Map.of();
