@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee.response;
 
 import java.time.LocalDateTime;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccount;
 import kr.ac.kookmin.stream.api.common.ApiConstants;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
@@ -9,8 +8,7 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
 /**
- * 납부자 목록의 한 줄. 모든 회원이 납부 상태 행을 가지므로 아직 아무것도 내지 않은 회원도 들어온다 —
- * 그런 줄은 상태가 납부 전이고 제출 관련 값이 모두 null이다.
+ * 납부자 목록의 한 줄. 납부를 요청한 회원만 들어온다 — 한 번도 요청하지 않은 회원은 행이 없다.
  */
 public record AdminFeeSearchResponse(
     Long studentTransferStatusId,
@@ -34,8 +32,7 @@ public record AdminFeeSearchResponse(
     public static AdminFeeSearchResponse of(
         StudentTransferStatus transferStatus,
         Member member,
-        boolean signedUp,
-        FeeAccount account
+        boolean signedUp
     ) {
         return new AdminFeeSearchResponse(
             transferStatus.getId(),
@@ -46,7 +43,8 @@ public record AdminFeeSearchResponse(
             signedUp,
             transferStatus.getStatus().name(),
             transferStatus.getRemainingSemesters(),
-            account.calculateTransferAmount(transferStatus.getRemainingSemesters()),
+            // 요청 시점에 남긴 금액이다. 운영진이 학기당 회비를 바꿔도 이미 들어온 요청의 금액은 그대로 보인다
+            transferStatus.getAmount(),
             StorageUrlBuilder.build(transferStatus.getProofImageKey()),
             transferStatus.getRequestedAt(),
             // 납부 확인 시각은 납부완료일 때의 처리 시각이다

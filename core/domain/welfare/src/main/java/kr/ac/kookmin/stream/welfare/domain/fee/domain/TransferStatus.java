@@ -2,8 +2,8 @@ package kr.ac.kookmin.stream.welfare.domain.fee.domain;
 
 import kr.ac.kookmin.stream.common.BusinessException;
 
+// 납부 요청의 상태. 한 번도 요청하지 않은 회원(미납부)은 행이 없으므로 여기에 상태가 없다
 public enum TransferStatus {
-    UNPAID,
     PENDING,
     PAID,
     // 운영진이 납부를 확인하지 못해 돌려보낸 상태. 화면에서는 "확인필요"로 보인다

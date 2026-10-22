@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.app.welfare.fee.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * 납부 정보 제출. 남은 학기 수와 그 근거가 되는 학점이수현황 캡처를 받는다.
+ * 학생회비 납부 요청. 송금을 마친 뒤 남은 학기 수와 그 근거가 되는 학점이수현황 캡처를 함께 보낸다.
  * <p>
  * 검증에 Bean Validation을 쓰지 않는다 — 명세가 항목마다 전용 에러 코드를 요구하는데
  * 애노테이션으로는 공통 INVALID_INPUT이 되기 때문이다(coding-style 검증 규칙, fee-domain-study 08번 문서).
