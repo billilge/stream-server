@@ -5,24 +5,40 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.notice.response.AdminNoticeListItemResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.NoticeCreateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.NoticeUpdateResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 운영진 공지 API의 문서 명세. 구현은 {@link AdminNoticeController}가 맡는다.
  * <p>
  * 접근은 {@code ADMIN} role이면 된다. 부서 제한은 두지 않았다.
  * <p>
- * 목록·상세 조회는 학생 앱 공지 API({@code /v1/app/notices})를 그대로 쓴다. 관리자 토큰도 {@code STUDENT} 권한을
- * 가지므로 호출할 수 있고, 상세 응답이 수정 화면에 필요한 고정 여부를 함께 내려준다.
+ * 목록은 이 API가 제공한다(제목 검색, 페이지 번호 이동). 상세 조회는 학생 앱 공지 API({@code /v1/app/notices/{noticeId}})를
+ * 그대로 쓴다. 관리자 토큰도 {@code STUDENT} 권한을 가지므로 호출할 수 있고, 상세 응답이 수정 화면에 필요한 고정 여부를
+ * 함께 내려준다.
  */
-@Tag(name = "공지 관리", description = "운영진 공지 작성·수정·삭제")
+@Tag(name = "공지 관리", description = "운영진 공지 목록 조회·작성·수정·삭제")
 public interface AdminNoticeApi {
+
+    /** 공지 목록. 제목으로 검색하고 고정 공지를 먼저, 그다음 최신순으로 페이지 단위 조회한다. */
+    @Operation(summary = "공지 목록 조회",
+        description = "삭제되지 않은 공지를 고정 공지 우선, 최신순으로 페이지 단위로 조회한다. keyword를 주면 제목에 그 글자가 "
+            + "들어 있는 공지만 조회한다. page는 0부터 시작한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    ApiResponse<PageResponse<AdminNoticeListItemResponse>> getNotices(
+        AdminApiUser apiUser,
+        String keyword,
+        @ParameterObject PageParams pageParams
+    );
 
     /** 공지 작성. 작성자는 토큰의 관리자로 정해진다. */
     @Operation(summary = "공지 작성",

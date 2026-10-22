@@ -3,6 +3,8 @@ package kr.ac.kookmin.stream.welfare.domain.notice.service.impl;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -31,6 +33,15 @@ class NoticeServiceImpl implements NoticeService {
             throw new BusinessException(NoticeErrorCode.NOTICE_INVALID_CURSOR);
         }
         return noticeRepository.findAll(category, cursor, size);
+    }
+
+    // 목록과 전체 개수를 두 문장으로 조회한다. 저장소의 @Query 메서드에는 트랜잭션이 붙지 않으므로, 두 조회가 같은 스냅샷을
+    // 보도록 읽기 트랜잭션으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<Notice> search(String keyword, PageOffset pageOffset) {
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.strip();
+        return noticeRepository.search(normalizedKeyword, pageOffset);
     }
 
     @Override
