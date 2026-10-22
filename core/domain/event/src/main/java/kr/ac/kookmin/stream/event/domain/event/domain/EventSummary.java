@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public record EventSummary(
     Long eventId,
     String title,
-    String target,
     LocalDateTime eventStartAt,
     Long thumbnailFileId,
     LocalDateTime applyStartAt,
@@ -23,7 +22,6 @@ public record EventSummary(
         return new EventSummary(
             event.getId(),
             event.getTitle(),
-            event.getTarget(),
             event.getEventStartAt(),
             event.thumbnailFileId(),
             event.getApplyStartAt(),

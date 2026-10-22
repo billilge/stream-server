@@ -58,7 +58,6 @@ public class EventRepositoryImpl implements EventRepository {
             recruitStatus == RecruitStatus.BEFORE_OPEN,
             recruitStatus == RecruitStatus.OPEN,
             recruitStatus == RecruitStatus.CLOSED,
-            RecruitStatus.CLOSED,
             RecruitType.FIRST_COME,
             EventApplicationStatus.APPLIED,
             now,
