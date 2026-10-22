@@ -62,8 +62,4 @@ public class Notice {
         this.imageIds = command.imageIds();
         this.pinned = command.pinned();
     }
-
-    public void changePinned(boolean pinned) {
-        this.pinned = pinned;
-    }
 }

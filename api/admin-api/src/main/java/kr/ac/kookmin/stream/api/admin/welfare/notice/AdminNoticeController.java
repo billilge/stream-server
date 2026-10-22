@@ -3,7 +3,6 @@ package kr.ac.kookmin.stream.api.admin.welfare.notice;
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeCreateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticePinRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.AdminNoticeDetailResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.AdminNoticeListItemResponse;
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -81,17 +79,6 @@ public class AdminNoticeController implements AdminNoticeApi {
     @DeleteMapping("/{noticeId}")
     public ApiResponse<Void> deleteNotice(AdminApiUser apiUser, @PathVariable Long noticeId) {
         noticeService.delete(noticeId);
-        return ApiResponse.success();
-    }
-
-    @Override
-    @PatchMapping("/{noticeId}/pin")
-    public ApiResponse<Void> changePinned(
-        AdminApiUser apiUser,
-        @PathVariable Long noticeId,
-        @Valid @RequestBody NoticePinRequest request
-    ) {
-        noticeService.changePinned(noticeId, request.pinned());
         return ApiResponse.success();
     }
 }

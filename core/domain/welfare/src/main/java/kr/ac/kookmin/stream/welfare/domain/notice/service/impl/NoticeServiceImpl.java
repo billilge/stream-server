@@ -79,14 +79,6 @@ class NoticeServiceImpl implements NoticeService {
         }
     }
 
-    @Override
-    @Transactional
-    public void changePinned(Long id, boolean pinned) {
-        Notice notice = getNotice(id);
-        notice.changePinned(pinned);
-        noticeRepository.save(notice);
-    }
-
     // updated_at이 초 단위 DATETIME이라 같은 초로 맞춰 비교한다. 수정 화면이 읽은 뒤 고쳐졌다면 시각이 달라진다
     private void validateNotModified(Notice notice, LocalDateTime expectedUpdatedAt) {
         LocalDateTime current = notice.getUpdatedAt().truncatedTo(ChronoUnit.SECONDS);

@@ -28,5 +28,4 @@ public interface NoticeService {
     Notice update(Long id, NoticeUpdateCommand command);
 
     void delete(Long id);
-    void changePinned(Long id, boolean pinned);
 }
