@@ -30,12 +30,9 @@ public interface AppNoticeApi {
         int size
     );
 
-    /**
-     * 공지 상세. 운영진 수정 화면도 이 응답으로 폼을 채운다. 수정할 때 updatedAt을 그대로 돌려 보내면
-     * 그 사이 다른 관리자가 고친 공지를 덮어쓰지 않는다.
-     */
+    /** 공지 상세. 운영진 수정 화면도 이 응답으로 폼을 채운다. */
     @Operation(summary = "공지 상세 조회",
-        description = "공지 한 건을 조회한다. 고정 여부(pinned), 이미지·첨부 파일의 ID와 URL, 수정 시각(updatedAt)을 함께 내려준다. "
+        description = "공지 한 건을 조회한다. 고정 여부(pinned), 이미지·첨부 파일의 ID와 URL을 함께 내려준다. "
             + "삭제된 파일은 목록에서 빠진다.")
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     ApiResponse<NoticeDetailResponse> getNotice(Long noticeId);

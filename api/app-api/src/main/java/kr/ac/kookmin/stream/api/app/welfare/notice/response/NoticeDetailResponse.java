@@ -16,8 +16,7 @@ public record NoticeDetailResponse(
     boolean pinned,
     List<Image> images,
     List<Attachment> attachments,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    LocalDateTime createdAt
 ) {
 
     /**
@@ -49,8 +48,7 @@ public record NoticeDetailResponse(
             notice.isPinned(),
             images,
             attachments,
-            notice.getCreatedAt(),
-            notice.getUpdatedAt()
+            notice.getCreatedAt()
         );
     }
 
