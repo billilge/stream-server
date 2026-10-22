@@ -2,12 +2,22 @@ package kr.ac.kookmin.stream.welfare.domain.notice.repository;
 
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCursor;
 
 public interface NoticeRepository {
     CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size);
+
+    /**
+     * 삭제되지 않은 공지를 고정 우선, 최신순으로 페이지 단위로 조회한다. {@code category}가 null이 아니면 그 종류만,
+     * 제목에 {@code keyword}가 들어 있는 공지만 고르고, 각각 null이면 그 조건 없이 조회한다.
+     * 검색어는 호출하는 쪽이 공백을 정리해서 넘기고(공백뿐이면 null), 검색어의 {@code %}·{@code _}는 글자 그대로 검색한다.
+     */
+    PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset);
+
     Optional<Notice> findById(Long id);
     Notice save(Notice notice);
 
