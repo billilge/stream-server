@@ -46,7 +46,7 @@ class MemberServiceImpl implements MemberService {
 
     @Override
     public List<Long> searchIdsByKeyword(String keyword) {
-        return memberRepository.searchIdsByKeyword(keyword);
+        return memberRepository.searchIdsByKeyword(keyword.strip());
     }
 
     @Override

@@ -11,6 +11,10 @@ public interface MemberService {
     Member getById(Long id);
     List<Member> findAllByIds(List<Long> ids);
     Map<Long, Member> getMapByIds(List<Long> ids);
+    /**
+     * 이름 또는 학번에 검색어가 포함된 회원 ID를 조회한다. 앞뒤 공백은 지우고 찾는다.
+     * 검색할지 말지는 호출하는 쪽이 정하므로, 공백뿐인 검색어는 넘기지 않는다.
+     */
     List<Long> searchIdsByKeyword(String keyword);
     Member updateProfile(Long id, MemberProfileCommand command);
     Member registerOrUpdateByStudentId(MemberProfileCommand command);
