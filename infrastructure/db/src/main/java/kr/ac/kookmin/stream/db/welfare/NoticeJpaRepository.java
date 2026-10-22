@@ -14,19 +14,19 @@ public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long
 
     Optional<NoticeJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    // LIKE 대신 LOCATE를 써서 %·_ 같은 문자도 와일드카드가 아닌 글자 그대로 검색된다
+    // keyword는 제목 부분 일치 검색이다. 검색어 안의 %·_는 LIKE의 와일드카드로 해석된다(이스케이프하지 않는다)
     @Query(value = """
         SELECT n FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
         AND (:category IS NULL OR n.category = :category)
-        AND (:keyword IS NULL OR LOCATE(:keyword, n.title) > 0)
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%'))
         ORDER BY n.pinned DESC, n.createdAt DESC, n.id DESC
         """,
         countQuery = """
         SELECT COUNT(n) FROM NoticeJpaEntity n
         WHERE n.isDeleted = false
         AND (:category IS NULL OR n.category = :category)
-        AND (:keyword IS NULL OR LOCATE(:keyword, n.title) > 0)
+        AND (:keyword IS NULL OR n.title LIKE CONCAT('%', :keyword, '%'))
         """)
     Page<NoticeJpaEntity> search(
         @Param("category") NoticeCategory category,
