@@ -11,7 +11,6 @@ import kr.ac.kookmin.stream.file.domain.FileCategory;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeAmountCalculator;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -34,25 +33,20 @@ public class FeeSubmitUseCase {
     private final FileService fileService;
 
     public FeeResponse submit(Long memberId, FeeSubmitRequest request) {
-        int remainingSemesters = FeeAmountCalculator.validateRemainingSemesters(request.remainingSemesters());
         validateProofImage(request.proofImageKey(), memberId);
 
         // 계좌가 없으면 송금 자체가 불가능하므로, 저장하기 전에 먼저 막는다
         FeeAccount account = feeAccountProvider.getAccount();
-        long amount = account.calculateTransferAmount(remainingSemesters);
+        long amount = account.calculateTransferAmount(request.remainingSemesters());
 
-        StudentTransferStatus saved =
-            studentTransferStatusService.request(memberId, remainingSemesters, request.proofImageKey(), amount);
+        StudentTransferStatus saved = studentTransferStatusService.request(
+            memberId, request.remainingSemesters(), request.proofImageKey(), amount);
         return FeeResponse.of(saved, account, null);
     }
 
     // 실재하는 키인지, 본인이 올린 것인지, 학점이수현황 캡처로 올린 것인지 본다.
     // 카테고리까지 보는 이유는 학생이 다른 용도로 올려둔 파일의 키를 넘기는 걸 막기 위해서다.
     private void validateProofImage(String proofImageKey, Long memberId) {
-        if (proofImageKey == null || proofImageKey.isBlank()) {
-            throw new BusinessException(FeeErrorCode.INVALID_PROOF_IMAGE);
-        }
-
         File proofImage = fileService.findByFileKey(proofImageKey)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.INVALID_PROOF_IMAGE));
 

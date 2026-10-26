@@ -73,9 +73,14 @@ public class StudentTransferStatus {
      * 관리자가 납부 상태를 바꾼다. 이미 처리한 요청도 다시 바꿀 수 있다 — 잘못 처리한 경우를 되돌리기 위해서다.
      * 그래서 납부완료도 종결 상태가 아니다.
      * <p>
-     * 안내 문구는 확인필요일 때만 남긴다. 납부확인중으로 되돌리면 아직 처리 전이라는 뜻이므로 처리 시각도 지운다.
+     * 안내 문구는 확인필요일 때만 남기고, 확인필요면 반드시 있어야 한다 — 학생이 문구를 보고 다시 내기 때문이다.
+     * 납부확인중으로 되돌리면 아직 처리 전이라는 뜻이므로 처리 시각도 지운다.
      */
     public void review(TransferStatus reviewedStatus, String adminNote, LocalDateTime now) {
+        if (reviewedStatus == TransferStatus.REJECTED && (adminNote == null || adminNote.isBlank())) {
+            throw new BusinessException(FeeErrorCode.INVALID_ADMIN_NOTE);
+        }
+
         this.status = reviewedStatus;
         this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;

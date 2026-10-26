@@ -43,8 +43,9 @@ public interface AdminFeeApi {
             + "확인필요(REJECTED)로 바꿀 때는 학생에게 보여줄 안내 문구가 필요하다. "
             + "확인필요로 돌려받은 학생은 안내 문구를 보고 학기 인증부터 다시 낼 수 있다. "
             + "회원의 최신 요청만 바꿀 수 있다 — 지난 요청은 이력이다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class,
-        codes = {"INVALID_TRANSFER_STATUS", "INVALID_ADMIN_NOTE", "FEE_REQUEST_NOT_FOUND", "FEE_REQUEST_NOT_LATEST"})
+        codes = {"INVALID_ADMIN_NOTE", "FEE_REQUEST_NOT_FOUND", "FEE_REQUEST_NOT_LATEST"})
     ApiResponse<FeeStatusUpdateResponse> updateStatus(
         AdminApiUser apiUser,
         Long studentTransferStatusId,
@@ -61,7 +62,7 @@ public interface AdminFeeApi {
     @Operation(summary = "회비 납부 계좌 변경",
         description = "은행·계좌번호·학기당 회비를 한 번에 저장한다. 은행은 허용 목록 중 하나여야 하고 "
             + "계좌번호는 하이픈을 제외한 숫자 10~14자리다. 송금 링크는 저장된 값으로 조회 시점에 만들어진다.")
-    @ApiErrorCode(type = FeeErrorCode.class,
-        codes = {"INVALID_BANK", "INVALID_ACCOUNT_NO", "INVALID_TRANSFER_AMOUNT"})
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_BANK"})
     ApiResponse<FeeAccountResponse> updateAccount(AdminApiUser apiUser, FeeAccountUpdateRequest request);
 }

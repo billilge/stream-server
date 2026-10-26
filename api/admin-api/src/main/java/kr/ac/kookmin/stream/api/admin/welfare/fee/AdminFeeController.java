@@ -58,10 +58,10 @@ public class AdminFeeController implements AdminFeeApi {
     public ApiResponse<FeeStatusUpdateResponse> updateStatus(
         AdminApiUser apiUser,
         @PathVariable Long studentTransferStatusId,
-        @RequestBody FeeStatusUpdateRequest request
+        @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         StudentTransferStatus reviewed = adminFeeReviewUseCase.review(
-            studentTransferStatusId, TransferStatus.from(request.status()), request.adminNote());
+            studentTransferStatusId, request.status(), request.adminNote());
 
         return ApiResponse.success(FeeStatusUpdateResponse.from(reviewed));
     }
@@ -78,9 +78,8 @@ public class AdminFeeController implements AdminFeeApi {
     @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
     public ApiResponse<FeeAccountResponse> updateAccount(
         AdminApiUser apiUser,
-        @RequestBody FeeAccountUpdateRequest request
+        @Valid @RequestBody FeeAccountUpdateRequest request
     ) {
-        FeeAccountValidator.validate(request);
         FeeAccount saved = adminFeeAccountProvider.save(request.bank(), request.accountNo(), request.amount());
 
         return ApiResponse.success(FeeAccountResponse.from(saved));

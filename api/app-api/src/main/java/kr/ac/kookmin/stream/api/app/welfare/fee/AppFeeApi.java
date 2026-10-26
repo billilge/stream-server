@@ -3,11 +3,14 @@ package kr.ac.kookmin.stream.api.app.welfare.fee;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
+import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeAmountParams;
 import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 학생회비 API의 문서 명세. 구현은 {@link AppFeeController}가 맡는다.
@@ -27,8 +30,9 @@ public interface AppFeeApi {
             + "납부 전(UNPAID)이거나 확인필요(REJECTED)인 학생이 remainingSemesters(남은 학기 수, 1~8)를 보내면 "
             + "그 값으로 납부 금액과 송금 링크를 계산해 준다. 납부확인중·납부완료면 요청할 때 남긴 금액만 보여주고 "
             + "송금 링크는 주지 않는다.")
-    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_REMAINING_SEMESTERS", "FEE_ACCOUNT_NOT_FOUND"})
-    ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser, Integer remainingSemesters);
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"FEE_ACCOUNT_NOT_FOUND"})
+    ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser, @ParameterObject FeeAmountParams params);
 
     /** 학생회비 납부 요청. 학기 인증과 송금 완료를 한 번에 받아 바로 납부확인중이 된다. */
     @Operation(summary = "학생회비 납부 요청",
@@ -36,8 +40,8 @@ public interface AppFeeApi {
             + "요청 시점의 금액(남은 학기 수 × 학기당 회비)을 함께 남긴다. "
             + "처음 내는 학생과 확인필요로 돌려받은 학생만 요청할 수 있다. 돌려받은 학생이 다시 내면 새 요청으로 쌓이고 "
             + "이전 요청은 그대로 남는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class,
-        codes = {"INVALID_REMAINING_SEMESTERS", "INVALID_PROOF_IMAGE", "FEE_ACCOUNT_NOT_FOUND",
-            "FEE_REQUEST_ALREADY_REQUESTED"})
+        codes = {"INVALID_PROOF_IMAGE", "FEE_ACCOUNT_NOT_FOUND", "FEE_REQUEST_ALREADY_REQUESTED"})
     ApiResponse<FeeResponse> submit(AppApiUser apiUser, FeeSubmitRequest request);
 }
