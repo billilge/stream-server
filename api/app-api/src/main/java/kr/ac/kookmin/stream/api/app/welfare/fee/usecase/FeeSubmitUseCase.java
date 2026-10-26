@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * 학생회비 납부 요청. 학기 인증(남은 학기 수·학점이수현황 캡처)과 송금 완료를 한 번에 받는다.
  * {@code welfare}(납부 요청)와 {@code file}(인증 이미지) 두 도메인을 조합한다.
  * <p>
- * 메서드에 {@code @Transactional}을 붙이지 않는다. 쓰기는 {@code StudentTransferStatusService.request} 하나뿐이고
+ * 메서드에 {@code @Transactional}을 붙이지 않는다. 쓰기는 {@code StudentTransferStatusService.submit} 하나뿐이고
  * 그 트랜잭션 안에서 끝난다. 인증 이미지는 조회해서 검증만 한다.
  * <p>
  * 다시 내도 이전 인증 이미지를 지우지 않는다. 반려된 이전 요청이 이력으로 남아 그 이미지를 계속 가리킨다.
@@ -39,7 +39,7 @@ public class FeeSubmitUseCase {
         FeeAccount account = feeAccountProvider.getAccount();
         long amount = account.calculateTransferAmount(request.remainingSemesters());
 
-        StudentTransferStatus saved = studentTransferStatusService.request(
+        StudentTransferStatus saved = studentTransferStatusService.submit(
             memberId, request.remainingSemesters(), request.proofImageKey(), amount);
         return FeeResponse.of(saved, account, null);
     }

@@ -29,7 +29,6 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     private final StudentTransferStatusRepository studentTransferStatusRepository;
     private final OutboxWriter outboxWriter;
 
-    // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(PR#67/#69 원칙 — 조회니까 붙이는 게 아니라 실제 이득이 있을 때만 붙인다).
     @Override
     public Optional<StudentTransferStatus> findLatestByMemberId(Long memberId) {
         return studentTransferStatusRepository.findLatestByMemberId(memberId);
@@ -46,13 +45,13 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
-    public StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount) {
+    public StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey, long amount) {
         // 반려된 요청 뒤에만 새 요청을 받는다. 이전 요청은 고치지 않고 이력으로 남긴다
         studentTransferStatusRepository.findLatestByMemberId(memberId)
             .ifPresent(StudentTransferStatus::validateRequestable);
 
         // 같은 회원의 동시 요청은 위 검사를 함께 통과할 수 있다. 그때는 진행 중 요청 유니크(V26)가 두 번째 저장을 막는다
-        StudentTransferStatus transferStatus = StudentTransferStatus.request(
+        StudentTransferStatus transferStatus = StudentTransferStatus.create(
             memberId, remainingSemesters, proofImageKey, amount, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }

@@ -31,7 +31,7 @@ public class StudentTransferStatus {
      * 송금을 마친 학생의 납부 요청. 학기 인증(남은 학기 수·학점이수현황 캡처)과 송금 완료를 한 번에 받으므로
      * 바로 납부확인중이 된다. 처음 내든 반려 뒤 다시 내든 늘 새 요청(행)이고, 이전 요청은 이력으로 남는다.
      */
-    public static StudentTransferStatus request(
+    public static StudentTransferStatus create(
         Long memberId,
         int remainingSemesters,
         String proofImageKey,

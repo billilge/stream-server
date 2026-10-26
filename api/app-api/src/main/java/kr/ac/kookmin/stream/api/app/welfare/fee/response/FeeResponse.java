@@ -30,10 +30,10 @@ public record FeeResponse(
 
     /** 한 번도 요청하지 않은 학생. 남은 학기 수를 받았으면 그 값으로 금액과 송금 링크를 계산한다. */
     public static FeeResponse notRequested(FeeAccount account, Integer remainingSemesters) {
-        Long transferAmount = amountOf(account, remainingSemesters);
+        Long transferAmount = calculateTransferAmount(account, remainingSemesters);
 
         return new FeeResponse(null, NOT_REQUESTED_STATUS, account.bank(), account.accountNo(),
-            remainingSemesters, transferAmount, linkOf(account, transferAmount), null, null, null);
+            remainingSemesters, transferAmount, generateTransferLinkUrl(account, transferAmount), null, null, null);
     }
 
     /** 요청이 있는 학생. remainingSemesters는 확인필요(다시 낼 수 있는 상태)일 때만 쓴다. */
@@ -42,9 +42,9 @@ public record FeeResponse(
 
         // 반려면 다시 낼 수 있으므로 미납부와 같이 다룬다 — 이전 요청 값 대신 이번에 받은 남은 학기 수로 계산한다
         if (status == TransferStatus.REJECTED) {
-            Long transferAmount = amountOf(account, remainingSemesters);
+            Long transferAmount = calculateTransferAmount(account, remainingSemesters);
             return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
-                remainingSemesters, transferAmount, linkOf(account, transferAmount),
+                remainingSemesters, transferAmount, generateTransferLinkUrl(account, transferAmount),
                 transferStatus.getRequestedAt(), null, transferStatus.getAdminNote());
         }
 
@@ -56,11 +56,12 @@ public record FeeResponse(
             null);
     }
 
-    private static Long amountOf(FeeAccount account, Integer remainingSemesters) {
+    // 남은 학기 수를 받지 않았으면 금액도 송금 링크도 계산하지 않는다
+    private static Long calculateTransferAmount(FeeAccount account, Integer remainingSemesters) {
         return remainingSemesters == null ? null : account.calculateTransferAmount(remainingSemesters);
     }
 
-    private static String linkOf(FeeAccount account, Long transferAmount) {
+    private static String generateTransferLinkUrl(FeeAccount account, Long transferAmount) {
         return transferAmount == null ? null : account.generateTransferLinkUrl(transferAmount);
     }
 }

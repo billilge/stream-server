@@ -19,7 +19,7 @@ public interface StudentTransferStatusService {
      *
      * @param amount 요청 시점에 안내한 납부 금액
      */
-    StudentTransferStatus request(Long memberId, int remainingSemesters, String proofImageKey, long amount);
+    StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey, long amount);
 
     /** 회원별 최신 납부 요청. 목록이 회원 기준이라 회원 한 페이지만큼 한 번에 가져온다. 한 번도 요청하지 않은 회원은 빠진다. */
     Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds);
