@@ -2,36 +2,32 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
+import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
-import kr.ac.kookmin.stream.api.admin.AdminApiUser;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAmountUpdateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeLinkUpdateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAmountUpdateResponse;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeLinkUpdateResponse;
-import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
+import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
-import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 운영진 학생회비 API의 문서 명세. 구현은 {@link AdminFeeController}가 맡는다.
  * <p>
- * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다. 경로 매핑과
- * 파라미터 바인딩(@{@code ModelAttribute}, @{@code RequestBody} 등), 부서 권한(@{@code RequireDepartment})은
- * 구현체에 둔다.
+ * 계좌와 학기당 회비는 한 화면에서 같이 저장하므로 하나의 엔드포인트(`/account`)로 묶여 있다.
  */
-@Tag(name = "학생회비 관리", description = "운영진 학생회비 납부 확인·설정")
+@Tag(name = "학생회비 (운영진)", description = "학생회비 납부 관리")
 public interface AdminFeeApi {
 
-    /** 납부 확인 요청 목록. 상태·키워드로 필터링하고 페이지네이션한다. */
-    @Operation(summary = "납부 확인 요청 목록 조회",
-        description = "학생회비 납부 확인 요청을 상태(status)와 이름·학번 키워드(keyword)로 필터링해 페이지 단위로 조회한다.")
+    /** 납부 요청 목록. 납부를 요청한 회원만 나온다. */
+    @Operation(summary = "학생회비 납부자 목록 조회",
+        description = "이름·학번 검색과 납부 상태 필터로 납부를 요청한 회원을 조회한다. "
+            + "한 번도 요청하지 않은 회원은 나오지 않는다. 금액은 요청 시점에 학생에게 안내한 값이다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_TRANSFER_STATUS"})
     ApiResponse<PageResponse<AdminFeeSearchResponse>> getRequests(
@@ -41,36 +37,31 @@ public interface AdminFeeApi {
         @ParameterObject PageParams pageParams
     );
 
-    /** 납부 확인 요청 처리. 승인/반려로 상태를 바꾸고 납부자 명부에 반영한다. */
-    @Operation(summary = "납부 확인 요청 처리",
-        description = "납부 확인 요청을 승인 또는 반려 처리하고 납부자 명부를 갱신한다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(
-        type = FeeErrorCode.class,
-        codes = {"INVALID_TRANSFER_STATUS", "FEE_REQUEST_NOT_FOUND", "FEE_REQUEST_ALREADY_REVIEWED"}
-    )
-    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
+    /** 납부 상태 처리. 이미 처리한 요청도 다시 바꿀 수 있다. */
+    @Operation(summary = "학생회비 납부 상태 수정",
+        description = "납부 상태를 바꾼다. 잘못 처리한 경우를 되돌릴 수 있도록 이미 처리한 요청도 다시 바꿀 수 있다. "
+            + "확인필요(REJECTED)로 바꿀 때는 학생에게 보여줄 안내 문구가 필요하다. "
+            + "확인필요로 돌려받은 학생은 안내 문구를 보고 학기 인증부터 다시 낼 수 있다. "
+            + "회원의 최신 요청만 바꿀 수 있다 — 지난 요청은 이력이다.")
+    @ApiErrorCode(type = FeeErrorCode.class,
+        codes = {"INVALID_TRANSFER_STATUS", "INVALID_ADMIN_NOTE", "FEE_REQUEST_NOT_FOUND", "FEE_REQUEST_NOT_LATEST"})
     ApiResponse<FeeStatusUpdateResponse> updateStatus(
         AdminApiUser apiUser,
-        Long transferStatusId,
+        Long studentTransferStatusId,
         FeeStatusUpdateRequest request
     );
 
-    /** 송금 링크(은행·계좌번호) 설정. */
-    @Operation(summary = "송금 링크 설정",
-        description = "학생회비 송금에 쓰이는 은행과 계좌번호를 설정한다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    ApiResponse<FeeLinkUpdateResponse> updateLink(
-        AdminApiUser apiUser,
-        FeeLinkUpdateRequest request
-    );
+    /** 회비 납부 설정 조회. 수정 폼의 초기값으로 쓴다. */
+    @Operation(summary = "회비 납부 계좌 조회",
+        description = "설정된 은행·계좌번호·학기당 회비를 조회한다. 아직 설정하지 않았으면 은행과 계좌번호는 null이고 "
+            + "학기당 회비는 기본값이 내려간다.")
+    ApiResponse<FeeAccountResponse> getAccount(AdminApiUser apiUser);
 
-    /** 학생회비 금액 설정. */
-    @Operation(summary = "학생회비 금액 설정",
-        description = "학생회비 송금 금액을 설정한다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    ApiResponse<FeeAmountUpdateResponse> updateAmount(
-        AdminApiUser apiUser,
-        FeeAmountUpdateRequest request
-    );
+    /** 회비 납부 설정 변경. 계좌와 학기당 회비를 함께 받는다. */
+    @Operation(summary = "회비 납부 계좌 변경",
+        description = "은행·계좌번호·학기당 회비를 한 번에 저장한다. 은행은 허용 목록 중 하나여야 하고 "
+            + "계좌번호는 하이픈을 제외한 숫자 10~14자리다. 송금 링크는 저장된 값으로 조회 시점에 만들어진다.")
+    @ApiErrorCode(type = FeeErrorCode.class,
+        codes = {"INVALID_BANK", "INVALID_ACCOUNT_NO", "INVALID_TRANSFER_AMOUNT"})
+    ApiResponse<FeeAccountResponse> updateAccount(AdminApiUser apiUser, FeeAccountUpdateRequest request);
 }
