@@ -44,12 +44,8 @@ public record AdminLockerSectionDetailResponse(
         );
     }
 
-    /** 배치 구조를 등록하지 않은 구역이면 사진도 없다. */
     private static List<Photo> toPhotos(LockerSectionDetail detail, Map<Long, File> photosById) {
-        if (detail.layout() == null) {
-            return List.of();
-        }
-        return detail.layout().getPhotoFileIds().stream()
+        return detail.photoFileIds().stream()
             .filter(photosById::containsKey)
             .map(fileId -> Photo.of(fileId, photosById.get(fileId)))
             .toList();

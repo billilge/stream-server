@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
@@ -49,12 +48,9 @@ public record LockerSectionDetailResponse(
      * 배치 구조를 등록하지 않은 구역이면 사진도 없다. 학생 앱은 사진을 보여주기만 하므로 파일 식별자 없이 URL만 담는다.
      */
     private static List<String> toPhotoUrls(LockerSectionDetail detail, Map<Long, File> photosById) {
-        if (detail.layout() == null) {
-            return List.of();
-        }
-        return detail.layout().getPhotoFileIds().stream()
+        return detail.photoFileIds().stream()
+            .filter(photosById::containsKey)
             .map(fileId -> StorageUrlBuilder.build(fileId, photosById))
-            .filter(Objects::nonNull)
             .toList();
     }
 
