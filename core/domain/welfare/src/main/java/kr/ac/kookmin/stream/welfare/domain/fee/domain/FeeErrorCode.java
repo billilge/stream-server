@@ -16,7 +16,7 @@ public enum FeeErrorCode implements ErrorCode {
     INVALID_REMAINING_SEMESTERS(ErrorStatus.BAD_REQUEST, "유효하지 않은 남은 학기 수입니다."),
     INVALID_PROOF_IMAGE(ErrorStatus.BAD_REQUEST, "유효하지 않은 인증 이미지입니다."),
     INVALID_BANK(ErrorStatus.BAD_REQUEST, "지원하지 않는 은행입니다."),
-    INVALID_ADMIN_NOTE(ErrorStatus.BAD_REQUEST, "확인필요로 처리하려면 안내 문구를 입력해 주세요."),
+    INVALID_ADMIN_NOTE(ErrorStatus.BAD_REQUEST, "확인필요 안내 문구는 1자 이상 255자 이하로 입력해 주세요."),
     FEE_ACCOUNT_NOT_FOUND(ErrorStatus.NOT_FOUND, "학생회비 납부 계좌가 등록되지 않았습니다."),
     FEE_REQUEST_NOT_FOUND(ErrorStatus.NOT_FOUND, "제출된 납부 정보가 없습니다."),
     FEE_REQUEST_ALREADY_REQUESTED(ErrorStatus.CONFLICT, "이미 납부 확인을 요청했거나 납부가 완료되었습니다."),

@@ -5,7 +5,6 @@ import kr.ac.kookmin.stream.api.common.ApiConstants;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
 /**
  * 납부자 목록의 한 줄. 납부를 요청한 회원만 들어온다 — 한 번도 요청하지 않은 회원은 행이 없다.
@@ -47,8 +46,7 @@ public record AdminFeeSearchResponse(
             transferStatus.getAmount(),
             StorageUrlBuilder.build(transferStatus.getProofImageKey()),
             transferStatus.getRequestedAt(),
-            // 납부 확인 시각은 납부완료일 때의 처리 시각이다
-            transferStatus.getStatus() == TransferStatus.PAID ? transferStatus.getReviewedAt() : null,
+            transferStatus.getConfirmedAt(),
             transferStatus.getAdminNote()
         );
     }

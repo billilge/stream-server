@@ -12,6 +12,9 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudentTransferStatus {
 
+    // admin_note 컬럼 길이
+    private static final int MAX_ADMIN_NOTE_LENGTH = 255;
+
     private Long id;
     private Long memberId;
     private TransferStatus status;
@@ -60,13 +63,22 @@ public class StudentTransferStatus {
     }
 
     /**
-     * 이 요청 다음에 새 납부 요청을 받을 수 있는지 본다. 반려된 요청 뒤에만 다시 낼 수 있다 —
+     * 이 요청 다음에 학생이 새 납부 요청을 낼 수 있는지. 반려된 요청 뒤에만 다시 낼 수 있다 —
      * 납부확인중이면 이미 운영진에게 요청이 가 있고, 납부완료면 더 낼 것이 없다.
      */
+    public boolean isRequestable() {
+        return status == TransferStatus.REJECTED;
+    }
+
     public void validateRequestable() {
-        if (status != TransferStatus.REJECTED) {
+        if (!isRequestable()) {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
         }
+    }
+
+    /** 납부 확인 시각. 납부완료일 때의 처리 시각이다. */
+    public LocalDateTime getConfirmedAt() {
+        return status == TransferStatus.PAID ? reviewedAt : null;
     }
 
     /**
@@ -77,12 +89,20 @@ public class StudentTransferStatus {
      * 납부확인중으로 되돌리면 아직 처리 전이라는 뜻이므로 처리 시각도 지운다.
      */
     public void review(TransferStatus reviewedStatus, String adminNote, LocalDateTime now) {
-        if (reviewedStatus == TransferStatus.REJECTED && (adminNote == null || adminNote.isBlank())) {
-            throw new BusinessException(FeeErrorCode.INVALID_ADMIN_NOTE);
-        }
+        validateAdminNote(reviewedStatus, adminNote);
 
         this.status = reviewedStatus;
-        this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote : null;
+        this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote.strip() : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;
+    }
+
+    // 확인필요는 학생에게 보여줄 안내 문구가 있어야 의미가 있다. 그 외 상태에서는 문구를 받아도 버린다
+    private static void validateAdminNote(TransferStatus status, String adminNote) {
+        if (status != TransferStatus.REJECTED) {
+            return;
+        }
+        if (adminNote == null || adminNote.isBlank() || adminNote.strip().length() > MAX_ADMIN_NOTE_LENGTH) {
+            throw new BusinessException(FeeErrorCode.INVALID_ADMIN_NOTE);
+        }
     }
 }

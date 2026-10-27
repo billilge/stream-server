@@ -40,7 +40,7 @@ public record FeeResponse(
         TransferStatus status = transferStatus.getStatus();
 
         // 반려면 다시 낼 수 있으므로 미납부와 같이 다룬다 — 이전 요청 값 대신 이번에 받은 남은 학기 수로 계산한 값을 준다
-        if (status == TransferStatus.REJECTED) {
+        if (transferStatus.isRequestable()) {
             return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
                 transferGuide.remainingSemesters(), transferGuide.amount(), transferGuide.linkUrl(),
                 transferStatus.getRequestedAt(), null, transferStatus.getAdminNote());
@@ -48,9 +48,6 @@ public record FeeResponse(
 
         return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
             transferStatus.getRemainingSemesters(), transferStatus.getAmount(), null,
-            transferStatus.getRequestedAt(),
-            // 납부 확인 시각은 PAID일 때의 처리 시각이다
-            status == TransferStatus.PAID ? transferStatus.getReviewedAt() : null,
-            null);
+            transferStatus.getRequestedAt(), transferStatus.getConfirmedAt(), null);
     }
 }
