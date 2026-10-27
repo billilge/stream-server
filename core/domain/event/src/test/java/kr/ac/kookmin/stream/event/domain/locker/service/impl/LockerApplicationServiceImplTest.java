@@ -366,6 +366,11 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             batchLookups++;
             return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();

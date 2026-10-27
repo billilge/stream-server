@@ -3,9 +3,7 @@ package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
@@ -91,18 +89,20 @@ class AdminLockerServiceImpl implements AdminLockerService {
      * 요청한 사물함을 구역 소속으로 확인하고 돌려준다. 하나라도 그 구역에 없으면 아무것도 바꾸지 않도록 여기서 끊는다.
      */
     private List<Locker> getLockersInSection(Long sectionId, List<Long> lockerIds) {
-        Map<Long, Locker> lockersInSection = lockerRepository.findLockersBySectionId(sectionId).stream()
-            .collect(Collectors.toMap(Locker::getId, Function.identity()));
+        // 구역부터 확인한다. 없는 구역이면 같은 경로의 구역 상세 조회와 같이 404로 나가야 한다
+        if (lockerRepository.findSectionById(sectionId).isEmpty()) {
+            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
+        }
 
-        return lockerIds.stream()
-            .map(lockerId -> {
-                Locker locker = lockersInSection.get(lockerId);
-                if (locker == null) {
-                    throw new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION);
-                }
-                return locker;
-            })
-            .toList();
+        // 구역 전체가 아니라 요청한 사물함만 읽는다. 36칸 구역에서 두 칸만 바꿔도 전체를 읽지 않도록 한다
+        List<Locker> lockers = lockerRepository.findLockersByIds(lockerIds);
+        boolean allInSection = lockers.size() == lockerIds.size()
+            && lockers.stream().allMatch(locker -> locker.getSectionId().equals(sectionId));
+        if (!allInSection) {
+            // 없는 사물함과 다른 구역 사물함을 가르지 않는다. 운영 화면에서는 둘 다 "잘못 고른 칸"이다
+            throw new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION);
+        }
+        return lockers;
     }
 
     /**

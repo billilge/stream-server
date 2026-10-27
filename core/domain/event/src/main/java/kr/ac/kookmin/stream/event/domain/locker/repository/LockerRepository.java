@@ -94,6 +94,11 @@ public interface LockerRepository {
     List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds);
 
     /**
+     * 식별자에 해당하는 사물함. 삭제된 사물함은 없는 것으로 본다. 순서는 보장하지 않는다.
+     */
+    List<Locker> findLockersByIds(Collection<Long> lockerIds);
+
+    /**
      * 사물함 여러 건을 저장한다. 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
      */
     void saveLockers(List<Locker> lockers);
