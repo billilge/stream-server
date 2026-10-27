@@ -2,10 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.OutboxWriter;
@@ -36,15 +33,6 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     }
 
     @Override
-    public Map<Long, StudentTransferStatus> getMapByMemberIds(List<Long> memberIds) {
-        if (memberIds.isEmpty()) {
-            return Map.of();
-        }
-        return studentTransferStatusRepository.findLatestByMemberIds(memberIds).stream()
-            .collect(Collectors.toMap(StudentTransferStatus::getMemberId, Function.identity()));
-    }
-
-    @Override
     @Transactional
     public StudentTransferStatus submit(Long memberId, FeeSubmitCommand command, long amount) {
         // 반려된 요청 뒤에만 새 요청을 받는다. 이전 요청은 고치지 않고 이력으로 남긴다
@@ -70,7 +58,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
-        requireLatest(transferStatus);
+        validateLatest(transferStatus);
 
         boolean wasPaid = transferStatus.getStatus() == TransferStatus.PAID;
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
@@ -94,7 +82,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     // 지난 요청은 이력이라 바꾸지 않는다. 회원의 지금 상태는 최신 요청 하나뿐이고, 지난 요청을 되살리면
     // 회원당 진행 중 요청이 둘이 될 수 있다
-    private void requireLatest(StudentTransferStatus transferStatus) {
+    private void validateLatest(StudentTransferStatus transferStatus) {
         boolean latest = studentTransferStatusRepository.findLatestByMemberId(transferStatus.getMemberId())
             .map(found -> found.getId().equals(transferStatus.getId()))
             .orElse(false);

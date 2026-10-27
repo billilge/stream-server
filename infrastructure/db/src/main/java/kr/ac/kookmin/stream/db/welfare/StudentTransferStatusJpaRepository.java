@@ -17,13 +17,6 @@ public interface StudentTransferStatusJpaRepository extends JpaRepository<Studen
 
     Optional<StudentTransferStatusJpaEntity> findFirstByMemberIdOrderByIdDesc(Long memberId);
 
-    @Query("""
-        SELECT r FROM StudentTransferStatusJpaEntity r
-        WHERE r.memberId IN :memberIds
-        AND r.id = (SELECT MAX(r2.id) FROM StudentTransferStatusJpaEntity r2 WHERE r2.memberId = r.memberId)
-        """)
-    List<StudentTransferStatusJpaEntity> findLatestByMemberIdIn(@Param("memberIds") List<Long> memberIds);
-
     // 회원별 최신 요청만 대상으로 한다. 상태 필터도 최신 요청의 상태로 건다
     @Query(value = """
         SELECT r FROM StudentTransferStatusJpaEntity r

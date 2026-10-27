@@ -31,13 +31,6 @@ public class StudentTransferStatusRepositoryImpl implements StudentTransferStatu
     }
 
     @Override
-    public List<StudentTransferStatus> findLatestByMemberIds(List<Long> memberIds) {
-        return studentTransferStatusJpaRepository.findLatestByMemberIdIn(memberIds).stream()
-            .map(StudentTransferStatusJpaEntity::toDomain)
-            .toList();
-    }
-
-    @Override
     public Optional<StudentTransferStatus> findById(Long id) {
         return studentTransferStatusJpaRepository.findById(id).map(StudentTransferStatusJpaEntity::toDomain);
     }
