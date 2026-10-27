@@ -67,7 +67,7 @@ public class AdminLockerSectionController implements AdminLockerSectionApi {
         @PathVariable Long sectionId,
         @Valid @RequestBody LockerStatusChangeRequest request
     ) {
-        adminLockerService.changeLockerStatus(sectionId, request.lockerIds(), request.lockerStatus());
+        adminLockerService.changeLockerStatus(sectionId, request.distinctLockerIds(), request.lockerStatus());
         return ApiResponse.success();
     }
 }
