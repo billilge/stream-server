@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerStatusChangeRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionListResponse;
-import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerStatusChangeResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
@@ -56,11 +55,11 @@ public interface AdminLockerSectionApi {
             + "하나라도 바꿀 수 없으면 아무것도 바뀌지 않는다. "
             + "사용 기간이 끝나지 않은 회차에 배정된 사물함은 이용 중인 학생이 있으므로 DISABLED로 바꿀 수 없고, "
             + "AVAILABLE로 되돌리는 것은 막지 않는다. "
-            + "응답은 요청한 사물함 전체로, 이미 그 상태였던 사물함도 담긴다. "
-            + "구역 상세가 내려주는 ASSIGNED는 신청으로 생기는 표시용 값이라 이 경로로 바꿀 수 없다.")
+            + "구역 상세가 내려주는 ASSIGNED는 신청으로 생기는 표시용 값이라 이 경로로 바꿀 수 없다. "
+            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_NOT_IN_SECTION", "LOCKER_IN_USE"})
-    ApiResponse<AdminLockerStatusChangeResponse> changeLockerStatus(
+    ApiResponse<Void> changeLockerStatus(
         AdminApiUser apiUser,
         Long sectionId,
         LockerStatusChangeRequest request
