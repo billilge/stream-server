@@ -122,6 +122,9 @@ public class LockerPeriod {
     /**
      * 신청 마감일과 사용 시작일의 선후는 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감일을 늘리는
      * 운영이 있어 두 기간이 겹칠 수 있다.
+     * <p>
+     * 다만 신청 마감일은 사용 종료일을 넘을 수 없다. 넘기면 {@link #calculateStatus}가 종료로 보는 뒤에도
+     * 신청 마감일이 남아 있고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
      */
     private static void validateDates(
         LocalDate applyStartDate,
@@ -129,7 +132,9 @@ public class LockerPeriod {
         LocalDate usageStartDate,
         LocalDate usageEndDate
     ) {
-        if (applyStartDate.isAfter(applyEndDate) || usageStartDate.isAfter(usageEndDate)) {
+        if (applyStartDate.isAfter(applyEndDate)
+            || usageStartDate.isAfter(usageEndDate)
+            || applyEndDate.isAfter(usageEndDate)) {
             throw new BusinessException(LockerErrorCode.INVALID_LOCKER_PERIOD_RANGE);
         }
     }
