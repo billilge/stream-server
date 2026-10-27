@@ -34,7 +34,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     public LockerApplicationResult apply(Long memberId, LockerApplyCommand command) {
         LocalDateTime now = LocalDateTime.now();
         LockerPeriod period = getPublishedPeriod(command.lockerPeriodId());
-        requireApplyOpen(period, now);
+        validateApplyOpen(period, now);
         Locker locker = getSelectableLocker(period.getId(), command.lockerId());
 
         LockerApplication application = lockerApplicationRepository.save(
@@ -105,7 +105,7 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
      *
      * @param now 신청 시각과 같은 값을 쓴다. 따로 잡으면 마감 판정을 통과한 신청이 마감 뒤 시각으로 기록될 수 있다
      */
-    private void requireApplyOpen(LockerPeriod period, LocalDateTime now) {
+    private void validateApplyOpen(LockerPeriod period, LocalDateTime now) {
         if (!period.isApplyOpen(now)) {
             throw new BusinessException(LockerErrorCode.LOCKER_APPLY_NOT_OPEN);
         }
