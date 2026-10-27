@@ -40,7 +40,7 @@ public class Locker {
      * @param applied 해당 운영 회차에 이 사물함이 이미 신청되었는지
      */
     public boolean isSelectable(boolean applied) {
-        return status == LockerStatus.AVAILABLE && !applied;
+        return status.isUsable() && !applied;
     }
 
     /**

@@ -79,7 +79,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
     @Transactional
     public void changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status) {
         List<Locker> lockers = findLockersInSection(sectionId, lockerIds);
-        if (status == LockerStatus.DISABLED) {
+        if (!status.isUsable()) {
             requireNotInUse(lockerIds);
         }
 
