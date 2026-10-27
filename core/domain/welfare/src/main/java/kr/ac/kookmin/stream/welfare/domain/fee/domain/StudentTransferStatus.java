@@ -12,7 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StudentTransferStatus {
 
-    // admin_note 컬럼 길이
+    // reject_reason 컬럼 길이
     private static final int MAX_REJECT_REASON_LENGTH = 255;
 
     private Long id;
