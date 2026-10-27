@@ -5,11 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
-import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.common.event.MemberFeePaid;
-import kr.ac.kookmin.stream.common.event.MemberFeePaymentCanceled;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeSubmitCommand;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
@@ -25,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     private final StudentTransferStatusRepository studentTransferStatusRepository;
-    private final OutboxWriter outboxWriter;
 
     @Override
     public Optional<StudentTransferStatus> findLatestByMemberId(Long memberId) {
@@ -60,24 +56,8 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
         validateLatest(transferStatus);
 
-        boolean wasPaid = transferStatus.getStatus() == TransferStatus.PAID;
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
-        transferStatus.review(status, adminNote, now);
-        StudentTransferStatus reviewed = studentTransferStatusRepository.save(transferStatus);
-
-        recordPaidChange(wasPaid, reviewed, now);
-        return reviewed;
-    }
-
-    // 회원의 납부 여부(최신 요청이 PAID인가)가 바뀔 때만 남긴다. 최신 요청만 처리하므로 이 요청의 변화가 곧 회원의 변화다.
-    // 상태 변경과 같은 트랜잭션에서 기록해서, 처리가 롤백되면 이벤트도 함께 사라진다(OutboxWriter는 트랜잭션 밖에서 부르면 실패한다).
-    private void recordPaidChange(boolean wasPaid, StudentTransferStatus reviewed, LocalDateTime now) {
-        boolean paid = reviewed.getStatus() == TransferStatus.PAID;
-        if (!wasPaid && paid) {
-            outboxWriter.record(new MemberFeePaid(reviewed.getMemberId(), reviewed.getId(), now));
-        } else if (wasPaid && !paid) {
-            outboxWriter.record(new MemberFeePaymentCanceled(reviewed.getMemberId(), reviewed.getId(), now));
-        }
+        transferStatus.review(status, adminNote, LocalDateTime.now(DateUtil.KST));
+        return studentTransferStatusRepository.save(transferStatus);
     }
 
     // 지난 요청은 이력이라 바꾸지 않는다. 회원의 지금 상태는 최신 요청 하나뿐이고, 지난 요청을 되살리면
