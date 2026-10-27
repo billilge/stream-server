@@ -95,11 +95,15 @@ public class LockerPeriod {
     /**
      * 지금이 신청을 받는 기간인지. 신청 시작 일시부터 마감 일시까지 양 끝을 포함한다.
      * <p>
-     * 사용 기간은 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감 일시를 늘리는 운영이 있어
+     * 사용 시작일과의 선후는 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감 일시를 늘리는 운영이 있어
      * 두 기간이 겹칠 수 있다.
+     * <p>
+     * 사용이 끝난 회차는 받지 않는다. {@link #validateDates}가 마감일을 사용 종료일 안으로 묶어 두므로 정상 등록된
+     * 회차에서는 이 조건이 걸리지 않지만, 관리자 API가 없던 시기에 DB로 직접 넣은 회차(V15·V20 주석)까지 막는다.
      */
     public boolean isApplyOpen(LocalDateTime now) {
-        return !now.isBefore(applyStartAt) && !now.isAfter(applyEndAt);
+        return !now.isBefore(applyStartAt) && !now.isAfter(applyEndAt)
+            && !isUsageEnded(now.toLocalDate());
     }
 
     /**
@@ -134,7 +138,7 @@ public class LockerPeriod {
      * 운영이 있어 두 기간이 겹칠 수 있다.
      * <p>
      * 다만 신청 마감일은 사용 종료일을 넘을 수 없다. 넘기면 {@link #calculateStatus}가 종료로 보는 뒤에도
-     * 신청 마감일이 남아 있고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
+     * {@link #isApplyOpen}이 신청을 받고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
      */
     private static void validateDates(
         LocalDate applyStartDate,
