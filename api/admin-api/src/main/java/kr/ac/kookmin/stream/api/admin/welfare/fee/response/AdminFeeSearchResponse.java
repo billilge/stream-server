@@ -22,7 +22,7 @@ public record AdminFeeSearchResponse(
     String proofImageUrl,
     LocalDateTime requestedAt,
     LocalDateTime confirmedAt,
-    String adminNote
+    String rejectReason
 ) {
     /**
      * @param member   탈퇴(소프트 삭제)한 회원의 행이면 null — 이름·학번·학과를 알 수 없어 표시용 placeholder를 쓴다
@@ -47,7 +47,7 @@ public record AdminFeeSearchResponse(
             StorageUrlBuilder.build(transferStatus.getProofImageKey()),
             transferStatus.getRequestedAt(),
             transferStatus.getConfirmedAt(),
-            transferStatus.getAdminNote()
+            transferStatus.getRejectReason()
         );
     }
 }

@@ -41,13 +41,13 @@ public interface AdminFeeApi {
     /** 납부 상태 처리. 이미 처리한 요청도 다시 바꿀 수 있다. */
     @Operation(summary = "학생회비 납부 상태 수정",
         description = "납부 상태를 바꾼다. 잘못 처리한 경우를 되돌릴 수 있도록 이미 처리한 요청도 다시 바꿀 수 있다. "
-            + "확인필요(REJECTED)로 바꿀 때는 학생에게 보여줄 안내 문구(255자 이하)가 필요하고, "
-            + "다른 상태로 바꿀 때는 안내 문구를 보내도 저장하지 않는다. "
-            + "확인필요로 돌려받은 학생은 안내 문구를 보고 학기 인증부터 다시 낼 수 있다. "
+            + "확인필요(REJECTED)로 바꿀 때는 학생에게 보여줄 반려 사유(255자 이하)가 필요하고, "
+            + "다른 상태로 바꿀 때는 반려 사유를 보내도 저장하지 않는다. "
+            + "확인필요로 돌려받은 학생은 반려 사유를 보고 학기 인증부터 다시 낼 수 있다. "
             + "회원의 최신 요청만 바꿀 수 있다 — 지난 요청은 이력이다. "
             + "드물게 학생이 새 요청을 내는 순간과 겹치면 늦게 저장되는 쪽이 FEE_REQUEST_ALREADY_REQUESTED로 실패할 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_ADMIN_NOTE", "FEE_REQUEST_NOT_FOUND",
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_REJECT_REASON", "FEE_REQUEST_NOT_FOUND",
         "FEE_REQUEST_NOT_LATEST", "FEE_REQUEST_ALREADY_REQUESTED"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
     ApiResponse<FeeStatusUpdateResponse> updateStatus(

@@ -25,9 +25,9 @@ public interface StudentTransferStatusService {
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
 
     /**
-     * 관리자 처리. 이미 처리된 요청도 다시 바꿀 수 있다. adminNote는 확인필요일 때만 남고,
-     * 확인필요인데 비어 있거나 255자를 넘으면 {@code INVALID_ADMIN_NOTE}다.
+     * 관리자 처리. 이미 처리된 요청도 다시 바꿀 수 있다. rejectReason은 확인필요일 때만 남고,
+     * 확인필요인데 비어 있거나 255자를 넘으면 {@code INVALID_REJECT_REASON}다.
      * 회원의 최신 요청만 바꿀 수 있고, 지난 요청이면 {@code FEE_REQUEST_NOT_LATEST}다.
      */
-    StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote);
+    StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason);
 }

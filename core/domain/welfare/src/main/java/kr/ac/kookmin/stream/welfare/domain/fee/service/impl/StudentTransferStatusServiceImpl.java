@@ -51,12 +51,12 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason) {
         StudentTransferStatus transferStatus = studentTransferStatusRepository.findById(transferStatusId)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_REQUEST_NOT_FOUND));
         validateLatest(transferStatus);
 
-        transferStatus.review(status, adminNote, LocalDateTime.now(DateUtil.KST));
+        transferStatus.review(status, rejectReason, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 

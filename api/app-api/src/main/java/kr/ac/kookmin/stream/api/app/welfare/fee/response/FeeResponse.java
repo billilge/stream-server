@@ -23,7 +23,7 @@ public record FeeResponse(
     String transferLinkUrl,
     LocalDateTime requestedAt,
     LocalDateTime confirmedAt,
-    String adminNote
+    String rejectReason
 ) {
 
     // 한 번도 요청하지 않은 회원의 상태. 도메인 상태에는 없고(행이 없다) 응답에서만 쓰는 이름이다
@@ -43,7 +43,7 @@ public record FeeResponse(
         if (transferStatus.isRequestable()) {
             return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
                 transferGuide.remainingSemesters(), transferGuide.amount(), transferGuide.linkUrl(),
-                transferStatus.getRequestedAt(), null, transferStatus.getAdminNote());
+                transferStatus.getRequestedAt(), null, transferStatus.getRejectReason());
         }
 
         return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),

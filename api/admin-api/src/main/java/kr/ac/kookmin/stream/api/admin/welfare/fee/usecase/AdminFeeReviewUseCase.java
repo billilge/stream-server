@@ -22,8 +22,8 @@ public class AdminFeeReviewUseCase {
     private final MemberService memberService;
 
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String adminNote) {
-        StudentTransferStatus reviewed = studentTransferStatusService.review(transferStatusId, status, adminNote);
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason) {
+        StudentTransferStatus reviewed = studentTransferStatusService.review(transferStatusId, status, rejectReason);
         Member member = memberService.getById(reviewed.getMemberId());
 
         payerService.sync(member.getId(), member.getName(), member.getStudentId(), reviewed.getStatus());

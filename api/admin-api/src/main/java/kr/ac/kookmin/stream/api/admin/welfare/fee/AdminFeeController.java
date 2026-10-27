@@ -62,7 +62,7 @@ public class AdminFeeController implements AdminFeeApi {
         @Valid @RequestBody FeeStatusUpdateRequest request
     ) {
         StudentTransferStatus reviewed = adminFeeReviewUseCase.review(
-            studentTransferStatusId, request.status(), request.adminNote());
+            studentTransferStatusId, request.status(), request.rejectReason());
 
         return ApiResponse.success(FeeStatusUpdateResponse.from(reviewed));
     }

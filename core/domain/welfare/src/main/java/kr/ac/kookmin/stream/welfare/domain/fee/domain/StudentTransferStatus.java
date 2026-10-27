@@ -13,7 +13,7 @@ import lombok.Getter;
 public class StudentTransferStatus {
 
     // admin_note 컬럼 길이
-    private static final int MAX_ADMIN_NOTE_LENGTH = 255;
+    private static final int MAX_REJECT_REASON_LENGTH = 255;
 
     private Long id;
     private Long memberId;
@@ -23,8 +23,8 @@ public class StudentTransferStatus {
     private String proofImageKey;
     // 요청 시점에 안내한 납부 금액(남은 학기 수 × 그때의 학기당 회비). 운영진이 학기당 회비를 바꿔도 그대로다
     private Long amount;
-    // 관리자가 확인필요로 처리하며 남긴 안내 문구. REJECTED일 때만 값이 있다
-    private String adminNote;
+    // 관리자가 확인필요로 처리하며 학생에게 남긴 반려 사유. REJECTED일 때만 값이 있다
+    private String rejectReason;
     private LocalDateTime requestedAt;
     private LocalDateTime reviewedAt;
     private LocalDateTime createdAt;
@@ -52,14 +52,14 @@ public class StudentTransferStatus {
         Integer remainingSemesters,
         String proofImageKey,
         Long amount,
-        String adminNote,
+        String rejectReason,
         LocalDateTime requestedAt,
         LocalDateTime reviewedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {
         return new StudentTransferStatus(id, memberId, status, remainingSemesters, proofImageKey,
-            amount, adminNote, requestedAt, reviewedAt, createdAt, updatedAt);
+            amount, rejectReason, requestedAt, reviewedAt, createdAt, updatedAt);
     }
 
     /**
@@ -85,24 +85,24 @@ public class StudentTransferStatus {
      * 관리자가 납부 상태를 바꾼다. 이미 처리한 요청도 다시 바꿀 수 있다 — 잘못 처리한 경우를 되돌리기 위해서다.
      * 그래서 납부완료도 종결 상태가 아니다.
      * <p>
-     * 안내 문구는 확인필요일 때만 남기고, 확인필요면 반드시 있어야 한다 — 학생이 문구를 보고 다시 내기 때문이다.
+     * 반려 사유는 확인필요일 때만 남기고, 확인필요면 반드시 있어야 한다 — 학생이 사유를 보고 다시 내기 때문이다.
      * 납부확인중으로 되돌리면 아직 처리 전이라는 뜻이므로 처리 시각도 지운다.
      */
-    public void review(TransferStatus reviewedStatus, String adminNote, LocalDateTime now) {
-        validateAdminNote(reviewedStatus, adminNote);
+    public void review(TransferStatus reviewedStatus, String rejectReason, LocalDateTime now) {
+        validateRejectReason(reviewedStatus, rejectReason);
 
         this.status = reviewedStatus;
-        this.adminNote = reviewedStatus == TransferStatus.REJECTED ? adminNote.strip() : null;
+        this.rejectReason = reviewedStatus == TransferStatus.REJECTED ? rejectReason.strip() : null;
         this.reviewedAt = reviewedStatus == TransferStatus.PENDING ? null : now;
     }
 
-    // 확인필요는 학생에게 보여줄 안내 문구가 있어야 의미가 있다. 그 외 상태에서는 문구를 받아도 버린다
-    private static void validateAdminNote(TransferStatus status, String adminNote) {
+    // 확인필요는 학생에게 보여줄 반려 사유가 있어야 의미가 있다. 그 외 상태에서는 사유를 받아도 버린다
+    private static void validateRejectReason(TransferStatus status, String rejectReason) {
         if (status != TransferStatus.REJECTED) {
             return;
         }
-        if (adminNote == null || adminNote.isBlank() || adminNote.strip().length() > MAX_ADMIN_NOTE_LENGTH) {
-            throw new BusinessException(FeeErrorCode.INVALID_ADMIN_NOTE);
+        if (rejectReason == null || rejectReason.isBlank() || rejectReason.strip().length() > MAX_REJECT_REASON_LENGTH) {
+            throw new BusinessException(FeeErrorCode.INVALID_REJECT_REASON);
         }
     }
 }

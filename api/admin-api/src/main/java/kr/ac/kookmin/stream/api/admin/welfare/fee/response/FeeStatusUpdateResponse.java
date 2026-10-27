@@ -7,7 +7,7 @@ public record FeeStatusUpdateResponse(
     Long studentTransferStatusId,
     Long memberId,
     String status,
-    String adminNote,
+    String rejectReason,
     LocalDateTime reviewedAt,
     LocalDateTime confirmedAt
 ) {
@@ -16,7 +16,7 @@ public record FeeStatusUpdateResponse(
             transferStatus.getId(),
             transferStatus.getMemberId(),
             transferStatus.getStatus().name(),
-            transferStatus.getAdminNote(),
+            transferStatus.getRejectReason(),
             transferStatus.getReviewedAt(),
             transferStatus.getConfirmedAt()
         );
