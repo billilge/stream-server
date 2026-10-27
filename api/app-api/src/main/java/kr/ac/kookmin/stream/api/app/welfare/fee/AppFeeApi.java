@@ -31,7 +31,7 @@ public interface AppFeeApi {
             + "그 값으로 납부 금액과 송금 링크를 계산해 준다. 납부확인중·납부완료면 요청할 때 남긴 금액만 보여주고 "
             + "송금 링크는 주지 않는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = FeeErrorCode.class, codes = {"FEE_ACCOUNT_NOT_FOUND"})
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_REMAINING_SEMESTERS", "FEE_ACCOUNT_NOT_FOUND"})
     ApiResponse<FeeResponse> getFeeByMemberId(AppApiUser apiUser, @ParameterObject FeeAmountParams params);
 
     /** 학생회비 납부 요청. 학기 인증과 송금 완료를 한 번에 받아 바로 납부확인중이 된다. */
@@ -42,6 +42,7 @@ public interface AppFeeApi {
             + "이전 요청은 그대로 남는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class,
-        codes = {"INVALID_PROOF_IMAGE", "FEE_ACCOUNT_NOT_FOUND", "FEE_REQUEST_ALREADY_REQUESTED"})
+        codes = {"INVALID_REMAINING_SEMESTERS", "INVALID_PROOF_IMAGE", "FEE_ACCOUNT_NOT_FOUND",
+            "FEE_REQUEST_ALREADY_REQUESTED"})
     ApiResponse<FeeResponse> submit(AppApiUser apiUser, FeeSubmitRequest request);
 }

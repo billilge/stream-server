@@ -13,6 +13,7 @@ public enum FeeErrorCode implements ErrorCode {
 
     // 상태 문자열이 PENDING/PAID/REJECTED가 아닌 경우에 쓴다
     INVALID_TRANSFER_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 납부 상태입니다."),
+    INVALID_REMAINING_SEMESTERS(ErrorStatus.BAD_REQUEST, "유효하지 않은 남은 학기 수입니다."),
     INVALID_PROOF_IMAGE(ErrorStatus.BAD_REQUEST, "유효하지 않은 인증 이미지입니다."),
     INVALID_BANK(ErrorStatus.BAD_REQUEST, "지원하지 않는 은행입니다."),
     INVALID_ADMIN_NOTE(ErrorStatus.BAD_REQUEST, "확인필요로 처리하려면 안내 문구를 입력해 주세요."),

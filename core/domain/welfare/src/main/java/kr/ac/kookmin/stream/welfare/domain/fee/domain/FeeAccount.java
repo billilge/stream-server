@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.welfare.domain.fee.domain;
 
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.FeeAmountCalculator;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.TossTransferLinkGenerator;
 
 /**
@@ -33,14 +32,16 @@ public record FeeAccount(String bank, String accountNo, long amountPerSemester) 
         return bank != null && accountNo != null;
     }
 
-    /** 이 학생이 보낼 금액. 남은 학기 수 × 학기당 회비. */
-    public long calculateTransferAmount(int remainingSemesters) {
-        return FeeAmountCalculator.calculate(remainingSemesters, amountPerSemester);
+    /** 남은 학기 수로 계산한 금액과, 그 금액이 채워진 토스 송금 링크. */
+    public TransferGuide createTransferGuide(RemainingSemesters remainingSemesters) {
+        long amount = calculateTransferAmount(remainingSemesters);
+        return TransferGuide.of(remainingSemesters.value(), amount,
+            TossTransferLinkGenerator.generate(bank, accountNo, amount));
     }
 
-    /** 금액이 붙은 토스 송금 링크. */
-    public String generateTransferLinkUrl(long transferAmount) {
-        return TossTransferLinkGenerator.generate(bank, accountNo, transferAmount);
+    /** 이 학생이 보낼 금액. 남은 학기 수 × 학기당 회비. */
+    public long calculateTransferAmount(RemainingSemesters remainingSemesters) {
+        return remainingSemesters.calculateAmount(amountPerSemester);
     }
 
     /** 금액이 빠진 송금 기본 링크. 계좌가 설정되기 전이면 null이다. */

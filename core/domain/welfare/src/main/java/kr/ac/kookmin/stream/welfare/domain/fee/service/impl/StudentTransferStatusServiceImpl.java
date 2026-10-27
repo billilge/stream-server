@@ -14,6 +14,7 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.MemberFeePaid;
 import kr.ac.kookmin.stream.common.event.MemberFeePaymentCanceled;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeSubmitCommand;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.StudentTransferStatusRepository;
@@ -45,14 +46,14 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
 
     @Override
     @Transactional
-    public StudentTransferStatus submit(Long memberId, int remainingSemesters, String proofImageKey, long amount) {
+    public StudentTransferStatus submit(Long memberId, FeeSubmitCommand command, long amount) {
         // 반려된 요청 뒤에만 새 요청을 받는다. 이전 요청은 고치지 않고 이력으로 남긴다
         studentTransferStatusRepository.findLatestByMemberId(memberId)
             .ifPresent(StudentTransferStatus::validateRequestable);
 
         // 같은 회원의 동시 요청은 위 검사를 함께 통과할 수 있다. 그때는 진행 중 요청 유니크(V26)가 두 번째 저장을 막는다
-        StudentTransferStatus transferStatus = StudentTransferStatus.create(
-            memberId, remainingSemesters, proofImageKey, amount, LocalDateTime.now(DateUtil.KST));
+        StudentTransferStatus transferStatus = StudentTransferStatus.create(memberId,
+            command.remainingSemesters().value(), command.proofImageKey(), amount, LocalDateTime.now(DateUtil.KST));
         return studentTransferStatusRepository.save(transferStatus);
     }
 

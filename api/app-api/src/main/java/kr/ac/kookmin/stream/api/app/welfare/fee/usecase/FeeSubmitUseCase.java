@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.api.app.welfare.fee.usecase;
 
 import java.util.Objects;
 import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccountProvider;
-import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.file.domain.File;
@@ -10,7 +9,9 @@ import kr.ac.kookmin.stream.file.domain.FileCategory;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeSubmitCommand;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferGuide;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,16 +33,15 @@ public class FeeSubmitUseCase {
     private final FeeAccountProvider feeAccountProvider;
     private final FileService fileService;
 
-    public FeeResponse submit(Long memberId, FeeSubmitRequest request) {
-        validateProofImage(request.proofImageKey(), memberId);
+    public FeeResponse submit(Long memberId, FeeSubmitCommand command) {
+        validateProofImage(command.proofImageKey(), memberId);
 
         // 계좌가 없으면 송금 자체가 불가능하므로, 저장하기 전에 먼저 막는다
         FeeAccount account = feeAccountProvider.getAccount();
-        long amount = account.calculateTransferAmount(request.remainingSemesters());
+        long amount = account.calculateTransferAmount(command.remainingSemesters());
 
-        StudentTransferStatus saved = studentTransferStatusService.submit(
-            memberId, request.remainingSemesters(), request.proofImageKey(), amount);
-        return FeeResponse.of(saved, account, null);
+        StudentTransferStatus saved = studentTransferStatusService.submit(memberId, command, amount);
+        return FeeResponse.of(saved, account, TransferGuide.notCalculated());
     }
 
     // 실재하는 키인지, 본인이 올린 것인지, 학점이수현황 캡처로 올린 것인지 본다.
