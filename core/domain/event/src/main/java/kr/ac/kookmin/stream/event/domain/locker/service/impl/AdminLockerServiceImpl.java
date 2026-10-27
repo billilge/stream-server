@@ -78,9 +78,9 @@ class AdminLockerServiceImpl implements AdminLockerService {
     @Override
     @Transactional
     public void changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status) {
-        List<Locker> lockers = findLockersInSection(sectionId, lockerIds);
+        List<Locker> lockers = getLockersInSection(sectionId, lockerIds);
         if (!status.isUsable()) {
-            requireNotInUse(lockerIds);
+            validateNotInUse(lockerIds);
         }
 
         lockers.forEach(locker -> locker.changeStatus(status));
@@ -90,7 +90,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
     /**
      * 요청한 사물함을 구역 소속으로 확인하고 돌려준다. 하나라도 그 구역에 없으면 아무것도 바꾸지 않도록 여기서 끊는다.
      */
-    private List<Locker> findLockersInSection(Long sectionId, List<Long> lockerIds) {
+    private List<Locker> getLockersInSection(Long sectionId, List<Long> lockerIds) {
         Map<Long, Locker> lockersInSection = lockerRepository.findLockersBySectionId(sectionId).stream()
             .collect(Collectors.toMap(Locker::getId, Function.identity()));
 
@@ -109,9 +109,9 @@ class AdminLockerServiceImpl implements AdminLockerService {
      * 아직 배정 상태인 신청이 걸린 사물함이 하나라도 있으면 끊는다.
      * <p>
      * 배정인지 만료인지는 내 신청 내역 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
-     * 저장소는 신청과 회차를 읽어 오기만 한다.
+     * 저장소는 판정에 끼지 않고 회차를 읽고 신청 존재만 알려준다.
      */
-    private void requireNotInUse(List<Long> lockerIds) {
+    private void validateNotInUse(List<Long> lockerIds) {
         LocalDate today = LocalDate.now();
         // 회차를 먼저 좁힌다. 회차는 학기당 한두 건이라 전부 읽어도 되고, 그래야 신청 조회가 (회차, 사물함)
         // 유니크 인덱스를 탄다. 사물함 식별자만으로 신청을 찾으면 탈 인덱스가 없어 이력 전체를 훑는다.
