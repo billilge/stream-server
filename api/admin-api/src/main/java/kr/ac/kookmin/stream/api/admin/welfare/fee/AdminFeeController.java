@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeReviewUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeSearchUseCase;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.MemberFeeStatus;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -47,10 +48,10 @@ public class AdminFeeController implements AdminFeeApi {
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<AdminFeeSearchResponse> result = adminFeeSearchUseCase.search(
+        PageResult<MemberFeeStatus> result = adminFeeSearchUseCase.search(
             TransferStatus.from(status), keyword, pageParams.toOffset());
 
-        return ApiResponse.success(PageResponse.from(result, response -> response));
+        return ApiResponse.success(PageResponse.from(result, AdminFeeSearchResponse::from));
     }
 
     @Override
