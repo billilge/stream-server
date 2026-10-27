@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.member.domain.member.service.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -82,6 +83,18 @@ class MemberServiceImpl implements MemberService {
     @Override
     public boolean isSignedUp(Long memberId) {
         return isSignedUp(getById(memberId));
+    }
+
+    @Override
+    public Set<Long> findSignedUpIds(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> phoneRegisteredIds = findAllByIds(memberIds).stream()
+            .filter(Member::hasPhoneNumber)
+            .map(Member::getId)
+            .toList();
+        return memberTermService.findIdsAgreedRequiredTerms(phoneRegisteredIds);
     }
 
     // 한 기기를 다른 계정으로 쓰게 되면 이전 회원의 알림이 새 사용자에게 가지 않도록, 다른 회원에게 남은 같은 토큰을 지운다.

@@ -29,9 +29,23 @@ class MemberTermServiceImpl implements MemberTermService {
             .filter(MemberTermAgreement::isAgreed)
             .map(MemberTermAgreement::getTermType)
             .collect(Collectors.toSet());
-        return Arrays.stream(TermType.values())
-            .filter(TermType::required)
-            .allMatch(agreedTermTypes::contains);
+        return containsRequiredTerms(agreedTermTypes);
+    }
+
+    @Override
+    public Set<Long> findIdsAgreedRequiredTerms(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Set.of();
+        }
+        Map<Long, Set<TermType>> agreedTermTypesByMemberId = memberTermAgreementRepository.findAllByMemberIdIn(memberIds)
+            .stream()
+            .filter(MemberTermAgreement::isAgreed)
+            .collect(Collectors.groupingBy(
+                MemberTermAgreement::getMemberId,
+                Collectors.mapping(MemberTermAgreement::getTermType, Collectors.toSet())));
+        return memberIds.stream()
+            .filter(memberId -> containsRequiredTerms(agreedTermTypesByMemberId.getOrDefault(memberId, Set.of())))
+            .collect(Collectors.toSet());
     }
 
     // 요청에 없는 약관은 동의하지 않은 것으로 보고 기록을 남기지 않는다
@@ -48,6 +62,12 @@ class MemberTermServiceImpl implements MemberTermService {
             .map(entry -> toAgreement(memberId, entry.getKey(), entry.getValue(), existingAgreements, now))
             .toList();
         memberTermAgreementRepository.saveAll(agreements);
+    }
+
+    private boolean containsRequiredTerms(Set<TermType> agreedTermTypes) {
+        return Arrays.stream(TermType.values())
+            .filter(TermType::required)
+            .allMatch(agreedTermTypes::contains);
     }
 
     private void validateRequiredTermsAgreed(Map<TermType, Boolean> termAgreements) {
