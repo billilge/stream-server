@@ -14,9 +14,6 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class LockerPeriod {
 
-    private static final int FIRST_SEMESTER = 1;
-    private static final int SECOND_SEMESTER = 2;
-
     private Long id;
     private int year;
     private int semester;
@@ -48,9 +45,10 @@ public class LockerPeriod {
      * <p>
      * 학생에게 회차를 보여주는 경로는 홈 화면 배너뿐이고 그쪽에서 따로 설정하므로, 게시 여부는 요청으로 받지 않고 바로 게시 상태로 둔다.
      * 미게시로 두면 구역 조회와 신청이 모두 회차를 찾지 못한다.
+     * <p>
+     * 연도와 학기의 값 범위는 요청 DTO의 Bean Validation이 막는다. 여기서는 필드 하나로 표현할 수 없는 기간 순서만 본다.
      */
     public static LockerPeriod create(LockerPeriodCreateCommand command) {
-        validateSemester(command.semester());
         validateDates(command.applyStartDate(), command.applyEndDate(), command.usageStartDate(), command.usageEndDate());
 
         return new LockerPeriod(
@@ -119,12 +117,6 @@ public class LockerPeriod {
 
     private static String toName(int year, int semester) {
         return "%d-%d학기".formatted(year, semester);
-    }
-
-    private static void validateSemester(int semester) {
-        if (semester != FIRST_SEMESTER && semester != SECOND_SEMESTER) {
-            throw new BusinessException(LockerErrorCode.INVALID_LOCKER_PERIOD_SEMESTER);
-        }
     }
 
     /**
