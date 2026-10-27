@@ -17,4 +17,12 @@ public record LockerStatusChangeRequest(
     @NotNull(message = "변경할 상태를 입력해 주세요.")
     LockerStatus lockerStatus
 ) {
+
+    /**
+     * 중복을 걷어낸 사물함 식별자. 같은 칸이 여러 번 와도 결과는 같지만, 그대로 두면 이용 중 검사의 {@code IN} 절이
+     * 구역의 칸 수보다 커진다. 중복을 없애면 상한이 그 구역의 칸 수가 되어 따로 숫자를 둘 필요가 없다.
+     */
+    public List<Long> distinctLockerIds() {
+        return lockerIds.stream().distinct().toList();
+    }
 }
