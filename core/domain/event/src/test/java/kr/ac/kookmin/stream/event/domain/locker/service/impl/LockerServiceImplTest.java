@@ -194,6 +194,7 @@ class LockerServiceImplTest {
      * 신청 조회는 {@link LockerApplicationRepository}로 나뉘어 있지만, 한 번에 준비할 수 있도록 그 가짜를 함께 들고 있다.
      */
     private static final class FakeLockerRepository implements LockerRepository {
+
         private final FakeLockerApplicationRepository applications = new FakeLockerApplicationRepository();
 
         private boolean publishedPeriod = true;
@@ -329,6 +330,7 @@ class LockerServiceImplTest {
     }
 
     private static final class FakeLockerApplicationRepository implements LockerApplicationRepository {
+
         private Set<Long> appliedLockerIds = Set.of();
         private Long myLockerId;
 

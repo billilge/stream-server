@@ -284,6 +284,7 @@ class LockerApplicationServiceImplTest {
      * 신청 저장·조회는 {@link LockerApplicationRepository}로 나뉘어 있지만, 한 번에 준비할 수 있도록 그 가짜를 함께 들고 있다.
      */
     private static final class FakeLockerRepository implements LockerRepository {
+
         private final FakeLockerApplicationRepository applications = new FakeLockerApplicationRepository();
         private LockerPeriod period;
         private Locker locker;
@@ -418,6 +419,7 @@ class LockerApplicationServiceImplTest {
     }
 
     private static final class FakeLockerApplicationRepository implements LockerApplicationRepository {
+
         static final Long SAVED_ID = 25L;
 
         private final Set<List<Long>> appliedPeriodLockerIds = new HashSet<>();
