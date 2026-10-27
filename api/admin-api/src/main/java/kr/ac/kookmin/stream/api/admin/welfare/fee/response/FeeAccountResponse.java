@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee.response;
 
-import kr.ac.kookmin.stream.api.admin.welfare.fee.FeeAccount;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 
 /** 회비 납부 설정. 조회와 변경이 같은 모양을 쓴다. */
 public record FeeAccountResponse(
@@ -11,6 +11,6 @@ public record FeeAccountResponse(
 ) {
     public static FeeAccountResponse from(FeeAccount account) {
         return new FeeAccountResponse(
-            account.bank(), account.accountNo(), account.amount(), account.generateTransferLinkUrl());
+            account.bank(), account.accountNo(), account.amountPerSemester(), account.generateBaseTransferLinkUrl());
     }
 }

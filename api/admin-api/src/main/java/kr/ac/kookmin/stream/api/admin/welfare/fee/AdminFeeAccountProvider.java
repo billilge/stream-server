@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.fee;
 import java.util.Map;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.welfare.WelfareConstants;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeBanks;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class AdminFeeAccountProvider {
     private final AdminConfigValueService adminConfigValueService;
 
     public FeeAccount getAccount() {
-        return new FeeAccount(
+        return FeeAccount.of(
             adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_BANK).orElse(null),
             adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO).orElse(null),
             adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_AMOUNT)
@@ -30,15 +30,14 @@ public class AdminFeeAccountProvider {
         );
     }
 
-    // 계좌와 금액은 한 화면에서 같이 저장하므로 세 키를 한 번에 쓴다.
-    // 은행명은 토스 송금 링크에 그대로 들어가므로 허용 목록에 있는 은행만 저장한다
-    public FeeAccount save(String bank, String accountNo, long amount) {
-        FeeBanks.validate(bank);
+    // 계좌와 금액은 한 화면에서 같이 저장하므로 세 키를 한 번에 쓴다
+    public FeeAccount save(String bank, String accountNo, long amountPerSemester) {
+        FeeAccount account = FeeAccount.create(bank, accountNo, amountPerSemester);
         adminConfigValueService.upsertValues(Map.of(
-            FeeConfigKeys.TRANSFER_BANK, bank,
-            FeeConfigKeys.TRANSFER_ACCOUNT_NO, accountNo,
-            FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(amount)
+            FeeConfigKeys.TRANSFER_BANK, account.bank(),
+            FeeConfigKeys.TRANSFER_ACCOUNT_NO, account.accountNo(),
+            FeeConfigKeys.TRANSFER_AMOUNT, String.valueOf(account.amountPerSemester())
         ));
-        return new FeeAccount(bank, accountNo, amount);
+        return account;
     }
 }

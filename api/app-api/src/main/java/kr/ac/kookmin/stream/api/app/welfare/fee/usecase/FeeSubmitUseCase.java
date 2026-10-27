@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.usecase;
 
 import java.util.Objects;
-import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccount;
 import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccountProvider;
 import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
@@ -9,6 +8,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.domain.FileCategory;
 import kr.ac.kookmin.stream.file.service.FileService;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;

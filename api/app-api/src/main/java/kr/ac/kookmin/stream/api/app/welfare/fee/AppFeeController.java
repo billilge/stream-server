@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.api.app.welfare.fee.request.FeeSubmitRequest;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.api.app.welfare.fee.usecase.FeeSubmitUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

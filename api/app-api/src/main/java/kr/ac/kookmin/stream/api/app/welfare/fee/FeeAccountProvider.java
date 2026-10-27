@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.app.welfare.fee;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.welfare.WelfareConstants;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +22,19 @@ public class FeeAccountProvider {
 
     private final AdminConfigValueService adminConfigValueService;
 
-    /** 계좌가 설정되지 않았으면 송금 자체가 불가능하므로 막는다. */
     public FeeAccount getAccount() {
-        String bank = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_BANK).orElse(null);
-        String accountNo = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO).orElse(null);
-
-        if (bank == null || accountNo == null) {
-            throw new BusinessException(FeeErrorCode.FEE_ACCOUNT_NOT_FOUND);
-        }
-
+        String bank = getRequiredValue(FeeConfigKeys.TRANSFER_BANK);
+        String accountNo = getRequiredValue(FeeConfigKeys.TRANSFER_ACCOUNT_NO);
         long amountPerSemester = adminConfigValueService.getValue(FeeConfigKeys.TRANSFER_AMOUNT)
             .map(Long::parseLong)
             .orElse(WelfareConstants.DEFAULT_TRANSFER_AMOUNT);
 
-        return new FeeAccount(bank, accountNo, amountPerSemester);
+        return FeeAccount.of(bank, accountNo, amountPerSemester);
+    }
+
+    // 계좌가 설정되지 않았으면 송금 자체가 불가능하므로 막는다
+    private String getRequiredValue(String configKey) {
+        return adminConfigValueService.getValue(configKey)
+            .orElseThrow(() -> new BusinessException(FeeErrorCode.FEE_ACCOUNT_NOT_FOUND));
     }
 }

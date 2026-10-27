@@ -15,6 +15,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.RequiredArgsConstructor;
