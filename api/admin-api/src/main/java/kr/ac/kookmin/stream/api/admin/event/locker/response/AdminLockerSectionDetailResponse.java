@@ -39,7 +39,7 @@ public record AdminLockerSectionDetailResponse(
             detail.layout() == null ? null : Layout.from(detail.layout()),
             toPhotos(detail, photosById),
             detail.lockers().stream()
-                .map(locker -> LockerItem.from(locker, appliedLockerIds.contains(locker.getId())))
+                .map(locker -> LockerItem.of(locker, appliedLockerIds.contains(locker.getId())))
                 .toList()
         );
     }
@@ -51,7 +51,7 @@ public record AdminLockerSectionDetailResponse(
         }
         return detail.layout().getPhotoFileIds().stream()
             .filter(photosById::containsKey)
-            .map(fileId -> Photo.from(fileId, photosById.get(fileId)))
+            .map(fileId -> Photo.of(fileId, photosById.get(fileId)))
             .toList();
     }
 
@@ -74,7 +74,7 @@ public record AdminLockerSectionDetailResponse(
     /** 운영진은 사진을 지우거나 순서를 바꿀 때 파일 식별자가 필요하므로 URL과 함께 내려준다. */
     public record Photo(Long fileId, String fileUrl) {
 
-        public static Photo from(Long fileId, File file) {
+        public static Photo of(Long fileId, File file) {
             return new Photo(fileId, StorageUrlBuilder.build(file.getFileKey()));
         }
     }
@@ -88,7 +88,7 @@ public record AdminLockerSectionDetailResponse(
     ) {
 
         /** @param applied 해당 운영 회차에 이 사물함이 이미 신청되었는지 */
-        public static LockerItem from(Locker locker, boolean applied) {
+        public static LockerItem of(Locker locker, boolean applied) {
             return new LockerItem(
                 locker.getId(),
                 locker.getLockerNumber(),
