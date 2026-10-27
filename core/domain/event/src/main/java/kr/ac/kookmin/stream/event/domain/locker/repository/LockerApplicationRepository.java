@@ -37,9 +37,9 @@ public interface LockerApplicationRepository {
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
 
     /**
-     * 해당 사물함들의 신청 전체. 어느 운영 회차에 배정됐는지 보려고 읽는다.
+     * 해당 회차들에 이 사물함 중 하나라도 신청됐는지. (회차, 사물함) 유니크 인덱스를 그대로 탄다.
      */
-    List<LockerApplication> findByLockerIds(Collection<Long> lockerIds);
+    boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds);
 
     /**
      * 회원의 사물함 신청 전체를 신청 일시 최신순으로 조회한다.

@@ -31,7 +31,7 @@ public interface LockerApplicationJpaRepository extends JpaRepository<LockerAppl
         """)
     List<Long> findMemberIdsByLockerPeriodId(@Param("lockerPeriodId") Long lockerPeriodId);
 
-    List<LockerApplicationJpaEntity> findAllByLockerIdIn(Collection<Long> lockerIds);
+    boolean existsByLockerPeriodIdInAndLockerIdIn(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds);
 
     /**
      * 회차당 회원 신청은 유니크 제약으로 한 건까지만 존재한다.
