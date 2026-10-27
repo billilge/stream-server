@@ -329,6 +329,11 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             throw new UnsupportedOperationException();
         }
