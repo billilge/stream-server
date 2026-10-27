@@ -25,7 +25,6 @@ public class StudentTransferStatus {
     private Long amount;
     // 관리자가 확인필요로 처리하며 학생에게 남긴 반려 사유. REJECTED일 때만 값이 있다
     private String rejectReason;
-    private LocalDateTime requestedAt;
     private LocalDateTime reviewedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -38,11 +37,10 @@ public class StudentTransferStatus {
         Long memberId,
         int remainingSemesters,
         String proofImageKey,
-        long amount,
-        LocalDateTime now
+        long amount
     ) {
         return new StudentTransferStatus(null, memberId, TransferStatus.PENDING, remainingSemesters, proofImageKey,
-            amount, null, now, null, null, null);
+            amount, null, null, null, null);
     }
 
     public static StudentTransferStatus of(
@@ -53,13 +51,12 @@ public class StudentTransferStatus {
         String proofImageKey,
         Long amount,
         String rejectReason,
-        LocalDateTime requestedAt,
         LocalDateTime reviewedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {
         return new StudentTransferStatus(id, memberId, status, remainingSemesters, proofImageKey,
-            amount, rejectReason, requestedAt, reviewedAt, createdAt, updatedAt);
+            amount, rejectReason, reviewedAt, createdAt, updatedAt);
     }
 
     /**
@@ -74,6 +71,11 @@ public class StudentTransferStatus {
         if (!isRequestable()) {
             throw new BusinessException(FeeErrorCode.FEE_REQUEST_ALREADY_REQUESTED);
         }
+    }
+
+    // 요청마다 새 행을 만들므로 행이 생긴 시각이 곧 요청 시각이다
+    public LocalDateTime getRequestedAt() {
+        return createdAt;
     }
 
     /** 납부 확인 시각. 납부완료일 때의 처리 시각이다. */

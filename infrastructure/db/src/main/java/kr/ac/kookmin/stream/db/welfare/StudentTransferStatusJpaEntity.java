@@ -54,9 +54,6 @@ public class StudentTransferStatusJpaEntity extends BaseTimeEntity {
     @Column(name = "admin_note", length = 255)
     private String rejectReason;
 
-    @Column(name = "requested_at")
-    private LocalDateTime requestedAt;
-
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
@@ -68,7 +65,6 @@ public class StudentTransferStatusJpaEntity extends BaseTimeEntity {
         this.proofImageKey = request.getProofImageKey();
         this.amount = request.getAmount();
         this.rejectReason = request.getRejectReason();
-        this.requestedAt = request.getRequestedAt();
         this.reviewedAt = request.getReviewedAt();
     }
 
@@ -78,6 +74,6 @@ public class StudentTransferStatusJpaEntity extends BaseTimeEntity {
 
     public StudentTransferStatus toDomain() {
         return StudentTransferStatus.of(id, memberId, status, remainingSemesters, proofImageKey,
-            amount, rejectReason, requestedAt, reviewedAt, getCreatedAt(), getUpdatedAt());
+            amount, rejectReason, reviewedAt, getCreatedAt(), getUpdatedAt());
     }
 }

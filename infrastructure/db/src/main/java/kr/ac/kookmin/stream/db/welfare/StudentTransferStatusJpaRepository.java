@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * 납부 요청은 이력으로 쌓인다. 회원의 지금 상태는 PK가 가장 큰 행이다 — 같은 회원에게 반려(REJECTED)가 여러 개
- * 쌓이고 최신 행 자체가 반려일 수도 있어 상태로는 고를 수 없고, requested_at은 초 단위라 같은 초에 겹칠 수 있다.
+ * 쌓이고 최신 행 자체가 반려일 수도 있어 상태로는 고를 수 없고, created_at은 초 단위라 같은 초에 겹칠 수 있다.
  */
 public interface StudentTransferStatusJpaRepository extends JpaRepository<StudentTransferStatusJpaEntity, Long> {
 
