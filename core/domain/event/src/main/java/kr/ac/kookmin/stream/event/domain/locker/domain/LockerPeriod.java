@@ -59,7 +59,7 @@ public class LockerPeriod {
             command.semester(),
             toName(command.year(), command.semester()),
             command.applyStartDate().atStartOfDay(),
-            command.applyEndDate().atTime(LocalTime.MAX.withNano(0)),
+            toApplyEndAt(command.applyEndDate()),
             command.usageStartDate(),
             command.usageEndDate(),
             true
@@ -76,7 +76,7 @@ public class LockerPeriod {
         validateChangeable(command.applyStartDate(), now);
 
         this.applyStartAt = command.applyStartDate().atStartOfDay();
-        this.applyEndAt = command.applyEndDate().atTime(LocalTime.MAX.withNano(0));
+        this.applyEndAt = toApplyEndAt(command.applyEndDate());
         this.usageStartAt = command.usageStartDate();
         this.usageEndAt = command.usageEndDate();
     }
@@ -107,6 +107,14 @@ public class LockerPeriod {
      */
     public boolean isUsageEnded(LocalDate today) {
         return today.isAfter(usageEndAt);
+    }
+
+    /**
+     * 신청 마감일의 마지막 순간. MySQL {@code DATETIME}은 소수점 초를 반올림하므로 {@link LocalTime#MAX}를 그대로
+     * 넣으면 다음 날 00:00:00으로 저장된다. 나노초를 떼어 23:59:59로 맞춘다.
+     */
+    private static LocalDateTime toApplyEndAt(LocalDate applyEndDate) {
+        return applyEndDate.atTime(LocalTime.MAX.withNano(0));
     }
 
     private static String toName(int year, int semester) {
