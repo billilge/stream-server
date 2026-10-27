@@ -32,12 +32,13 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     @Override
     @Transactional
     public LockerApplicationResult apply(Long memberId, LockerApplyCommand command) {
+        LocalDateTime now = LocalDateTime.now();
         LockerPeriod period = getPublishedPeriod(command.lockerPeriodId());
-        requireApplyOpen(period);
+        requireApplyOpen(period, now);
         Locker locker = getSelectableLocker(period.getId(), command.lockerId());
 
         LockerApplication application = lockerApplicationRepository.save(
-            LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
+            LockerApplication.create(period.getId(), memberId, locker.getId(), now)
         );
         outboxWriter.record(new LockerAssigned(memberId, period.getId()));
         return new LockerApplicationResult(application, locker, period);
@@ -101,9 +102,11 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
      * 모집 기간 밖에는 신청을 받지 않는다. 게시 여부만 보면 운영진이 게시를 내리기 전까지 마감 뒤에도 신청이 들어오고,
      * 사물함은 선착순 즉시 배정이라 그 신청이 남의 자리를 차지한다. 행사 신청({@code EventApplicationServiceImpl})도
      * 같은 자리에서 모집 상태를 본다.
+     *
+     * @param now 신청 시각과 같은 값을 쓴다. 따로 잡으면 마감 판정을 통과한 신청이 마감 뒤 시각으로 기록될 수 있다
      */
-    private void requireApplyOpen(LockerPeriod period) {
-        if (!period.isApplyOpen(LocalDateTime.now())) {
+    private void requireApplyOpen(LockerPeriod period, LocalDateTime now) {
+        if (!period.isApplyOpen(now)) {
             throw new BusinessException(LockerErrorCode.LOCKER_APPLY_NOT_OPEN);
         }
     }
