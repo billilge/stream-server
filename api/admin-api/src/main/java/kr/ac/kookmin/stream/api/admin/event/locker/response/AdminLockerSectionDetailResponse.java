@@ -93,7 +93,7 @@ public record AdminLockerSectionDetailResponse(
                 locker.getId(),
                 locker.getLockerNumber(),
                 locker.getLockerLabel(),
-                LockerDisplayStatus.from(locker.getStatus(), applied)
+                LockerDisplayStatus.from(locker, applied)
             );
         }
     }
@@ -109,14 +109,15 @@ public record AdminLockerSectionDetailResponse(
         ASSIGNED;
 
         /**
-         * 배정된 뒤 사용 중지된 칸은 {@code ASSIGNED}로 본다. 운영진이 그 학생에게 다른 자리를 줘야 하는 상황이라
-         * 배정 사실이 물리 상태보다 먼저 보여야 한다.
+         * 배정된 뒤 사용 중지된 칸은 {@code ASSIGNED}로 본다. 운영진 화면이 칸 하나를 색 하나로 그려서 둘 중
+         * 하나만 고를 수 있고, 배정된 학생이 있다는 사실을 먼저 보여야 한다.
          */
-        public static LockerDisplayStatus from(LockerStatus status, boolean applied) {
+        public static LockerDisplayStatus from(Locker locker, boolean applied) {
             if (applied) {
                 return ASSIGNED;
             }
-            return status == LockerStatus.AVAILABLE ? AVAILABLE : DISABLED;
+            // 구역 목록의 availableCount와 같은 기준으로 가른다. 배정 여부는 위에서 이미 갈랐으므로 false를 넘긴다
+            return locker.isSelectable(false) ? AVAILABLE : DISABLED;
         }
     }
 }
