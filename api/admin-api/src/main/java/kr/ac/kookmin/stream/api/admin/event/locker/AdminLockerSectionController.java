@@ -48,9 +48,7 @@ public class AdminLockerSectionController implements AdminLockerSectionApi {
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         LockerSectionDetail detail = lockerService.getSectionDetail(lockerPeriodId, sectionId);
-        // 배치 구조를 아직 등록하지 않은 구역이면 사진도 없다
-        Map<Long, File> photosById = fileService.findAllByIdIn(
-            detail.layout() == null ? List.of() : detail.layout().getPhotoFileIds());
+        Map<Long, File> photosById = fileService.findAllByIdIn(detail.photoFileIds());
         Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
 
         return ApiResponse.success(
