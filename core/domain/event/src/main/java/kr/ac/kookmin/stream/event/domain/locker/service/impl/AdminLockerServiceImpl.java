@@ -77,17 +77,14 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     @Override
     @Transactional
-    public List<Locker> changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status) {
+    public void changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status) {
         List<Locker> lockers = findLockersInSection(sectionId, lockerIds);
         if (status == LockerStatus.DISABLED) {
             requireNotInUse(lockerIds);
         }
 
-        // 이미 그 상태인 사물함은 저장하지 않는다. 36칸 구역에서 두 칸만 바꿔도 전체를 쓰지 않도록 한다
-        lockerRepository.saveLockers(lockers.stream()
-            .filter(locker -> locker.changeStatus(status))
-            .toList());
-        return lockers;
+        lockers.forEach(locker -> locker.changeStatus(status));
+        lockerRepository.saveLockers(lockers);
     }
 
     /**

@@ -44,15 +44,9 @@ public class Locker {
     }
 
     /**
-     * 사물함 자체 상태를 바꾼다. 바뀐 값이 있으면 true를 돌려준다.
-     * <p>
-     * 운영진이 여러 칸을 한 번에 바꾸므로, 이미 그 상태인 사물함은 저장하지 않도록 바뀌었는지 알려준다.
+     * 사물함 자체 상태를 바꾼다. 이미 그 상태여도 그대로 둔다 — 영속성 컨텍스트가 값이 바뀐 행만 UPDATE한다.
      */
-    public boolean changeStatus(LockerStatus status) {
-        if (this.status == status) {
-            return false;
-        }
+    public void changeStatus(LockerStatus status) {
         this.status = status;
-        return true;
     }
 }
