@@ -47,13 +47,11 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     }
 
     @Override
-    public List<LockerApplication> findByLockerIds(Collection<Long> lockerIds) {
-        if (lockerIds.isEmpty()) {
-            return List.of();
+    public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
+        if (lockerPeriodIds.isEmpty() || lockerIds.isEmpty()) {
+            return false;
         }
-        return lockerApplicationJpaRepository.findAllByLockerIdIn(lockerIds).stream()
-            .map(LockerApplicationJpaEntity::toDomain)
-            .toList();
+        return lockerApplicationJpaRepository.existsByLockerPeriodIdInAndLockerIdIn(lockerPeriodIds, lockerIds);
     }
 
     @Override

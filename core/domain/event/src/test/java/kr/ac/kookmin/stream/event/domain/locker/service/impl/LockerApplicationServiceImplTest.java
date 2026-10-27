@@ -434,7 +434,7 @@ class LockerApplicationServiceImplTest {
         private List<LockerApplication> memberApplications = List.of();
 
         @Override
-        public List<LockerApplication> findByLockerIds(Collection<Long> lockerIds) {
+        public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
             throw new UnsupportedOperationException();
         }
 

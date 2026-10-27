@@ -112,22 +112,16 @@ class AdminLockerServiceImpl implements AdminLockerService {
      * 저장소는 신청과 회차를 읽어 오기만 한다.
      */
     private void requireNotInUse(List<Long> lockerIds) {
-        List<LockerApplication> applications = lockerApplicationRepository.findByLockerIds(lockerIds);
-        if (applications.isEmpty()) {
-            return;
-        }
-
         LocalDate today = LocalDate.now();
-        Set<Long> assignedPeriodIds = lockerRepository.findPublishedPeriodsByIds(applications.stream()
-                .map(LockerApplication::getLockerPeriodId)
-                .collect(Collectors.toSet())).stream()
+        // 회차를 먼저 좁힌다. 회차는 학기당 한두 건이라 전부 읽어도 되고, 그래야 신청 조회가 (회차, 사물함)
+        // 유니크 인덱스를 탄다. 사물함 식별자만으로 신청을 찾으면 탈 인덱스가 없어 이력 전체를 훑는다.
+        // 게시 여부로 거르지 않는다. 신청은 게시된 회차에만 들어와 지금은 차이가 없고, 거르려면 포트만 하나 더 는다
+        Set<Long> assignedPeriodIds = lockerRepository.findAllPeriods().stream()
             .filter(period -> LockerApplicationStatus.from(period, today) == LockerApplicationStatus.ASSIGNED)
             .map(LockerPeriod::getId)
             .collect(Collectors.toSet());
 
-        boolean inUse = applications.stream()
-            .anyMatch(application -> assignedPeriodIds.contains(application.getLockerPeriodId()));
-        if (inUse) {
+        if (lockerApplicationRepository.existsByPeriodIdsAndLockerIds(assignedPeriodIds, lockerIds)) {
             throw new BusinessException(LockerErrorCode.LOCKER_IN_USE);
         }
     }
