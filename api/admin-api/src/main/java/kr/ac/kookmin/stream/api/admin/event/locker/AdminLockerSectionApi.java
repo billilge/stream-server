@@ -56,7 +56,9 @@ public interface AdminLockerSectionApi {
             + "사용 기간이 끝나지 않은 회차에 배정된 사물함은 이용 중인 학생이 있으므로 DISABLED로 바꿀 수 없고, "
             + "AVAILABLE로 되돌리는 것은 막지 않는다. "
             + "구역 상세가 내려주는 ASSIGNED는 신청으로 생기는 표시용 값이라 이 경로로 바꿀 수 없다. "
-            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다.")
+            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다. "
+            + "이용 중 검사와 학생 신청이 겹치면 서로 다른 테이블에 써서 둘 다 성공할 수 있고, "
+            + "그때는 배정된 칸이 사용 중지된 채로 남는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_NOT_IN_SECTION", "LOCKER_IN_USE"})
     ApiResponse<Void> changeLockerStatus(
