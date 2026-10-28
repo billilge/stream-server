@@ -25,6 +25,8 @@ springBootStarterAspectj = { module = "org.springframework.boot:spring-boot-star
 springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
 springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 springBootStarterFlyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
+springBootStarterJackson = { module = "org.springframework.boot:spring-boot-starter-jackson" }
+springBootStarterLogging = { module = "org.springframework.boot:spring-boot-starter-logging" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 springBootStarterSecurityTest = { module = "org.springframework.boot:spring-boot-starter-security-test" }
 springBootStarterDataJpaTest = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
@@ -47,7 +49,6 @@ springJdbc = { module = "org.springframework:spring-jdbc" }
 
 jakartaServletApi = { module = "jakarta.servlet:jakarta.servlet-api" }
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
-slf4jApi = { module = "org.slf4j:slf4j-api" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }

@@ -145,20 +145,23 @@ CREATE INDEX idx_user_departments_user_id ON user_departments (user_id);
 `infrastructure:outbox` 릴레이가 사용하는 공용 테이블(`architecture.md` 6-2절). 특정 도메인에 종속되지 않는다.
 
 ```sql
--- V2__create_outbox_table.sql
+-- V18__create_outbox_events_table.sql
 CREATE TABLE outbox_events (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    event_type VARCHAR(200) NOT NULL,
+    outbox_event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(200) NOT NULL,                -- 이벤트 클래스 FQCN. 역직렬화에 쓴다
     payload JSON NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',   -- PENDING / PUBLISHED
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',   -- PENDING / PUBLISHED / FAILED
+    attempts INT NOT NULL DEFAULT 0,                 -- 발행에 실패한 횟수
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     published_at DATETIME NULL
 );
-CREATE INDEX idx_outbox_events_status_id ON outbox_events (status, id);
+CREATE INDEX idx_outbox_events_status_outbox_event_id ON outbox_events (status, outbox_event_id);
 ```
 
-- 발행 도메인은 자기 트랜잭션 안에서 `OutboxWriter`로 기록(원 비즈니스 쓰기와 원자적).
+- 발행 도메인은 자기 트랜잭션 안에서 `OutboxWriter`로 기록(원 비즈니스 쓰기와 원자적). 트랜잭션 밖에서 부르면 실패한다.
 - 릴레이(`@Scheduled` 폴러)는 `status = 'PENDING'`을 조회해 인프로세스 재발행 후 `PUBLISHED`로 마킹한다. at-least-once이므로 소비 리스너는 멱등해야 한다.
+- 리스너가 실패하면 `attempts`를 올리고 다음 폴에서 다시 발행한다. 한도(5회)에 닿으면 `FAILED`로 바꿔 더는 재시도하지 않는다. 원인을 고친 뒤 `PENDING`으로 되돌리면 다시 발행된다.
+- `PUBLISHED`가 된 지 7일 지난 행은 매일 새벽 정리한다. `FAILED`는 원인을 확인할 수 있게 남긴다.
 
 ---
 

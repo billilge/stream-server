@@ -15,9 +15,12 @@ import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 수정과 삭제가 겹쳤을 때 읽어 둔 나머지 컬럼까지 되써서 삭제 표시(is_deleted)나
+// 다른 관리자가 방금 고친 값을 되돌리는 일을 막는다. 동시 수정을 막는 락은 두지 않아 겹치면 나중에 저장한 내용이 반영된다.
 @Entity
 @Table(
     name = "notices",
@@ -25,6 +28,7 @@ import org.hibernate.type.SqlTypes;
         @Index(name = "idx_notices_is_deleted_pinned_created_at", columnList = "is_deleted, pinned, created_at")
     }
 )
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NoticeJpaEntity extends BaseSoftDeleteEntity {
 

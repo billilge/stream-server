@@ -24,11 +24,6 @@ public record ItemListParams(
         return ItemCategory.from(category);
     }
 
-    // 공백뿐인 검색어는 검색하지 않는 것과 같다
-    public String toKeyword() {
-        return keyword == null || keyword.isBlank() ? null : keyword.strip();
-    }
-
     public ItemCursor toCursor() {
         return cursor == null ? null : ItemCursor.from(CursorCodec.decode(cursor));
     }
