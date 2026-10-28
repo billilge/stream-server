@@ -29,7 +29,7 @@ public interface RentalHistoryRepository {
 
     RentalHistory save(RentalHistory history);
 
-    /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
+    /** 같은 회원이 같은 물품에 아직 끝나지 않은(진행 중인) 이력이 있는지 확인한다. 승인 대기 중인 중복 신청도 막는다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 
     /** 이 물품에 아직 끝나지 않은(RETURNED/CANCEL/REJECTED가 아닌) 대여 기록이 있는지 확인한다. 물품 삭제 차단에 쓴다. */

@@ -52,6 +52,6 @@ public class RentalStatusWorkerLogJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public RentalStatusWorkerLog toDomain() {
-        return RentalStatusWorkerLog.of(id, rentalHistoryId, workerId, rentalStatus);
+        return RentalStatusWorkerLog.of(id, rentalHistoryId, workerId, rentalStatus, getCreatedAt());
     }
 }
