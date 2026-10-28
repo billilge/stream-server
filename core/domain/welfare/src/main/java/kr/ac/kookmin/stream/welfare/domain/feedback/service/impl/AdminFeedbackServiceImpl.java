@@ -44,12 +44,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
             .map(maxRound -> maxRound + 1)
             .orElse(FIRST_ROUND);
         FeedbackRound round = FeedbackRound.create(nextRound, opensOn, closesOn);
-
-        // 학생 앱의 질문 등록은 접수 기간인 회차 "하나"를 찾아 배정하므로, 기간이 겹치면 질문 등록이 깨진다.
-        // 범위 겹침은 유니크 제약으로 막을 수 없어 등록 전에 확인한다(조회-후-삽입이라 동시 등록 구멍은 남는다)
-        if (feedbackRoundRepository.existsOverlapping(round.getOpensAt(), round.getClosesAt())) {
-            throw new BusinessException(FeedbackErrorCode.FEEDBACK_ROUND_OVERLAPPED);
-        }
+        validateNotOverlapped(round);
 
         FeedbackRound saved = feedbackRoundRepository.save(round);
         return FeedbackRoundSummary.of(saved, FeedbackCount.empty(saved.getYear(), saved.getRound()), now);
@@ -132,6 +127,14 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         round.publishAnswers(now);
         FeedbackRound published = feedbackRoundRepository.save(round);
         return FeedbackRoundDetail.of(published, feedbacks, now);
+    }
+
+    // 학생 앱의 질문 등록은 접수 기간인 회차 "하나"를 찾아 배정하므로, 기간이 겹치면 질문 등록이 깨진다.
+    // 범위 겹침은 유니크 제약으로 막을 수 없어 등록 전에 확인한다(조회-후-삽입이라 동시 등록 구멍은 남는다)
+    private void validateNotOverlapped(FeedbackRound round) {
+        if (feedbackRoundRepository.existsOverlapping(round.getOpensAt(), round.getClosesAt())) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_ROUND_OVERLAPPED);
+        }
     }
 
     // 질문 접수가 끝난 회차만 공개한다. 접수 중에 공개하면 회차는 종료로 보이는데 질문은 계속 들어오고, 그 뒤에 단 답변은

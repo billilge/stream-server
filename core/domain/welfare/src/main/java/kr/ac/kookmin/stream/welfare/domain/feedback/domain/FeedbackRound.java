@@ -33,9 +33,7 @@ public class FeedbackRound {
      * 연도는 시작일 기준이고, 회차 번호는 그 연도의 다음 번호를 호출부가 계산해 넘긴다.
      */
     public static FeedbackRound create(int round, LocalDate opensOn, LocalDate closesOn) {
-        if (closesOn.isBefore(opensOn)) {
-            throw new BusinessException(FeedbackErrorCode.INVALID_FEEDBACK_ROUND_PERIOD);
-        }
+        validatePeriod(opensOn, closesOn);
         return new FeedbackRound(
             null, opensOn.getYear(), round, opensOn.atTime(OPENS_TIME), closesOn.atTime(CLOSES_TIME), null);
     }
@@ -49,6 +47,13 @@ public class FeedbackRound {
         LocalDateTime answersPublishedAt
     ) {
         return new FeedbackRound(id, year, round, opensAt, closesAt, answersPublishedAt);
+    }
+
+    // 시작일과 마감일이 같은 하루짜리 회차는 허용한다
+    private static void validatePeriod(LocalDate opensOn, LocalDate closesOn) {
+        if (closesOn.isBefore(opensOn)) {
+            throw new BusinessException(FeedbackErrorCode.INVALID_FEEDBACK_ROUND_PERIOD);
+        }
     }
 
     public boolean isAnswersPublished() {
