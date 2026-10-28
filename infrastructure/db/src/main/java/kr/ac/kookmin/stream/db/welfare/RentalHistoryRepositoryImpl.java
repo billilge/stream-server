@@ -16,6 +16,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
+    // "지금 내가 들고 있는" 대여로 보는 상태 — RENTAL과, 기한을 넘겨 전이된 OVERDUE. 연체됐다고 반납 대상에서
+    // 빠지면 안 된다(OVERDUE로 바뀐 학생이 반납 신청을 못 하게 된다). 여기서만 쓰여 RentalStatus로 옮기지 않는다.
+    private static final List<RentalStatus> HOLDING_STATUSES = List.of(RentalStatus.RENTAL, RentalStatus.OVERDUE);
+
     private final RentalHistoryJpaRepository rentalHistoryJpaRepository;
 
     @Override
@@ -51,7 +55,7 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
-        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, RentalStatus.holdingStatuses())
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, HOLDING_STATUSES)
             .map(RentalHistoryJpaEntity::toDomain);
     }
 
