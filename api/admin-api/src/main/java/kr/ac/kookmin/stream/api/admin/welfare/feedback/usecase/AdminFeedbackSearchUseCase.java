@@ -24,7 +24,7 @@ public class AdminFeedbackSearchUseCase {
     private final AdminFeedbackService adminFeedbackService;
     private final MemberService memberService;
 
-    public PageResult<FeedbackWithStudent> search(Long roundId, String keyword, PageOffset pageOffset) {
+    public PageResult<MemberFeedback> search(Long roundId, String keyword, PageOffset pageOffset) {
         String searchKeyword = keyword == null || keyword.isBlank() ? null : keyword;
         List<Long> matchedMemberIds = searchKeyword == null
             ? List.of()
@@ -32,9 +32,9 @@ public class AdminFeedbackSearchUseCase {
 
         PageResult<Feedback> result =
             adminFeedbackService.searchQuestions(roundId, searchKeyword, matchedMemberIds, pageOffset);
-        Map<Long, Member> students = memberService.getMapByIds(
+        Map<Long, Member> members = memberService.getMapByIds(
             result.content().stream().map(Feedback::getCreatedBy).toList());
 
-        return result.map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.getCreatedBy())));
+        return result.map(feedback -> new MemberFeedback(feedback, members.get(feedback.getCreatedBy())));
     }
 }

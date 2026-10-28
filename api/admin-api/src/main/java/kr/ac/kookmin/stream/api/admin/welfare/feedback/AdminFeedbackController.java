@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.feedback.response.AdminFeedbackResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.feedback.usecase.AdminFeedbackSearchUseCase;
-import kr.ac.kookmin.stream.api.admin.welfare.feedback.usecase.FeedbackWithStudent;
+import kr.ac.kookmin.stream.api.admin.welfare.feedback.usecase.MemberFeedback;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -31,7 +31,7 @@ public class AdminFeedbackController implements AdminFeedbackApi {
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<FeedbackWithStudent> result =
+        PageResult<MemberFeedback> result =
             adminFeedbackSearchUseCase.search(roundId, keyword, pageParams.toOffset());
 
         return ApiResponse.success(PageResponse.from(result, AdminFeedbackResponse::from));

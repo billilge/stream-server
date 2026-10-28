@@ -20,25 +20,25 @@ public class AdminFeedbackAnswerUseCase {
     private final MemberService memberService;
 
     public FeedbackRoundAnswers getRoundAnswers(Long roundId) {
-        return withStudents(adminFeedbackService.getRoundDetail(roundId));
+        return attachMembers(adminFeedbackService.getRoundDetail(roundId));
     }
 
     public FeedbackRoundAnswers saveAnswers(Long roundId, List<FeedbackAnswerCommand> commands, Long answeredBy) {
-        return withStudents(adminFeedbackService.saveAnswers(roundId, commands, answeredBy));
+        return attachMembers(adminFeedbackService.saveAnswers(roundId, commands, answeredBy));
     }
 
     public FeedbackRoundAnswers publishAnswers(Long roundId) {
-        return withStudents(adminFeedbackService.publishAnswers(roundId));
+        return attachMembers(adminFeedbackService.publishAnswers(roundId));
     }
 
-    private FeedbackRoundAnswers withStudents(FeedbackRoundDetail detail) {
-        Map<Long, Member> students = memberService.getMapByIds(
+    private FeedbackRoundAnswers attachMembers(FeedbackRoundDetail detail) {
+        Map<Long, Member> members = memberService.getMapByIds(
             detail.feedbacks().stream().map(Feedback::getCreatedBy).toList());
 
         return new FeedbackRoundAnswers(
             detail.summary(),
             detail.feedbacks().stream()
-                .map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.getCreatedBy())))
+                .map(feedback -> new MemberFeedback(feedback, members.get(feedback.getCreatedBy())))
                 .toList()
         );
     }
