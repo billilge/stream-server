@@ -74,8 +74,12 @@ public interface AdminFeedbackRoundApi {
 
     /** 답변 공개. 그 회차의 답변을 학생 앱에 한꺼번에 띄운다. */
     @Operation(summary = "피드백 답변 공개",
-        description = "그 회차에 작성된 답변을 학생에게 공개한다. 공개는 회차 단위이고, "
+        description = "그 회차에 작성된 답변을 학생에게 공개한다. 공개는 회차 단위이고, 질문 접수가 끝난 회차(답변작성중)만 "
+            + "공개할 수 있다(오픈예정·질문접수중이면 409). "
             + "이미 공개한 회차를 다시 불러도 공개 시각을 바꾸지 않고 성공으로 응답한다(멱등).")
-    @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_ANSWER_NOT_FOUND", "FEEDBACK_ROUND_NOT_FOUND"})
+    @ApiErrorCode(
+        type = FeedbackErrorCode.class,
+        codes = {"FEEDBACK_ANSWER_NOT_FOUND", "FEEDBACK_ROUND_NOT_FOUND", "FEEDBACK_QUESTION_PERIOD_NOT_ENDED"}
+    )
     ApiResponse<FeedbackRoundDetailResponse> publishAnswers(AdminApiUser apiUser, Long roundId);
 }

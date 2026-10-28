@@ -127,14 +127,23 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
         FeedbackRound round = getRoundById(roundId);
         List<Feedback> feedbacks = feedbackRepository.findAllByYearAndRound(round.getYear(), round.getRound());
-
-        if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
-            throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
-        }
+        validatePublishable(round, feedbacks, now);
 
         round.publishAnswers(now);
         FeedbackRound published = feedbackRoundRepository.save(round);
         return FeedbackRoundDetail.of(published, feedbacks, now);
+    }
+
+    // 질문 접수가 끝난 회차만 공개한다. 접수 중에 공개하면 회차는 종료로 보이는데 질문은 계속 들어오고, 그 뒤에 단 답변은
+    // 임시저장 없이 바로 학생에게 보인다. 이미 공개한 회차는 종료(CLOSED)라 여기를 통과하고 다시 불러도 그대로다
+    private void validatePublishable(FeedbackRound round, List<Feedback> feedbacks, LocalDateTime now) {
+        FeedbackRoundStatus status = FeedbackRoundStatus.of(round, now);
+        if (status == FeedbackRoundStatus.SCHEDULED || status == FeedbackRoundStatus.OPEN) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_QUESTION_PERIOD_NOT_ENDED);
+        }
+        if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
+        }
     }
 
     private FeedbackRound getRoundById(Long roundId) {
