@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,20 @@ public class LockerRepositoryImpl implements LockerRepository {
     @Override
     public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
         return lockerPeriodJpaRepository.findAllByIdInAndIsPublishedTrue(lockerPeriodIds).stream()
+            .map(LockerPeriodJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+        return lockerPeriodJpaRepository.findPublishedApplyEndingBetween(from, to).stream()
+            .map(LockerPeriodJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+        return lockerPeriodJpaRepository.findAllByIsPublishedTrueAndUsageEndAt(usageEndAt).stream()
             .map(LockerPeriodJpaEntity::toDomain)
             .toList();
     }

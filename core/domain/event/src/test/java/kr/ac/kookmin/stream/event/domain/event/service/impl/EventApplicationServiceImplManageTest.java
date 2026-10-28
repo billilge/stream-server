@@ -33,7 +33,8 @@ class EventApplicationServiceImplManageTest {
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
     private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
     private final EventApplicationServiceImpl service =
-        new EventApplicationServiceImpl(repository, applicationRepository, new EventApplyAnswerValidator());
+        // 조회만 검증하므로 아웃박스 기록은 버린다
+        new EventApplicationServiceImpl(repository, applicationRepository, new EventApplyAnswerValidator(), event -> { });
 
     private static Event event(Long id) {
         return Event.of(

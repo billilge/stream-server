@@ -47,8 +47,7 @@ public interface EventRepository {
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.
      * <p>
-     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 삭제된 행사의 신청은 {@link EventApplicationRepository#findSliceByMemberId}가
-     * 이미 걸러내므로 여기서 다시 거르지 않는다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
+     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
      */
     List<Event> findAllByIds(List<Long> eventIds);
 
@@ -69,6 +68,16 @@ public interface EventRepository {
         int limit,
         LocalDateTime now
     );
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 시작 일시가 {@code [from, to)}인 행사. 행사 전날 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 신청 마감 일시가 {@code [from, to)}인 행사. 모집 마감 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to);
 
     List<EventQuestion> findQuestionsByEventId(Long eventId);
 }

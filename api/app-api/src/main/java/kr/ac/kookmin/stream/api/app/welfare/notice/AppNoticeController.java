@@ -56,7 +56,7 @@ public class AppNoticeController implements AppNoticeApi {
     @Override
     @GetMapping("/{noticeId}")
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
-        Notice notice = noticeService.getNotice(noticeId);
+        Notice notice = noticeService.getById(noticeId);
 
         Map<Long, File> imagesById = fileService.findAllByIdIn(
                 notice.getImageIds() == null ? List.of() : notice.getImageIds()

@@ -45,7 +45,7 @@ public class AppRentalController implements AppRentalApi {
         @Valid @ModelAttribute ItemListParams params
     ) {
         CursorSliceResult<Item> result = itemService.getItems(
-            params.toCategory(), params.toKeyword(), params.toCursor(), params.sizeOrDefault()
+            params.toCategory(), params.keyword(), params.toCursor(), params.sizeOrDefault()
         );
         return ApiResponse.success(CursorSliceResponse.from(result, ItemListItemResponse::from));
     }

@@ -87,6 +87,11 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
     }
 
     @Override
+    public List<Long> findAppliedMemberIds(Long eventId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public EventApplication save(EventApplication application) {
         throw new UnsupportedOperationException();
     }

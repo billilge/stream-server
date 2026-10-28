@@ -7,8 +7,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
+import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -36,6 +39,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
     private final EventApplyAnswerValidator eventApplyAnswerValidator;
+    private final OutboxWriter outboxWriter;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,6 +64,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             EventApplication.create(eventId, memberId, LocalDateTime.now())
         );
         eventApplicationRepository.saveAnswers(toAnswers(application.getId(), command));
+        outboxWriter.record(new EventApplied(memberId, eventId, application.getId(), event.getTitle()));
 
         return new EventApplicationResult(application.getId(), event);
     }
@@ -115,13 +120,14 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
         // 마감 판정과 취소 시각이 같은 시각을 봐야 마감 직전 취소가 마감 이후로 기록되지 않는다
         LocalDateTime now = LocalDateTime.now();
-        // 취소는 신청 마감 전까지만 허용한다. 강제 마감·정원 마감은 이미 낸 신청의 취소를 막지 않는다
+        // 취소는 신청 마감 전까지만 허용한다. 정원 마감은 이미 낸 신청의 취소를 막지 않는다
         if (event.isAfterApplyPeriod(now)) {
             throw new BusinessException(EventErrorCode.CANCEL_DEADLINE_PASSED);
         }
 
         application.cancel(now);
         eventApplicationRepository.save(application);
+        outboxWriter.record(new EventApplicationCanceled(memberId, event.getId(), application.getId(), event.getTitle()));
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
@@ -168,7 +174,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
      * 모집 중인 행사를 가져온다. 폼 조회와 신청이 같은 기준으로 열려 있어야 하므로 한곳에 둔다.
      * <p>
      * 아직 게시하지 않은 행사는 학생에게 없는 것으로 보여야 하므로 목록·상세와 같은 기준으로 거른다.
-     * 닫혀 있으면 사유를 가른다. 강제 마감·기간 종료가 정원 마감보다 앞선 사유다.
+     * 닫혀 있으면 사유를 가른다. 기간 종료가 정원 마감보다 앞선 사유다.
      */
     private Event getOpenEvent(Long eventId) {
         Event event = eventRepository.findPublishedById(eventId)

@@ -38,9 +38,12 @@ public interface EventApplicationRepository {
     boolean existsAppliedByEventIdAndMemberId(Long eventId, Long memberId);
 
     /**
+     * 행사의 유효 신청(취소하지 않은 신청)을 낸 회원 식별자.
+     */
+    List<Long> findAppliedMemberIds(Long eventId);
+
+    /**
      * 한 회원의 신청 내역을 신청 시각 내림차순(동일 시각은 applicationId 내림차순)으로 {@code limit}건까지 조회한다.
-     * <p>
-     * 삭제된 행사의 신청은 제외한다.
      * <p>
      * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
      */

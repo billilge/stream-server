@@ -96,4 +96,14 @@ class InMemoryEventRepository implements EventRepository {
     public List<Event> findPublishedSlice(RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+        throw new UnsupportedOperationException();
+    }
 }

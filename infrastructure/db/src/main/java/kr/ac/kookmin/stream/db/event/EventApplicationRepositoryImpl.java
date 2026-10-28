@@ -74,6 +74,11 @@ public class EventApplicationRepositoryImpl implements EventApplicationRepositor
     }
 
     @Override
+    public List<Long> findAppliedMemberIds(Long eventId) {
+        return eventApplicationJpaRepository.findMemberIdsByEventIdAndStatus(eventId, EventApplicationStatus.APPLIED);
+    }
+
+    @Override
     public List<EventApplication> findSliceByMemberId(Long memberId, EventApplicationCursor cursor, int limit) {
         return eventApplicationJpaRepository.findSliceByMemberId(
             memberId,

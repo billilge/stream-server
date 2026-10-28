@@ -115,6 +115,16 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to) {
+        return eventJpaRepository.findPublishedStartingBetween(from, to).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+        return eventJpaRepository.findPublishedApplyEndingBetween(from, to).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
     public List<EventQuestion> findQuestionsByEventId(Long eventId) {
         return eventQuestionJpaRepository.findAllByEventIdOrderByDisplayOrderAsc(eventId).stream()
             .map(EventQuestionJpaEntity::toDomain)

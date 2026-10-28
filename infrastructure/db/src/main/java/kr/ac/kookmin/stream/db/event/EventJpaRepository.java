@@ -85,4 +85,22 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
     );
+
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND e.eventStartAt >= :from
+        AND e.eventStartAt < :to
+        """)
+    List<EventJpaEntity> findPublishedStartingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND e.applyEndAt >= :from
+        AND e.applyEndAt < :to
+        """)
+    List<EventJpaEntity> findPublishedApplyEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }
