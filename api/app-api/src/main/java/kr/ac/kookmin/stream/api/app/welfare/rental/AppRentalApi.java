@@ -45,16 +45,17 @@ public interface AppRentalApi {
 
     /** 지금 반납해야 하는 대여와 반납 기한. */
     @Operation(summary = "반납 필요 대여 조회",
-        description = "지금 반납해야 하는 대여(대여 중 상태)와 반납 기한(dueAt)을 조회한다. "
+        description = "지금 반납해야 하는 대여(대여 중이거나 반납 절차가 진행 중인 상태)와 반납 기한(dueAt)을 조회한다. "
             + "반납 기한은 대여일에 최대 대여 일수를 더한 날의 반납 마감 시각이다. 없으면 빈 배열이다.")
     ApiResponse<ReturnRequiredListResponse> getReturnRequired(AppApiUser apiUser);
 
     /** 대여 신청. 회비 납부·재고·중복 대여·대여 가능 시간을 검증한 뒤 이력을 만든다. */
     @Operation(summary = "대여 신청",
         description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)과 이미 지난 시각은 제외된다. "
-            + "이미 대여 중인 같은 물품이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
-            + "소모품은 신청 즉시 반납 완료로, 대여품은 대여 중으로 등록된다. "
-            + "같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
+            + "이미 진행 중인(아직 끝나지 않은) 같은 물품 신청이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
+            + "물품 종류와 관계없이 승인 대기(PENDING) 상태로 등록되며, 운영진이 승인해야 다음 단계로 넘어간다. "
+            + "재고는 신청 시점에 바로 차감되고, 같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, "
+            + "그래도 충돌하면 409를 반환한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"MEMBER_IS_NOT_PAYER"})
     @ApiErrorCode(
@@ -66,8 +67,17 @@ public interface AppRentalApi {
     )
     ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);
 
-    /** 반납 신청. 본인 소유의 대여 중 이력만 대상이다. */
-    @Operation(summary = "반납 신청", description = "대여 중인 물품의 반납을 신청한다. 신청 즉시 반납 완료로 처리된다.")
+    /** 반납 신청. 본인 소유의 대여 중(RENTAL·OVERDUE) 이력만 대상이다. */
+    @Operation(summary = "반납 신청",
+        description = "대여 중인 물품의 반납을 신청한다. 신청 즉시 완료가 아니라 반납 대기(RETURN_PENDING) 상태가 되며, "
+            + "운영진이 실제 반납을 확인해야 완료로 처리된다.")
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
     ApiResponse<Void> returnRental(AppApiUser apiUser, Long rentalHistoryId);
+
+    /** 대여 취소. 본인 소유의 승인 대기(PENDING) 이력만 대상이다. */
+    @Operation(summary = "대여 취소",
+        description = "승인 대기(PENDING) 중인 대여 신청을 취소한다. 운영진이 이미 승인했다면(PENDING이 아니면) 취소할 수 "
+            + "없다 — 그 경우는 반납 절차로 안내한다. 취소하면 신청 시점에 차감했던 재고를 복구한다.")
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
+    ApiResponse<Void> cancelRental(AppApiUser apiUser, Long rentalHistoryId);
 }

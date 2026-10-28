@@ -37,18 +37,31 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public Optional<RentalHistory> findById(Long id) {
+        return rentalHistoryJpaRepository.findById(id).map(RentalHistoryJpaEntity::toDomain);
+    }
+
+    @Override
     public RentalHistory save(RentalHistory history) {
         return rentalHistoryJpaRepository.save(RentalHistoryJpaEntity.from(history)).toDomain();
     }
 
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusIn(itemId, memberId, HOLDING_STATUSES);
+        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusNotIn(
+            itemId, memberId, RentalStatus.finishedStatuses()
+        );
     }
 
     @Override
     public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
         return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, HOLDING_STATUSES)
+            .map(RentalHistoryJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<RentalHistory> findPendingToCancel(Long id, Long memberId) {
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.PENDING)
             .map(RentalHistoryJpaEntity::toDomain);
     }
 

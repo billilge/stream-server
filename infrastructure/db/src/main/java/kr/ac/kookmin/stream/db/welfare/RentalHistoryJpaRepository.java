@@ -45,9 +45,11 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
         Pageable pageable
     );
 
-    boolean existsByItemIdAndMemberIdAndRentalStatusIn(Long itemId, Long memberId, Collection<RentalStatus> rentalStatuses);
+    boolean existsByItemIdAndMemberIdAndRentalStatusNotIn(Long itemId, Long memberId, Collection<RentalStatus> excludedStatuses);
 
     Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatusIn(Long id, Long memberId, Collection<RentalStatus> rentalStatuses);
+
+    Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatus(Long id, Long memberId, RentalStatus rentalStatus);
 
     boolean existsByItemIdAndRentalStatusNotIn(Long itemId, Collection<RentalStatus> excludedStatuses);
 }
