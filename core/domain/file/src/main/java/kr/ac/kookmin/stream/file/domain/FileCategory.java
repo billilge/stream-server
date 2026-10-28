@@ -6,5 +6,6 @@ public enum FileCategory {
     NOTICE_IMAGE,
     EVENT_IMAGE,
     ARCHIVE_IMAGE,
-    LOCKER_SECTION_PHOTO
+    LOCKER_SECTION_PHOTO,
+    ITEM_IMAGE
 }
