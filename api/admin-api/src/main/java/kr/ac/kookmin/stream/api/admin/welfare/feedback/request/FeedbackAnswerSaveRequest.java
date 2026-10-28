@@ -21,9 +21,23 @@ public record FeedbackAnswerSaveRequest(
 ) {
 
     public List<FeedbackAnswerCommand> toCommands() {
+        validateFeedbackIdsNotDuplicated();
+
         return answers.stream()
             .map(item -> FeedbackAnswerCommand.of(item.feedbackId(), item.answer()))
             .toList();
+    }
+
+    // 같은 질문이 두 번 오면 어느 답변이 남을지 요청만 보고 알 수 없다.
+    // IllegalArgumentException → GlobalExceptionHandler가 INVALID_INPUT(400)으로 응답한다
+    private void validateFeedbackIdsNotDuplicated() {
+        long distinctFeedbackIdCount = answers.stream()
+            .map(Item::feedbackId)
+            .distinct()
+            .count();
+        if (distinctFeedbackIdCount != answers.size()) {
+            throw new IllegalArgumentException("같은 질문의 답변이 중복되었습니다.");
+        }
     }
 
     public record Item(

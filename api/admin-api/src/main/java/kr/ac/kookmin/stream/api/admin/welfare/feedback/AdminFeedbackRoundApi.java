@@ -65,6 +65,7 @@ public interface AdminFeedbackRoundApi {
     /** 답변 임시저장. 저장만 하고 학생에게는 보이지 않는다. */
     @Operation(summary = "피드백 답변 일괄 등록·수정",
         description = "회차 단위로 답변을 저장한다. 보낸 것만 반영하고 이미 답변이 있는 질문은 덮어쓴다. "
+            + "한 요청에 같은 질문(feedbackId)을 두 번 보내면 400(INVALID_INPUT)이다. "
             + "여기서 저장한 답변은 관리자에게만 보이고, 답변 공개 API를 불러야 학생 앱에 나타난다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(
