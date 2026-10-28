@@ -54,7 +54,7 @@ public interface AppLockerApi {
     /** 고른 사물함을 신청하고 즉시 배정한다. */
     @Operation(summary = "사물함 신청",
         description = "게시된 운영 회차에서 고른 사물함을 신청하고 즉시 배정한다. 모집 기간 안에서만 받는다. "
-            + "운영 회차당 한 개만 신청할 수 있고 신청 후에는 취소하거나 변경할 수 없다. "
+            + "운영 회차당 한 개만 신청할 수 있고 신청 후에는 직접 취소하거나 변경할 수 없다. "
             + "같은 사물함에 동시에 신청하면 먼저 완료된 신청만 성공한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class,
