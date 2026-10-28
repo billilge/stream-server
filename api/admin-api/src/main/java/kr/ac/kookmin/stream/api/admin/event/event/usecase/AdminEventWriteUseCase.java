@@ -5,7 +5,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
-import kr.ac.kookmin.stream.event.domain.event.service.EventService;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -22,17 +22,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminEventWriteUseCase {
 
-    private final EventService eventService;
+    private final AdminEventService adminEventService;
     private final FileService fileService;
 
     public Event create(Long createdBy, EventCreateCommand command) {
         requireImagesExist(command.imageIds());
-        return eventService.create(createdBy, command);
+        return adminEventService.create(createdBy, command);
     }
 
     public Event update(Long eventId, EventUpdateCommand command) {
         requireImagesExist(command.imageIds());
-        return eventService.update(eventId, command);
+        return adminEventService.update(eventId, command);
     }
 
     // 요청 DTO가 중복을 걸러 넘기므로 조회 결과 개수와 바로 비교할 수 있다

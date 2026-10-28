@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
  * 운영진 행사 등록·조회·수정. 형식 규칙 자체는 {@code EventWriteValidatorTest}가 덮고,
  * 여기서는 저장 흐름과 수정 시의 규칙(동시 수정·정원 하한·질문 잠금)을 본다.
  */
-class EventServiceImplManageTest {
+class AdminEventServiceImplTest {
 
     private static final Long EVENT_ID = 15L;
     private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2026, 10, 10, 12, 30, 15);
@@ -55,7 +55,7 @@ class EventServiceImplManageTest {
         "전화번호", QuestionType.SHORT_TEXT, true, List.of(), false);
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
-    private final EventServiceImpl service = new EventServiceImpl(repository, new EventWriteValidator());
+    private final AdminEventServiceImpl service = new AdminEventServiceImpl(repository, new EventWriteValidator());
 
     private static Event savedEvent(RecruitType recruitType, int capacity) {
         return Event.of(
