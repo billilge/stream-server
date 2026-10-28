@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCreateCommand;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemUpdateCommand;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.ReturnPolicy;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.ItemRepository;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryRepository;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminItemService;
@@ -40,6 +41,7 @@ class AdminItemServiceImpl implements AdminItemService {
         if (itemRepository.existsByName(command.name())) {
             throw new BusinessException(RentalErrorCode.ITEM_NAME_DUPLICATED);
         }
+        validateReturnPolicyRequired(command.type(), command.returnPolicy());
         Item item = Item.of(null, command.name(), command.category(), command.type(), command.count(), command.imageKey(), command.returnPolicy());
         return itemRepository.save(item);
     }
@@ -56,6 +58,7 @@ class AdminItemServiceImpl implements AdminItemService {
             if (!existing.getName().equals(command.name()) && itemRepository.existsByNameAndIdNot(command.name(), itemId)) {
                 throw new BusinessException(RentalErrorCode.ITEM_NAME_DUPLICATED);
             }
+            validateReturnPolicyRequired(command.type(), command.returnPolicy());
 
             int countDiff = command.count() - existing.getCount();
             if (countDiff > 0) {
@@ -68,6 +71,13 @@ class AdminItemServiceImpl implements AdminItemService {
             Item updated = Item.of(itemId, command.name(), command.category(), command.type(), existing.getCount(), imageKey, command.returnPolicy());
             return itemRepository.save(updated);
         });
+    }
+
+    // 대여품은 반납 정책이 없으면 isReturnRequired·dueAt이 조용히 계산되지 않아 반납 관리 대상에서 빠진다.
+    private void validateReturnPolicyRequired(ItemType type, ReturnPolicy returnPolicy) {
+        if (type == ItemType.RENTAL && returnPolicy == null) {
+            throw new BusinessException(RentalErrorCode.RETURN_POLICY_REQUIRED);
+        }
     }
 
     @Override
