@@ -29,7 +29,8 @@ public interface EventService {
     /**
      * 운영진 행사 목록. 비공개 행사도 담는다. 신청자 수는 {@link #getApplicantCounts}로 따로 조회해 조합한다.
      *
-     * @param keyword 제목 부분 일치 검색어. {@code null}이면 거르지 않는다
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
+     *                그대로 검색한다
      */
     PageResult<Event> getEvents(String keyword, PageOffset pageOffset);
 

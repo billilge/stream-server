@@ -57,7 +57,7 @@ public class AdminEventController implements AdminEventApi {
         @Valid @ModelAttribute EventSearchParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Event> events = eventService.getEvents(params.toKeyword(), pageParams.toOffset());
+        PageResult<Event> events = eventService.getEvents(params.keyword(), pageParams.toOffset());
         Map<Long, Long> applicantCounts = eventService.getApplicantCounts(
             events.content().stream().map(Event::getId).toList());
         LocalDateTime now = LocalDateTime.now();
