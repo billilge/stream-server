@@ -61,13 +61,14 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
         Pageable pageable
     );
 
-    // COUNT(f.answer)는 answer가 NULL인 행을 세지 않으므로 그대로 "답변이 작성된 수"가 된다
+    // COUNT(f.answer)는 answer가 NULL인 행을 세지 않으므로 그대로 "답변이 작성된 수"가 된다.
+    // 생성자 인자는 이름이 아니라 순서로 들어가므로 질문 수·답변 수 순서를 FeedbackCountProjection과 맞춘다
     @Query("""
-        SELECT f.year AS year, f.round AS round,
-               COUNT(f) AS questionCount, COUNT(f.answer) AS answerCount
+        SELECT new kr.ac.kookmin.stream.db.welfare.FeedbackCountProjection(
+            f.year, f.round, COUNT(f), COUNT(f.answer))
         FROM FeedbackJpaEntity f
         WHERE f.isDeleted = false AND (:year IS NULL OR f.year = :year)
         GROUP BY f.year, f.round
         """)
-    List<FeedbackCountRow> findCountsByYear(@Param("year") Integer year);
+    List<FeedbackCountProjection> findCountsByYear(@Param("year") Integer year);
 }

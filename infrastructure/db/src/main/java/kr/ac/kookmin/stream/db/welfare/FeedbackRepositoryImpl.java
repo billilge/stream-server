@@ -61,8 +61,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     @Override
     public List<FeedbackCount> findCountsByYear(Integer year) {
         return feedbackJpaRepository.findCountsByYear(year).stream()
-            .map(row -> FeedbackCount.of(
-                row.getYear(), row.getRound(), row.getQuestionCount(), row.getAnswerCount()))
+            .map(count -> FeedbackCount.of(count.year(), count.round(), count.questionCount(), count.answerCount()))
             .toList();
     }
 
