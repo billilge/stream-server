@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
@@ -467,6 +469,16 @@ class LockerApplicationServiceImplTest {
                 application.getAppliedAt(),
                 application.isCanceled()
             );
+        }
+
+        @Override
+        public Optional<LockerApplication> findById(Long lockerApplicationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
