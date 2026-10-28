@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -37,28 +38,46 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     // getHistories와 같은 이유로 트랜잭션이 필요 없다. isReturnRequired가 보는 returnPolicy는 지금 계획된
     // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
+    // status를 null로 둬 전체를 가져온 뒤 isReturnRequired()로 거른다 — RENTAL뿐 아니라 OVERDUE도
+    // 걸러야 해서, 한 회원의 이력은 수가 적어 이렇게 걸러도 비용이 크지 않다.
     @Override
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
-        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL)).stream()
+        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다
+    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. RENTAL과 OVERDUE 둘 다 봐야
+    // 연체로 넘어간 뒤에도(스케줄러가 상태를 OVERDUE로 바꾼 뒤에도) 반납 알림·목록에 계속 잡힌다. 레포지토리에
+    // "여러 상태" 전용 메서드를 새로 만드는 대신, 이미 있는 단일 상태 조회를 두 번 불러 합친다 — 나중에
+    // 관리자 "대여/반납 현황 조회"도 상태 하나로 필터할 텐데, 그때도 이 단일 상태 메서드를 그대로 쓸 수 있다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
-        return toRecords(rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL)).stream()
+        List<RentalHistory> rentalOrOverdue = Stream.concat(
+            rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL).stream(),
+            rentalHistoryRepository.findAllByStatus(RentalStatus.OVERDUE).stream()
+        ).toList();
+        return toRecords(rentalOrOverdue).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
+    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다. 재고 복구는
+    // RentalHistory만으로 할 수 없는 다른 집합체(Item)의 책임이라, 완료된 이력을 돌려주고 호출부
+    // (api:app-api의 UseCase)가 ItemService와 조합한다(coding-style.md 2-9절).
     @Override
     @Transactional
-    public void returnRental(Long memberId, Long historyId) {
+    public RentalHistory returnRental(Long memberId, Long historyId) {
         RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
         history.markReturned(LocalDateTime.now(DateUtil.KST));
+        return rentalHistoryRepository.save(history);
+    }
+
+    @Override
+    @Transactional
+    public void markOverdue(RentalHistory history) {
+        history.markOverdue();
         rentalHistoryRepository.save(history);
     }
 
