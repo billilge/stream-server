@@ -22,7 +22,8 @@ public enum RentalErrorCode implements ErrorCode {
     ITEM_NAME_DUPLICATED(ErrorStatus.BAD_REQUEST, "이미 존재하는 물품 이름입니다."),
     ITEM_HAS_ACTIVE_RENTAL(ErrorStatus.BAD_REQUEST, "진행 중인 대여 기록이 있어 삭제할 수 없습니다."),
     MEMBER_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
-    WORKER_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 관리자입니다.");
+    WORKER_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 관리자입니다."),
+    TODAY_IS_IN_EXAM_PERIOD(ErrorStatus.BAD_REQUEST, "시험기간에는 대여가 불가능합니다. 양해 부탁드립니다.");
 
     private final int status;
     private final String message;
