@@ -30,16 +30,20 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     private final ItemRepository itemRepository;
     private final RentalStatusWorkerLogRepository rentalStatusWorkerLogRepository;
 
-    // 단일 조회라 트랜잭션이 필요 없다. 페이지 내용만큼만 물품을 모아 짝짓는다(coding-style.md 2-6).
+    // 물품을 함께 읽어 서비스가 짝짓는다(coding-style.md 2-6). AdminItemService.update()가 물품의
+    // 반납 정책·종류를 바꿀 수 있어서(isReturnRequired·dueAt 계산에 직접 쓰이는 필드), 두 조회 사이에
+    // 그 값이 바뀌지 않도록 스냅샷을 고정한다.
     @Override
+    @Transactional(readOnly = true)
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
         Map<Long, Item> itemsByItemId = findItemMapByHistories(result.content());
         return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
-    // 단일 조회라 트랜잭션이 필요 없다.
+    // search와 같은 이유로 스냅샷을 고정한다(호출부가 LockExecutor 안에서 부르면 그 트랜잭션에 합류한다).
     @Override
+    @Transactional(readOnly = true)
     public RentalRecord getById(Long historyId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
