@@ -19,12 +19,11 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
 
     /**
      * 한 회원의 신청 내역을 (applied_at, event_application_id) keyset 커서로 최신순 조회한다.
-     * 취소된 신청도 이력으로 함께 내려간다. 삭제된 행사의 신청은 신청 내역과 함께 지운 것으로 보고 제외한다.
+     * 취소된 신청도 이력으로 함께 내려간다.
      */
     @Query("""
         SELECT a FROM EventApplicationJpaEntity a
         WHERE a.memberId = :memberId
-        AND EXISTS (SELECT e.id FROM EventJpaEntity e WHERE e.id = a.eventId AND e.isDeleted = false)
         AND (:cursorAppliedAt IS NULL
             OR a.appliedAt < :cursorAppliedAt
             OR (a.appliedAt = :cursorAppliedAt AND a.id < :cursorApplicationId))

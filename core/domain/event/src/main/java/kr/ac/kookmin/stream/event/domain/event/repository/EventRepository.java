@@ -19,8 +19,7 @@ public interface EventRepository {
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.
      * <p>
-     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 삭제된 행사의 신청은 {@link #findApplicationSlice}가
-     * 이미 걸러내므로 여기서 다시 거르지 않는다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
+     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
      */
     List<Event> findAllByIds(List<Long> eventIds);
 
@@ -60,8 +59,6 @@ public interface EventRepository {
 
     /**
      * 한 회원의 신청 내역을 신청 시각 내림차순(동일 시각은 applicationId 내림차순)으로 {@code limit}건까지 조회한다.
-     * <p>
-     * 삭제된 행사의 신청은 제외한다.
      * <p>
      * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
      */
