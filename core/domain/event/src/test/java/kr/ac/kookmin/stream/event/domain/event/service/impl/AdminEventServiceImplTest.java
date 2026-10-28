@@ -441,7 +441,7 @@ class AdminEventServiceImplTest {
         }
 
         @Override
-        public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+        public PageResult<Event> search(String keyword, PageOffset pageOffset) {
             requestedKeyword = keyword;
             requestedPageOffset = pageOffset;
             List<Event> content = List.copyOf(events.values());

@@ -175,7 +175,7 @@ class EventServiceImplTest {
         }
 
         @Override
-        public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+        public PageResult<Event> search(String keyword, PageOffset pageOffset) {
             throw new UnsupportedOperationException();
         }
 

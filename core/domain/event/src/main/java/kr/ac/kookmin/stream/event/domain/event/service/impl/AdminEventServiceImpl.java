@@ -41,7 +41,7 @@ class AdminEventServiceImpl implements AdminEventService {
 
     @Override
     public PageResult<Event> getEvents(String keyword, PageOffset pageOffset) {
-        return eventRepository.findPage(keyword, pageOffset);
+        return eventRepository.search(keyword, pageOffset);
     }
 
     @Override
