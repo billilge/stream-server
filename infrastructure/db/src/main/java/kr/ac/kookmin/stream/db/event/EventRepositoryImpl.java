@@ -68,6 +68,21 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to) {
+        return eventJpaRepository.findPublishedStartingBetween(from, to).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+        return eventJpaRepository.findPublishedApplyEndingBetween(from, to).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public List<Long> findAppliedMemberIds(Long eventId) {
+        return eventApplicationJpaRepository.findMemberIdsByEventIdAndStatus(eventId, EventApplicationStatus.APPLIED);
+    }
+
+    @Override
     public Map<Long, Long> countAppliedByEventIds(List<Long> eventIds) {
         if (eventIds.isEmpty()) {
             return Map.of();

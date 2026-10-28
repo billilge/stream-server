@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
@@ -22,7 +23,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
         List<ItemJpaEntity> entities = itemJpaRepository.findSlice(
-            category, keyword,
+            category, LikePatterns.escape(keyword),
             cursor == null ? null : cursor.name(),
             cursor == null ? null : cursor.id(),
             pageable
