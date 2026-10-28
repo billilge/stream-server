@@ -11,9 +11,14 @@ import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 도메인 Feedback에는 삭제 여부가 없어 from()으로 만든 엔티티의 isDeleted는 늘 false라,
+// 답변 저장이 질문 삭제와 겹치면 모든 컬럼을 되쓰면서 삭제 표시(is_deleted)를 되돌릴 수 있다. 답변 컬럼만 쓰게 해 이를 막는다.
+// 동시 수정을 막는 락은 두지 않아 같은 질문의 답변 저장이 겹치면 나중에 저장한 내용이 반영된다.
 @Entity
 @Table(name = "open_feedbacks")
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FeedbackJpaEntity extends BaseSoftDeleteEntity {
 
