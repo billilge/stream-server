@@ -19,6 +19,8 @@ public interface RentalHistoryRepository {
     /** 모든 회원의 대여 이력 중 해당 상태인 것. 반납 알림 대상을 고를 때 쓴다. */
     List<RentalHistory> findAllByStatus(RentalStatus status);
 
+    Optional<RentalHistory> findById(Long id);
+
     /**
      * 모든 회원의 대여 이력을 신청 시각 내림차순(같으면 식별자 내림차순)으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
      *
@@ -40,4 +42,10 @@ public interface RentalHistoryRepository {
 
     /** 반납 신청 대상 조회. 본인 소유가 아니거나 대여 중 상태가 아니면 RENTAL_NOT_FOUND. */
     RentalHistory getRentalToReturn(Long id, Long memberId);
+
+    /** 취소 대상 조회. 본인 소유가 아니거나 승인 대기(PENDING) 상태가 아니면 빈 값이다(둘 다 RENTAL_NOT_FOUND로 처리). */
+    Optional<RentalHistory> findPendingToCancel(Long id, Long memberId);
+
+    /** 취소 대상 조회. 본인 소유가 아니거나 승인 대기(PENDING) 상태가 아니면 RENTAL_NOT_FOUND. */
+    RentalHistory getPendingToCancel(Long id, Long memberId);
 }

@@ -29,13 +29,18 @@ public interface RentalHistoryService {
     List<RentalRecord> getAllReturnRequiredRentals();
 
     /**
-     * 반납 신청. 본인 소유의 대여 중(RENTAL) 이력만 대상이며, 신청 즉시 반납 완료로 전이한다
-     * (운영진의 최종 확인 단계가 없어서다). 재고 복구에 필요한 물품 ID·수량을 호출부가 쓸 수 있도록
-     * 갱신된 이력을 돌려준다.
+     * 반납 신청. 본인 소유의 대여 중(RENTAL·OVERDUE) 이력만 대상이며, 반납 대기(RETURN_PENDING)로 전이한다.
+     * 실제 반납 확인(재고 복구)은 운영진이 {@link #changeStatusByAdmin}으로 최종 확인해야 일어난다.
      */
-    RentalHistory returnRental(Long memberId, Long historyId);
+    RentalHistory requestReturn(Long memberId, Long historyId);
 
-    /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
+    /**
+     * 본인이 걸어 둔 대여 신청을 취소한다. 아직 운영진이 손대지 않은 승인 대기(PENDING) 이력만 대상이다.
+     * 재고 복구에 필요한 물품 ID·수량을 호출부가 쓸 수 있도록 갱신된 이력을 돌려준다.
+     */
+    RentalHistory cancelByMember(Long memberId, Long historyId);
+
+    /** 같은 회원이 같은 물품에 아직 끝나지 않은(진행 중인) 이력이 있는지 확인한다. 중복 신청 차단에 쓴다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 
     /**
