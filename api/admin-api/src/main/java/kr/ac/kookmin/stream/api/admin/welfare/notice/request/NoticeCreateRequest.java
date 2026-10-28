@@ -18,7 +18,7 @@ public record NoticeCreateRequest(
     String title,
 
     // content는 TEXT 컬럼(최대 65,535바이트)이다. 글자당 최대 4바이트로 잡아도 넘치지 않는 길이로 막는다
-    @Schema(description = "본문(HTML)", example = "<p>공지 내용입니다.</p>")
+    @Schema(description = "본문(일반 텍스트). 서식 없이 입력한 그대로 저장하며 줄바꿈도 보존한다", example = "공지 내용입니다.")
     @NotBlank(message = "본문을 입력해 주세요.")
     @Size(max = 16000, message = "본문은 16000자 이하로 입력해 주세요.")
     String content,
@@ -33,7 +33,11 @@ public record NoticeCreateRequest(
 
     @Schema(description = "첨부 파일 ID 목록", example = "[201]")
     @NotNull(message = "첨부 파일 목록을 입력해 주세요.")
-    List<@NotNull(message = "첨부 파일 ID는 비워 둘 수 없습니다.") Long> attachmentFileIds
+    List<@NotNull(message = "첨부 파일 ID는 비워 둘 수 없습니다.") Long> attachmentFileIds,
+
+    @Schema(description = "상단 고정 여부", example = "false")
+    @NotNull(message = "고정 여부를 입력해 주세요.")
+    Boolean pinned
 ) {
 
     public NoticeCreateCommand toCommand() {
@@ -42,7 +46,8 @@ public record NoticeCreateRequest(
             content,
             category,
             imageFileIds.stream().distinct().toList(),
-            attachmentFileIds.stream().distinct().toList()
+            attachmentFileIds.stream().distinct().toList(),
+            pinned
         );
     }
 }

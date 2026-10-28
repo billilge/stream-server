@@ -46,8 +46,7 @@ public interface EventRepository {
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.
      * <p>
-     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 삭제된 행사의 신청은 {@link #findApplicationSlice}가
-     * 이미 걸러내므로 여기서 다시 거르지 않는다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
+     * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
      */
     List<Event> findAllByIds(List<Long> eventIds);
 
@@ -75,6 +74,21 @@ public interface EventRepository {
      */
     Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
 
+    /**
+     * 게시되고 삭제되지 않은 행사 중 시작 일시가 {@code [from, to)}인 행사. 행사 전날 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 신청 마감 일시가 {@code [from, to)}인 행사. 모집 마감 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 행사의 유효 신청(취소하지 않은 신청)을 낸 회원 식별자.
+     */
+    List<Long> findAppliedMemberIds(Long eventId);
+
     List<EventQuestion> findQuestionsByEventId(Long eventId);
 
     long countAppliedByEventId(Long eventId);
@@ -87,8 +101,6 @@ public interface EventRepository {
 
     /**
      * 한 회원의 신청 내역을 신청 시각 내림차순(동일 시각은 applicationId 내림차순)으로 {@code limit}건까지 조회한다.
-     * <p>
-     * 삭제된 행사의 신청은 제외한다.
      * <p>
      * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
      */

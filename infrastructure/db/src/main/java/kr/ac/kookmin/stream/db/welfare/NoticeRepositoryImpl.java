@@ -3,11 +3,16 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCursor;
 import kr.ac.kookmin.stream.welfare.domain.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -20,12 +25,30 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     @Override
     public CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
-        List<NoticeJpaEntity> entities = cursor == null
-            ? noticeJpaRepository.findFirstSlice(category, pageable)
-            : noticeJpaRepository.findNextSlice(category, cursor.pinned(), cursor.createdAt(), cursor.id(), pageable);
+        List<NoticeJpaEntity> entities = noticeJpaRepository.findSlice(
+            category,
+            cursor == null ? null : cursor.pinned(),
+            cursor == null ? null : cursor.createdAt(),
+            cursor == null ? null : cursor.id(),
+            pageable
+        );
 
         return CursorSliceResult.ofSlice(
             entities, size, NoticeJpaEntity::toDomain, notice -> NoticeCursor.of(notice, category).format()
+        );
+    }
+
+    @Override
+    public PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset) {
+        Page<NoticeJpaEntity> result = noticeJpaRepository.search(
+            category, LikePatterns.escape(keyword), PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(NoticeJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
         );
     }
 

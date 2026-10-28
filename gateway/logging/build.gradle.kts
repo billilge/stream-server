@@ -11,7 +11,6 @@ dependencies {
     implementation(libs.springWeb)
     implementation(libs.springContext)
     implementation(libs.jakartaServletApi)
-    implementation(libs.slf4jApi)
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)
