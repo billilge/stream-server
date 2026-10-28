@@ -77,9 +77,10 @@ public interface AdminEventApi {
     /** 공개 상태 변경. 공개한 행사만 학생 앱 목록·상세에 보인다. */
     @Operation(summary = "행사 공개 상태 변경",
         description = "행사를 학생 앱에 공개하거나 비공개로 돌린다. 이미 그 상태여도 성공으로 응답한다. "
-            + "비공개로 돌려도 기존 신청 내역은 유지된다.")
+            + "비공개로 돌려도 기존 신청 내역은 유지된다. 학생회비 납부자 전용이거나 기타 선택지를 허용한 질문이 있는 "
+            + "행사는 학생 앱이 아직 지원하지 않아 공개할 수 없다(비공개 전환은 가능).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
+    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND", "EVENT_UNSUPPORTED_OPTION"})
     ApiResponse<EventPublishResponse> changePublished(AdminApiUser apiUser, Long eventId, EventPublishRequest request);
 
     /** 행사 삭제. 소프트 삭제라 데이터는 남지만 어디에도 보이지 않는다. */

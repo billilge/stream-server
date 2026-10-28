@@ -43,7 +43,10 @@ public interface AdminEventService {
      */
     Event update(Long eventId, EventUpdateCommand command);
 
-    /** 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다. */
+    /**
+     * 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다. 학생회비 납부자 전용이거나 기타 선택지를 허용한 질문이
+     * 있는 행사는 학생 앱이 아직 지원하지 않아 {@code EVENT_UNSUPPORTED_OPTION}으로 공개를 거부한다.
+     */
     Event changePublished(Long eventId, boolean published);
 
     /**
