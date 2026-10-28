@@ -16,13 +16,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
-    // "지금 내가 들고 있는" 대여로 보는 상태 — RENTAL과, 기한을 넘겨 전이된 OVERDUE. 연체됐다고 반납·중복
-    // 확인에서 빠지면 안 된다(OVERDUE로 바뀐 학생이 반납 신청을 못 하거나 같은 물품을 다시 빌릴 수 있게 된다).
-    private static final List<RentalStatus> HOLDING_STATUSES = List.of(RentalStatus.RENTAL, RentalStatus.OVERDUE);
-
-    // 완전히 끝난(더는 손댈 일 없는) 상태. 물품 삭제 차단은 이 셋이 아닌 모든 기록을 "진행 중"으로 본다.
-    private static final List<RentalStatus> TERMINAL_STATUSES = List.of(RentalStatus.RETURNED, RentalStatus.CANCEL, RentalStatus.REJECTED);
-
     private final RentalHistoryJpaRepository rentalHistoryJpaRepository;
 
     @Override
@@ -40,18 +33,31 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public Optional<RentalHistory> findById(Long id) {
+        return rentalHistoryJpaRepository.findById(id).map(RentalHistoryJpaEntity::toDomain);
+    }
+
+    @Override
     public RentalHistory save(RentalHistory history) {
         return rentalHistoryJpaRepository.save(RentalHistoryJpaEntity.from(history)).toDomain();
     }
 
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusIn(itemId, memberId, HOLDING_STATUSES);
+        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusNotIn(
+            itemId, memberId, RentalStatus.finishedStatuses()
+        );
     }
 
     @Override
     public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
-        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, HOLDING_STATUSES)
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, RentalStatus.holdingStatuses())
+            .map(RentalHistoryJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<RentalHistory> findPendingToCancel(Long id, Long memberId) {
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.PENDING)
             .map(RentalHistoryJpaEntity::toDomain);
     }
 
@@ -74,6 +80,6 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public boolean existsActiveRentalForItem(Long itemId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, TERMINAL_STATUSES);
+        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, RentalStatus.finishedStatuses());
     }
 }
