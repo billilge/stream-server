@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/admin/feedbacks")
+@RequestMapping("/v1/admin/feedback/questions")
 @RequiredArgsConstructor
 public class AdminFeedbackController implements AdminFeedbackApi {
 

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/admin/feedback-rounds")
+@RequestMapping("/v1/admin/feedback/rounds")
 @RequiredArgsConstructor
 public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
 
