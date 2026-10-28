@@ -46,12 +46,16 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
+    @Column(name = "is_canceled", nullable = false)
+    private boolean isCanceled;
+
     private LockerApplicationJpaEntity(LockerApplication application) {
         this.id = application.getId();
         this.lockerPeriodId = application.getLockerPeriodId();
         this.memberId = application.getMemberId();
         this.lockerId = application.getLockerId();
         this.appliedAt = application.getAppliedAt();
+        this.isCanceled = application.isCanceled();
     }
 
     public static LockerApplicationJpaEntity from(LockerApplication application) {
@@ -59,6 +63,6 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public LockerApplication toDomain() {
-        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId, appliedAt);
+        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId, appliedAt, isCanceled);
     }
 }
