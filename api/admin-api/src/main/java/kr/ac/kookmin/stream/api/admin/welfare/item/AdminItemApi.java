@@ -49,8 +49,9 @@ public interface AdminItemApi {
     /** 물품 수정. imageFileId를 생략하거나 null로 보내면 기존 이미지를 유지한다. */
     @Operation(summary = "물품 수정",
         description = "물품 정보(이름·카테고리·구분·재고·이미지·반납 정책)를 통째로 수정한다. imageFileId가 null이면 "
-            + "기존 이미지를 유지한다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+            + "기존 이미지를 유지한다. 재고(count)가 학생 신청 등으로 동시에 바뀌면 서버가 몇 번 다시 시도하고, "
+            + "그래도 충돌하면 409를 반환한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_NAME_DUPLICATED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<AdminItemDetailResponse> updateItem(AdminApiUser apiUser, Long itemId, ItemUpdateRequest request);
