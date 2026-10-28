@@ -33,12 +33,12 @@ public class AdminFeedbackAnswerUseCase {
 
     private FeedbackRoundAnswers withStudents(FeedbackRoundDetail detail) {
         Map<Long, Member> students = memberService.getMapByIds(
-            detail.feedbacks().stream().map(Feedback::createdBy).toList());
+            detail.feedbacks().stream().map(Feedback::getCreatedBy).toList());
 
         return new FeedbackRoundAnswers(
             detail.summary(),
             detail.feedbacks().stream()
-                .map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.createdBy())))
+                .map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.getCreatedBy())))
                 .toList()
         );
     }

@@ -18,10 +18,10 @@ public enum FeedbackRoundStatus {
         if (round.isAnswersPublished()) {
             return CLOSED;
         }
-        if (now.isBefore(round.opensAt())) {
+        if (now.isBefore(round.getOpensAt())) {
             return SCHEDULED;
         }
-        if (now.isAfter(round.closesAt())) {
+        if (now.isAfter(round.getClosesAt())) {
             return ANSWERING;
         }
         return OPEN;

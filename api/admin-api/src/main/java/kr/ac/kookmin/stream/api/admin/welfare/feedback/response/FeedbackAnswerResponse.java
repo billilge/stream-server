@@ -20,12 +20,12 @@ public record FeedbackAnswerResponse(
         Member student = feedbackWithStudent.student();
 
         return new FeedbackAnswerResponse(
-            feedback.id(),
-            feedback.question(),
+            feedback.getId(),
+            feedback.getQuestion(),
             student == null ? null : student.getName(),
-            feedback.questionedAt(),
-            feedback.answer(),
-            feedback.answeredAt()
+            feedback.getQuestionedAt(),
+            feedback.getAnswer(),
+            feedback.getAnsweredAt()
         );
     }
 }

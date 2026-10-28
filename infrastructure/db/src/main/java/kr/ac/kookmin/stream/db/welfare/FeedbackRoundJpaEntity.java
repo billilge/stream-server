@@ -43,12 +43,12 @@ public class FeedbackRoundJpaEntity extends BaseTimeEntity {
     private LocalDateTime answersPublishedAt;
 
     private FeedbackRoundJpaEntity(FeedbackRound feedbackRound) {
-        this.id = feedbackRound.id();
-        this.year = feedbackRound.year();
-        this.round = feedbackRound.round();
-        this.opensAt = feedbackRound.opensAt();
-        this.closesAt = feedbackRound.closesAt();
-        this.answersPublishedAt = feedbackRound.answersPublishedAt();
+        this.id = feedbackRound.getId();
+        this.year = feedbackRound.getYear();
+        this.round = feedbackRound.getRound();
+        this.opensAt = feedbackRound.getOpensAt();
+        this.closesAt = feedbackRound.getClosesAt();
+        this.answersPublishedAt = feedbackRound.getAnswersPublishedAt();
     }
 
     public static FeedbackRoundJpaEntity from(FeedbackRound feedbackRound) {

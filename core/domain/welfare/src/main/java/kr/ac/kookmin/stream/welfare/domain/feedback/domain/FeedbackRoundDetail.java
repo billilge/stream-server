@@ -11,7 +11,7 @@ public record FeedbackRoundDetail(FeedbackRoundSummary summary, List<Feedback> f
 
     public static FeedbackRoundDetail of(FeedbackRound round, List<Feedback> feedbacks, LocalDateTime now) {
         long answerCount = feedbacks.stream().filter(Feedback::isAnswered).count();
-        FeedbackCount count = FeedbackCount.of(round.year(), round.round(), feedbacks.size(), answerCount);
+        FeedbackCount count = FeedbackCount.of(round.getYear(), round.getRound(), feedbacks.size(), answerCount);
 
         return new FeedbackRoundDetail(FeedbackRoundSummary.of(round, count, now), feedbacks);
     }

@@ -33,8 +33,8 @@ public class AdminFeedbackSearchUseCase {
         PageResult<Feedback> result =
             feedbackService.searchQuestions(roundId, searchKeyword, matchedMemberIds, pageOffset);
         Map<Long, Member> students = memberService.getMapByIds(
-            result.content().stream().map(Feedback::createdBy).toList());
+            result.content().stream().map(Feedback::getCreatedBy).toList());
 
-        return result.map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.createdBy())));
+        return result.map(feedback -> new FeedbackWithStudent(feedback, students.get(feedback.getCreatedBy())));
     }
 }

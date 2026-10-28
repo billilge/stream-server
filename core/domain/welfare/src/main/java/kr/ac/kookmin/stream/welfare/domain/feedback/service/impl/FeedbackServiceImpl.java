@@ -58,7 +58,7 @@ class FeedbackServiceImpl implements FeedbackService {
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_OPEN));
 
         return feedbackRepository.save(
-            Feedback.create(openRound.year(), openRound.round(), question, memberId, now));
+            Feedback.create(openRound.getYear(), openRound.getRound(), question, memberId, now));
     }
 
     @Override
@@ -82,12 +82,12 @@ class FeedbackServiceImpl implements FeedbackService {
 
         // 학생 앱의 질문 등록은 접수 기간인 회차 "하나"를 찾아 배정하므로, 기간이 겹치면 질문 등록이 깨진다.
         // 범위 겹침은 유니크 제약으로 막을 수 없어 등록 전에 확인한다(조회-후-삽입이라 동시 등록 구멍은 남는다)
-        if (feedbackRoundRepository.existsOverlapping(round.opensAt(), round.closesAt())) {
+        if (feedbackRoundRepository.existsOverlapping(round.getOpensAt(), round.getClosesAt())) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_ROUND_OVERLAPPED);
         }
 
         FeedbackRound saved = feedbackRoundRepository.save(round);
-        return FeedbackRoundSummary.of(saved, FeedbackCount.empty(saved.year(), saved.round()), now);
+        return FeedbackRoundSummary.of(saved, FeedbackCount.empty(saved.getYear(), saved.getRound()), now);
     }
 
     @Override
@@ -133,7 +133,7 @@ class FeedbackServiceImpl implements FeedbackService {
         // 진행 중 회차가 없는데 회차를 지정하지도 않았으면 보여줄 질문이 없다
         return round
             .map(target -> feedbackRepository.searchByKeyword(
-                target.year(), target.round(), keyword, memberIds, pageOffset))
+                target.getYear(), target.getRound(), keyword, memberIds, pageOffset))
             .orElseGet(() -> PageResult.empty(pageOffset.page(), pageOffset.size()));
     }
 
@@ -144,8 +144,8 @@ class FeedbackServiceImpl implements FeedbackService {
         FeedbackRound round = getRoundById(roundId);
 
         Map<Long, Feedback> roundFeedbacks = feedbackRepository
-            .findAllByYearAndRound(round.year(), round.round()).stream()
-            .collect(Collectors.toMap(Feedback::id, Function.identity()));
+            .findAllByYearAndRound(round.getYear(), round.getRound()).stream()
+            .collect(Collectors.toMap(Feedback::getId, Function.identity()));
 
         // 보낸 것만 반영한다 — commands에 없는 질문의 기존 답변은 건드리지 않는다
         List<Feedback> answered = commands.stream()
@@ -161,13 +161,14 @@ class FeedbackServiceImpl implements FeedbackService {
     public FeedbackRoundDetail publishAnswers(Long roundId) {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
         FeedbackRound round = getRoundById(roundId);
-        List<Feedback> feedbacks = feedbackRepository.findAllByYearAndRound(round.year(), round.round());
+        List<Feedback> feedbacks = feedbackRepository.findAllByYearAndRound(round.getYear(), round.getRound());
 
         if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
         }
 
-        FeedbackRound published = feedbackRoundRepository.save(round.publishAnswers(now));
+        round.publishAnswers(now);
+        FeedbackRound published = feedbackRoundRepository.save(round);
         return FeedbackRoundDetail.of(published, feedbacks, now);
     }
 
@@ -178,31 +179,33 @@ class FeedbackServiceImpl implements FeedbackService {
 
     private FeedbackRoundDetail getDetailOf(FeedbackRound round, LocalDateTime now) {
         return FeedbackRoundDetail.of(
-            round, feedbackRepository.findAllByYearAndRound(round.year(), round.round()), now);
+            round, feedbackRepository.findAllByYearAndRound(round.getYear(), round.getRound()), now);
     }
 
     private Feedback answer(
         Map<Long, Feedback> roundFeedbacks, FeedbackAnswerCommand command, Long answeredBy, LocalDateTime now
     ) {
         Feedback feedback = roundFeedbacks.get(command.feedbackId());
-        if (feedback != null) {
-            return feedback.withAnswer(command.answer(), answeredBy, now);
+        if (feedback == null) {
+            // 다른 회차의 질문인지, 아예 없는 질문인지 나눠서 알려준다
+            if (feedbackRepository.findById(command.feedbackId()).isEmpty()) {
+                throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND);
+            }
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_IN_ROUND);
         }
 
-        // 다른 회차의 질문인지, 아예 없는 질문인지 나눠서 알려준다
-        if (feedbackRepository.findById(command.feedbackId()).isEmpty()) {
-            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND);
-        }
-        throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_IN_ROUND);
+        feedback.writeAnswer(command.answer(), answeredBy, now);
+        return feedback;
     }
 
     private FeedbackCount getCountOf(FeedbackRound round) {
-        return getCountOf(getCountMapOf(round.year()), round);
+        return getCountOf(getCountMapOf(round.getYear()), round);
     }
 
     private FeedbackCount getCountOf(Map<FeedbackPeriod, FeedbackCount> counts, FeedbackRound round) {
         return counts.getOrDefault(
-            FeedbackPeriod.of(round.year(), round.round()), FeedbackCount.empty(round.year(), round.round()));
+            FeedbackPeriod.of(round.getYear(), round.getRound()),
+            FeedbackCount.empty(round.getYear(), round.getRound()));
     }
 
     private Map<FeedbackPeriod, FeedbackCount> getCountMapOf(Integer year) {

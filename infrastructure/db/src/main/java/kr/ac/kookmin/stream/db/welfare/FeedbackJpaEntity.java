@@ -50,15 +50,15 @@ public class FeedbackJpaEntity extends BaseSoftDeleteEntity {
     private Long answeredBy;
 
     private FeedbackJpaEntity(Feedback feedback) {
-        this.id = feedback.id();
-        this.year = feedback.year();
-        this.round = feedback.round();
-        this.question = feedback.question();
-        this.questionedAt = feedback.questionedAt();
-        this.answer = feedback.answer();
-        this.answeredAt = feedback.answeredAt();
-        this.createdBy = feedback.createdBy();
-        this.answeredBy = feedback.answeredBy();
+        this.id = feedback.getId();
+        this.year = feedback.getYear();
+        this.round = feedback.getRound();
+        this.question = feedback.getQuestion();
+        this.questionedAt = feedback.getQuestionedAt();
+        this.answer = feedback.getAnswer();
+        this.answeredAt = feedback.getAnsweredAt();
+        this.createdBy = feedback.getCreatedBy();
+        this.answeredBy = feedback.getAnsweredBy();
     }
 
     public static FeedbackJpaEntity from(Feedback feedback) {

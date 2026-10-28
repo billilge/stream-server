@@ -26,15 +26,15 @@ public record FeedbackRoundDetailResponse(
         FeedbackRound round = summary.round();
 
         return new FeedbackRoundDetailResponse(
-            round.id(),
-            round.year(),
-            round.round(),
-            round.opensAt(),
-            round.closesAt(),
+            round.getId(),
+            round.getYear(),
+            round.getRound(),
+            round.getOpensAt(),
+            round.getClosesAt(),
             summary.status(),
             summary.questionCount(),
             summary.answerCount(),
-            round.answersPublishedAt(),
+            round.getAnswersPublishedAt(),
             roundAnswers.feedbacks().stream().map(FeedbackAnswerResponse::from).toList()
         );
     }

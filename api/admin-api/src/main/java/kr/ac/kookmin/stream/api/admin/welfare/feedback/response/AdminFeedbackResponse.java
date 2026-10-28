@@ -22,14 +22,14 @@ public record AdminFeedbackResponse(
         Member student = feedbackWithStudent.student();
 
         return new AdminFeedbackResponse(
-            feedback.id(),
-            feedback.year(),
-            feedback.round(),
-            feedback.question(),
+            feedback.getId(),
+            feedback.getYear(),
+            feedback.getRound(),
+            feedback.getQuestion(),
             student == null ? null : student.getName(),
-            feedback.questionedAt(),
-            feedback.answer(),
-            feedback.answeredAt()
+            feedback.getQuestionedAt(),
+            feedback.getAnswer(),
+            feedback.getAnsweredAt()
         );
     }
 }
