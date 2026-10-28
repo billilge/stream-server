@@ -27,6 +27,8 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
 
     Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatus(Long id, Long memberId, RentalStatus rentalStatus);
 
+    Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatusIn(Long id, Long memberId, Collection<RentalStatus> rentalStatuses);
+
     boolean existsByItemIdAndMemberIdAndRentalStatusNotIn(Long itemId, Long memberId, Collection<RentalStatus> excludedStatuses);
 
     boolean existsByItemIdAndRentalStatusNotIn(Long itemId, Collection<RentalStatus> excludedStatuses);
