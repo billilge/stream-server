@@ -37,16 +37,6 @@ public enum RentalStatus {
         return FINISHED_STATUSES.contains(this);
     }
 
-    /** 아직 반납이 최종 확인되지 않은(들고 있거나 반납 절차가 진행 중인) 상태인지. */
-    public boolean isAwaitingReturn() {
-        return AWAITING_RETURN_STATUSES.contains(this);
-    }
-
-    /** 취소되거나 반려된(물건이 애초에 나가지 않은 것으로 되돌리는) 상태인지. */
-    public boolean isCancelledOrRejected() {
-        return this == CANCEL || this == REJECTED;
-    }
-
     public static Set<RentalStatus> finishedStatuses() {
         return FINISHED_STATUSES;
     }

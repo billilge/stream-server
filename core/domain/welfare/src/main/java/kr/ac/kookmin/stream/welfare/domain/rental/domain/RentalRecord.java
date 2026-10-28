@@ -14,7 +14,7 @@ public record RentalRecord(RentalHistory history, Item item) {
      * 지금 반납해야 하는 대여인지. 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다.
      */
     public boolean isReturnRequired() {
-        return history.getRentalStatus().isAwaitingReturn()
+        return RentalStatus.awaitingReturnStatuses().contains(history.getRentalStatus())
             && history.getRentAt() != null
             && item != null
             && item.getReturnPolicy() != null;
