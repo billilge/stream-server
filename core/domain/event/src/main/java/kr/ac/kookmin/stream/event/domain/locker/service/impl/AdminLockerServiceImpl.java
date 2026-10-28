@@ -8,8 +8,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
+import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
@@ -33,6 +36,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     private final LockerRepository lockerRepository;
     private final LockerApplicationRepository lockerApplicationRepository;
+    private final OutboxWriter outboxWriter;
 
     @Override
     public List<LockerPeriodSummary> getAllPeriods() {
@@ -121,6 +125,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         application.cancel();
         lockerApplicationRepository.save(application);
+        outboxWriter.record(new LockerAssignmentCanceled(application.getMemberId(), application.getLockerPeriodId()));
     }
 
     @Override
@@ -136,6 +141,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
         // 회원이 이미 가진 칸이 있으면 저장 시 유니크 제약이 막는다
         LockerApplication saved = lockerApplicationRepository.save(
             LockerApplication.create(lockerPeriodId, memberId, lockerId, LocalDateTime.now()));
+        outboxWriter.record(new LockerAssignedByAdmin(memberId, lockerPeriodId));
         return new LockerApplicationResult(saved, locker, period);
     }
 
