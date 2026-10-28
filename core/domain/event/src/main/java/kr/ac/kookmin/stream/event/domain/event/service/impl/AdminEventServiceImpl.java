@@ -40,19 +40,16 @@ class AdminEventServiceImpl implements AdminEventService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResult<Event> getEvents(String keyword, PageOffset pageOffset) {
         return eventRepository.findPage(keyword, pageOffset);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Map<Long, Long> getApplicantCounts(List<Long> eventIds) {
         return eventRepository.countAppliedByEventIds(eventIds);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public EventManageDetail getEvent(Long eventId) {
         Event event = getEventOrThrow(eventId);
         return new EventManageDetail(
