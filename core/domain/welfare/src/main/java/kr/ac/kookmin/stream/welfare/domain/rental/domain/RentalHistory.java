@@ -61,15 +61,17 @@ public class RentalHistory {
     }
 
     /**
-     * 운영진이 상태를 직접 바꾼다. 전이 규칙은 없다(어떤 값이든 허용). RENTAL로 바뀌는데 아직 실제 수령
-     * 시각이 없으면 지금을 수령 시각으로 기록하고, RETURNED로 바뀌는데 아직 반납 완료 시각이 없으면 지금을
-     * 반납 완료 시각으로 기록한다.
+     * 운영진이 상태를 직접 바꾼다. 전이 규칙은 없다(어떤 값이든 허용). 호출부({@code RentalHistoryServiceImpl})가
+     * 직전 상태와 같은 요청은 걸러내므로, 여기 도달했다는 건 실제로 상태가 바뀐다는 뜻이다. RENTAL로 바뀌면
+     * 지금을 실제 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다 — 신청 시점에 학생이
+     * 고른 희망 시각(rentAt)은 승인까지 걸린 기간만큼 실제 수령 시각과 벌어질 수 있어, 전이 시점에 덮어써야
+     * 반납 기한(dueAt) 계산이 실제 보유 기간을 반영한다.
      */
     public void changeStatusByAdmin(RentalStatus newStatus, LocalDateTime now) {
-        if (newStatus == RentalStatus.RENTAL && this.rentAt == null) {
+        if (newStatus == RentalStatus.RENTAL) {
             this.rentAt = now;
         }
-        if (newStatus == RentalStatus.RETURNED && this.returnedAt == null) {
+        if (newStatus == RentalStatus.RETURNED) {
             this.returnedAt = now;
         }
         this.rentalStatus = newStatus;

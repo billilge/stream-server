@@ -141,6 +141,13 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     public RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+
+        // 직전과 같은 상태로의 "변경"은 아무것도 하지 않는다 — 처리자 로그가 중복으로 쌓이는 것과,
+        // RENTAL·RETURNED 재진입 시 수령·반납 시각이 매번 지금으로 덮어써지는 것을 함께 막는다.
+        if (history.getRentalStatus() == newStatus) {
+            return history;
+        }
+
         history.changeStatusByAdmin(newStatus, LocalDateTime.now(DateUtil.KST));
         RentalHistory saved = rentalHistoryRepository.save(history);
         rentalStatusWorkerLogRepository.save(RentalStatusWorkerLog.create(historyId, workerId, newStatus));
