@@ -33,7 +33,7 @@ public record ItemCreateRequest(
     @NotNull(message = "이미지 파일 ID를 입력해 주세요.")
     Long imageFileId,
 
-    @Schema(description = "반납 정책. 대여품(RENTAL)만 의미 있고 소모품이면 무시된다")
+    @Schema(description = "반납 정책. 대여품(RENTAL)이면 필수이고 소모품이면 무시된다")
     @Valid
     ReturnPolicyRequest returnPolicy
 ) {

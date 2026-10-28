@@ -32,32 +32,32 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     private final ItemRepository itemRepository;
     private final RentalStatusWorkerLogRepository rentalStatusWorkerLogRepository;
 
-    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다(coding-style.md 2-6). 지금은 items에 쓰기 경로가
-    // 없어 두 조회 사이에 물품이 바뀔 수 없으므로 트랜잭션이 필요 없다. 물품 이름 수정·신규 등록 정도만
-    // 생기는 한 이 필드는 필터·계산에 안 쓰여 트랜잭션 없이도 안전하다. 반납 정책·타입처럼 isReturnRequired·dueAt
-    // 계산에 쓰이는 필드를 수정하는 기능이 생기면 그때 @Transactional(readOnly = true)를 다시 붙인다.
+    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다(coding-style.md 2-6). AdminItemService.update()가
+    // 물품의 반납 정책·종류를 바꿀 수 있어서(isReturnRequired·dueAt 계산에 직접 쓰이는 필드), 두 조회 사이에
+    // 그 값이 바뀌지 않도록 스냅샷을 고정한다.
     @Override
+    @Transactional(readOnly = true)
     public List<RentalRecord> getHistories(Long memberId, RentalStatus status) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, status));
     }
 
-    // getHistories와 같은 이유로 트랜잭션이 필요 없다. isReturnRequired가 보는 returnPolicy는 지금 계획된
-    // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
-    // status를 null로 둬 전체를 가져온 뒤 isReturnRequired()로 거른다 — RENTAL뿐 아니라 OVERDUE도
-    // 걸러야 해서, 한 회원의 이력은 수가 적어 이렇게 걸러도 비용이 크지 않다.
+    // getHistories와 같은 이유로 스냅샷을 고정한다. status를 null로 둬 전체를 가져온 뒤 isReturnRequired()로
+    // 거른다 — RENTAL뿐 아니라 OVERDUE도 걸러야 해서, 한 회원의 이력은 수가 적어 이렇게 걸러도 비용이 크지 않다.
     @Override
+    @Transactional(readOnly = true)
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. RentalRecord.isReturnRequired()가 보는
+    // getReturnRequiredRentals와 같은 이유로 스냅샷을 고정한다. RentalRecord.isReturnRequired()가 보는
     // 네 상태(RENTAL·OVERDUE·RETURN_PENDING·RETURN_CONFIRMED)를 모두 봐야 반납 신청 후 운영진이 최종
     // 확인하기 전까지도 알림·목록에 계속 잡힌다. 레포지토리에 "여러 상태" 전용 메서드를 새로 만드는 대신,
     // 이미 있는 단일 상태 조회를 네 번 불러 합친다(관리자 "대여/반납 현황 조회"도 상태 하나로 필터하므로
     // 그 단일 상태 메서드를 그대로 쓸 수 있다 — #172에서 이미 결정).
     @Override
+    @Transactional(readOnly = true)
     public List<RentalRecord> getAllReturnRequiredRentals() {
         List<RentalHistory> candidates = Stream.of(
                 RentalStatus.RENTAL, RentalStatus.OVERDUE, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED
@@ -111,8 +111,9 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return rentalHistoryRepository.save(RentalHistory.create(item, memberId, count, appliedAt, rentAt));
     }
 
-    // 단일 조회라 트랜잭션이 필요 없다. 페이지 내용만큼만 물품을 모아 짝짓는다(toRecords와 같은 이유).
+    // getHistories와 같은 이유로 스냅샷을 고정한다. 페이지 내용만큼만 물품을 모아 짝짓는다(toRecords와 같은 이유).
     @Override
+    @Transactional(readOnly = true)
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
         Map<Long, Item> items = findItemsOf(result.content());
@@ -125,8 +126,9 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return rentalHistoryRepository.save(RentalHistory.createByAdmin(item, memberId, workerId, count, appliedAt, rentAt));
     }
 
-    // 단일 조회라 트랜잭션이 필요 없다.
+    // getHistories와 같은 이유로 스냅샷을 고정한다(호출부가 LockExecutor 안에서 부르면 그 트랜잭션에 합류한다).
     @Override
+    @Transactional(readOnly = true)
     public RentalRecord getById(Long historyId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
@@ -139,6 +141,13 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     public RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+
+        // 직전과 같은 상태로의 "변경"은 아무것도 하지 않는다 — 처리자 로그가 중복으로 쌓이는 것과,
+        // RENTAL·RETURNED 재진입 시 수령·반납 시각이 매번 지금으로 덮어써지는 것을 함께 막는다.
+        if (history.getRentalStatus() == newStatus) {
+            return history;
+        }
+
         history.changeStatusByAdmin(newStatus, LocalDateTime.now(DateUtil.KST));
         RentalHistory saved = rentalHistoryRepository.save(history);
         rentalStatusWorkerLogRepository.save(RentalStatusWorkerLog.create(historyId, workerId, newStatus));
