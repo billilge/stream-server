@@ -63,7 +63,7 @@ public interface AppRentalApi {
         codes = {
             "ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
             "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK", "INVALID_RENTAL_TIME_PAST",
-            "TODAY_IS_IN_EXAM_PERIOD"
+            "INVALID_RENTAL_TIME_EXAM_PERIOD"
         }
     )
     ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);

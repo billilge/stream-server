@@ -67,7 +67,7 @@ public class RentalApplyUseCase {
 
         LocalDate today = LocalDate.now(DateUtil.KST);
         if (!today.isBefore(startDate) && !today.isAfter(endDate)) {
-            throw new BusinessException(RentalErrorCode.TODAY_IS_IN_EXAM_PERIOD);
+            throw new BusinessException(RentalErrorCode.INVALID_RENTAL_TIME_EXAM_PERIOD);
         }
     }
 }
