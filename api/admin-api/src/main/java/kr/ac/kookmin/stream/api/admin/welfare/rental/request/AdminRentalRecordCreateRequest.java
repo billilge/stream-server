@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 /**
@@ -26,6 +27,7 @@ public record AdminRentalRecordCreateRequest(
     LocalDateTime rentAt,
 
     @Schema(description = "대여 수량. 생략하면 1", example = "1")
+    @Positive(message = "대여 수량은 1개 이상이어야 합니다.")
     Integer count
 ) {
 
