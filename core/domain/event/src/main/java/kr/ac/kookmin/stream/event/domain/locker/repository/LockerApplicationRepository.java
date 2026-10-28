@@ -27,12 +27,12 @@ public interface LockerApplicationRepository {
     Set<Long> findAppliedLockerIds(Long lockerPeriodId);
 
     /**
-     * 해당 운영 회차에 신청한 회원 식별자. 취소가 없어 신청 행이 곧 사물함을 가진 회원이다.
+     * 해당 운영 회차에 사물함을 가진 회원 식별자. 취소된 신청은 뺀다.
      */
     List<Long> findMemberIds(Long lockerPeriodId);
 
     /**
-     * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
+     * 해당 운영 회차에서 회원이 쓰고 있는 사물함 식별자. 취소되지 않은 신청은 회차당 한 건까지라 최대 하나다.
      */
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
 

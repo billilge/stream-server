@@ -28,7 +28,7 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
 
     @Override
     public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
-        return lockerApplicationJpaRepository.existsByLockerPeriodIdAndLockerId(lockerPeriodId, lockerId);
+        return lockerApplicationJpaRepository.existsByLockerPeriodIdAndLockerIdAndIsCanceledFalse(lockerPeriodId, lockerId);
     }
 
     @Override
@@ -51,12 +51,12 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
         if (lockerPeriodIds.isEmpty() || lockerIds.isEmpty()) {
             return false;
         }
-        return lockerApplicationJpaRepository.existsByLockerPeriodIdInAndLockerIdIn(lockerPeriodIds, lockerIds);
+        return lockerApplicationJpaRepository.existsByLockerPeriodIdInAndLockerIdInAndIsCanceledFalse(lockerPeriodIds, lockerIds);
     }
 
     @Override
     public List<LockerApplication> findByMemberId(Long memberId) {
-        return lockerApplicationJpaRepository.findAllByMemberIdOrderByAppliedAtDescIdDesc(memberId).stream()
+        return lockerApplicationJpaRepository.findAllByMemberIdAndIsCanceledFalseOrderByAppliedAtDescIdDesc(memberId).stream()
             .map(LockerApplicationJpaEntity::toDomain)
             .toList();
     }
