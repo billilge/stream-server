@@ -20,7 +20,8 @@ public interface AdminFeedbackService {
     // 접수 기간만 받아 회차를 연다. 연도는 시작일 기준, 회차 번호는 그 연도의 최대 + 1로 서버가 배정한다
     FeedbackRoundSummary createRound(LocalDate opensOn, LocalDate closesOn);
 
-    // 답변을 아직 공개하지 않은 가장 최근 회차. 그런 회차가 없으면 비어 있다
+    // 진행 중 회차. 답변 공개 전 회차 중 접수가 시작된 회차(시작일이 가장 늦은 것), 없으면 가장 가까운 오픈예정 회차다.
+    // 그런 회차도 없으면 비어 있다
     Optional<FeedbackRoundSummary> getCurrentRound();
 
     // year/status가 null이면 그 조건은 필터하지 않는다

@@ -25,8 +25,16 @@ public class FeedbackRoundRepositoryImpl implements FeedbackRoundRepository {
     }
 
     @Override
-    public Optional<FeedbackRound> findLatestUnpublished() {
-        return feedbackRoundJpaRepository.findFirstByAnswersPublishedAtIsNullOrderByYearDescRoundDesc()
+    public Optional<FeedbackRound> findLatestStartedUnpublished(LocalDateTime now) {
+        return feedbackRoundJpaRepository
+            .findFirstByAnswersPublishedAtIsNullAndOpensAtLessThanEqualOrderByOpensAtDesc(now)
+            .map(FeedbackRoundJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<FeedbackRound> findNearestUpcoming(LocalDateTime now) {
+        return feedbackRoundJpaRepository
+            .findFirstByAnswersPublishedAtIsNullAndOpensAtAfterOrderByOpensAtAsc(now)
             .map(FeedbackRoundJpaEntity::toDomain);
     }
 

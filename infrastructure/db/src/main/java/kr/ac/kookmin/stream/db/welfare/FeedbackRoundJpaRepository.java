@@ -12,7 +12,11 @@ public interface FeedbackRoundJpaRepository extends JpaRepository<FeedbackRoundJ
     @Query("SELECT r FROM FeedbackRoundJpaEntity r WHERE :now BETWEEN r.opensAt AND r.closesAt")
     Optional<FeedbackRoundJpaEntity> findOpenAt(@Param("now") LocalDateTime now);
 
-    Optional<FeedbackRoundJpaEntity> findFirstByAnswersPublishedAtIsNullOrderByYearDescRoundDesc();
+    Optional<FeedbackRoundJpaEntity> findFirstByAnswersPublishedAtIsNullAndOpensAtLessThanEqualOrderByOpensAtDesc(
+        LocalDateTime now);
+
+    Optional<FeedbackRoundJpaEntity> findFirstByAnswersPublishedAtIsNullAndOpensAtAfterOrderByOpensAtAsc(
+        LocalDateTime now);
 
     @Query("""
         SELECT r FROM FeedbackRoundJpaEntity r

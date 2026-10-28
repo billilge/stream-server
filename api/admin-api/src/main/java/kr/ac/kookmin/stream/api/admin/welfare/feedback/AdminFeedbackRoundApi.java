@@ -24,10 +24,11 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "열린피드백 회차 관리", description = "운영진 열린피드백 회차 등록·조회와 답변 작성·공개")
 public interface AdminFeedbackRoundApi {
 
-    /** 관리 화면 상단 요약. 답변을 아직 공개하지 않은 가장 최근 회차를 내려준다. */
+    /** 관리 화면 상단 요약. 답변을 아직 공개하지 않은 회차 중 지금 진행 중인 회차를 내려준다. */
     @Operation(summary = "진행 중 회차 조회",
-        description = "답변을 아직 공개하지 않은 가장 최근 회차(오픈예정·질문접수중·답변작성중)를 조회한다. "
-            + "그런 회차가 없으면 data가 null이다.")
+        description = "답변을 아직 공개하지 않은 회차 중 접수가 시작된 회차(질문접수중·답변작성중)를 시작일이 가장 늦은 것으로 "
+            + "조회하고, 그런 회차가 없으면 시작일이 가장 가까운 오픈예정 회차를 조회한다. "
+            + "둘 다 없으면 data가 null이다.")
     ApiResponse<FeedbackRoundResponse> getCurrentRound(AdminApiUser apiUser);
 
     /** 회차 목록. 연도·상태로 필터링하고 페이지 단위로 조회한다. */

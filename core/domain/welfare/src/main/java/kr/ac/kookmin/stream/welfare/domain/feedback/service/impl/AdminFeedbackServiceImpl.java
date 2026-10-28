@@ -58,7 +58,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     public Optional<FeedbackRoundSummary> getCurrentRound() {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
-        return feedbackRoundRepository.findLatestUnpublished()
+        return findCurrentRound(now)
             .map(round -> FeedbackRoundSummary.of(round, getCountOf(round), now));
     }
 
@@ -92,7 +92,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         Long roundId, String keyword, List<Long> memberIds, PageOffset pageOffset
     ) {
         Optional<FeedbackRound> round = roundId == null
-            ? feedbackRoundRepository.findLatestUnpublished()
+            ? findCurrentRound(LocalDateTime.now(DateUtil.KST))
             : Optional.of(getRoundById(roundId));
 
         // 진행 중 회차가 없는데 회차를 지정하지도 않았으면 보여줄 질문이 없다
@@ -144,6 +144,14 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
         }
+    }
+
+    // 진행 중 회차는 답변을 공개하기 전 회차 중 접수가 이미 시작된 회차(질문접수중·답변작성중)를 먼저 고르고, 없으면 가장 가까운
+    // 오픈예정 회차를 고른다. 다음 회차를 미리 등록해 둬도 지금 회차가 잡히게 하려는 것이다. 회차 번호는 등록 순서대로
+    // 붙어 기간 순서와 다를 수 있으므로 시작일로 고른다
+    private Optional<FeedbackRound> findCurrentRound(LocalDateTime now) {
+        return feedbackRoundRepository.findLatestStartedUnpublished(now)
+            .or(() -> feedbackRoundRepository.findNearestUpcoming(now));
     }
 
     private FeedbackRound getRoundById(Long roundId) {

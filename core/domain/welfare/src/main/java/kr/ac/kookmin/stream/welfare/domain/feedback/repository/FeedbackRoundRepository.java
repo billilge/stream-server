@@ -12,12 +12,11 @@ public interface FeedbackRoundRepository {
     // now 시각 기준으로 접수 기간(opens_at~closes_at) 안에 있는 회차 하나를 찾는다. 여러 회차 기간이 안 겹친다는 전제.
     Optional<FeedbackRound> findOpenAt(LocalDateTime now);
 
-    /**
-     * 답변을 아직 공개하지 않은 회차 중 가장 최근 것(연도·회차 내림차순).
-     * 관리자 화면이 말하는 "진행 중 회차"(SCHEDULED·OPEN·ANSWERING)가 이 조건과 같다 —
-     * 접수가 끝나 답변을 쓰는 중인 회차도 포함해야 답변 작성 화면이 질문을 받아올 수 있다.
-     */
-    Optional<FeedbackRound> findLatestUnpublished();
+    // 답변을 아직 공개하지 않은 회차 중 now까지 접수가 시작된(OPEN·ANSWERING) 회차에서 시작일이 가장 늦은 것
+    Optional<FeedbackRound> findLatestStartedUnpublished(LocalDateTime now);
+
+    // 답변을 아직 공개하지 않은 회차 중 now 이후에 접수가 시작되는(SCHEDULED) 회차에서 시작일이 가장 이른 것
+    Optional<FeedbackRound> findNearestUpcoming(LocalDateTime now);
 
     // year가 null이면 전체 연도. 최신 회차부터(연도 내림차순 → 회차 내림차순) 정렬한다
     List<FeedbackRound> findAllByYear(Integer year);
