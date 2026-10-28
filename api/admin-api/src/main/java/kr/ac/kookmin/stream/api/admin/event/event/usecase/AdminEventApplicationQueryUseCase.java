@@ -9,8 +9,8 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
-import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminEventApplicationQueryUseCase {
 
-    private final EventService eventService;
+    private final AdminEventService adminEventService;
     private final EventApplicationService eventApplicationService;
     private final MemberService memberService;
 
@@ -38,7 +38,7 @@ public class AdminEventApplicationQueryUseCase {
         EventApplicationStatus status,
         PageOffset pageOffset
     ) {
-        EventManageDetail event = eventService.getEvent(eventId);
+        EventManageDetail event = adminEventService.getEvent(eventId);
         long totalApplicationCount = eventApplicationService.countApplications(eventId);
 
         PageResult<EventApplication> applications = searchApplications(eventId, keyword, status, pageOffset);
@@ -57,7 +57,7 @@ public class AdminEventApplicationQueryUseCase {
     }
 
     public EventApplicantDetail getApplicant(Long eventId, Long applicationId) {
-        EventManageDetail event = eventService.getEvent(eventId);
+        EventManageDetail event = adminEventService.getEvent(eventId);
         EventApplication application = eventApplicationService.getApplication(eventId, applicationId);
         List<EventApplicationAnswer> answers = eventApplicationService
             .getAnswersByApplicationIds(List.of(applicationId))

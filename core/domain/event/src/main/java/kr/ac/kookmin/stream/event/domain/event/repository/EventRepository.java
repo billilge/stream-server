@@ -40,7 +40,8 @@ public interface EventRepository {
     /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순(eventId 내림차순)으로 페이지 조회한다. 운영진 목록용이다.
      *
-     * @param keyword 제목 부분 일치 검색어. {@code null}이면 거르지 않는다
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
+     *                그대로 검색한다
      */
     PageResult<Event> findPage(String keyword, PageOffset pageOffset);
 

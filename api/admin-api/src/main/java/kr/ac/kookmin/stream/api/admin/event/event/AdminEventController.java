@@ -20,7 +20,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
-import kr.ac.kookmin.stream.event.domain.event.service.EventService;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminEventController implements AdminEventApi {
 
-    private final EventService eventService;
+    private final AdminEventService adminEventService;
     private final FileService fileService;
     private final AdminEventWriteUseCase adminEventWriteUseCase;
 
@@ -61,8 +61,8 @@ public class AdminEventController implements AdminEventApi {
         @Valid @ModelAttribute EventSearchParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Event> events = eventService.getEvents(params.toKeyword(), pageParams.toOffset());
-        Map<Long, Long> applicantCounts = eventService.getApplicantCounts(
+        PageResult<Event> events = adminEventService.getEvents(params.keyword(), pageParams.toOffset());
+        Map<Long, Long> applicantCounts = adminEventService.getApplicantCounts(
             events.content().stream().map(Event::getId).toList());
         LocalDateTime now = LocalDateTime.now();
 
@@ -73,7 +73,7 @@ public class AdminEventController implements AdminEventApi {
     @Override
     @GetMapping("/{eventId}")
     public ApiResponse<AdminEventDetailResponse> getEvent(AdminApiUser apiUser, @PathVariable Long eventId) {
-        EventManageDetail detail = eventService.getEvent(eventId);
+        EventManageDetail detail = adminEventService.getEvent(eventId);
         Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
 
         return ApiResponse.success(AdminEventDetailResponse.of(detail, imagesById, LocalDateTime.now()));
@@ -97,14 +97,14 @@ public class AdminEventController implements AdminEventApi {
         @PathVariable Long eventId,
         @Valid @RequestBody EventPublishRequest request
     ) {
-        Event event = eventService.changePublished(eventId, request.isPublished());
+        Event event = adminEventService.changePublished(eventId, request.isPublished());
         return ApiResponse.success(EventPublishResponse.from(event));
     }
 
     @Override
     @DeleteMapping("/{eventId}")
     public ApiResponse<Void> deleteEvent(AdminApiUser apiUser, @PathVariable Long eventId) {
-        eventService.delete(eventId);
+        adminEventService.delete(eventId);
         return ApiResponse.success();
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
@@ -64,7 +65,7 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
         Page<EventJpaEntity> result = eventJpaRepository.search(
-            keyword, PageRequest.of(pageOffset.page(), pageOffset.size())
+            LikePatterns.escape(keyword), PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(

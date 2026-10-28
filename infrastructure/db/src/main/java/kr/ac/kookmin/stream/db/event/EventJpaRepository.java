@@ -20,18 +20,20 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
 
     /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순으로 페이지 조회한다. 운영진 목록용이다.
+     * <p>
+     * keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
      */
     @Query(
         value = """
             SELECT e FROM EventJpaEntity e
             WHERE e.isDeleted = false
-            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%'))
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
             ORDER BY e.id DESC
             """,
         countQuery = """
             SELECT COUNT(e) FROM EventJpaEntity e
             WHERE e.isDeleted = false
-            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%'))
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
             """
     )
     Page<EventJpaEntity> search(@Param("keyword") String keyword, Pageable pageable);

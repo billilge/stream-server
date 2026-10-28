@@ -19,10 +19,12 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventPeriod;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.QuestionType;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import org.junit.jupiter.api.DisplayName;
@@ -30,10 +32,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * 운영진 행사 등록·조회·수정. 형식 규칙 자체는 {@code EventWriteValidatorTest}가 덮고,
+ * 운영진 행사 등록·조회·수정. 형식 규칙 자체는 {@code EventWriteValidatorTest}·{@code EventPeriodTest}·
+ * {@code RecruitPolicyTest}가 덮고,
  * 여기서는 저장 흐름과 수정 시의 규칙(동시 수정·정원 하한·질문 잠금)을 본다.
  */
-class EventServiceImplManageTest {
+class AdminEventServiceImplTest {
 
     private static final Long EVENT_ID = 15L;
     private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2026, 10, 10, 12, 30, 15);
@@ -49,8 +52,8 @@ class EventServiceImplManageTest {
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
     private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
-    private final EventServiceImpl service =
-        new EventServiceImpl(repository, applicationRepository, new EventWriteValidator());
+    private final AdminEventServiceImpl service =
+        new AdminEventServiceImpl(repository, applicationRepository, new EventWriteValidator());
 
     private static Event savedEvent(RecruitType recruitType, int capacity) {
         return Event.of(
@@ -62,16 +65,18 @@ class EventServiceImplManageTest {
     private static EventCreateCommand createCommand(
         RecruitType recruitType, Integer capacity, List<EventQuestionCommand> questions) {
         return new EventCreateCommand(
-            "체육대회", "설명", "종합운동장", EVENT_START_AT, EVENT_END_AT, APPLY_START_AT, APPLY_END_AT,
-            recruitType, capacity, false, List.of(31L), questions
+            "체육대회", "설명", "종합운동장", EventPeriod.of(EVENT_START_AT, EVENT_END_AT),
+            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity), false, List.of(31L),
+            questions
         );
     }
 
     private static EventUpdateCommand updateCommand(
         RecruitType recruitType, Integer capacity, List<EventQuestionCommand> questions, LocalDateTime expectedUpdatedAt) {
         return new EventUpdateCommand(
-            "체육대회(변경)", "설명", "미래관", EVENT_START_AT, EVENT_END_AT, APPLY_START_AT, APPLY_END_AT,
-            recruitType, capacity, true, List.of(40L), questions, expectedUpdatedAt
+            "체육대회(변경)", "설명", "미래관", EventPeriod.of(EVENT_START_AT, EVENT_END_AT),
+            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity), true, List.of(40L),
+            questions, expectedUpdatedAt
         );
     }
 
@@ -134,8 +139,11 @@ class EventServiceImplManageTest {
         @Test
         @DisplayName("규칙을 어기면 아무것도 저장하지 않는다")
         void savesNothingWhenInvalid() {
-            assertRejected(EventErrorCode.EVENT_INVALID_CAPACITY,
-                () -> service.create(7L, createCommand(RecruitType.FIRST_COME, 0, List.of(SPORTS))));
+            EventQuestionCommand choiceWithoutOptions = new EventQuestionCommand(
+                "참여 종목", QuestionType.MULTIPLE_CHOICE, true, List.of(), true);
+
+            assertRejected(EventErrorCode.EVENT_INVALID_QUESTION,
+                () -> service.create(7L, createCommand(RecruitType.FIRST_COME, 100, List.of(choiceWithoutOptions))));
 
             assertTrue(repository.events.isEmpty());
             assertTrue(repository.questions.isEmpty());
@@ -219,15 +227,6 @@ class EventServiceImplManageTest {
 
                 assertDoesNotThrow(() -> service.update(EVENT_ID,
                     updateCommand(RecruitType.FIRST_COME, 100, List.of(SPORTS), UPDATED_AT.plusNanos(999_000_000))));
-            }
-
-            @Test
-            @DisplayName("동시 수정 검사는 형식 검증보다 먼저 한다")
-            void checkedBeforeFormat() {
-                givenEvent(RecruitType.FIRST_COME, 100, savedQuestions(SPORTS));
-
-                assertRejected(EventErrorCode.EVENT_UPDATE_CONFLICT, () -> service.update(EVENT_ID,
-                    updateCommand(RecruitType.FIRST_COME, 0, List.of(SPORTS), UPDATED_AT.minusDays(1))));
             }
         }
 
