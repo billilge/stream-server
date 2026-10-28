@@ -47,7 +47,7 @@ class EventNotificationScheduler {
         }
     }
 
-    // 지금 신청할 수 있는 행사만 알린다. 강제 마감·정원 마감된 행사는 신청할 수 없어 뺀다
+    // 지금 신청할 수 있는 행사만 알린다. 정원 마감된 행사는 신청할 수 없어 뺀다
     private void recordApplyClosingTomorrow(LocalDateTime now, LocalDateTime from, LocalDateTime to) {
         for (Event event : eventRepository.findPublishedApplyEndingBetween(from, to)) {
             List<Long> applicantIds = eventRepository.findAppliedMemberIds(event.getId());
