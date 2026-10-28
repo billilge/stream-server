@@ -20,9 +20,6 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     // 확인에서 빠지면 안 된다(OVERDUE로 바뀐 학생이 반납 신청을 못 하거나 같은 물품을 다시 빌릴 수 있게 된다).
     private static final List<RentalStatus> HOLDING_STATUSES = List.of(RentalStatus.RENTAL, RentalStatus.OVERDUE);
 
-    // 완전히 끝난(더는 손댈 일 없는) 상태. 물품 삭제 차단은 이 셋이 아닌 모든 기록을 "진행 중"으로 본다.
-    private static final List<RentalStatus> TERMINAL_STATUSES = List.of(RentalStatus.RETURNED, RentalStatus.CANCEL, RentalStatus.REJECTED);
-
     private final RentalHistoryJpaRepository rentalHistoryJpaRepository;
 
     @Override
@@ -74,6 +71,6 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public boolean existsActiveRentalForItem(Long itemId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, TERMINAL_STATUSES);
+        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, RentalStatus.finishedStatuses());
     }
 }
