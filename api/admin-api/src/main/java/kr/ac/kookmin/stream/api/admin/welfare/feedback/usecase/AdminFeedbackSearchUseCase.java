@@ -7,7 +7,7 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
-import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
+import kr.ac.kookmin.stream.welfare.domain.feedback.service.AdminFeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminFeedbackSearchUseCase {
 
-    private final FeedbackService feedbackService;
+    private final AdminFeedbackService adminFeedbackService;
     private final MemberService memberService;
 
     public PageResult<FeedbackWithStudent> search(Long roundId, String keyword, PageOffset pageOffset) {
@@ -31,7 +31,7 @@ public class AdminFeedbackSearchUseCase {
             : memberService.searchIdsByKeyword(searchKeyword);
 
         PageResult<Feedback> result =
-            feedbackService.searchQuestions(roundId, searchKeyword, matchedMemberIds, pageOffset);
+            adminFeedbackService.searchQuestions(roundId, searchKeyword, matchedMemberIds, pageOffset);
         Map<Long, Member> students = memberService.getMapByIds(
             result.content().stream().map(Feedback::getCreatedBy).toList());
 

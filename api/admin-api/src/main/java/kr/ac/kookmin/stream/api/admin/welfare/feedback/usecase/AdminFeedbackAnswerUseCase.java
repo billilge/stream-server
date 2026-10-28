@@ -7,7 +7,7 @@ import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackAnswerCommand;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundDetail;
-import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
+import kr.ac.kookmin.stream.welfare.domain.feedback.service.AdminFeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,19 +16,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminFeedbackAnswerUseCase {
 
-    private final FeedbackService feedbackService;
+    private final AdminFeedbackService adminFeedbackService;
     private final MemberService memberService;
 
     public FeedbackRoundAnswers getRoundAnswers(Long roundId) {
-        return withStudents(feedbackService.getRoundDetail(roundId));
+        return withStudents(adminFeedbackService.getRoundDetail(roundId));
     }
 
     public FeedbackRoundAnswers saveAnswers(Long roundId, List<FeedbackAnswerCommand> commands, Long answeredBy) {
-        return withStudents(feedbackService.saveAnswers(roundId, commands, answeredBy));
+        return withStudents(adminFeedbackService.saveAnswers(roundId, commands, answeredBy));
     }
 
     public FeedbackRoundAnswers publishAnswers(Long roundId) {
-        return withStudents(feedbackService.publishAnswers(roundId));
+        return withStudents(adminFeedbackService.publishAnswers(roundId));
     }
 
     private FeedbackRoundAnswers withStudents(FeedbackRoundDetail detail) {

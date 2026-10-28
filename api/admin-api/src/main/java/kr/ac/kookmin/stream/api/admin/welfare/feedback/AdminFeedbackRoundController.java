@@ -13,7 +13,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundStatus;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundSummary;
-import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
+import kr.ac.kookmin.stream.welfare.domain.feedback.service.AdminFeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
 
-    private final FeedbackService feedbackService;
+    private final AdminFeedbackService adminFeedbackService;
     private final AdminFeedbackAnswerUseCase adminFeedbackAnswerUseCase;
 
     @Override
@@ -38,7 +38,7 @@ public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
     public ApiResponse<FeedbackRoundResponse> getCurrentRound(AdminApiUser apiUser) {
         // 진행 중 회차가 없으면 data를 null로 내려 화면이 "진행 중인 회차 없음"을 그린다
         return ApiResponse.success(
-            feedbackService.getCurrentRound().map(FeedbackRoundResponse::from).orElse(null));
+            adminFeedbackService.getCurrentRound().map(FeedbackRoundResponse::from).orElse(null));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
     ) {
         FeedbackRoundStatus roundStatus = FeedbackRoundStatus.from(status);
         PageResult<FeedbackRoundSummary> result =
-            feedbackService.getRounds(year, roundStatus, pageParams.toOffset());
+            adminFeedbackService.getRounds(year, roundStatus, pageParams.toOffset());
 
         return ApiResponse.success(PageResponse.from(result, FeedbackRoundResponse::from));
     }
@@ -62,7 +62,7 @@ public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
         AdminApiUser apiUser,
         @Valid @RequestBody FeedbackRoundCreateRequest request
     ) {
-        FeedbackRoundSummary created = feedbackService.createRound(request.opensOn(), request.closesOn());
+        FeedbackRoundSummary created = adminFeedbackService.createRound(request.opensOn(), request.closesOn());
         return ApiResponse.success(FeedbackRoundResponse.from(created));
     }
 
