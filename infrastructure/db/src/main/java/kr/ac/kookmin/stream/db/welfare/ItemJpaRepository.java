@@ -2,6 +2,8 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +27,29 @@ public interface ItemJpaRepository extends JpaRepository<ItemJpaEntity, Long> {
         @Param("cursorId") Long cursorId,
         Pageable pageable
     );
+
+    // 관리자 콘솔용 페이지 번호 조회. keyword는 LikePatterns.escape로 이스케이프한 값을 받는다
+    @Query(value = """
+        SELECT i FROM ItemJpaEntity i
+        WHERE (:category IS NULL OR i.category = :category)
+        AND (:type IS NULL OR i.type = :type)
+        AND (:keyword IS NULL OR i.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        ORDER BY i.name ASC, i.id ASC
+        """,
+        countQuery = """
+        SELECT COUNT(i) FROM ItemJpaEntity i
+        WHERE (:category IS NULL OR i.category = :category)
+        AND (:type IS NULL OR i.type = :type)
+        AND (:keyword IS NULL OR i.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    Page<ItemJpaEntity> search(
+        @Param("category") ItemCategory category,
+        @Param("type") ItemType type,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, Long id);
 }
