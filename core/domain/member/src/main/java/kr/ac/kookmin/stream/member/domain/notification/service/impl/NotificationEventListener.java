@@ -7,6 +7,8 @@ import kr.ac.kookmin.stream.common.event.EventApplyClosingTomorrow;
 import kr.ac.kookmin.stream.common.event.EventStartingTomorrow;
 import kr.ac.kookmin.stream.common.event.LockerApplyClosingTomorrow;
 import kr.ac.kookmin.stream.common.event.LockerAssigned;
+import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
+import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
 import kr.ac.kookmin.stream.common.event.LockerUsageEndingSoon;
 import kr.ac.kookmin.stream.common.event.NoticeCreated;
 import kr.ac.kookmin.stream.common.event.RentalDueSoon;
@@ -43,6 +45,19 @@ class NotificationEventListener {
     public void on(LockerAssigned event) {
         notificationDispatcher.dispatch(
             NotificationType.LOCKER_ASSIGNED, List.of(), event.lockerPeriodId(), List.of(event.memberId()));
+    }
+
+    @EventListener
+    public void on(LockerAssignedByAdmin event) {
+        notificationDispatcher.dispatch(
+            NotificationType.LOCKER_ASSIGNED_BY_ADMIN, List.of(), event.lockerPeriodId(), List.of(event.memberId()));
+    }
+
+    // 본인이 하지 않은 변경이고 화면에서는 신청이 사라지므로, 취소는 알림으로만 알 수 있다
+    @EventListener
+    public void on(LockerAssignmentCanceled event) {
+        notificationDispatcher.dispatch(
+            NotificationType.LOCKER_ASSIGNMENT_CANCELED, List.of(), event.lockerPeriodId(), List.of(event.memberId()));
     }
 
     // 공지는 활성 회원 전체에게 간다
