@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackCount;
 import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepository;
@@ -49,7 +50,7 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
         Page<FeedbackJpaEntity> result = feedbackJpaRepository.searchByKeyword(
             year,
             round,
-            keyword,
+            LikePatterns.escape(keyword),
             memberIds.isEmpty() ? NO_MEMBER_IDS : memberIds,
             PageRequest.of(pageOffset.page(), pageOffset.size())
         );
