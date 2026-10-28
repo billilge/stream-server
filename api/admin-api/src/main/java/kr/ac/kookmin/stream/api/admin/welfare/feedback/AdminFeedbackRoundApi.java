@@ -47,11 +47,12 @@ public interface AdminFeedbackRoundApi {
     /** 회차 등록. 접수 기간만 받고 연도·회차 번호는 서버가 배정한다. */
     @Operation(summary = "피드백 회차 등록",
         description = "질문 접수 기간(날짜)만 받아 회차를 연다. 시각은 시작일 00:00:00 ~ 마감일 23:59:59로 채우고, "
-            + "연도는 시작일 기준, 회차 번호는 그 연도의 최대 + 1로 배정한다. 다른 회차와 접수 기간이 겹치면 409다.")
+            + "연도는 시작일 기준, 회차 번호는 그 연도의 최대 + 1로 배정한다. 다른 회차와 접수 기간이 겹치면 409다. "
+            + "동시에 등록해 같은 회차 번호가 배정되면 늦은 쪽이 409이고, 다시 요청하면 다음 번호로 등록된다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(
         type = FeedbackErrorCode.class,
-        codes = {"INVALID_FEEDBACK_ROUND_PERIOD", "FEEDBACK_ROUND_OVERLAPPED"}
+        codes = {"INVALID_FEEDBACK_ROUND_PERIOD", "FEEDBACK_ROUND_OVERLAPPED", "FEEDBACK_ROUND_ALREADY_EXISTS"}
     )
     ApiResponse<FeedbackRoundResponse> createRound(AdminApiUser apiUser, FeedbackRoundCreateRequest request);
 
