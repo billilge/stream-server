@@ -55,14 +55,15 @@ public interface AppRentalApi {
             + "이미 진행 중인(아직 끝나지 않은) 같은 물품 신청이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
             + "물품 종류와 관계없이 승인 대기(PENDING) 상태로 등록되며, 운영진이 승인해야 다음 단계로 넘어간다. "
             + "재고는 신청 시점에 바로 차감되고, 같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, "
-            + "그래도 충돌하면 409를 반환한다.")
+            + "그래도 충돌하면 409를 반환한다. 관리자가 설정한 시험기간에는 신청할 수 없다(반납·취소는 그대로 가능).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"MEMBER_IS_NOT_PAYER"})
     @ApiErrorCode(
         type = RentalErrorCode.class,
         codes = {
             "ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK", "RENTAL_ITEM_DUPLICATED",
-            "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK", "INVALID_RENTAL_TIME_PAST"
+            "INVALID_RENTAL_TIME_RANGE", "INVALID_RENTAL_TIME_LUNCH_BREAK", "INVALID_RENTAL_TIME_PAST",
+            "TODAY_IS_IN_EXAM_PERIOD"
         }
     )
     ApiResponse<Void> applyRental(AppApiUser apiUser, RentalApplyRequest request);
