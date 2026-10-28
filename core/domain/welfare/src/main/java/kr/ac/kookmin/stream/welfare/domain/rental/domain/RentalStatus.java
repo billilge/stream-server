@@ -42,11 +42,6 @@ public enum RentalStatus {
         return FINISHED_STATUSES.contains(this);
     }
 
-    /** 지금 물품을 들고 있는 상태인지(대여 중 또는 연체). */
-    public boolean isHolding() {
-        return HOLDING_STATUSES.contains(this);
-    }
-
     /** 아직 반납이 최종 확인되지 않은(들고 있거나 반납 절차가 진행 중인) 상태인지. */
     public boolean isAwaitingReturn() {
         return AWAITING_RETURN_STATUSES.contains(this);

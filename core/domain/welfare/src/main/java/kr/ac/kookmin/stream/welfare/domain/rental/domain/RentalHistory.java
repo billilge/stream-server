@@ -32,9 +32,10 @@ public class RentalHistory {
     }
 
     /**
-     * 관리자가 현장에서 처리한 대여를 대신 등록한다. 이미 물건을 건네준 걸 사후 기록하는 용도라 상태 선택을
-     * 받지 않는다 — {@link #create}와 같은 기준으로 대여품은 RENTAL, 소모품은 RETURNED로 바로 시작한다.
-     * 처리자(workerId)는 호출한 관리자가 아니라 폼에서 직접 고른 근무자다.
+     * 관리자가 현장에서 처리한 대여를 대신 등록한다. 이미 물건을 건네준 걸 사후 기록하는 용도라 승인 대기
+     * 단계 없이, 물품 종류에 따라 바로 시작 상태가 정해진다 — 대여품은 RENTAL, 소모품은 RETURNED(승인 단계가
+     * 없는 현장 거래라 {@link #create}와는 다르게 바로 종료 상태로 간다). 처리자(workerId)는 호출한
+     * 관리자가 아니라 폼에서 직접 고른 근무자다.
      */
     public static RentalHistory createByAdmin(
         Item item, Long memberId, Long workerId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt
