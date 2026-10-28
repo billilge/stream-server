@@ -483,6 +483,21 @@ class EventServiceImplManageTest {
         }
 
         @Override
+        public List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Long> findAppliedMemberIds(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean existsAppliedByEventIdAndMemberId(Long eventId, Long memberId) {
             throw new UnsupportedOperationException();
         }
