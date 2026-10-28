@@ -64,7 +64,7 @@ public class AdminRentalStatusUpdateUseCase {
         if (previousStatus.isFinished()) {
             return false;
         }
-        if (newStatus == RentalStatus.CANCEL || newStatus == RentalStatus.REJECTED) {
+        if (newStatus.isCancelledOrRejected()) {
             return true;
         }
         return newStatus == RentalStatus.RETURNED && item != null && item.getType() == ItemType.RENTAL;
