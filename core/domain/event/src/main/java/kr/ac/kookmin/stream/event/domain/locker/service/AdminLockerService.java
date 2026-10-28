@@ -69,5 +69,5 @@ public interface AdminLockerService {
      * <p>
      * 학생회비 납부자인지는 이 서비스가 보지 않는다. 교차 도메인이라 {@code api:admin-api}의 UseCase가 확인한다.
      */
-    LockerApplicationResult assignLocker(Long lockerPeriodId, Long memberId, Long lockerId);
+    void assignLocker(Long lockerPeriodId, Long memberId, Long lockerId);
 }

@@ -121,7 +121,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
     public void cancelApplication(Long lockerApplicationId) {
         LockerApplication application = lockerApplicationRepository.findById(lockerApplicationId)
             .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_APPLICATION_NOT_FOUND));
-        requireUsageNotEnded(application.getLockerPeriodId());
+        validateUsageNotEnded(application.getLockerPeriodId(), LocalDate.now());
 
         application.cancel();
         lockerApplicationRepository.save(application);
@@ -130,8 +130,11 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     @Override
     @Transactional
-    public LockerApplicationResult assignLocker(Long lockerPeriodId, Long memberId, Long lockerId) {
-        LockerPeriod period = requireUsageNotEnded(lockerPeriodId);
+    public void assignLocker(Long lockerPeriodId, Long memberId, Long lockerId) {
+        // 사용 기간 판정과 신청 시각이 같은 시계를 보게 한 번만 읽는다. 따로 읽으면 자정을 걸칠 때 기간 안으로
+        // 통과한 신청이 다음 날짜로 기록된다
+        LocalDateTime now = LocalDateTime.now();
+        validateUsageNotEnded(lockerPeriodId, now.toLocalDate());
         Locker locker = lockerRepository.findLockerById(lockerId)
             .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION));
         if (!locker.isSelectable(lockerApplicationRepository.existsByLocker(lockerPeriodId, lockerId))) {
@@ -139,21 +142,17 @@ class AdminLockerServiceImpl implements AdminLockerService {
         }
 
         // 회원이 이미 가진 칸이 있으면 저장 시 유니크 제약이 막는다
-        LockerApplication saved = lockerApplicationRepository.save(
-            LockerApplication.create(lockerPeriodId, memberId, lockerId, LocalDateTime.now()));
+        lockerApplicationRepository.save(LockerApplication.create(lockerPeriodId, memberId, lockerId, now));
         outboxWriter.record(new LockerAssignedByAdmin(memberId, lockerPeriodId));
-        return new LockerApplicationResult(saved, locker, period);
     }
 
     /**
      * 사용 기간이 끝난 회차는 신청을 손댈 수 없다. 취소해도 되돌릴 자리가 없고, 배정해도 쓸 수 없다.
      */
-    private LockerPeriod requireUsageNotEnded(Long lockerPeriodId) {
-        LockerPeriod period = getPeriod(lockerPeriodId);
-        if (period.isUsageEnded(LocalDate.now())) {
+    private void validateUsageNotEnded(Long lockerPeriodId, LocalDate today) {
+        if (getPeriod(lockerPeriodId).isUsageEnded(today)) {
             throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_ALREADY_ENDED);
         }
-        return period;
     }
 
     /**
