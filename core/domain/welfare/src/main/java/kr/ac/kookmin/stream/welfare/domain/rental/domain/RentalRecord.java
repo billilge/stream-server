@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.domain;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * 대여 이력에 그 물품을 붙인 조회용 조합 객체. 필드를 복사하지 않고 도메인 객체를 그대로 담아,
@@ -10,13 +11,18 @@ import java.time.LocalDateTime;
  */
 public record RentalRecord(RentalHistory history, Item item) {
 
+    // 아직 운영진이 반납을 최종 확인(RETURNED)하지 않은, "학생이 들고 있거나 반납 절차가 진행 중인" 상태.
+    // 반납 신청(RETURN_PENDING)·운영진 중간 확인(RETURN_CONFIRMED) 중에도 계속 목록에 남는다(레거시와 같은 기준).
+    // 연체는 별도 상태가 아니라 dueAt으로 조회 시점에 판단하므로 RENTAL에 포함된다.
+    private static final Set<RentalStatus> AWAITING_RETURN_STATUSES = Set.of(
+        RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED
+    );
+
     /**
-     * 지금 반납해야 하는 대여인지. 대여 중이면(기한이 지나도 상태는 그대로 RENTAL — 연체는 dueAt으로 조회
-     * 시점에 판단한다) 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다. 반납 절차가
-     * 이미 시작된(RETURN_PENDING 이후) 건은 제외한다 — 더 이상 학생이 반납을 미루고 있는 상태가 아니라서다.
+     * 지금 반납해야 하는 대여인지. 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다.
      */
     public boolean isReturnRequired() {
-        return history.getRentalStatus() == RentalStatus.RENTAL
+        return AWAITING_RETURN_STATUSES.contains(history.getRentalStatus())
             && history.getRentAt() != null
             && item != null
             && item.getReturnPolicy() != null;
