@@ -69,10 +69,7 @@ class AdminEventServiceImpl implements AdminEventService {
 
         List<EventQuestion> questions = toQuestions(eventId, command.questions());
         if (questionsChanged(eventRepository.findQuestionsByEventId(eventId), questions)) {
-            // 답변이 질문 id·선택지 순서로 저장돼 있어 신청이 생긴 뒤 바꾸면 기존 답변의 뜻이 달라진다
-            if (eventRepository.existsApplicationByEventId(eventId)) {
-                throw new BusinessException(EventErrorCode.EVENT_QUESTIONS_LOCKED);
-            }
+            validateQuestionsEditable(eventId);
             eventRepository.replaceQuestions(eventId, questions);
             eventRepository.touchUpdatedAt(eventId);
         }
@@ -98,6 +95,13 @@ class AdminEventServiceImpl implements AdminEventService {
     private void validateCapacityNotBelowApplicants(Long eventId, RecruitPolicy recruitPolicy) {
         if (recruitPolicy.isCapacityBelow(eventRepository.countAppliedByEventId(eventId))) {
             throw new BusinessException(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS);
+        }
+    }
+
+    // 답변이 질문 id·선택지 순서로 저장돼 있어 신청이 생긴 뒤 바꾸면 기존 답변의 뜻이 달라진다
+    private void validateQuestionsEditable(Long eventId) {
+        if (eventRepository.existsApplicationByEventId(eventId)) {
+            throw new BusinessException(EventErrorCode.EVENT_QUESTIONS_LOCKED);
         }
     }
 
