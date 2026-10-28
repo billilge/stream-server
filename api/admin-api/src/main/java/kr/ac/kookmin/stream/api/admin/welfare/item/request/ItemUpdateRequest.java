@@ -32,7 +32,7 @@ public record ItemUpdateRequest(
     @Schema(description = "사전 업로드한 이미지 파일 ID. null이면 기존 이미지를 유지한다", example = "105")
     Long imageFileId,
 
-    @Schema(description = "반납 정책. 대여품(RENTAL)만 의미 있고 소모품이면 무시된다")
+    @Schema(description = "반납 정책. 대여품(RENTAL)이면 필수이고 소모품이면 무시된다")
     @Valid
     ReturnPolicyRequest returnPolicy
 ) {
