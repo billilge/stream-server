@@ -53,7 +53,7 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
-        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.RENTAL)
+        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatusIn(id, memberId, RentalStatus.holdingStatuses())
             .map(RentalHistoryJpaEntity::toDomain);
     }
 
