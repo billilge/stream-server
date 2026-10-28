@@ -15,7 +15,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
-import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,7 @@ class AdminEventServiceImpl implements AdminEventService {
         Event event = getEventOrThrow(eventId);
         validateNotModified(event, command.expectedUpdatedAt());
         eventWriteValidator.validate(command);
-        validateCapacityNotBelowApplicants(eventId, command);
+        validateCapacityNotBelowApplicants(eventId, command.recruitPolicy());
 
         List<EventQuestion> questions = toQuestions(eventId, command.questions());
         if (questionsChanged(eventRepository.findQuestionsByEventId(eventId), questions)) {
@@ -97,10 +97,9 @@ class AdminEventServiceImpl implements AdminEventService {
         }
     }
 
-    // 이미 받은 신청을 정원 밖으로 밀어낼 수는 없다. 상시 모집은 인원 제한이 없어 보지 않는다
-    private void validateCapacityNotBelowApplicants(Long eventId, EventUpdateCommand command) {
-        if (command.recruitType() == RecruitType.FIRST_COME
-            && command.capacity() < eventRepository.countAppliedByEventId(eventId)) {
+    // 이미 받은 신청을 정원 밖으로 밀어낼 수는 없다
+    private void validateCapacityNotBelowApplicants(Long eventId, RecruitPolicy recruitPolicy) {
+        if (recruitPolicy.isCapacityBelow(eventRepository.countAppliedByEventId(eventId))) {
             throw new BusinessException(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS);
         }
     }

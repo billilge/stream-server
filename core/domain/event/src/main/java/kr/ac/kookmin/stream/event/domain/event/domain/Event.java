@@ -17,13 +17,10 @@ public class Event {
     private String title;
     private String description;
     private String place;
-    private LocalDateTime eventStartAt;
-    private LocalDateTime eventEndAt;
-    private LocalDateTime applyStartAt;
-    private LocalDateTime applyEndAt;
-    private RecruitType recruitType;
+    private EventPeriod eventPeriod;
+    private EventPeriod applyPeriod;
+    private RecruitPolicy recruitPolicy;
     private List<Long> imageIds;
-    private int capacity;
     /** 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업) */
     private boolean feePaidOnly;
     private boolean published;
@@ -31,6 +28,10 @@ public class Event {
     /** 마지막 수정 시각. DB가 채우며, 운영진 동시 수정 감지에 쓴다 */
     private LocalDateTime updatedAt;
 
+    /**
+     * DB에 저장된 값으로 행사를 복원한다. 기간·모집 값은 표준 생성자로 만들어 검증하지 않는다. 저장값은 등록·수정 때 이미
+     * 검증했고, {@code event_end_at}이 NULL인 기존 행이 있어 검증하면 조회가 깨진다.
+     */
     public static Event of(
         Long id,
         String title,
@@ -49,14 +50,14 @@ public class Event {
         LocalDateTime updatedAt
     ) {
         return new Event(
-            id, title, description, place, eventStartAt, eventEndAt, applyStartAt,
-            applyEndAt, recruitType, imageIds, capacity, feePaidOnly, published, createdBy, updatedAt
+            id, title, description, place, new EventPeriod(eventStartAt, eventEndAt),
+            new EventPeriod(applyStartAt, applyEndAt), new RecruitPolicy(recruitType, capacity), imageIds,
+            feePaidOnly, published, createdBy, updatedAt
         );
     }
 
     /**
-     * 새 행사를 만든다. 학생에게 바로 보이지 않도록 비공개로 시작한다. 상시 모집은 정원이 의미 없어 0으로 둔다.
-     * 수정 시각은 DB가 채운다.
+     * 새 행사를 만든다. 학생에게 바로 보이지 않도록 비공개로 시작한다. 수정 시각은 DB가 채운다.
      */
     public static Event create(Long createdBy, EventCreateCommand command) {
         return new Event(
@@ -64,13 +65,10 @@ public class Event {
             command.title(),
             command.description(),
             command.place(),
-            command.eventStartAt(),
-            command.eventEndAt(),
-            command.applyStartAt(),
-            command.applyEndAt(),
-            command.recruitType(),
+            command.eventPeriod(),
+            command.applyPeriod(),
+            command.recruitPolicy(),
             command.imageIds(),
-            capacityOf(command.recruitType(), command.capacity()),
             command.feePaidOnly(),
             false,
             createdBy,
@@ -85,14 +83,36 @@ public class Event {
         this.title = command.title();
         this.description = command.description();
         this.place = command.place();
-        this.eventStartAt = command.eventStartAt();
-        this.eventEndAt = command.eventEndAt();
-        this.applyStartAt = command.applyStartAt();
-        this.applyEndAt = command.applyEndAt();
-        this.recruitType = command.recruitType();
+        this.eventPeriod = command.eventPeriod();
+        this.applyPeriod = command.applyPeriod();
+        this.recruitPolicy = command.recruitPolicy();
         this.imageIds = command.imageIds();
-        this.capacity = capacityOf(command.recruitType(), command.capacity());
         this.feePaidOnly = command.feePaidOnly();
+    }
+
+    // 기간·모집 값을 VO로 묶기 전부터 쓰던 getter다. 호출부가 VO 구조를 몰라도 되도록 남겨 둔다
+    public LocalDateTime getEventStartAt() {
+        return eventPeriod.startAt();
+    }
+
+    public LocalDateTime getEventEndAt() {
+        return eventPeriod.endAt();
+    }
+
+    public LocalDateTime getApplyStartAt() {
+        return applyPeriod.startAt();
+    }
+
+    public LocalDateTime getApplyEndAt() {
+        return applyPeriod.endAt();
+    }
+
+    public RecruitType getRecruitType() {
+        return recruitPolicy.type();
+    }
+
+    public int getCapacity() {
+        return recruitPolicy.capacity();
     }
 
     /**
@@ -129,7 +149,7 @@ public class Event {
         if (recruitStatus != RecruitStatus.OPEN) {
             return null;
         }
-        return (int) ChronoUnit.DAYS.between(now.toLocalDate(), applyEndAt.toLocalDate());
+        return (int) ChronoUnit.DAYS.between(now.toLocalDate(), applyPeriod.endAt().toLocalDate());
     }
 
     /**
@@ -140,17 +160,17 @@ public class Event {
     }
 
     /**
-     * 운영진 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
+     * 운영진 화면에 보여줄 정원. 규칙은 {@link RecruitPolicy#capacityLimit()}를 따른다.
      */
     public Integer capacityLimit() {
-        return recruitType == RecruitType.FIRST_COME ? capacity : null;
+        return recruitPolicy.capacityLimit();
     }
 
     /**
-     * 정원이 찼는지 판정한다. 선착순 모집에만 정원 제한이 있고, 상시 모집은 인원 제한이 없다.
+     * 정원이 찼는지 판정한다. 규칙은 {@link RecruitPolicy#isFull(long)}을 따른다.
      */
     public boolean isCapacityFull(long appliedCount) {
-        return recruitType == RecruitType.FIRST_COME && appliedCount >= capacity;
+        return recruitPolicy.isFull(appliedCount);
     }
 
     /**
@@ -163,18 +183,14 @@ public class Event {
             && isCapacityFull(appliedCount);
     }
 
-    private static int capacityOf(RecruitType recruitType, Integer capacity) {
-        return recruitType == RecruitType.FIRST_COME ? capacity : 0;
-    }
-
     private boolean isBeforeApplyPeriod(LocalDateTime now) {
-        return now.isBefore(applyStartAt);
+        return now.isBefore(applyPeriod.startAt());
     }
 
     /**
      * 신청 기간이 끝났는지. 모집 상태 계산뿐 아니라 신청 취소 가능 여부 판정에도 쓰인다.
      */
     public boolean isAfterApplyPeriod(LocalDateTime now) {
-        return now.isAfter(applyEndAt);
+        return now.isAfter(applyPeriod.endAt());
     }
 }

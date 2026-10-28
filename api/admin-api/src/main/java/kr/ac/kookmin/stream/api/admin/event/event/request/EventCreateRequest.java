@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCreateCommand;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventPeriod;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 
 /**
@@ -72,12 +74,9 @@ public record EventCreateRequest(
             title,
             description,
             place,
-            eventStartAt,
-            eventEndAt,
-            applyStartAt,
-            applyEndAt,
-            recruitType,
-            capacity,
+            EventPeriod.of(eventStartAt, eventEndAt),
+            EventPeriod.of(applyStartAt, applyEndAt),
+            RecruitPolicy.of(recruitType, capacity),
             feePaidOnly,
             imageIds.stream().distinct().toList(),
             questions.stream().map(EventQuestionRequest::toCommand).toList()

@@ -9,7 +9,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.common.DateUtil;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventPeriod;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 
 /**
@@ -74,17 +76,15 @@ public record EventUpdateRequest(
     Long updatedAt
 ) {
 
+    // 기간 순서·선착순 정원은 VO를 만들 때 검증한다. 입력만 보는 규칙이라 동시 수정(409)보다 먼저 400으로 거부된다
     public EventUpdateCommand toCommand() {
         return new EventUpdateCommand(
             title,
             description,
             place,
-            eventStartAt,
-            eventEndAt,
-            applyStartAt,
-            applyEndAt,
-            recruitType,
-            capacity,
+            EventPeriod.of(eventStartAt, eventEndAt),
+            EventPeriod.of(applyStartAt, applyEndAt),
+            RecruitPolicy.of(recruitType, capacity),
             feePaidOnly,
             imageIds.stream().distinct().toList(),
             questions.stream().map(EventQuestionRequest::toCommand).toList(),
