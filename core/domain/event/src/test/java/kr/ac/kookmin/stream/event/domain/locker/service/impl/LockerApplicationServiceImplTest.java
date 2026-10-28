@@ -200,7 +200,7 @@ class LockerApplicationServiceImplTest {
         }
 
         private LockerApplication application(Long id, Long periodId, Long lockerId, LocalDateTime appliedAt) {
-            return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt);
+            return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt, false);
         }
 
         private List<Long> applicationIds(List<LockerApplicationResult> results) {
@@ -464,7 +464,8 @@ class LockerApplicationServiceImplTest {
                 application.getLockerPeriodId(),
                 application.getMemberId(),
                 application.getLockerId(),
-                application.getAppliedAt()
+                application.getAppliedAt(),
+                application.isCanceled()
             );
         }
 
