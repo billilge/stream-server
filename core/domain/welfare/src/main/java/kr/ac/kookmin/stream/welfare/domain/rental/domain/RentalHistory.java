@@ -35,6 +35,20 @@ public class RentalHistory {
         return new RentalHistory(null, item.getId(), memberId, null, null, status, rentedCount, appliedAt, rentAt, returnedAt);
     }
 
+    /**
+     * 관리자가 현장에서 처리한 대여를 대신 등록한다. 이미 물건을 건네준 걸 사후 기록하는 용도라 상태 선택을
+     * 받지 않는다 — {@link #create}와 같은 기준으로 대여품은 RENTAL, 소모품은 RETURNED로 바로 시작한다.
+     * 처리자(workerId)는 호출한 관리자가 아니라 폼에서 직접 고른 근무자다.
+     */
+    public static RentalHistory createByAdmin(
+        Item item, Long memberId, Long workerId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt
+    ) {
+        boolean returnable = item.getType() == ItemType.RENTAL;
+        RentalStatus status = returnable ? RentalStatus.RENTAL : RentalStatus.RETURNED;
+        LocalDateTime returnedAt = returnable ? null : appliedAt;
+        return new RentalHistory(null, item.getId(), memberId, workerId, null, status, rentedCount, appliedAt, rentAt, returnedAt);
+    }
+
     /** 반납 신청 처리. 운영진의 최종 확인 단계가 없어 신청 즉시 반납 완료로 전이한다. */
     public void markReturned(LocalDateTime returnedAt) {
         this.rentalStatus = RentalStatus.RETURNED;
