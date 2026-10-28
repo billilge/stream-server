@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -40,6 +42,27 @@ public interface LockerApplicationJpaRepository extends JpaRepository<LockerAppl
 
     boolean existsByLockerPeriodIdInAndLockerIdInAndIsCanceledFalse(
         Collection<Long> lockerPeriodIds, Collection<Long> lockerIds);
+
+    /**
+     * 운영진 신청 현황. 취소된 신청도 담아 운영진이 그 칸이 왜 비었는지 알 수 있게 한다.
+     */
+    @Query(value = """
+        SELECT a FROM LockerApplicationJpaEntity a
+        WHERE a.lockerPeriodId = :lockerPeriodId
+        AND (:filterByMember = false OR a.memberId IN :memberIds)
+        ORDER BY a.appliedAt DESC, a.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(a) FROM LockerApplicationJpaEntity a
+        WHERE a.lockerPeriodId = :lockerPeriodId
+        AND (:filterByMember = false OR a.memberId IN :memberIds)
+        """)
+    Page<LockerApplicationJpaEntity> search(
+        @Param("lockerPeriodId") Long lockerPeriodId,
+        @Param("filterByMember") boolean filterByMember,
+        @Param("memberIds") List<Long> memberIds,
+        Pageable pageable
+    );
 
     /**
      * 회차당 회원 신청은 유니크 제약으로 한 건까지만 존재한다.
