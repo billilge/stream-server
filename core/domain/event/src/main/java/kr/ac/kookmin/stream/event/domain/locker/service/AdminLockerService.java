@@ -50,6 +50,25 @@ public interface AdminLockerService {
     void changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status);
 
     /**
+     * 구역의 칸 배치 구조를 바꾼다. 아직 배치가 없는 구역이면 새로 만든다.
+     * <p>
+     * 배치 JSON은 해석하지 않고 그대로 저장한다. 칸 번호가 구역의 사물함과 맞는지도 보지 않는다 — 블록 종류와
+     * 필드는 운영진 콘솔과 앱만 아는 약속이라, 서버가 대조하려면 그 형식에 묶인다. 형식 버전은 서버가 박는다.
+     *
+     * @param layout root 블록 트리 JSON 원문
+     */
+    void changeSectionLayout(Long sectionId, String layout);
+
+    /**
+     * 구역 사진을 받은 목록으로 통째로 바꾼다. 배열 순서가 노출 순서다.
+     * <p>
+     * 사진은 배치와 같은 행에 있고 배치 쪽이 비어 있을 수 없어, 배치를 등록하지 않은 구역에는 사진만 올릴 수 없다.
+     * <p>
+     * 파일이 실제로 있는지는 이 서비스가 보지 않는다. 교차 도메인이라 {@code api:admin-api}의 UseCase가 확인한다.
+     */
+    void changeSectionPhotos(Long sectionId, List<Long> photoFileIds);
+
+    /**
      * 운영 회차의 신청 현황을 신청 일시 최신순으로 조회한다. 취소된 신청도 담는다.
      *
      * @param memberIds 회원으로 좁힐 때만 넘긴다. {@code null}이면 회차 전체를 본다
