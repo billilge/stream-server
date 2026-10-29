@@ -12,4 +12,7 @@ public interface FileService {
     void delete(Long fileId);
     Optional<File> findById(Long fileId);
     Map<Long, File> findAllByIdIn(List<Long> fileIds);
+
+    /** fileId로 저장된 파일 key를 꺼낸다. 없으면 FILE_NOT_FOUND. */
+    String resolveKey(Long fileId);
 }

@@ -2,9 +2,6 @@ package kr.ac.kookmin.stream.api.admin.welfare.item.usecase;
 
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
-import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.file.domain.File;
-import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminItemService;
@@ -24,18 +21,12 @@ public class AdminItemUseCase {
     private final AdminItemService adminItemService;
 
     public Item create(ItemCreateRequest request) {
-        String imageKey = resolveImageKey(request.imageFileId());
+        String imageKey = fileService.resolveKey(request.imageFileId());
         return adminItemService.create(request.toCommand(imageKey));
     }
 
     public Item update(Long itemId, ItemUpdateRequest request) {
-        String imageKey = request.imageFileId() == null ? null : resolveImageKey(request.imageFileId());
+        String imageKey = request.imageFileId() == null ? null : fileService.resolveKey(request.imageFileId());
         return adminItemService.update(itemId, request.toCommand(imageKey));
-    }
-
-    private String resolveImageKey(Long imageFileId) {
-        File file = fileService.findById(imageFileId)
-            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        return file.getFileKey();
     }
 }

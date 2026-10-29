@@ -72,6 +72,13 @@ class FileServiceImpl implements FileService {
             .collect(Collectors.toMap(File::getId, Function.identity()));
     }
 
+    @Override
+    public String resolveKey(Long fileId) {
+        return fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND))
+            .getFileKey();
+    }
+
     private String generateFileKey(String originalName) {
         String extension = FileUploadPolicy.extractExtension(originalName);
         String key = UUID.randomUUID().toString();
