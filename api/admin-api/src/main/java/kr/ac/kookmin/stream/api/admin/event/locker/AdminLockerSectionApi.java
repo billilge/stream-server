@@ -70,7 +70,6 @@ public interface AdminLockerSectionApi {
         LockerStatusChangeRequest request
     );
 
-    /** 구역의 칸 배치 구조를 바꾼다. */
     @Operation(summary = "사물함 구역 칸 배치 수정",
         description = "구역의 칸 배치 구조(layout)를 바꾼다. 배치를 아직 등록하지 않은 구역이면 이 요청이 첫 등록이다. "
             + "보낸 JSON은 해석하지 않고 그대로 저장하며, 칸 번호가 구역의 사물함과 맞는지도 보지 않는다 — "
@@ -85,7 +84,6 @@ public interface AdminLockerSectionApi {
         LockerSectionLayoutUpdateRequest request
     );
 
-    /** 구역 사진을 통째로 바꾼다. */
     @Operation(summary = "사물함 구역 사진 수정",
         description = "구역 사진을 보낸 목록으로 통째로 바꾼다. 배열 순서가 노출 순서이고, 한 장 이상이어야 한다. "
             + "지울 사진은 목록에서 빼고 남길 사진까지 함께 보낸다 — 빠진 사진은 연결만 끊기고 파일 자체는 지워지지 않는다. "
