@@ -14,9 +14,4 @@ public record EventManageDetail(
     List<EventQuestion> questions,
     long applicantCount
 ) {
-
-    /** 행사 이미지 id. 이미지가 없으면 {@code null}이 아니라 빈 목록이다. */
-    public List<Long> imageIds() {
-        return event.getImageIds() == null ? List.of() : event.getImageIds();
-    }
 }

@@ -23,6 +23,10 @@ public class EventQuestion {
     /** 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙이는지. 학생 앱 노출·답변 저장은 아직 없다(후속 작업) */
     private boolean otherOptionAllowed;
 
+    /**
+     * DB에 저장된 값으로 질문을 복원한다. 선택지 목록이 없으면 빈 목록으로 바꿔 둔다. 도메인 안에서는 목록이 항상 있다고 보고
+     * null을 확인하지 않는다.
+     */
     public static EventQuestion of(
         Long id,
         Long eventId,
@@ -34,7 +38,8 @@ public class EventQuestion {
         boolean otherOptionAllowed
     ) {
         return new EventQuestion(
-            id, eventId, questionText, questionType, required, displayOrder, options, otherOptionAllowed
+            id, eventId, questionText, questionType, required, displayOrder, options == null ? List.of() : options,
+            otherOptionAllowed
         );
     }
 

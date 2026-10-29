@@ -31,6 +31,8 @@ public class Event {
     /**
      * DB에 저장된 값으로 행사를 복원한다. 기간·모집 값은 표준 생성자로 만들어 검증하지 않는다. 저장값은 등록·수정 때 이미
      * 검증했고, {@code event_end_at}이 NULL인 기존 행이 있어 검증하면 조회가 깨진다.
+     * <p>
+     * 이미지 목록이 없으면 빈 목록으로 바꿔 둔다. 도메인 안에서는 목록이 항상 있다고 보고 null을 확인하지 않는다.
      */
     public static Event of(
         Long id,
@@ -51,8 +53,8 @@ public class Event {
     ) {
         return new Event(
             id, title, description, place, new EventPeriod(eventStartAt, eventEndAt),
-            new EventPeriod(applyStartAt, applyEndAt), new RecruitPolicy(recruitType, capacity), imageIds,
-            feePaidOnly, published, createdBy, updatedAt
+            new EventPeriod(applyStartAt, applyEndAt), new RecruitPolicy(recruitType, capacity),
+            imageIds == null ? List.of() : imageIds, feePaidOnly, published, createdBy, updatedAt
         );
     }
 
@@ -156,7 +158,7 @@ public class Event {
      * 대표 이미지 파일 id. 이미지 목록의 첫 장을 대표로 쓴다. 목록·신청 내역이 같은 장을 보여야 하므로 도메인에 둔다.
      */
     public Long thumbnailFileId() {
-        return imageIds == null || imageIds.isEmpty() ? null : imageIds.getFirst();
+        return imageIds.isEmpty() ? null : imageIds.getFirst();
     }
 
     /**
