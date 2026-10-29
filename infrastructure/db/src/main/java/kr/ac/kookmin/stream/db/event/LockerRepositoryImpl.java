@@ -119,6 +119,11 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public void saveLayout(LockerSectionLayout sectionLayout) {
+        lockerSectionLayoutJpaRepository.save(LockerSectionLayoutJpaEntity.from(sectionLayout));
+    }
+
+    @Override
     public List<Locker> findAllLockers() {
         return lockerJpaRepository.findAllByIsDeletedFalse().stream()
             .map(LockerJpaEntity::toDomain)
