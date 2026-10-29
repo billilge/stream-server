@@ -21,11 +21,11 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "대여 관리", description = "운영진 대여·반납 현황 조회, 임의 기록 추가")
 public interface AdminRentalApi {
 
-    /** 대여·반납 현황. 상태로 거르고(OVERDUE 포함) 대여자 이름·학번으로 검색하며, 신청순으로 페이지 단위 조회한다. */
+    /** 대여·반납 현황. 상태로 거르고 대여자 이름·학번으로 검색하며, 신청순으로 페이지 단위 조회한다. */
     @Operation(summary = "대여·반납 현황 조회",
         description = "모든 대여 기록을 신청 시각 내림차순으로 페이지 단위로 조회한다. keyword는 대여자 이름·학번 검색, "
-            + "rentalStatus(PENDING, CONFIRMED, RENTAL, OVERDUE, RETURN_PENDING, RETURN_CONFIRMED, RETURNED, CANCEL, "
-            + "REJECTED)는 상태 필터이며 둘을 함께 쓸 수 있다. OVERDUE(연체)는 별도 조회 없이 이 필터로 본다.")
+            + "rentalStatus(PENDING, CONFIRMED, RENTAL, RETURN_PENDING, RETURN_CONFIRMED, RETURNED, CANCEL, "
+            + "REJECTED)는 상태 필터이며 둘을 함께 쓸 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<PageResponse<AdminRentalHistoryResponse>> getRentalHistories(
         AdminApiUser apiUser,
