@@ -13,7 +13,6 @@ public record EventUpdateCommand(
     EventPeriod eventPeriod,
     EventPeriod applyPeriod,
     RecruitPolicy recruitPolicy,
-    boolean feePaidOnly,
     List<Long> imageIds,
     List<EventQuestionCommand> questions,
     LocalDateTime expectedUpdatedAt

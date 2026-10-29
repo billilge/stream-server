@@ -21,8 +21,6 @@ public class Event {
     private EventPeriod applyPeriod;
     private RecruitPolicy recruitPolicy;
     private List<Long> imageIds;
-    /** 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업) */
-    private boolean feePaidOnly;
     private boolean published;
     private Long createdBy;
     /** 마지막 수정 시각. DB가 채우며, 운영진 동시 수정 감지에 쓴다 */
@@ -53,8 +51,8 @@ public class Event {
     ) {
         return new Event(
             id, title, description, place, new EventPeriod(eventStartAt, eventEndAt),
-            new EventPeriod(applyStartAt, applyEndAt), new RecruitPolicy(recruitType, capacity),
-            imageIds == null ? List.of() : imageIds, feePaidOnly, published, createdBy, updatedAt
+            new EventPeriod(applyStartAt, applyEndAt), new RecruitPolicy(recruitType, capacity, feePaidOnly),
+            imageIds == null ? List.of() : imageIds, published, createdBy, updatedAt
         );
     }
 
@@ -71,7 +69,6 @@ public class Event {
             command.applyPeriod(),
             command.recruitPolicy(),
             command.imageIds(),
-            command.feePaidOnly(),
             false,
             createdBy,
             null
@@ -89,7 +86,6 @@ public class Event {
         this.applyPeriod = command.applyPeriod();
         this.recruitPolicy = command.recruitPolicy();
         this.imageIds = command.imageIds();
-        this.feePaidOnly = command.feePaidOnly();
     }
 
     // 기간·모집 값을 VO로 묶기 전부터 쓰던 getter다. 호출부가 VO 구조를 몰라도 되도록 남겨 둔다
@@ -115,6 +111,10 @@ public class Event {
 
     public int getCapacity() {
         return recruitPolicy.capacity();
+    }
+
+    public boolean isFeePaidOnly() {
+        return recruitPolicy.feePaidOnly();
     }
 
     /**

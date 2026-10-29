@@ -3,18 +3,20 @@ package kr.ac.kookmin.stream.event.domain.event.domain;
 import kr.ac.kookmin.stream.common.BusinessException;
 
 /**
- * 모집 방식과 정원. 정원은 선착순 모집에만 의미가 있어 두 값을 함께 다룬다.
+ * 모집 조건. 누가(신청 자격) 어떤 방식으로 몇 명까지(모집 방식·정원) 신청할 수 있는지를 함께 다룬다. 정원은 선착순 모집에만
+ * 의미가 있다.
  * <p>
  * 선착순 정원이 1 이상이어야 한다는 규칙은 {@link #of}에서 검증하고, 상시 모집은 정원을 0으로 맞춘다. DB에서 복원할
  * 때는 저장된 값을 그대로 표준 생성자로 만든다.
  *
- * @param capacity 선착순 모집의 정원. 상시 모집이면 의미 없는 값 0이다
+ * @param capacity    선착순 모집의 정원. 상시 모집이면 의미 없는 값 0이다
+ * @param feePaidOnly 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업)
  */
-public record RecruitPolicy(RecruitType type, int capacity) {
+public record RecruitPolicy(RecruitType type, int capacity, boolean feePaidOnly) {
 
-    public static RecruitPolicy of(RecruitType type, Integer capacity) {
+    public static RecruitPolicy of(RecruitType type, Integer capacity, boolean feePaidOnly) {
         validateCapacity(type, capacity);
-        return new RecruitPolicy(type, type == RecruitType.FIRST_COME ? capacity : 0);
+        return new RecruitPolicy(type, type == RecruitType.FIRST_COME ? capacity : 0, feePaidOnly);
     }
 
     /**

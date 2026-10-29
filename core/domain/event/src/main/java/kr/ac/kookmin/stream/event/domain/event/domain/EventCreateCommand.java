@@ -9,7 +9,6 @@ public record EventCreateCommand(
     EventPeriod eventPeriod,
     EventPeriod applyPeriod,
     RecruitPolicy recruitPolicy,
-    boolean feePaidOnly,
     List<Long> imageIds,
     List<EventQuestionCommand> questions
 ) {

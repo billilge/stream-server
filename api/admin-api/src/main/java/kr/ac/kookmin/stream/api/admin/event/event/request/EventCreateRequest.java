@@ -76,8 +76,7 @@ public record EventCreateRequest(
             place,
             EventPeriod.of(eventStartAt, eventEndAt),
             EventPeriod.of(applyStartAt, applyEndAt),
-            RecruitPolicy.of(recruitType, capacity),
-            feePaidOnly,
+            RecruitPolicy.of(recruitType, capacity, feePaidOnly),
             imageIds.stream().distinct().toList(),
             questions.stream().map(EventQuestionRequest::toCommand).toList()
         );

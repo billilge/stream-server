@@ -18,25 +18,25 @@ class RecruitPolicyTest {
     @Test
     @DisplayName("선착순인데 정원이 없으면 거부한다")
     void firstComeWithoutCapacity() {
-        assertRejected(() -> RecruitPolicy.of(RecruitType.FIRST_COME, null));
+        assertRejected(() -> RecruitPolicy.of(RecruitType.FIRST_COME, null, false));
     }
 
     @Test
     @DisplayName("선착순인데 정원이 0명이면 거부한다")
     void firstComeWithZeroCapacity() {
-        assertRejected(() -> RecruitPolicy.of(RecruitType.FIRST_COME, 0));
+        assertRejected(() -> RecruitPolicy.of(RecruitType.FIRST_COME, 0, false));
     }
 
     @Test
     @DisplayName("선착순 정원은 1명부터 허용한다")
     void firstComeWithOneCapacity() {
-        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.FIRST_COME, 1));
+        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.FIRST_COME, 1, false));
     }
 
     @Test
     @DisplayName("상시 모집은 정원을 보지 않는다")
     void openRecruitIgnoresCapacity() {
-        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.OPEN, null));
-        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.OPEN, -1));
+        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.OPEN, null, false));
+        assertDoesNotThrow(() -> RecruitPolicy.of(RecruitType.OPEN, -1, false));
     }
 }

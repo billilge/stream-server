@@ -181,7 +181,7 @@ class EventTest {
             return new EventCreateCommand(
                 "체육대회", "학과 대항 체육대회", "종합운동장",
                 EventPeriod.of(LocalDateTime.of(2026, 11, 1, 10, 0), LocalDateTime.of(2026, 11, 1, 18, 0)),
-                EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity), true,
+                EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity, true),
                 List.of(31L, 32L), List.of()
             );
         }
@@ -227,7 +227,7 @@ class EventTest {
                 "체육대회(변경)", "장소가 바뀌었습니다", "미래관 대강당",
                 EventPeriod.of(LocalDateTime.of(2026, 11, 2, 10, 0), LocalDateTime.of(2026, 11, 2, 18, 0)),
                 EventPeriod.of(APPLY_START_AT.plusDays(1), APPLY_END_AT.plusDays(1)),
-                RecruitPolicy.of(recruitType, capacity), true, List.of(40L), List.of(), LocalDateTime.now()
+                RecruitPolicy.of(recruitType, capacity, true), List.of(40L), List.of(), LocalDateTime.now()
             );
         }
 

@@ -66,7 +66,7 @@ class AdminEventServiceImplTest {
         RecruitType recruitType, Integer capacity, List<EventQuestionCommand> questions) {
         return new EventCreateCommand(
             "체육대회", "설명", "종합운동장", EventPeriod.of(EVENT_START_AT, EVENT_END_AT),
-            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity), false, List.of(31L),
+            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity, false), List.of(31L),
             questions
         );
     }
@@ -75,7 +75,7 @@ class AdminEventServiceImplTest {
         RecruitType recruitType, Integer capacity, List<EventQuestionCommand> questions, LocalDateTime expectedUpdatedAt) {
         return new EventUpdateCommand(
             "체육대회(변경)", "설명", "미래관", EventPeriod.of(EVENT_START_AT, EVENT_END_AT),
-            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity), true, List.of(40L),
+            EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity, true), List.of(40L),
             questions, expectedUpdatedAt
         );
     }

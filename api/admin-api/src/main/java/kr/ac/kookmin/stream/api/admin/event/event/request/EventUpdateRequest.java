@@ -84,8 +84,7 @@ public record EventUpdateRequest(
             place,
             EventPeriod.of(eventStartAt, eventEndAt),
             EventPeriod.of(applyStartAt, applyEndAt),
-            RecruitPolicy.of(recruitType, capacity),
-            feePaidOnly,
+            RecruitPolicy.of(recruitType, capacity, feePaidOnly),
             imageIds.stream().distinct().toList(),
             questions.stream().map(EventQuestionRequest::toCommand).toList(),
             LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), DateUtil.KST)
