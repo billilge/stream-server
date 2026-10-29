@@ -2,14 +2,11 @@ package kr.ac.kookmin.stream.api.admin.event.event.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.EventApplicant;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.EventApplicantPage;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
@@ -38,7 +35,7 @@ public record AdminEventApplicationListResponse(
             page.totalApplicationCount(),
             page.event().applicantCount(),
             questions.stream().map(Question::from).toList(),
-            PageResponse.from(page.applicants(), applicant -> Application.of(applicant, questions))
+            PageResponse.from(page.applicants(), Application::from)
         );
     }
 
@@ -63,21 +60,15 @@ public record AdminEventApplicationListResponse(
         List<Answer> answers
     ) {
 
-        public static Application of(EventApplicant applicant, List<EventQuestion> questions) {
+        public static Application from(EventApplicant applicant) {
             Member member = applicant.member();
-            Map<Long, EventApplicationAnswer> answerByQuestionId = applicant.answers().stream()
-                .collect(Collectors.toMap(
-                    EventApplicationAnswer::getEventQuestionId, Function.identity(), (first, second) -> first));
-
             return new Application(
                 applicant.application().getId(),
                 member == null ? null : member.getName(),
                 member == null ? null : member.getStudentId(),
                 applicant.application().getAppliedAt(),
                 applicant.application().getStatus(),
-                questions.stream()
-                    .map(question -> Answer.of(question, answerByQuestionId.get(question.getId())))
-                    .toList()
+                applicant.answeredQuestions().stream().map(Answer::from).toList()
             );
         }
     }
@@ -89,25 +80,14 @@ public record AdminEventApplicationListResponse(
 
         /**
          * 텍스트형은 입력한 답을, 선택형은 고른 선택지 문구를 쉼표로 이어 보여준다.
-         *
-         * @param answer 이 질문에 대한 답변. 답하지 않았으면 {@code null}
          */
-        public static Answer of(EventQuestion question, EventApplicationAnswer answer) {
-            return new Answer(question.getId(), answer == null ? null : displayTextOf(question, answer));
-        }
-
-        private static String displayTextOf(EventQuestion question, EventApplicationAnswer answer) {
+        public static Answer from(EventApplicationDetail.AnsweredQuestion answeredQuestion) {
+            EventQuestion question = answeredQuestion.question();
             if (!question.getQuestionType().isChoice()) {
-                return answer.getAnswerText();
+                return new Answer(question.getId(), answeredQuestion.answerText());
             }
-            List<Integer> selected = answer.getSelectedOptions() == null ? List.of() : answer.getSelectedOptions();
-            List<String> options = question.getOptions();
-            // 선택지가 바뀌어 범위를 벗어난 인덱스는 건너뛴다. 신청이 있으면 질문을 못 바꾸지만 과거 데이터에 대비한다
-            String text = selected.stream()
-                .filter(index -> index >= 0 && index < options.size())
-                .map(options::get)
-                .collect(Collectors.joining(", "));
-            return text.isEmpty() ? null : text;
+            String text = String.join(", ", question.resolveOptionTexts(answeredQuestion.selectedOptions()));
+            return new Answer(question.getId(), text.isEmpty() ? null : text);
         }
     }
 }

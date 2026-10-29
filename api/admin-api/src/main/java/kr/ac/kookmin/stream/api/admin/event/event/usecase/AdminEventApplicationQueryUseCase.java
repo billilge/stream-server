@@ -52,7 +52,8 @@ public class AdminEventApplicationQueryUseCase {
         return new EventApplicantPage(event, totalApplicationCount, applications.map(application -> new EventApplicant(
             application,
             members.get(application.getMemberId()),
-            answers.getOrDefault(application.getId(), List.of())
+            EventApplicationDetail.AnsweredQuestion.listOf(
+                event.questions(), answers.getOrDefault(application.getId(), List.of()))
         )));
     }
 

@@ -76,6 +76,17 @@ public class EventQuestion {
             && Objects.equals(options, other.options);
     }
 
+    /**
+     * 고른 선택지의 0부터 시작하는 순서 번호를 선택지 문구로 바꾼다. 선택지가 바뀌어 범위를 벗어난 번호는 건너뛴다. 신청이
+     * 있으면 질문을 못 바꾸지만 과거 데이터에 대비한다.
+     */
+    public List<String> resolveOptionTexts(List<Integer> selectedOptions) {
+        return selectedOptions.stream()
+            .filter(index -> index >= 0 && index < options.size())
+            .map(options::get)
+            .toList();
+    }
+
     private static void validateOptions(EventQuestionCommand command) {
         if (command.questionType().isChoice() && (command.options() == null || command.options().isEmpty())) {
             throw new BusinessException(EventErrorCode.EVENT_INVALID_QUESTION);

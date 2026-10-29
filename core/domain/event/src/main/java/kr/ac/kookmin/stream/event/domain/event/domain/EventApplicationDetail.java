@@ -34,13 +34,6 @@ public record EventApplicationDetail(
         List<EventQuestion> questions,
         List<EventApplicationAnswer> answers
     ) {
-        // 질문당 답변은 한 건이지만, 과거 데이터가 어긋나더라도 조회가 깨지지 않도록 먼저 들어온 답변을 남긴다
-        Map<Long, EventApplicationAnswer> answerByQuestionId = answers.stream()
-            .collect(Collectors.toMap(
-                EventApplicationAnswer::getEventQuestionId,
-                Function.identity(),
-                (first, second) -> first));
-
         return new EventApplicationDetail(
             event.getId(),
             event.getTitle(),
@@ -49,9 +42,7 @@ public record EventApplicationDetail(
             event.getEventStartAt(),
             application.getAppliedAt(),
             application.getCanceledAt(),
-            questions.stream()
-                .map(question -> AnsweredQuestion.of(question, answerByQuestionId.get(question.getId())))
-                .toList()
+            AnsweredQuestion.listOf(questions, answers)
         );
     }
 
@@ -61,18 +52,35 @@ public record EventApplicationDetail(
     public record AnsweredQuestion(EventQuestion question, String answerText, List<Integer> selectedOptions) {
 
         /**
+         * 행사의 질문 전체에 한 신청의 답변을 짝짓는다. 신청 상세와 운영진 신청 현황 표가 같은 규칙을 쓰도록 한곳에 둔다.
+         *
+         * @param questions 행사의 질문 목록. 표시 순서대로 들어온 순서를 그대로 유지한다
+         * @param answers   한 신청에 저장된 답변. 신청 시 빈 답변은 저장되지 않으므로 질문보다 적을 수 있다
+         */
+        public static List<AnsweredQuestion> listOf(
+            List<EventQuestion> questions,
+            List<EventApplicationAnswer> answers
+        ) {
+            // 질문당 답변은 한 건이지만, 과거 데이터가 어긋나더라도 조회가 깨지지 않도록 먼저 들어온 답변을 남긴다
+            Map<Long, EventApplicationAnswer> answerByQuestionId = answers.stream()
+                .collect(Collectors.toMap(
+                    EventApplicationAnswer::getEventQuestionId,
+                    Function.identity(),
+                    (first, second) -> first));
+
+            return questions.stream()
+                .map(question -> of(question, answerByQuestionId.get(question.getId())))
+                .toList();
+        }
+
+        /**
          * @param answer 이 질문에 대한 답변. 답하지 않은 선택 질문이면 {@code null}이다
          */
         public static AnsweredQuestion of(EventQuestion question, EventApplicationAnswer answer) {
             if (answer == null) {
                 return new AnsweredQuestion(question, null, List.of());
             }
-            List<Integer> selectedOptions = answer.getSelectedOptions();
-            return new AnsweredQuestion(
-                question,
-                answer.getAnswerText(),
-                selectedOptions == null ? List.of() : selectedOptions
-            );
+            return new AnsweredQuestion(question, answer.getAnswerText(), answer.getSelectedOptions());
         }
     }
 }

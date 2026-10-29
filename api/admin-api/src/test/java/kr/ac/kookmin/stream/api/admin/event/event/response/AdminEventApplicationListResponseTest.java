@@ -13,6 +13,7 @@ import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -51,7 +52,8 @@ class AdminEventApplicationListResponseTest {
     private static EventApplicant applicant(Member member, List<EventApplicationAnswer> answers) {
         EventApplication application =
             EventApplication.of(11L, 15L, 101L, EventApplicationStatus.APPLIED, APPLIED_AT, null);
-        return new EventApplicant(application, member, answers);
+        return new EventApplicant(application, member,
+            EventApplicationDetail.AnsweredQuestion.listOf(List.of(PHONE, ATTEND, SPORTS), answers));
     }
 
     private static AdminEventApplicationListResponse responseOf(EventApplicant applicant) {
