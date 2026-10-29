@@ -3,8 +3,10 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryRepository;
@@ -50,6 +52,12 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
         return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.RENTAL)
             .map(RentalHistoryJpaEntity::toDomain);
+    }
+
+    @Override
+    public RentalHistory getRentalToReturn(Long id, Long memberId) {
+        return findRentalToReturn(id, memberId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
     }
 
     @Override
