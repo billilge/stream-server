@@ -2,8 +2,6 @@ package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ac.kookmin.stream.common.PageOffset;
-import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
@@ -45,12 +43,4 @@ public interface RentalHistoryService {
      * 호출한 관리자가 아니라 폼에서 고른 근무자다.
      */
     RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
-
-    /**
-     * 모든 회원의 대여 이력을 신청 시각 내림차순으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
-     *
-     * @param status    대여 상태. null이면 전체
-     * @param memberIds 대상 회원 id 목록. null이면 회원 필터 없음
-     */
-    PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset);
 }

@@ -9,7 +9,7 @@ import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
-import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
+import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminRentalHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminRentalSearchUseCase {
 
-    private final RentalHistoryService rentalHistoryService;
+    private final AdminRentalHistoryService adminRentalHistoryService;
     private final MemberService memberService;
 
     public PageResult<AdminRentalHistoryResponse> search(RentalStatus status, String keyword, PageOffset pageOffset) {
@@ -32,7 +32,7 @@ public class AdminRentalSearchUseCase {
             }
         }
 
-        PageResult<RentalRecord> result = rentalHistoryService.search(status, memberIds, pageOffset);
+        PageResult<RentalRecord> result = adminRentalHistoryService.search(status, memberIds, pageOffset);
 
         List<Long> resultMemberIds = result.content().stream().map(record -> record.history().getMemberId()).distinct().toList();
         Map<Long, Member> memberMap = memberService.getMapByIds(resultMemberIds);

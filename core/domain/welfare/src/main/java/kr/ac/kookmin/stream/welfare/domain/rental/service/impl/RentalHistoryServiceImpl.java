@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kr.ac.kookmin.stream.common.PageOffset;
-import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
@@ -74,14 +72,6 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     @Transactional
     public RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
         return rentalHistoryRepository.save(RentalHistory.create(item, memberId, workerId, count, appliedAt, rentAt));
-    }
-
-    // 단일 조회라 트랜잭션이 필요 없다. 페이지 내용만큼만 물품을 모아 짝짓는다(toRecords와 같은 이유).
-    @Override
-    public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
-        PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
-        Map<Long, Item> itemsByItemId = findItemsByItemId(result.content());
-        return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {
