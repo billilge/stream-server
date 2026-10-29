@@ -68,6 +68,10 @@ public class Member {
         return phoneNumber != null;
     }
 
+    public boolean hasCouncilDepartment() {
+        return councilDepartment != null;
+    }
+
     // 회원이 바꾼 전화번호로 갱신한다. 바뀐 값이 있으면 true를 돌려준다
     public boolean updatePhoneNumber(String phoneNumber) {
         if (Objects.equals(this.phoneNumber, phoneNumber)) {

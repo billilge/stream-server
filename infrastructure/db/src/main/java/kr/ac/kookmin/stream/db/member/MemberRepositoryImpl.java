@@ -51,6 +51,13 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public List<Member> findAllWithCouncilDepartment() {
+        return memberJpaRepository.findAllWithCouncilDepartment().stream()
+            .map(MemberJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public Member save(Member member) {
         try {
             // 동시 가입으로 중복 검사를 함께 통과한 경우 유니크 인덱스 위반을 이 자리에서 잡으려면 바로 반영해야 한다

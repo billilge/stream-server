@@ -10,6 +10,8 @@ public interface MemberRepository {
     boolean existsByPhoneNumber(String phoneNumber);
     List<Member> findAllByIds(List<Long> ids);
     List<Long> searchIdsByKeyword(String keyword);
+    // 이름, 같은 이름이면 학번 오름차순
+    List<Member> findAllWithCouncilDepartment();
     Member save(Member member);
     void clearFcmTokenOfOthers(Long memberId, String fcmToken);
 }
