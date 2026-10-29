@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
+import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
@@ -40,9 +41,7 @@ public interface AdminRentalApi {
             + "차감한다(소모품은 RETURNED, 대여품은 RENTAL로 시작). 근무자(workerId)는 호출한 관리자가 아니라 "
             + "폼에서 고른 값이다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
-    @ApiErrorCode(
-        type = RentalErrorCode.class,
-        codes = {"ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK", "MEMBER_NOT_FOUND", "WORKER_NOT_FOUND"}
-    )
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
     ApiResponse<AdminRentalHistoryResponse> createRentalRecord(AdminApiUser apiUser, AdminRentalRecordCreateRequest request);
 }

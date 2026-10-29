@@ -1,15 +1,12 @@
 package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
-import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.LockExecutor;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
@@ -35,29 +32,16 @@ public class AdminRentalRecordCreateUseCase {
     private final RentalHistoryService rentalHistoryService;
 
     public AdminRentalHistoryResponse create(AdminRentalRecordCreateRequest request) {
-        CreatedRental createdRental = lockExecutor.executeOptimistic(() -> {
-            Member member = findMemberOrThrow(request.memberId(), RentalErrorCode.MEMBER_NOT_FOUND);
-            findMemberOrThrow(request.workerId(), RentalErrorCode.WORKER_NOT_FOUND);
+        return lockExecutor.executeOptimistic(() -> {
+            Member member = memberService.getById(request.memberId());
+            memberService.getById(request.workerId());
 
             Item item = itemService.decreaseStock(request.itemId(), FIXED_COUNT);
             RentalHistory history = rentalHistoryService.create(
                 item, request.memberId(), request.workerId(), FIXED_COUNT,
                 LocalDateTime.now(), request.rentAt()
             );
-            return new CreatedRental(history, item, member);
+            return AdminRentalHistoryResponse.from(new RentalRecord(history, item), member);
         });
-
-        return AdminRentalHistoryResponse.from(
-            new RentalRecord(createdRental.history(), createdRental.item()), createdRental.member()
-        );
-    }
-
-    private Member findMemberOrThrow(Long memberId, RentalErrorCode errorCode) {
-        return memberService.findAllByIds(List.of(memberId)).stream()
-            .findFirst()
-            .orElseThrow(() -> new BusinessException(errorCode));
-    }
-
-    private record CreatedRental(RentalHistory history, Item item, Member member) {
     }
 }
