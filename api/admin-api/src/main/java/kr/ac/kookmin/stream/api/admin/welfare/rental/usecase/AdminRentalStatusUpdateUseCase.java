@@ -41,19 +41,17 @@ public class AdminRentalStatusUpdateUseCase {
             RentalStatus previousStatus = current.history().getRentalStatus();
             Item item = current.item();
 
-            boolean consumableAutoComplete = requestedStatus == RentalStatus.CONFIRMED
+            boolean isConsumable = requestedStatus == RentalStatus.CONFIRMED
                 && item != null && item.getType() == ItemType.CONSUMABLE;
-            RentalStatus effectiveStatus = consumableAutoComplete ? RentalStatus.RETURNED : requestedStatus;
+            RentalStatus newStatus = isConsumable ? RentalStatus.RETURNED : requestedStatus;
 
-            RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, effectiveStatus, workerId);
+            RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, newStatus, workerId);
 
-            if (shouldRestock(previousStatus, effectiveStatus, item)) {
+            if (shouldRestock(previousStatus, newStatus, item)) {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
             }
 
-            Member renter = memberService.findAllByIds(List.of(history.getMemberId())).stream()
-                .findFirst()
-                .orElse(null);
+            Member renter = memberService.getMapByIds(List.of(history.getMemberId())).get(history.getMemberId());
             return AdminRentalHistoryResponse.from(new RentalRecord(history, item), renter);
         });
     }

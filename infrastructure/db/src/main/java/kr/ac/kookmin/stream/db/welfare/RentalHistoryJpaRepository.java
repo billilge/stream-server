@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +22,7 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
         @Param("status") RentalStatus status
     );
 
-    List<RentalHistoryJpaEntity> findAllByRentalStatus(RentalStatus rentalStatus);
-
-    Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatus(Long id, Long memberId, RentalStatus rentalStatus);
-
-    Optional<RentalHistoryJpaEntity> findByIdAndMemberIdAndRentalStatusIn(Long id, Long memberId, Collection<RentalStatus> rentalStatuses);
+    List<RentalHistoryJpaEntity> findAllByRentalStatusIn(Collection<RentalStatus> rentalStatuses);
 
     boolean existsByItemIdAndMemberIdAndRentalStatusNotIn(Long itemId, Long memberId, Collection<RentalStatus> excludedStatuses);
 

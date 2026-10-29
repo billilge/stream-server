@@ -47,7 +47,7 @@ public class RentalHistory {
     }
 
     /** 본인이 PENDING 상태로 걸어 둔 신청을 취소한다. 아직 운영진이 승인하기 전이라 재고를 그대로 되돌릴 수 있다. */
-    public void cancelByMember() {
+    public void cancel() {
         this.rentalStatus = RentalStatus.CANCEL;
     }
 

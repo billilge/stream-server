@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -16,8 +17,8 @@ public interface RentalHistoryRepository {
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
 
-    /** 모든 회원의 대여 이력 중 해당 상태인 것. 반납 알림 대상을 고를 때 쓴다. */
-    List<RentalHistory> findAllByStatus(RentalStatus status);
+    /** 모든 회원의 대여 이력 중 주어진 상태들 중 하나인 것. 반납 알림 대상을 고를 때 쓴다. */
+    List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses);
 
     Optional<RentalHistory> findById(Long id);
 
@@ -36,16 +37,4 @@ public interface RentalHistoryRepository {
 
     /** 이 물품에 아직 끝나지 않은(RETURNED/CANCEL/REJECTED가 아닌) 대여 기록이 있는지 확인한다. 물품 삭제 차단에 쓴다. */
     boolean existsActiveRentalForItem(Long itemId);
-
-    /** 반납 신청 대상 조회. 본인 소유가 아니거나 대여 중 상태가 아니면 빈 값이다(둘 다 RENTAL_NOT_FOUND로 처리). */
-    Optional<RentalHistory> findRentalToReturn(Long id, Long memberId);
-
-    /** 반납 신청 대상 조회. 본인 소유가 아니거나 대여 중 상태가 아니면 RENTAL_NOT_FOUND. */
-    RentalHistory getRentalToReturn(Long id, Long memberId);
-
-    /** 취소 대상 조회. 본인 소유가 아니거나 승인 대기(PENDING) 상태가 아니면 빈 값이다(둘 다 RENTAL_NOT_FOUND로 처리). */
-    Optional<RentalHistory> findPendingToCancel(Long id, Long memberId);
-
-    /** 취소 대상 조회. 본인 소유가 아니거나 승인 대기(PENDING) 상태가 아니면 RENTAL_NOT_FOUND. */
-    RentalHistory getPendingToCancel(Long id, Long memberId);
 }
