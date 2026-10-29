@@ -13,7 +13,7 @@ ALTER TABLE student_transfer_statuses
     ADD COLUMN reject_reason VARCHAR(255) NULL AFTER proof_image_key;
 
 -- 상태는 PENDING / PAID / REJECTED다. 한 번도 요청하지 않은 회원은 행이 없으므로 기본값 UNPAID를 없앤다.
--- DEFAULT를 남기면 INSERT가 status를 빠뜨려도 조용히 UNPAID로 들어간다(V10과 같은 이유). 기존 UNPAID 행은 V25가 정리한다.
+-- DEFAULT를 남기면 INSERT가 status를 빠뜨려도 조용히 UNPAID로 들어간다(V10과 같은 이유). 기존 UNPAID 행은 V23이 정리한다.
 ALTER TABLE student_transfer_statuses
     ALTER COLUMN status DROP DEFAULT;
 

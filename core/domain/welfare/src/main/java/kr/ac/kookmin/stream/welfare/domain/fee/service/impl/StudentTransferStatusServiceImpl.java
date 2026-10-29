@@ -35,7 +35,7 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
         studentTransferStatusRepository.findLatestByMemberId(memberId)
             .ifPresent(StudentTransferStatus::validateRequestable);
 
-        // 같은 회원의 동시 요청은 위 검사를 함께 통과할 수 있다. 그때는 진행 중 요청 유니크(V24)가 두 번째 저장을 막는다
+        // 같은 회원의 동시 요청은 위 검사를 함께 통과할 수 있다. 그때는 진행 중 요청 유니크(V22)가 두 번째 저장을 막는다
         StudentTransferStatus transferStatus = StudentTransferStatus.create(
             memberId, command.remainingSemesters().value(), command.proofImageKey(), amount);
         return studentTransferStatusRepository.save(transferStatus);

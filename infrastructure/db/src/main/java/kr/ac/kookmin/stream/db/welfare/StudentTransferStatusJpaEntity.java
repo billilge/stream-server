@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
  * 처리 권한자가 여러 명으로 늘어나면 동시 처리 경합을 막기 위해 @Version 도입을 검토한다.
  */
 @Entity
-// uk_student_transfer_statuses_active_member_id(V24)는 generated column active_member_id에 걸려 있다.
+// uk_student_transfer_statuses_active_member_id(V22)는 generated column active_member_id에 걸려 있다.
 // Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(
     name = "student_transfer_statuses",
