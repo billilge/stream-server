@@ -28,4 +28,5 @@ public interface MemberService {
     Set<Long> findSignedUpIds(List<Long> memberIds);
     void updateFcmToken(Long memberId, String fcmToken);
     void updatePhoneNumber(Long memberId, MemberPhoneNumberUpdateCommand command);
+    boolean isEmailUsedByOthers(Long memberId, String email);
 }

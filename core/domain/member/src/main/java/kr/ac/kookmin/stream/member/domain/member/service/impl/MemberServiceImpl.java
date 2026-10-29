@@ -119,6 +119,11 @@ class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Override
+    public boolean isEmailUsedByOthers(Long memberId, String email) {
+        return isEmailUsedByOthers(getById(memberId), email);
+    }
+
     // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
     private boolean isSignedUp(Member member) {
         return member.hasPhoneNumber() && memberTermService.hasAgreedRequiredTerms(member.getId());
@@ -138,6 +143,13 @@ class MemberServiceImpl implements MemberService {
         if (memberRepository.existsByPhoneNumber(phoneNumber)) {
             throw new BusinessException(MemberErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
         }
+    }
+
+    private boolean isEmailUsedByOthers(Member member, String email) {
+        if (email.equalsIgnoreCase(member.getEmail())) {
+            return false;
+        }
+        return memberRepository.existsByEmail(email);
     }
 
     private Member register(MemberProfileCommand command) {

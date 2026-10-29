@@ -36,6 +36,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public boolean existsByEmail(String email) {
+        return memberJpaRepository.existsByEmailAndIsDeletedFalse(email);
+    }
+
+    @Override
     public List<Member> findAllByIds(List<Long> ids) {
         if (ids.isEmpty()) {
             return List.of();

@@ -15,7 +15,8 @@ public enum MemberErrorCode implements ErrorCode {
     DEPARTMENT_NOT_ALLOWED(ErrorStatus.FORBIDDEN, "소프트웨어융합대학 학생만 이용할 수 있습니다."),
     REQUIRED_TERMS_NOT_AGREED(ErrorStatus.BAD_REQUEST, "필수 약관에 모두 동의해 주세요."),
     ALREADY_SIGNED_UP(ErrorStatus.CONFLICT, "이미 회원가입을 마쳤습니다."),
-    PHONE_NUMBER_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 전화번호입니다.");
+    PHONE_NUMBER_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
+    EMAIL_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
 
     private final int status;
     private final String message;
