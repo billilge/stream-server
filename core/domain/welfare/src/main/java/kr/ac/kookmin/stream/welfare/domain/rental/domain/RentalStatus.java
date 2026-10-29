@@ -50,4 +50,8 @@ public enum RentalStatus {
     public static Set<RentalStatus> finishedStatuses() {
         return FINISHED_STATUSES;
     }
+
+    public static Set<RentalStatus> awaitingReturnStatuses() {
+        return AWAITING_RETURN_STATUSES;
+    }
 }

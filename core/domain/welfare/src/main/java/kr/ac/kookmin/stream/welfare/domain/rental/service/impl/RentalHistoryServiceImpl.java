@@ -3,7 +3,6 @@ package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -49,9 +48,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     // 전까지도 알림·목록에 계속 잡힌다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
-        List<RentalHistory> candidates = rentalHistoryRepository.findAllByStatusIn(
-            Set.of(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
-        );
+        List<RentalHistory> candidates = rentalHistoryRepository.findAllByStatusIn(RentalStatus.awaitingReturnStatuses());
         return toRecords(candidates).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
