@@ -49,7 +49,6 @@ public interface AdminArchiveApi {
     @ApiErrorCode(type = ArchiveErrorCode.class, codes = {"ARCHIVE_NOT_FOUND"})
     ApiResponse<AdminArchiveDetailResponse> getArchive(AdminApiUser apiUser, Long archiveId);
 
-    /** 아카이빙 등록. */
     @Operation(summary = "아카이빙 등록",
         description = "아카이빙을 새로 등록한다. 활동 사진은 한 장 이상이어야 하고 첫 장이 대표 이미지다. "
             + "당일 활동은 endDate를 생략한다 — 종료일을 주면 시작일보다 앞설 수 없다. "
@@ -61,7 +60,6 @@ public interface AdminArchiveApi {
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
     ApiResponse<Void> createArchive(AdminApiUser apiUser, ArchiveWriteRequest request);
 
-    /** 아카이빙 수정. 전체 필드를 통째로 바꾼다. */
     @Operation(summary = "아카이빙 수정",
         description = "아카이빙을 통째로 바꾼다. 보낸 값이 그대로 저장되므로 고치지 않을 필드도 함께 보내야 한다. "
             + "imageIds는 최종 사진 목록이고, relatedEventId를 null로 주면 행사 연결이 끊긴다. "
@@ -72,14 +70,12 @@ public interface AdminArchiveApi {
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
     ApiResponse<Void> updateArchive(AdminApiUser apiUser, Long archiveId, ArchiveWriteRequest request);
 
-    /** 아카이빙 삭제. 행은 남기고 표시만 바꾼다. */
     @Operation(summary = "아카이빙 삭제",
         description = "아카이빙을 삭제한다. 행은 남기고 표시만 바꿔 되살릴 수 있게 하며, 학생 앱 조회에서는 바로 빠진다. "
             + "이미 삭제된 아카이빙은 없는 것으로 본다.")
     @ApiErrorCode(type = ArchiveErrorCode.class, codes = {"ARCHIVE_NOT_FOUND"})
     ApiResponse<Void> deleteArchive(AdminApiUser apiUser, Long archiveId);
 
-    /** 슬랑제 페이지 노출 여부 일괄 변경. */
     @Operation(summary = "아카이빙 슬랑제 노출 여부 변경",
         description = "여러 아카이빙의 슬랑제 페이지 노출 여부를 한 번에 바꾼다. 목록의 체크박스 일괄 변경과 "
             + "행별 드롭다운 변경에 함께 쓰며, 행별 변경은 archiveIds에 하나만 담아 보낸다. "

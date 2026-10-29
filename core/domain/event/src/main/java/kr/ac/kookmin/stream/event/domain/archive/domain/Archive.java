@@ -46,9 +46,7 @@ public class Archive {
             exposed, relatedEventId, createdAt);
     }
 
-    /**
-     * 아카이빙을 새로 만든다. 등록 일시는 DB 기본값으로 채워져 저장 전에는 비어 있다.
-     */
+    /** 등록 일시는 DB 기본값으로 채워져 저장 전에는 비어 있다. */
     public static Archive create(ArchiveCreateCommand command) {
         validatePeriod(command.startDate(), command.endDate());
 

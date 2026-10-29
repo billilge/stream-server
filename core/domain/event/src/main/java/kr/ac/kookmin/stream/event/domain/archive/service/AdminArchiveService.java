@@ -24,21 +24,15 @@ public interface AdminArchiveService {
     PageResult<Archive> getArchives(String keyword, Boolean exposed, PageOffset pageOffset);
 
     /**
-     * 아카이빙을 새로 등록한다.
-     * <p>
      * 사진 파일과 연결할 행사가 실제로 있는지는 이 서비스가 보지 않는다. 교차 도메인이라
      * {@code api:admin-api}의 UseCase가 확인한다.
      */
     void create(ArchiveCreateCommand command);
 
-    /**
-     * 아카이빙을 통째로 바꾼다. 사진과 연결 행사도 받은 값으로 교체한다. 삭제된 아카이빙은 없는 것으로 본다.
-     */
+    /** 사진과 연결 행사도 받은 값으로 교체한다. 삭제된 아카이빙은 없는 것으로 본다. */
     void update(Long archiveId, ArchiveUpdateCommand command);
 
-    /**
-     * 아카이빙을 소프트 삭제한다. 학생 앱 조회에서 바로 빠진다.
-     */
+    /** 행은 남기고 표시만 바꾼다. 학생 앱 조회에서는 바로 빠진다. */
     void delete(Long archiveId);
 
     /**
