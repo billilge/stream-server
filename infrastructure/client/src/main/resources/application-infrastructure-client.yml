@@ -29,3 +29,24 @@ push:
   type: ${PUSH_TYPE:log}
   fcm:
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
+
+# SMTP 접속 정보(spring.mail.host 등)는 application.yml에 둔다. 이 파일 값이 우선해 여기 두면 덮어쓴다
+email:
+  type: ${EMAIL_TYPE:log}
+  smtp:
+    from: ${EMAIL_FROM:${spring.mail.username:}}
+    from-name: ${EMAIL_FROM_NAME:소프트웨어융합대학 학생회}
+
+spring:
+  mail:
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.connectiontimeout]": 3000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
+
+management:
+  health:
+    mail:
+      enabled: false

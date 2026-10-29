@@ -21,6 +21,9 @@ dependencies {
 
     implementation(libs.firebaseAdmin)
 
+    implementation(libs.springBootStarterMail)
+    implementation(libs.thymeleaf)
+
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)
     testRuntimeOnly(libs.junitPlatformLauncher)
