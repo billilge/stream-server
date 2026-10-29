@@ -1,7 +1,9 @@
 package kr.ac.kookmin.stream.internal.domain.schedule.service.impl;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -74,26 +76,32 @@ class AdminWorkScheduleServiceImpl implements AdminWorkScheduleService {
         }
     }
 
-    // 한 시간 칸에는 근무자 한 명만 들어간다. 근무자가 달라도 이미 있는 근무 시간과 겹치면 막고, 요청 안의 근무 시간끼리 겹쳐도 막는다.
+    // 한 시간 칸에는 근무자 한 명만 들어간다. 저장된 근무 시간 위에 요청한 근무 시간을 하나씩 올려 보며
+    // 먼저 올라간 것(저장된 것·앞선 요청)과 겹치면 막는다. 근무자가 달라도 해당한다.
     // 구간 겹침은 유니크 제약으로 막을 수 없어 저장 전에 확인한다(조회-후-삽입이라 동시 등록 구멍은 남는다)
     private void validateNotConflicted(List<WorkSchedule> targets) {
+        List<WorkSchedule> placed = new ArrayList<>(findSavedSchedulesOnSameDates(targets));
+        for (WorkSchedule target : targets) {
+            if (placed.stream().anyMatch(target::overlaps)) {
+                throw new BusinessException(WorkScheduleErrorCode.WORK_SCHEDULE_CONFLICT);
+            }
+            placed.add(target);
+        }
+    }
+
+    // 대상 근무일에 이미 저장된 근무 시간. 수정 대상의 원래 행은 자기 자신과 겹쳐 보이므로 뺀다
+    private List<WorkSchedule> findSavedSchedulesOnSameDates(List<WorkSchedule> targets) {
         Set<LocalDate> workDates = targets.stream()
             .map(WorkSchedule::getWorkDate)
             .collect(Collectors.toSet());
-        List<WorkSchedule> existing = workScheduleRepository.findAllByWorkDateIn(workDates);
+        Set<Long> targetIds = targets.stream()
+            .map(WorkSchedule::getId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
-        for (int i = 0; i < targets.size(); i++) {
-            WorkSchedule target = targets.get(i);
-            // 수정할 때는 수정 대상의 원래 행도 함께 조회되므로 같은 id는 빼고 본다
-            boolean overlapsExisting = existing.stream()
-                .filter(schedule -> !schedule.getId().equals(target.getId()))
-                .anyMatch(target::overlaps);
-            boolean overlapsRequested = targets.subList(i + 1, targets.size()).stream()
-                .anyMatch(target::overlaps);
-            if (overlapsExisting || overlapsRequested) {
-                throw new BusinessException(WorkScheduleErrorCode.WORK_SCHEDULE_CONFLICT);
-            }
-        }
+        return workScheduleRepository.findAllByWorkDateIn(workDates).stream()
+            .filter(saved -> !targetIds.contains(saved.getId()))
+            .toList();
     }
 
     private WorkSchedule getById(Long scheduleId) {
