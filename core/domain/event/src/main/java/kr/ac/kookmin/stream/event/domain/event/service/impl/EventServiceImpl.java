@@ -56,4 +56,9 @@ class EventServiceImpl implements EventService {
         LocalDateTime now = LocalDateTime.now();
         return EventDetail.of(event, eventRepository.countAppliedByEventId(eventId), now);
     }
+
+    @Override
+    public Event getByIdOrNull(Long eventId) {
+        return eventRepository.findById(eventId).orElse(null);
+    }
 }
