@@ -6,7 +6,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 
 // 대여 신청 시각(영업시간 10~17시, 점심시간 12~13시 제외, 이미 지난 시각 제외)을 검증한다.
-// fee 도메인의 FeeAmountCalculator/TossTransferLinkGenerator와 같은 패턴 — 상태 없는 순수 검증 로직은 정적 유틸로 둔다.
+// fee 도메인의 TossTransferLinkGenerator와 같은 패턴 — 상태 없는 순수 검증 로직은 정적 유틸로 둔다.
 public final class RentalTimeValidator {
 
     private static final LocalTime OPEN = LocalTime.of(10, 0);

@@ -7,9 +7,18 @@ public record FeeStatusUpdateResponse(
     Long studentTransferStatusId,
     Long memberId,
     String status,
-    LocalDateTime reviewedAt
+    String rejectReason,
+    LocalDateTime reviewedAt,
+    LocalDateTime confirmedAt
 ) {
-    public static FeeStatusUpdateResponse from(StudentTransferStatus request) {
-        return new FeeStatusUpdateResponse(request.getId(), request.getMemberId(), request.getStatus().name(), request.getReviewedAt());
+    public static FeeStatusUpdateResponse from(StudentTransferStatus transferStatus) {
+        return new FeeStatusUpdateResponse(
+            transferStatus.getId(),
+            transferStatus.getMemberId(),
+            transferStatus.getStatus().name(),
+            transferStatus.getRejectReason(),
+            transferStatus.getReviewedAt(),
+            transferStatus.getConfirmedAt()
+        );
     }
 }
