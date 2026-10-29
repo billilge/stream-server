@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 
 import java.util.List;
 import java.util.Map;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
@@ -20,7 +21,7 @@ public class AdminRentalSearchUseCase {
     private final RentalHistoryService rentalHistoryService;
     private final MemberService memberService;
 
-    public PageResult<AdminRentalRecordView> search(RentalStatus status, String keyword, PageOffset pageOffset) {
+    public PageResult<AdminRentalHistoryResponse> search(RentalStatus status, String keyword, PageOffset pageOffset) {
         List<Long> memberIds = null;
 
         if (keyword != null && !keyword.isBlank()) {
@@ -36,17 +37,6 @@ public class AdminRentalSearchUseCase {
         List<Long> resultMemberIds = result.content().stream().map(record -> record.history().getMemberId()).distinct().toList();
         Map<Long, Member> memberMap = memberService.getMapByIds(resultMemberIds);
 
-        List<Long> workerIds = result.content().stream()
-            .map(record -> record.history().getWorkerId())
-            .filter(workerId -> workerId != null)
-            .distinct()
-            .toList();
-        Map<Long, Member> workerMap = workerIds.isEmpty() ? Map.of() : memberService.getMapByIds(workerIds);
-
-        return result.map(record -> new AdminRentalRecordView(
-            record,
-            memberMap.get(record.history().getMemberId()),
-            workerMap.get(record.history().getWorkerId())
-        ));
+        return result.map(record -> AdminRentalHistoryResponse.from(record, memberMap.get(record.history().getMemberId())));
     }
 }

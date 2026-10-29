@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.LockExecutor;
@@ -26,25 +27,30 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminRentalRecordCreateUseCase {
 
+    // 등록 폼(RentalRecordFormPage)에 수량 입력란이 없어 항상 1건으로 등록한다.
+    private static final int FIXED_COUNT = 1;
+
     private final LockExecutor lockExecutor;
     private final MemberService memberService;
     private final ItemService itemService;
     private final RentalHistoryService rentalHistoryService;
 
-    public AdminRentalRecordView create(AdminRentalRecordCreateRequest request) {
-        Created created = lockExecutor.executeOptimistic(() -> {
+    public AdminRentalHistoryResponse create(AdminRentalRecordCreateRequest request) {
+        CreatedRental createdRental = lockExecutor.executeOptimistic(() -> {
             Member member = findMemberOrThrow(request.memberId(), RentalErrorCode.MEMBER_NOT_FOUND);
-            Member worker = findMemberOrThrow(request.workerId(), RentalErrorCode.WORKER_NOT_FOUND);
+            findMemberOrThrow(request.workerId(), RentalErrorCode.WORKER_NOT_FOUND);
 
-            Item item = itemService.decreaseStock(request.itemId(), request.countOrDefault());
-            RentalHistory history = rentalHistoryService.createByAdmin(
-                item, request.memberId(), request.workerId(), request.countOrDefault(),
+            Item item = itemService.decreaseStock(request.itemId(), FIXED_COUNT);
+            RentalHistory history = rentalHistoryService.create(
+                item, request.memberId(), request.workerId(), FIXED_COUNT,
                 LocalDateTime.now(DateUtil.KST), request.rentAt()
             );
-            return new Created(history, item, member, worker);
+            return new CreatedRental(history, item, member);
         });
 
-        return new AdminRentalRecordView(new RentalRecord(created.history(), created.item()), created.member(), created.worker());
+        return AdminRentalHistoryResponse.from(
+            new RentalRecord(createdRental.history(), createdRental.item()), createdRental.member()
+        );
     }
 
     private Member findMemberOrThrow(Long memberId, RentalErrorCode errorCode) {
@@ -53,6 +59,6 @@ public class AdminRentalRecordCreateUseCase {
             .orElseThrow(() -> new BusinessException(errorCode));
     }
 
-    private record Created(RentalHistory history, Item item, Member member, Member worker) {
+    private record CreatedRental(RentalHistory history, Item item, Member member) {
     }
 }

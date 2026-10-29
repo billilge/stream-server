@@ -1,11 +1,11 @@
 package kr.ac.kookmin.stream.api.admin.welfare.rental;
 
 import jakarta.validation.Valid;
+import java.util.function.Function;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalRecordCreateUseCase;
-import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalRecordView;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalSearchUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
@@ -37,10 +37,10 @@ public class AdminRentalController implements AdminRentalApi {
         @RequestParam(required = false) String rentalStatus,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<AdminRentalRecordView> result = adminRentalSearchUseCase.search(
+        PageResult<AdminRentalHistoryResponse> result = adminRentalSearchUseCase.search(
             RentalStatus.from(rentalStatus), keyword, pageParams.toOffset()
         );
-        return ApiResponse.success(PageResponse.from(result, AdminRentalHistoryResponse::from));
+        return ApiResponse.success(PageResponse.from(result, Function.identity()));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class AdminRentalController implements AdminRentalApi {
         AdminApiUser apiUser,
         @Valid @RequestBody AdminRentalRecordCreateRequest request
     ) {
-        AdminRentalRecordView view = adminRentalRecordCreateUseCase.create(request);
-        return ApiResponse.success(AdminRentalHistoryResponse.from(view));
+        AdminRentalHistoryResponse response = adminRentalRecordCreateUseCase.create(request);
+        return ApiResponse.success(response);
     }
 }

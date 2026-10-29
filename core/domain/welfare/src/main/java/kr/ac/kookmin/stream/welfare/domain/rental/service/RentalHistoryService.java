@@ -40,8 +40,11 @@ public interface RentalHistoryService {
     /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 
-    /** 대여 신청으로 새 이력을 만들고 저장한다. */
-    RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
+    /**
+     * 새 이력을 만들고 저장한다. workerId는 학생 본인 신청이면 null, 관리자가 현장에서 대신 등록한 것이면
+     * 호출한 관리자가 아니라 폼에서 고른 근무자다.
+     */
+    RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
 
     /**
      * 모든 회원의 대여 이력을 신청 시각 내림차순으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
@@ -50,10 +53,4 @@ public interface RentalHistoryService {
      * @param memberIds 대상 회원 id 목록. null이면 회원 필터 없음
      */
     PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset);
-
-    /**
-     * 관리자가 현장 기록을 대신 등록한다. 상태 선택 없이 {@link RentalHistory#createByAdmin}과 같은 기준으로
-     * 시작 상태가 정해진다. 처리자(workerId)는 호출한 관리자가 아니라 폼에서 고른 값이다.
-     */
-    RentalHistory createByAdmin(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
 }
