@@ -6,6 +6,9 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
 
+/**
+ * 학생 앱의 열린피드백 질문 조회·작성. 운영진의 회차 관리와 답변 작성·공개는 {@link AdminFeedbackService}가 맡는다.
+ */
 public interface FeedbackService {
 
     Feedback getById(Long id);

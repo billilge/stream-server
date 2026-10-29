@@ -12,6 +12,31 @@ public interface FeedbackRoundJpaRepository extends JpaRepository<FeedbackRoundJ
     @Query("SELECT r FROM FeedbackRoundJpaEntity r WHERE :now BETWEEN r.opensAt AND r.closesAt")
     Optional<FeedbackRoundJpaEntity> findOpenAt(@Param("now") LocalDateTime now);
 
+    Optional<FeedbackRoundJpaEntity> findFirstByAnswersPublishedAtIsNullAndOpensAtLessThanEqualOrderByOpensAtDesc(
+        LocalDateTime now);
+
+    Optional<FeedbackRoundJpaEntity> findFirstByAnswersPublishedAtIsNullAndOpensAtAfterOrderByOpensAtAsc(
+        LocalDateTime now);
+
+    @Query("""
+        SELECT r FROM FeedbackRoundJpaEntity r
+        WHERE (:year IS NULL OR r.year = :year)
+        ORDER BY r.year DESC, r.round DESC
+        """)
+    List<FeedbackRoundJpaEntity> findAllByYear(@Param("year") Integer year);
+
+    // 두 구간은 "내 시작이 상대 마감보다 이르고, 내 마감이 상대 시작보다 늦을 때" 겹친다
+    @Query("""
+        SELECT COUNT(r) > 0 FROM FeedbackRoundJpaEntity r
+        WHERE r.opensAt <= :closesAt AND r.closesAt >= :opensAt
+        """)
+    boolean existsOverlapping(
+        @Param("opensAt") LocalDateTime opensAt, @Param("closesAt") LocalDateTime closesAt);
+
+    // 그 연도에 회차가 없으면 null이 온다
+    @Query("SELECT MAX(r.round) FROM FeedbackRoundJpaEntity r WHERE r.year = :year")
+    Integer findMaxRoundOf(@Param("year") int year);
+
     @Query("SELECT DISTINCT r.year FROM FeedbackRoundJpaEntity r ORDER BY r.year DESC")
     List<Integer> findDistinctYears();
 
