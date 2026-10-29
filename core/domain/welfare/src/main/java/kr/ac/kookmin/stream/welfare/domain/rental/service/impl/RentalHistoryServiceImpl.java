@@ -3,10 +3,12 @@ package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -44,16 +46,12 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. RentalRecord.isReturnRequired()가 보는
     // 세 상태(RENTAL·RETURN_PENDING·RETURN_CONFIRMED)를 모두 봐야 반납 신청 후 운영진이 최종 확인하기
-    // 전까지도 알림·목록에 계속 잡힌다. 레포지토리에 "여러 상태" 전용 메서드를 새로 만드는 대신, 이미 있는
-    // 단일 상태 조회를 세 번 불러 합친다(관리자 "대여/반납 현황 조회"도 상태 하나로 필터하므로 그 단일
-    // 상태 메서드를 그대로 쓸 수 있다 — #172에서 이미 결정).
+    // 전까지도 알림·목록에 계속 잡힌다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
-        List<RentalHistory> candidates = Stream.of(
-                RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED
-            )
-            .flatMap(status -> rentalHistoryRepository.findAllByStatus(status).stream())
-            .toList();
+        List<RentalHistory> candidates = rentalHistoryRepository.findAllByStatusIn(
+            Set.of(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED)
+        );
         return toRecords(candidates).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
@@ -64,7 +62,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     @Override
     @Transactional
     public RentalHistory requestReturn(Long memberId, Long historyId) {
-        RentalHistory history = rentalHistoryRepository.getRentalToReturn(historyId, memberId);
+        RentalHistory history = getOwnedByStatus(historyId, memberId, RentalStatus.RENTAL);
         history.requestReturn();
         return rentalHistoryRepository.save(history);
     }
@@ -73,10 +71,18 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     // 우려가 없다). 재고(Item)는 다른 집합체라 완료된 이력을 돌려주고 호출부가 ItemService와 조합한다.
     @Override
     @Transactional
-    public RentalHistory cancelByMember(Long memberId, Long historyId) {
-        RentalHistory history = rentalHistoryRepository.getPendingToCancel(historyId, memberId);
-        history.cancelByMember();
+    public RentalHistory cancel(Long memberId, Long historyId) {
+        RentalHistory history = getOwnedByStatus(historyId, memberId, RentalStatus.PENDING);
+        history.cancel();
         return rentalHistoryRepository.save(history);
+    }
+
+    // requestReturn·cancel이 공유하는 "본인 소유 + 특정 상태" 조회. 둘 다 소유자가 아니거나 상태가 다르면
+    // 구분 없이 RENTAL_NOT_FOUND로 처리한다(존재는 하지만 남의 것이거나 상태가 안 맞는다는 걸 굳이 알리지 않는다).
+    private RentalHistory getOwnedByStatus(Long historyId, Long memberId, RentalStatus status) {
+        return rentalHistoryRepository.findById(historyId)
+            .filter(history -> history.getMemberId().equals(memberId) && history.getRentalStatus() == status)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
     }
 
     // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는

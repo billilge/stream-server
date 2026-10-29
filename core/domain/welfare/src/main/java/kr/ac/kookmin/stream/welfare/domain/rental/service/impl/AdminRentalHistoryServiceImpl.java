@@ -60,7 +60,7 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
 
     // 단일 조회라 트랜잭션이 필요 없다. 이력 존재 확인만 먼저 한다.
     @Override
-    public List<RentalStatusWorkerLog> getStatusWorkerLogs(Long historyId) {
+    public List<RentalStatusWorkerLog> getWorkerLogs(Long historyId) {
         if (rentalHistoryRepository.findById(historyId).isEmpty()) {
             throw new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND);
         }

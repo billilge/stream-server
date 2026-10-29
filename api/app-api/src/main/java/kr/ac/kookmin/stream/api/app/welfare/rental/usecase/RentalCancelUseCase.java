@@ -22,7 +22,7 @@ public class RentalCancelUseCase {
 
     public void cancel(Long memberId, Long historyId) {
         lockExecutor.executeOptimistic(() -> {
-            RentalHistory history = rentalHistoryService.cancelByMember(memberId, historyId);
+            RentalHistory history = rentalHistoryService.cancel(memberId, historyId);
             itemService.increaseStock(history.getItemId(), history.getRentedCount());
         });
     }

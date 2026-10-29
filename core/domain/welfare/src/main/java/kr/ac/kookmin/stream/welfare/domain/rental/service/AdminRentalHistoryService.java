@@ -31,5 +31,5 @@ public interface AdminRentalHistoryService {
     RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId);
 
     /** 대여 이력 하나의 상태 변경 처리자 로그를 변경 시각 내림차순으로 조회한다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. */
-    List<RentalStatusWorkerLog> getStatusWorkerLogs(Long historyId);
+    List<RentalStatusWorkerLog> getWorkerLogs(Long historyId);
 }

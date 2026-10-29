@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 
 import java.util.List;
 import java.util.Map;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalStatusWorkerLogResponse;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatusWorkerLog;
@@ -17,14 +18,12 @@ public class AdminRentalStatusWorkerLogUseCase {
     private final AdminRentalHistoryService adminRentalHistoryService;
     private final MemberService memberService;
 
-    public List<AdminRentalStatusWorkerLogView> getLogs(Long historyId) {
-        List<RentalStatusWorkerLog> logs = adminRentalHistoryService.getStatusWorkerLogs(historyId);
+    public AdminRentalStatusWorkerLogResponse getWorkerLogs(Long historyId) {
+        List<RentalStatusWorkerLog> logs = adminRentalHistoryService.getWorkerLogs(historyId);
 
         List<Long> workerIds = logs.stream().map(RentalStatusWorkerLog::getWorkerId).distinct().toList();
         Map<Long, Member> workerMap = workerIds.isEmpty() ? Map.of() : memberService.getMapByIds(workerIds);
 
-        return logs.stream()
-            .map(log -> new AdminRentalStatusWorkerLogView(log, workerMap.get(log.getWorkerId())))
-            .toList();
+        return AdminRentalStatusWorkerLogResponse.from(logs, workerMap);
     }
 }

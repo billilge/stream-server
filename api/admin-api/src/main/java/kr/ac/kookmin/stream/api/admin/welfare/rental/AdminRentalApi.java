@@ -68,5 +68,5 @@ public interface AdminRentalApi {
         description = "대여 기록 하나의 상태 변경 처리자 로그를 변경 시각 내림차순으로 조회한다. 아직 누구도 상태를 바꾼 적이 "
             + "없으면 빈 배열이다.")
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
-    ApiResponse<AdminRentalStatusWorkerLogResponse> getStatusWorkerLogs(AdminApiUser apiUser, Long rentalHistoryId);
+    ApiResponse<AdminRentalStatusWorkerLogResponse> getWorkerLogs(AdminApiUser apiUser, Long rentalHistoryId);
 }

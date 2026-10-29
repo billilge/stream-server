@@ -18,9 +18,6 @@ public enum RentalStatus {
     // 재고 복구 중복 방지가 모두 "이 셋이 아니면 진행 중"이라는 같은 기준을 쓴다.
     private static final Set<RentalStatus> FINISHED_STATUSES = Set.of(RETURNED, CANCEL, REJECTED);
 
-    // "지금 내가 들고 있는" 상태. 연체는 별도 상태가 아니라 dueAt으로 조회 시점에 판단하므로 RENTAL에 포함된다.
-    private static final Set<RentalStatus> HOLDING_STATUSES = Set.of(RENTAL);
-
     // 아직 운영진이 반납을 최종 확인(RETURNED)하지 않은, "들고 있거나 반납 절차가 진행 중인" 상태.
     private static final Set<RentalStatus> AWAITING_RETURN_STATUSES = Set.of(RENTAL, RETURN_PENDING, RETURN_CONFIRMED);
 
@@ -40,11 +37,6 @@ public enum RentalStatus {
         return FINISHED_STATUSES.contains(this);
     }
 
-    /** 지금 물품을 들고 있는 상태인지(대여 중 또는 연체). */
-    public boolean isHolding() {
-        return HOLDING_STATUSES.contains(this);
-    }
-
     /** 아직 반납이 최종 확인되지 않은(들고 있거나 반납 절차가 진행 중인) 상태인지. */
     public boolean isAwaitingReturn() {
         return AWAITING_RETURN_STATUSES.contains(this);
@@ -57,9 +49,5 @@ public enum RentalStatus {
 
     public static Set<RentalStatus> finishedStatuses() {
         return FINISHED_STATUSES;
-    }
-
-    public static Set<RentalStatus> holdingStatuses() {
-        return HOLDING_STATUSES;
     }
 }

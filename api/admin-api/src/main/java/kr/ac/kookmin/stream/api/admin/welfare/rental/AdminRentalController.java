@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.rental;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.function.Function;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
@@ -12,7 +11,6 @@ import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalRecordCr
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalSearchUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalStatusUpdateUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalStatusWorkerLogUseCase;
-import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalStatusWorkerLogView;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -78,11 +76,10 @@ public class AdminRentalController implements AdminRentalApi {
 
     @Override
     @GetMapping("/{rentalHistoryId}/workers")
-    public ApiResponse<AdminRentalStatusWorkerLogResponse> getStatusWorkerLogs(
+    public ApiResponse<AdminRentalStatusWorkerLogResponse> getWorkerLogs(
         AdminApiUser apiUser,
         @PathVariable Long rentalHistoryId
     ) {
-        List<AdminRentalStatusWorkerLogView> views = adminRentalStatusWorkerLogUseCase.getLogs(rentalHistoryId);
-        return ApiResponse.success(AdminRentalStatusWorkerLogResponse.from(views));
+        return ApiResponse.success(adminRentalStatusWorkerLogUseCase.getWorkerLogs(rentalHistoryId));
     }
 }
