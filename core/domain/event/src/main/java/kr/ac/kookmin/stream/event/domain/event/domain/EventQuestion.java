@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.util.List;
 import java.util.Objects;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -38,11 +39,13 @@ public class EventQuestion {
     }
 
     /**
-     * 새 질문을 만든다. 텍스트형 질문에 딸려 온 선택지·'기타' 여부는 의미가 없으므로 버린다.
+     * 새 질문을 만든다. 선택형 질문은 고를 선택지가 있어야 한다. 텍스트형 질문에 딸려 온 선택지·'기타' 여부는 의미가
+     * 없으므로 버린다.
      *
      * @param displayOrder 신청서에서 몇 번째로 보일지. 1부터 센다
      */
     public static EventQuestion create(Long eventId, int displayOrder, EventQuestionCommand command) {
+        validateOptions(command);
         boolean choice = command.questionType().isChoice();
         return new EventQuestion(
             null,
@@ -66,5 +69,11 @@ public class EventQuestion {
             && otherOptionAllowed == other.otherOptionAllowed
             && Objects.equals(questionText, other.questionText)
             && Objects.equals(options, other.options);
+    }
+
+    private static void validateOptions(EventQuestionCommand command) {
+        if (command.questionType().isChoice() && (command.options() == null || command.options().isEmpty())) {
+            throw new BusinessException(EventErrorCode.EVENT_INVALID_QUESTION);
+        }
     }
 }

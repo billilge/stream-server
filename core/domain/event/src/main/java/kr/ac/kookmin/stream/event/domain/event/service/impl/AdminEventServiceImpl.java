@@ -27,13 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 class AdminEventServiceImpl implements AdminEventService {
 
     private final EventRepository eventRepository;
-    private final EventWriteValidator eventWriteValidator;
 
+    // 질문 규칙은 행사를 저장한 뒤 질문을 만들 때 검사한다. 어기면 트랜잭션이 행사 저장까지 되돌린다
     @Override
     @Transactional
     public Event create(Long createdBy, EventCreateCommand command) {
-        eventWriteValidator.validate(command);
-
         Event event = eventRepository.save(Event.create(createdBy, command));
         eventRepository.saveQuestions(toQuestions(event.getId(), command.questions()));
         return event;
@@ -64,10 +62,10 @@ class AdminEventServiceImpl implements AdminEventService {
     public Event update(Long eventId, EventUpdateCommand command) {
         Event event = getEventOrThrow(eventId);
         validateNotModified(event, command.expectedUpdatedAt());
-        eventWriteValidator.validate(command);
+        // 질문 규칙(입력 형식)은 정원 하한처럼 DB 상태를 보는 검사보다 먼저 건다
+        List<EventQuestion> questions = toQuestions(eventId, command.questions());
         validateCapacityNotBelowApplicants(eventId, command.recruitPolicy());
 
-        List<EventQuestion> questions = toQuestions(eventId, command.questions());
         if (questionsChanged(eventRepository.findQuestionsByEventId(eventId), questions)) {
             validateQuestionsEditable(eventId);
             eventRepository.replaceQuestions(eventId, questions);

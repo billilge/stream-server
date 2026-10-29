@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * 운영진 행사 등록·조회·수정. 형식 규칙 자체는 {@code EventWriteValidatorTest}·{@code EventPeriodTest}·
+ * 운영진 행사 등록·조회·수정. 형식 규칙 자체는 {@code EventQuestionTest}·{@code EventPeriodTest}·
  * {@code RecruitPolicyTest}가 덮고,
  * 여기서는 저장 흐름과 수정 시의 규칙(동시 수정·정원 하한·질문 잠금)을 본다.
  */
@@ -58,7 +58,7 @@ class AdminEventServiceImplTest {
         "전화번호", QuestionType.SHORT_TEXT, true, List.of(), false);
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
-    private final AdminEventServiceImpl service = new AdminEventServiceImpl(repository, new EventWriteValidator());
+    private final AdminEventServiceImpl service = new AdminEventServiceImpl(repository);
 
     private static Event savedEvent(RecruitType recruitType, int capacity) {
         return Event.of(
@@ -139,19 +139,6 @@ class AdminEventServiceImplTest {
             Event created = service.create(7L, createCommand(RecruitType.OPEN, null, List.of()));
 
             assertTrue(repository.findQuestionsByEventId(created.getId()).isEmpty());
-        }
-
-        @Test
-        @DisplayName("규칙을 어기면 아무것도 저장하지 않는다")
-        void savesNothingWhenInvalid() {
-            EventQuestionCommand choiceWithoutOptions = new EventQuestionCommand(
-                "참여 종목", QuestionType.MULTIPLE_CHOICE, true, List.of(), true);
-
-            assertRejected(EventErrorCode.EVENT_INVALID_QUESTION,
-                () -> service.create(7L, createCommand(RecruitType.FIRST_COME, 100, List.of(choiceWithoutOptions))));
-
-            assertTrue(repository.events.isEmpty());
-            assertTrue(repository.questions.isEmpty());
         }
     }
 
