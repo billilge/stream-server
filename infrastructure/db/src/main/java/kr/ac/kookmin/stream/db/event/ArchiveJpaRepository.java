@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,8 +18,9 @@ public interface ArchiveJpaRepository extends JpaRepository<ArchiveJpaEntity, Lo
      */
     @Query("""
         SELECT a FROM ArchiveJpaEntity a
-        WHERE (:startInclusive IS NULL
-            OR (a.startDate >= :startInclusive AND a.startDate < :endExclusive))
+        WHERE a.isDeleted = false
+            AND (:startInclusive IS NULL
+                OR (a.startDate >= :startInclusive AND a.startDate < :endExclusive))
         ORDER BY a.startDate DESC, a.id DESC
         """)
     List<ArchiveJpaEntity> findAllInPeriod(
@@ -26,9 +28,13 @@ public interface ArchiveJpaRepository extends JpaRepository<ArchiveJpaEntity, Lo
         @Param("endExclusive") LocalDate endExclusive
     );
 
+    /** 연도 버튼은 목록과 별도로 조회하므로 삭제 필터를 여기에도 둔다. 빠뜨리면 지운 아카이빙의 연도가 남는다. */
     @Query("""
         SELECT DISTINCT YEAR(a.startDate) FROM ArchiveJpaEntity a
+        WHERE a.isDeleted = false
         ORDER BY YEAR(a.startDate) DESC
         """)
     List<Integer> findAllYearsDesc();
+
+    Optional<ArchiveJpaEntity> findByIdAndIsDeletedFalse(Long id);
 }

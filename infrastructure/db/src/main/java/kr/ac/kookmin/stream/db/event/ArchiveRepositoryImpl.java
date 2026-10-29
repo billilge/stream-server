@@ -35,7 +35,7 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
 
     @Override
     public Optional<Archive> findById(Long id) {
-        return archiveJpaRepository.findById(id).map(ArchiveJpaEntity::toDomain);
+        return archiveJpaRepository.findByIdAndIsDeletedFalse(id).map(ArchiveJpaEntity::toDomain);
     }
 
     @Override
