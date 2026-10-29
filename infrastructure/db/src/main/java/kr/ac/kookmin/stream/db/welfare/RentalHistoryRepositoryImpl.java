@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Repository;
 public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     // 완전히 끝난(더는 손댈 일 없는) 상태. 물품 삭제 차단은 이 셋이 아닌 모든 기록을 "진행 중"으로 본다.
-    private static final List<RentalStatus> TERMINAL_STATUSES = List.of(RentalStatus.RETURNED, RentalStatus.CANCEL, RentalStatus.REJECTED);
+    private static final Set<RentalStatus> TERMINAL_STATUSES = Set.of(RentalStatus.RETURNED, RentalStatus.CANCEL, RentalStatus.REJECTED);
 
     private final RentalHistoryJpaRepository rentalHistoryJpaRepository;
 
