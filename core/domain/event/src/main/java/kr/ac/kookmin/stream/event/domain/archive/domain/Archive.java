@@ -23,6 +23,8 @@ public class Archive {
     private List<Long> imageIds;
     /** 슬랑제(연말 행사) 전용 페이지에 띄울지. 삭제 여부와 달리 운영진이 목록에서 보고 켜고 끄는 값이라 도메인이 들고 있다. */
     private boolean exposed;
+    /** 연결한 행사. 연결하지 않았으면 {@code null}이다. 제목은 담지 않는다 — 조회 시점에 행사에서 가져온다. */
+    private Long relatedEventId;
     /** 등록 일시. 운영진 목록이 이 순서로 정렬하고 화면에도 보여준다. */
     private LocalDateTime createdAt;
 
@@ -36,10 +38,11 @@ public class Archive {
         String departmentName,
         List<Long> imageIds,
         boolean exposed,
+        Long relatedEventId,
         LocalDateTime createdAt
     ) {
-        return new Archive(
-            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed, createdAt);
+        return new Archive(id, title, content, startDate, endDate, location, departmentName, imageIds,
+            exposed, relatedEventId, createdAt);
     }
 
     /**

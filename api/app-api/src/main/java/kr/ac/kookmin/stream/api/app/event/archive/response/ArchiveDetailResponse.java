@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 import kr.ac.kookmin.stream.file.domain.File;
 
 public record ArchiveDetailResponse(
@@ -16,8 +15,7 @@ public record ArchiveDetailResponse(
     String location,
     String departmentName,
     String content,
-    List<Image> images,
-    List<RelatedLink> relatedLinks
+    List<Image> images
 ) {
 
     /**
@@ -35,8 +33,7 @@ public record ArchiveDetailResponse(
             detail.imageIds().stream()
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
-                .toList(),
-            detail.relatedLinks().stream().map(RelatedLink::from).toList()
+                .toList()
         );
     }
 
@@ -44,13 +41,6 @@ public record ArchiveDetailResponse(
 
         public static Image of(Long fileId, File file) {
             return new Image(fileId, StorageUrlBuilder.build(file.getFileKey()));
-        }
-    }
-
-    public record RelatedLink(String title, String url) {
-
-        public static RelatedLink from(ArchiveRelatedLink relatedLink) {
-            return new RelatedLink(relatedLink.getTitle(), relatedLink.getUrl());
         }
     }
 }
