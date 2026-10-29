@@ -25,7 +25,7 @@ public class RentalReturnUseCase {
 
     // @Transactional을 걸지 않는다. LockExecutor가 시도마다 새 트랜잭션을 연다 — 같은 트랜잭션 안에서 재시도하면
     // 1차 캐시가 예전 값을 계속 돌려줘 매번 다시 충돌하므로, 충돌한 시도는 전부 롤백되고 새 트랜잭션에서
-    // 반납 대상 조회부터 다시 실행된다(RentalHistory는 롤백됐으니 여전히 RENTAL/OVERDUE 상태라 다시 찾힌다).
+    // 반납 대상 조회부터 다시 실행된다(RentalHistory는 롤백됐으니 여전히 RENTAL 상태라 다시 찾힌다).
     public void returnRental(Long memberId, Long historyId) {
         lockExecutor.executeOptimistic(() -> {
             RentalHistory history = rentalHistoryService.returnRental(memberId, historyId);

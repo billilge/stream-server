@@ -41,11 +41,6 @@ public class RentalHistory {
         this.returnedAt = returnedAt;
     }
 
-    /** 반납 기한을 넘긴 대여를 연체로 표시한다({@code RentalNotificationScheduler}가 매일 호출). */
-    public void markOverdue() {
-        this.rentalStatus = RentalStatus.OVERDUE;
-    }
-
     public static RentalHistory of(
         Long id,
         Long itemId,

@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.event.RentalDueSoon;
 import kr.ac.kookmin.stream.common.event.RentalOverdue;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,8 +48,7 @@ class RentalNotificationScheduler {
         }
     }
 
-    // RENTAL이든 이미 OVERDUE든 기한이 지났으면 매번 알림을 보낸다("반납할 때까지 평일마다 간다").
-    // 상태는 RENTAL일 때만 OVERDUE로 바꾼다 — 이미 OVERDUE면 다시 쓸 필요가 없다(멱등).
+    // 기한이 지났으면 매번 알림을 보낸다("반납할 때까지 평일마다 간다") — 상태 전이 없이 매번 dueAt만 다시 본다.
     @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "Asia/Seoul")
     @Transactional
     public void recordOverdue() {
@@ -58,9 +56,6 @@ class RentalNotificationScheduler {
 
         for (RentalRecord rental : rentalHistoryService.getAllReturnRequiredRentals()) {
             if (rental.dueAt().isBefore(now)) {
-                if (rental.history().getRentalStatus() == RentalStatus.RENTAL) {
-                    rentalHistoryService.markOverdue(rental.history());
-                }
                 outboxWriter.record(new RentalOverdue(
                     rental.history().getMemberId(), rental.history().getId(), rental.itemName()));
             }

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -38,8 +37,6 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     // getHistories와 같은 이유로 트랜잭션이 필요 없다. isReturnRequired가 보는 returnPolicy는 지금 계획된
     // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
-    // status를 null로 둬 전체를 가져온 뒤 isReturnRequired()로 거른다 — RENTAL뿐 아니라 OVERDUE도
-    // 걸러야 해서, 한 회원의 이력은 수가 적어 이렇게 걸러도 비용이 크지 않다.
     @Override
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
@@ -47,17 +44,11 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. RENTAL과 OVERDUE 둘 다 봐야
-    // 연체로 넘어간 뒤에도(스케줄러가 상태를 OVERDUE로 바꾼 뒤에도) 반납 알림·목록에 계속 잡힌다. 레포지토리에
-    // "여러 상태" 전용 메서드를 새로 만드는 대신, 이미 있는 단일 상태 조회를 두 번 불러 합친다 — 나중에
-    // 관리자 "대여/반납 현황 조회"도 상태 하나로 필터할 텐데, 그때도 이 단일 상태 메서드를 그대로 쓸 수 있다.
+    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. 연체 여부는 상태가 아니라 dueAt으로
+    // 조회 시점에 판단하므로(RentalRecord.isReturnRequired), 상태는 RENTAL 하나만 보면 된다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
-        List<RentalHistory> rentalOrOverdue = Stream.concat(
-            rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL).stream(),
-            rentalHistoryRepository.findAllByStatus(RentalStatus.OVERDUE).stream()
-        ).toList();
-        return toRecords(rentalOrOverdue).stream()
+        return toRecords(rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
@@ -72,13 +63,6 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
         history.markReturned(LocalDateTime.now(DateUtil.KST));
         return rentalHistoryRepository.save(history);
-    }
-
-    @Override
-    @Transactional
-    public void markOverdue(RentalHistory history) {
-        history.markOverdue();
-        rentalHistoryRepository.save(history);
     }
 
     // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는

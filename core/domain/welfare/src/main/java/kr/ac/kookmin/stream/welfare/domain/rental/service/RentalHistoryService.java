@@ -35,9 +35,6 @@ public interface RentalHistoryService {
      */
     RentalHistory returnRental(Long memberId, Long historyId);
 
-    /** 반납 기한이 지난 대여를 연체(OVERDUE)로 표시하고 저장한다. 스케줄러가 매일 호출한다. */
-    void markOverdue(RentalHistory history);
-
     /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 
