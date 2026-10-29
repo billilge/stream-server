@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -61,8 +59,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     @Override
     @Transactional
     public RentalHistory returnRental(Long memberId, Long historyId) {
-        RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        RentalHistory history = rentalHistoryRepository.getRentalToReturn(historyId, memberId);
         history.markReturned(LocalDateTime.now(DateUtil.KST));
         return rentalHistoryRepository.save(history);
     }
@@ -76,32 +73,26 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     @Override
     @Transactional
-    public RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
-        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, count, appliedAt, rentAt));
+    public RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
+        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, workerId, count, appliedAt, rentAt));
     }
 
     // 단일 조회라 트랜잭션이 필요 없다. 페이지 내용만큼만 물품을 모아 짝짓는다(toRecords와 같은 이유).
     @Override
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
-        Map<Long, Item> items = findItemsOf(result.content());
-        return result.map(history -> new RentalRecord(history, items.get(history.getItemId())));
-    }
-
-    @Override
-    @Transactional
-    public RentalHistory createByAdmin(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
-        return rentalHistoryRepository.save(RentalHistory.createByAdmin(item, memberId, workerId, count, appliedAt, rentAt));
+        Map<Long, Item> itemsByItemId = findItemsByItemId(result.content());
+        return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {
-        Map<Long, Item> items = findItemsOf(histories);
+        Map<Long, Item> itemsByItemId = findItemsByItemId(histories);
         return histories.stream()
-            .map(history -> new RentalRecord(history, items.get(history.getItemId())))
+            .map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())))
             .toList();
     }
 
-    private Map<Long, Item> findItemsOf(List<RentalHistory> histories) {
+    private Map<Long, Item> findItemsByItemId(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();
         }

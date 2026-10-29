@@ -2,8 +2,10 @@ package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 
@@ -37,4 +39,10 @@ public interface RentalHistoryRepository {
 
     /** 반납 신청 대상 조회. 본인 소유가 아니거나 대여 중 상태가 아니면 빈 값이다(둘 다 RENTAL_NOT_FOUND로 처리). */
     Optional<RentalHistory> findRentalToReturn(Long id, Long memberId);
+
+    /** 반납 신청 대상 조회. 본인 소유가 아니거나 대여 중 상태가 아니면 RENTAL_NOT_FOUND. */
+    default RentalHistory getRentalToReturn(Long id, Long memberId) {
+        return findRentalToReturn(id, memberId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+    }
 }

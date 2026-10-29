@@ -42,7 +42,7 @@ public class RentalApplyUseCase {
 
             LocalDateTime now = LocalDateTime.now(DateUtil.KST);
             LocalDateTime rentAt = LocalDate.now(DateUtil.KST).atTime(rentAtHour, rentAtMinute);
-            rentalHistoryService.create(item, memberId, count, now, rentAt);
+            rentalHistoryService.create(item, memberId, null, count, now, rentAt);
         });
     }
 }

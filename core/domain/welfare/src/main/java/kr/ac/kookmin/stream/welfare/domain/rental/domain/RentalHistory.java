@@ -23,24 +23,13 @@ public class RentalHistory {
     private LocalDateTime returnedAt;
 
     /**
-     * 대여 신청으로 새 이력을 만든다. 소모품(반납 개념이 없는 물품)은 처음부터 반납 완료로,
-     * 대여품은 대여 중으로 시작한다 — 이 프로젝트엔 운영진이 수령을 확정해 주는 단계가 없어서,
-     * 레거시(billilge/backend) {@code RentalService.updateRentalStatus()}가 물품 인도 시점에 하던
-     * "소모품이면 RENTAL 대신 RETURNED" 분기를 신청 시점으로 그대로 옮겼다.
+     * 새 대여 이력을 만든다. 소모품(반납 개념이 없는 물품)은 처음부터 반납 완료로, 대여품은 대여 중으로
+     * 시작한다 — 이 프로젝트엔 운영진이 수령을 확정해 주는 단계가 없어서, 레거시(billilge/backend)
+     * {@code RentalService.updateRentalStatus()}가 물품 인도 시점에 하던 "소모품이면 RENTAL 대신 RETURNED"
+     * 분기를 신청 시점으로 그대로 옮겼다. workerId는 학생 본인 신청이면 null, 관리자가 현장에서 대신
+     * 등록한 것이면 호출한 관리자가 아니라 폼에서 고른 근무자다.
      */
-    public static RentalHistory create(Item item, Long memberId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt) {
-        boolean returnable = item.getType() == ItemType.RENTAL;
-        RentalStatus status = returnable ? RentalStatus.RENTAL : RentalStatus.RETURNED;
-        LocalDateTime returnedAt = returnable ? null : appliedAt;
-        return new RentalHistory(null, item.getId(), memberId, null, null, status, rentedCount, appliedAt, rentAt, returnedAt);
-    }
-
-    /**
-     * 관리자가 현장에서 처리한 대여를 대신 등록한다. 이미 물건을 건네준 걸 사후 기록하는 용도라 상태 선택을
-     * 받지 않는다 — {@link #create}와 같은 기준으로 대여품은 RENTAL, 소모품은 RETURNED로 바로 시작한다.
-     * 처리자(workerId)는 호출한 관리자가 아니라 폼에서 직접 고른 근무자다.
-     */
-    public static RentalHistory createByAdmin(
+    public static RentalHistory create(
         Item item, Long memberId, Long workerId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt
     ) {
         boolean returnable = item.getType() == ItemType.RENTAL;
