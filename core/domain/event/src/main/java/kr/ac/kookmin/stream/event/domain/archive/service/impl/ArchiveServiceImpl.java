@@ -38,6 +38,6 @@ class ArchiveServiceImpl implements ArchiveService {
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new BusinessException(ArchiveErrorCode.ARCHIVE_NOT_FOUND));
 
-        return ArchiveDetail.of(archive, archiveRepository.findRelatedLinksByArchiveId(archiveId));
+        return ArchiveDetail.from(archive);
     }
 }
