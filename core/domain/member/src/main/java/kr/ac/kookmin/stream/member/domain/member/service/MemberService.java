@@ -22,7 +22,7 @@ public interface MemberService {
     Member signUp(Long memberId, MemberSignUpCommand command);
     boolean isSignedUp(Long memberId);
     /**
-     * 주어진 회원 중 가입(전화번호 등록 + 필수 약관 동의)을 마친 회원 ID. 기준은 {@link #isSignedUp}과 같고 탈퇴한 회원은 빠진다.
+     * 주어진 회원 중 가입(전화번호·이메일 등록 + 필수 약관 동의)을 마친 회원 ID. 기준은 {@link #isSignedUp}과 같고 탈퇴한 회원은 빠진다.
      * 목록에서 회원마다 isSignedUp을 부르지 않도록 한 번에 조회한다.
      */
     Set<Long> findSignedUpIds(List<Long> memberIds);
