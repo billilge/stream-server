@@ -47,7 +47,7 @@ public class Archive {
     }
 
     /** 등록 일시는 DB 기본값으로 채워져 저장 전에는 비어 있다. */
-    public static Archive create(ArchiveCreateCommand command) {
+    public static Archive create(ArchiveWriteCommand command) {
         validatePeriod(command.startDate(), command.endDate());
 
         return new Archive(
@@ -69,7 +69,7 @@ public class Archive {
      * 전체 필드를 통째로 바꾼다. 사진과 연결 행사도 받은 값으로 교체하므로, 빈 사진 목록은 전체 삭제이고
      * {@code relatedEventId}가 {@code null}이면 연결을 끊는다.
      */
-    public void update(ArchiveUpdateCommand command) {
+    public void update(ArchiveWriteCommand command) {
         validatePeriod(command.startDate(), command.endDate());
 
         this.title = command.title();

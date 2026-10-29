@@ -16,9 +16,10 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 운영진 둘이 서로 다른 필드를 고칠 때 읽어 둔 나머지 컬럼까지 되쓰는 것을
-// 막는다. 다만 삭제 표시(is_deleted)는 이것으로 지켜지지 않는다 — 도메인이 그 값을 들고 있지 않아 merge가 항상
-// false를 싣고, 수정과 삭제가 겹치면 삭제가 되돌아갈 수 있다. 저장소의 다른 소프트 삭제 엔티티도 같은 상태다.
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 수정은 같은 트랜잭션에서 findById로 엔티티를 영속성 컨텍스트에 올린 뒤
+// merge하므로, 도메인이 들고 있지 않은 is_deleted는 읽어 둔 값 그대로여서 변경으로 잡히지 않고 UPDATE에서 빠진다.
+// 덕분에 운영진 A가 수정하는 사이 B가 삭제를 커밋해도 A의 UPDATE가 삭제를 되돌리지 않는다.
+// (NoticeJpaEntity·LockerJpaEntity가 같은 이유로 붙이고 있다)
 @Entity
 @DynamicUpdate
 @Table(name = "archives")
