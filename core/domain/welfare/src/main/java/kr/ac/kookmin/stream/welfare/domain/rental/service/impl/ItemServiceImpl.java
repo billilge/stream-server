@@ -1,11 +1,9 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
-import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.ItemRepository;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +25,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item decreaseStock(Long itemId, int amount) {
-        Item item = itemRepository.findById(itemId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+        Item item = itemRepository.getById(itemId);
         item.decreaseStock(amount);
         return itemRepository.save(item);
     }
@@ -36,8 +33,7 @@ class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item increaseStock(Long itemId, int amount) {
-        Item item = itemRepository.findById(itemId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+        Item item = itemRepository.getById(itemId);
         item.increaseStock(amount);
         return itemRepository.save(item);
     }

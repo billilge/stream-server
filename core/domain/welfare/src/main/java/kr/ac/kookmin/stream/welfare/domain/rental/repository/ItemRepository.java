@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -10,6 +11,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 
 public interface ItemRepository {
 
@@ -34,6 +36,11 @@ public interface ItemRepository {
     List<Item> findAllByIds(Collection<Long> ids);
 
     Optional<Item> findById(Long id);
+
+    /** id로 조회한다. 없으면 ITEM_NOT_FOUND — 서비스마다 반복되던 findById().orElseThrow()를 여기로 모았다. */
+    default Item getById(Long id) {
+        return findById(id).orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+    }
 
     boolean existsByName(String name);
 
