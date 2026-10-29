@@ -26,10 +26,10 @@ class AdminWorkScheduleServiceImpl implements AdminWorkScheduleService {
     @Override
     public WorkScheduleWeek getWeek(LocalDate date) {
         LocalDate today = LocalDate.now(DateUtil.KST);
-        WorkWeek week = WorkWeek.of(date == null ? today : date);
+        WorkWeek week = WorkWeek.from(date == null ? today : date);
         List<WorkSchedule> schedules = workScheduleRepository.findAllByWorkDateBetween(
             week.startDate(), week.endDate());
-        return WorkScheduleWeek.of(week, !week.isPastAt(today), schedules);
+        return new WorkScheduleWeek(week, !week.isPastAt(today), schedules);
     }
 
     @Override
@@ -69,7 +69,7 @@ class AdminWorkScheduleServiceImpl implements AdminWorkScheduleService {
     }
 
     private void validateNotPastWeek(LocalDate workDate, LocalDate today) {
-        if (WorkWeek.of(workDate).isPastAt(today)) {
+        if (WorkWeek.from(workDate).isPastAt(today)) {
             throw new BusinessException(WorkScheduleErrorCode.PAST_WEEK_NOT_EDITABLE);
         }
     }
