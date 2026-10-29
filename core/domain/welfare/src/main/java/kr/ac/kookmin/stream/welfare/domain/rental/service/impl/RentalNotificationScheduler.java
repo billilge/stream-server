@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.event.RentalDueSoon;
 import kr.ac.kookmin.stream.common.event.RentalOverdue;
@@ -36,7 +35,7 @@ class RentalNotificationScheduler {
     @Scheduled(cron = "0 */10 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void recordDueSoon() {
-        LocalDateTime windowEnd = floorToCheckInterval(LocalDateTime.now(DateUtil.KST));
+        LocalDateTime windowEnd = floorToCheckInterval(LocalDateTime.now());
         LocalDateTime windowStart = windowEnd.minusMinutes(DUE_SOON_CHECK_INTERVAL_MINUTES);
 
         for (RentalRecord rental : rentalHistoryService.getAllReturnRequiredRentals()) {
@@ -52,7 +51,7 @@ class RentalNotificationScheduler {
     @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "Asia/Seoul")
     @Transactional
     public void recordOverdue() {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        LocalDateTime now = LocalDateTime.now();
 
         for (RentalRecord rental : rentalHistoryService.getAllReturnRequiredRentals()) {
             if (rental.dueAt().isBefore(now)) {

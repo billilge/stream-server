@@ -3,7 +3,6 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.usecase;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.LockExecutor;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -40,8 +39,8 @@ public class RentalApplyUseCase {
 
             Item item = itemService.decreaseStock(itemId, count);
 
-            LocalDateTime now = LocalDateTime.now(DateUtil.KST);
-            LocalDateTime rentAt = LocalDate.now(DateUtil.KST).atTime(rentAtHour, rentAtMinute);
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime rentAt = LocalDate.now().atTime(rentAtHour, rentAtMinute);
             rentalHistoryService.create(item, memberId, null, count, now, rentAt);
         });
     }
