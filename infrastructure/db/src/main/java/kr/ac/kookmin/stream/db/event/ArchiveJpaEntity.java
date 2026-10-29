@@ -12,10 +12,15 @@ import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 운영진 둘이 서로 다른 필드를 고칠 때 읽어 둔 나머지 컬럼까지 되쓰는 것을
+// 막는다. 다만 삭제 표시(is_deleted)는 이것으로 지켜지지 않는다 — 도메인이 그 값을 들고 있지 않아 merge가 항상
+// false를 싣고, 수정과 삭제가 겹치면 삭제가 되돌아갈 수 있다. 저장소의 다른 소프트 삭제 엔티티도 같은 상태다.
 @Entity
+@DynamicUpdate
 @Table(name = "archives")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
