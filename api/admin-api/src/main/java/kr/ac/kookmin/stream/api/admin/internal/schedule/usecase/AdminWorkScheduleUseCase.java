@@ -30,7 +30,7 @@ public class AdminWorkScheduleUseCase {
     private final MemberService memberService;
 
     public List<Member> getWorkers() {
-        return memberService.findAllWithCouncilDepartment();
+        return memberService.findAllCouncilMembers();
     }
 
     public MemberWorkScheduleWeek getWeek(LocalDate date) {

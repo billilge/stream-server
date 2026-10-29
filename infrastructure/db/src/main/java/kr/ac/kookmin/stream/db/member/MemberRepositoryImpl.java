@@ -51,8 +51,8 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public List<Member> findAllWithCouncilDepartment() {
-        return memberJpaRepository.findAllWithCouncilDepartment().stream()
+    public List<Member> findAllCouncilMembers() {
+        return memberJpaRepository.findAllCouncilMembers().stream()
             .map(MemberJpaEntity::toDomain)
             .toList();
     }

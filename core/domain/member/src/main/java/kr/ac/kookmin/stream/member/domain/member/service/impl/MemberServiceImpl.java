@@ -50,8 +50,8 @@ class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> findAllWithCouncilDepartment() {
-        return memberRepository.findAllWithCouncilDepartment();
+    public List<Member> findAllCouncilMembers() {
+        return memberRepository.findAllCouncilMembers();
     }
 
     @Override
