@@ -49,7 +49,6 @@ public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "is_exposed", nullable = false)
     private boolean exposed;
 
-    /** 연결한 행사. 연결하지 않았으면 NULL이다. */
     @Column(name = "related_event_id")
     private Long relatedEventId;
 
