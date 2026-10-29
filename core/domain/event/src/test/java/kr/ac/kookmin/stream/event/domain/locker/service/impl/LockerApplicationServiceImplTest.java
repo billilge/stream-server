@@ -421,6 +421,11 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public void saveLayout(LockerSectionLayout sectionLayout) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findAllLockers() {
             throw new UnsupportedOperationException();
         }
