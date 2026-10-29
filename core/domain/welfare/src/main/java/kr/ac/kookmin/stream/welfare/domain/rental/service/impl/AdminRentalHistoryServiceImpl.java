@@ -31,19 +31,18 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     private final RentalStatusWorkerLogRepository rentalStatusWorkerLogRepository;
 
     // 물품을 함께 읽어 서비스가 짝짓는다(coding-style.md 2-6). AdminItemService.update()가 물품의
-    // 반납 정책·종류를 바꿀 수 있어서(isReturnRequired·dueAt 계산에 직접 쓰이는 필드), 두 조회 사이에
-    // 그 값이 바뀌지 않도록 스냅샷을 고정한다.
+    // 반납 정책·종류를 바꿀 수 있어서 두 조회 사이에 값이 바뀔 수는 있지만, 조회 목록에서 보여주기용으로
+    // 계산하는 dueAt 한 행이 아주 드물게 살짝 어긋나는 정도라 트랜잭션으로 묶을 만큼의 문제는 아니다.
     @Override
-    @Transactional(readOnly = true)
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
         Map<Long, Item> itemsByItemId = findItemMapByHistories(result.content());
         return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
-    // search와 같은 이유로 스냅샷을 고정한다(호출부가 LockExecutor 안에서 부르면 그 트랜잭션에 합류한다).
+    // 단일 조회라 자체로는 트랜잭션이 필요 없다. 유일한 호출부(AdminRentalStatusUpdateUseCase)가 LockExecutor
+    // 안에서 부르므로, 그 트랜잭션에 자연히 합류한다.
     @Override
-    @Transactional(readOnly = true)
     public RentalRecord getById(Long historyId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
