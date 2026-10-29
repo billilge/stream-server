@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveCreateCommand;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveWriteCommand;
 
 /**
  * 아카이빙 등록과 수정이 같은 본문을 받는다. 수정이 전체 필드를 통째로 바꾸는 방식이라 등록과 모양이 같아,
@@ -51,14 +50,8 @@ public record ArchiveWriteRequest(
     Long relatedEventId
 ) {
 
-    public ArchiveCreateCommand toCreateCommand() {
-        return new ArchiveCreateCommand(
-            title, content, startDate, endDate, location, departmentName, distinctImageIds(), isExposed,
-            relatedEventId);
-    }
-
-    public ArchiveUpdateCommand toUpdateCommand() {
-        return new ArchiveUpdateCommand(
+    public ArchiveWriteCommand toCommand() {
+        return new ArchiveWriteCommand(
             title, content, startDate, endDate, location, departmentName, distinctImageIds(), isExposed,
             relatedEventId);
     }

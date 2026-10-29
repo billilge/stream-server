@@ -3,8 +3,7 @@ package kr.ac.kookmin.stream.api.admin.event.archive.usecase;
 import java.util.List;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveCreateCommand;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveWriteCommand;
 import kr.ac.kookmin.stream.event.domain.archive.service.AdminArchiveService;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
@@ -29,14 +28,14 @@ public class AdminArchiveWriteUseCase {
     private final EventService eventService;
     private final AdminArchiveService adminArchiveService;
 
-    public void create(ArchiveCreateCommand command) {
+    public void create(ArchiveWriteCommand command) {
         validateImagesExist(command.imageIds());
         validateRelatedEventExists(command.relatedEventId());
 
         adminArchiveService.create(command);
     }
 
-    public void update(Long archiveId, ArchiveUpdateCommand command) {
+    public void update(Long archiveId, ArchiveWriteCommand command) {
         validateImagesExist(command.imageIds());
         validateRelatedEventExists(command.relatedEventId());
 
