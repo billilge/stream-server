@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
-import kr.ac.kookmin.stream.common.PageOffset;
-import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
 import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -19,7 +17,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationForm;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
@@ -130,41 +127,12 @@ class EventApplicationServiceImpl implements EventApplicationService {
         outboxWriter.record(new EventApplicationCanceled(memberId, event.getId(), application.getId(), event.getTitle()));
     }
 
-    /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
-    @Override
-    public PageResult<EventApplication> getApplications(
-        Long eventId,
-        EventApplicationStatus status,
-        List<Long> memberIds,
-        PageOffset pageOffset
-    ) {
-        getEventOrThrow(eventId);
-        return eventApplicationRepository.findPageByEventId(eventId, status, memberIds, pageOffset);
-    }
-
-    @Override
-    public Map<Long, List<EventApplicationAnswer>> getAnswersByApplicationIds(List<Long> applicationIds) {
-        return eventApplicationRepository.findAnswersByApplicationIds(applicationIds).stream()
-            .collect(Collectors.groupingBy(EventApplicationAnswer::getEventApplicationId));
-    }
-
-    @Override
-    public long countApplications(Long eventId) {
-        return eventApplicationRepository.countByEventId(eventId);
-    }
-
-    @Override
-    public EventApplication getApplication(Long eventId, Long applicationId) {
-        getEventOrThrow(eventId);
-        return eventApplicationRepository.findByIdAndEventId(applicationId, eventId)
-            .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
-    }
-
     private Event getEventOrThrow(Long eventId) {
         return eventRepository.findById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));
     }
 
+    /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
     private EventApplication getMyApplicationOrThrow(Long applicationId, Long memberId) {
         return eventApplicationRepository.findByIdAndMemberId(applicationId, memberId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));

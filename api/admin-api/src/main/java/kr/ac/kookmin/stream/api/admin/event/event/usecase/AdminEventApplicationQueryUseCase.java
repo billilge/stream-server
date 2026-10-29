@@ -9,8 +9,8 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventManageDetail;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
-import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 public class AdminEventApplicationQueryUseCase {
 
     private final AdminEventService adminEventService;
-    private final EventApplicationService eventApplicationService;
+    private final AdminEventApplicationService adminEventApplicationService;
     private final MemberService memberService;
 
     /**
@@ -39,12 +39,12 @@ public class AdminEventApplicationQueryUseCase {
         PageOffset pageOffset
     ) {
         EventManageDetail event = adminEventService.getEvent(eventId);
-        long totalApplicationCount = eventApplicationService.countApplications(eventId);
+        long totalApplicationCount = adminEventApplicationService.countApplications(eventId);
 
         PageResult<EventApplication> applications = searchApplications(eventId, keyword, status, pageOffset);
         List<Long> applicationIds = applications.content().stream().map(EventApplication::getId).toList();
         Map<Long, List<EventApplicationAnswer>> answers =
-            eventApplicationService.getAnswersByApplicationIds(applicationIds);
+            adminEventApplicationService.getAnswersByApplicationIds(applicationIds);
         // 탈퇴한 회원은 결과에서 빠지므로 그 회원의 신청은 member가 null로 남는다
         Map<Long, Member> members = memberService.getMapByIds(
             applications.content().stream().map(EventApplication::getMemberId).distinct().toList());
@@ -58,8 +58,8 @@ public class AdminEventApplicationQueryUseCase {
 
     public EventApplicantDetail getApplicant(Long eventId, Long applicationId) {
         EventManageDetail event = adminEventService.getEvent(eventId);
-        EventApplication application = eventApplicationService.getApplication(eventId, applicationId);
-        List<EventApplicationAnswer> answers = eventApplicationService
+        EventApplication application = adminEventApplicationService.getApplication(eventId, applicationId);
+        List<EventApplicationAnswer> answers = adminEventApplicationService
             .getAnswersByApplicationIds(List.of(applicationId))
             .getOrDefault(applicationId, List.of());
         Member member = memberService.getMapByIds(List.of(application.getMemberId())).get(application.getMemberId());
@@ -79,12 +79,12 @@ public class AdminEventApplicationQueryUseCase {
         PageOffset pageOffset
     ) {
         if (keyword == null) {
-            return eventApplicationService.getApplications(eventId, status, null, pageOffset);
+            return adminEventApplicationService.getApplications(eventId, status, null, pageOffset);
         }
         List<Long> memberIds = memberService.searchIdsByKeyword(keyword);
         if (memberIds.isEmpty()) {
             return PageResult.empty(pageOffset.page(), pageOffset.size());
         }
-        return eventApplicationService.getApplications(eventId, status, memberIds, pageOffset);
+        return adminEventApplicationService.getApplications(eventId, status, memberIds, pageOffset);
     }
 }

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 /**
  * 운영진 신청 현황·신청자 상세 조회. 신청자 이름·학번 조합은 api 계층 UseCase가 맡으므로 여기서는 신청 조회 규칙만 본다.
  */
-class EventApplicationServiceImplManageTest {
+class AdminEventApplicationServiceImplTest {
 
     private static final Long EVENT_ID = 15L;
     private static final Long OTHER_EVENT_ID = 16L;
@@ -32,9 +32,8 @@ class EventApplicationServiceImplManageTest {
 
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
     private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
-    private final EventApplicationServiceImpl service =
-        // 조회만 검증하므로 아웃박스 기록은 버린다
-        new EventApplicationServiceImpl(repository, applicationRepository, new EventApplyAnswerValidator(), event -> { });
+    private final AdminEventApplicationServiceImpl service =
+        new AdminEventApplicationServiceImpl(repository, applicationRepository);
 
     private static Event event(Long id) {
         return Event.of(
