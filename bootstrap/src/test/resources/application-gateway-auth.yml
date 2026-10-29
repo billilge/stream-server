@@ -4,3 +4,6 @@ jwt:
   secret-key: test-secret-key-must-be-at-least-32-bytes-long
   issuer: stream-server
   access-token-expiry: 3600000
+
+cors:
+  allowed-origins: http://localhost:5173
