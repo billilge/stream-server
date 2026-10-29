@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -60,7 +59,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     @Transactional
     public RentalHistory returnRental(Long memberId, Long historyId) {
         RentalHistory history = rentalHistoryRepository.getRentalToReturn(historyId, memberId);
-        history.markReturned(LocalDateTime.now(DateUtil.KST));
+        history.markReturned(LocalDateTime.now());
         return rentalHistoryRepository.save(history);
     }
 

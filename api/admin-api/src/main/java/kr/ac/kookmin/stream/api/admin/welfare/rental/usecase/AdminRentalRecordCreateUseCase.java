@@ -5,7 +5,6 @@ import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.LockExecutor;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
@@ -43,7 +42,7 @@ public class AdminRentalRecordCreateUseCase {
             Item item = itemService.decreaseStock(request.itemId(), FIXED_COUNT);
             RentalHistory history = rentalHistoryService.create(
                 item, request.memberId(), request.workerId(), FIXED_COUNT,
-                LocalDateTime.now(DateUtil.KST), request.rentAt()
+                LocalDateTime.now(), request.rentAt()
             );
             return new CreatedRental(history, item, member);
         });
