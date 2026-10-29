@@ -20,6 +20,8 @@ public class Archive {
     private String location;
     private String departmentName;
     private List<Long> imageIds;
+    /** 슬랑제(연말 행사) 전용 페이지에 띄울지. 삭제 여부와 달리 운영진이 목록에서 보고 켜고 끄는 값이라 도메인이 들고 있다. */
+    private boolean exposed;
 
     public static Archive of(
         Long id,
@@ -29,9 +31,11 @@ public class Archive {
         LocalDate endDate,
         String location,
         String departmentName,
-        List<Long> imageIds
+        List<Long> imageIds,
+        boolean exposed
     ) {
-        return new Archive(id, title, content, startDate, endDate, location, departmentName, imageIds);
+        return new Archive(
+            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed);
     }
 
     /**
