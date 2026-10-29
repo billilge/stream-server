@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.welfare;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -11,6 +12,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,6 +51,11 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Optional<Item> findById(Long id) {
         return itemJpaRepository.findById(id).map(ItemJpaEntity::toDomain);
+    }
+
+    @Override
+    public Item getById(Long id) {
+        return findById(id).orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
     }
 
     @Override
