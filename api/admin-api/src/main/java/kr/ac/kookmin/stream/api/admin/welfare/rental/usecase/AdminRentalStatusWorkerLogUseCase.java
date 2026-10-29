@@ -22,7 +22,7 @@ public class AdminRentalStatusWorkerLogUseCase {
         List<RentalStatusWorkerLog> logs = adminRentalHistoryService.getWorkerLogs(historyId);
 
         List<Long> workerIds = logs.stream().map(RentalStatusWorkerLog::getWorkerId).distinct().toList();
-        Map<Long, Member> workerMap = workerIds.isEmpty() ? Map.of() : memberService.getMapByIds(workerIds);
+        Map<Long, Member> workerMap = memberService.getMapByIds(workerIds);
 
         return AdminRentalStatusWorkerLogResponse.from(logs, workerMap);
     }
