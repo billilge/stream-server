@@ -44,21 +44,28 @@ class AdminItemServiceImpl implements AdminItemService {
         return itemRepository.save(item);
     }
 
-    // command.count()가 재고를 직접 덮어써서 낙관적 락(DIRTY) 대상인 Item.count를 건드린다 — decreaseStock/
-    // increaseStock과 같은 이유로 LockExecutor로 감싼다. @Transactional을 안 거는 것도 같은 이유다(시도마다
-    // LockExecutor가 새 트랜잭션을 연다). 이름 중복 검증도 재시도마다 다시 하는데, 가벼운 조회라
-    // RentalApplyUseCase의 결제자 검증과 같은 트레이드오프다.
+    // command.count()가 재고를 직접 덮어쓰면 낙관적 락(DIRTY) 대상인 Item.count를 건드리면서도 decreaseStock/
+    // increaseStock의 검증(재고 부족 등)을 거치지 않는다 — 그래서 목표 수량과 현재 수량의 차이만큼 기존
+    // 증감 메서드를 재사용한다. LockExecutor로 감싸는 것도, @Transactional을 안 거는 것도 decreaseStock/
+    // increaseStock과 같은 이유다(시도마다 LockExecutor가 새 트랜잭션을 연다). 이름 중복 검증도 재시도마다
+    // 다시 하는데, 가벼운 조회라 RentalApplyUseCase의 결제자 검증과 같은 트레이드오프다.
     @Override
     public Item update(Long itemId, ItemUpdateCommand command) {
         return lockExecutor.executeOptimistic(() -> {
-            Item existing = itemRepository.findById(itemId)
-                .orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+            Item existing = itemRepository.getById(itemId);
             if (!existing.getName().equals(command.name()) && itemRepository.existsByNameAndIdNot(command.name(), itemId)) {
                 throw new BusinessException(RentalErrorCode.ITEM_NAME_DUPLICATED);
             }
 
+            int countDiff = command.count() - existing.getCount();
+            if (countDiff > 0) {
+                existing.increaseStock(countDiff);
+            } else if (countDiff < 0) {
+                existing.decreaseStock(-countDiff);
+            }
+
             String imageKey = command.imageKey() != null ? command.imageKey() : existing.getImageKey();
-            Item updated = Item.of(itemId, command.name(), command.category(), command.type(), command.count(), imageKey, command.returnPolicy());
+            Item updated = Item.of(itemId, command.name(), command.category(), command.type(), existing.getCount(), imageKey, command.returnPolicy());
             return itemRepository.save(updated);
         });
     }
@@ -66,7 +73,7 @@ class AdminItemServiceImpl implements AdminItemService {
     @Override
     @Transactional
     public void delete(Long itemId) {
-        itemRepository.findById(itemId).orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+        itemRepository.getById(itemId);
         if (rentalHistoryRepository.existsActiveRentalForItem(itemId)) {
             throw new BusinessException(RentalErrorCode.ITEM_HAS_ACTIVE_RENTAL);
         }
