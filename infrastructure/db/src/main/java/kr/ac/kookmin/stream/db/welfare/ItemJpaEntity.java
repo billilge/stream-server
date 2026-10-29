@@ -82,10 +82,9 @@ public class ItemJpaEntity extends BaseTimeEntity {
     }
 
     public Item toDomain() {
-        // 두 값이 모두 채워져야 정책이 성립한다
-        ReturnPolicy returnPolicy = maxRentalDays == null || returnDeadline == null
-            ? null
-            : new ReturnPolicy(maxRentalDays, returnDeadline);
+        // returnDeadline 컬럼 값은 더 이상 쓰지 않는다 — 반납 마감 시각은 항상 17:00으로 고정이라
+        // ReturnPolicy.of가 그 값을 무시하고 고정값을 채운다.
+        ReturnPolicy returnPolicy = maxRentalDays == null ? null : ReturnPolicy.of(maxRentalDays);
         return Item.of(id, name, category, type, count, imageKey, returnPolicy);
     }
 }
