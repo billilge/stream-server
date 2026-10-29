@@ -16,9 +16,12 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 도메인 행사에는 삭제 여부가 없어 저장할 때마다 is_deleted가 false로 들어가므로,
+// 공개 전환·수정과 삭제가 겹쳤을 때 삭제 표시를 되써서 지운 행사가 되살아나는 일을 막는다.
 @Entity
 @Table(
     name = "events",
@@ -27,6 +30,7 @@ import org.hibernate.type.SqlTypes;
         columnList = "is_published, is_deleted, event_start_at"
     )
 )
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventJpaEntity extends BaseSoftDeleteEntity {
 
