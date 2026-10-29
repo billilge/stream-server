@@ -101,7 +101,7 @@ public record AdminEventApplicationListResponse(
                 return answer.getAnswerText();
             }
             List<Integer> selected = answer.getSelectedOptions() == null ? List.of() : answer.getSelectedOptions();
-            List<String> options = question.getOptions() == null ? List.of() : question.getOptions();
+            List<String> options = question.getOptions();
             // 선택지가 바뀌어 범위를 벗어난 인덱스는 건너뛴다. 신청이 있으면 질문을 못 바꾸지만 과거 데이터에 대비한다
             String text = selected.stream()
                 .filter(index -> index >= 0 && index < options.size())
