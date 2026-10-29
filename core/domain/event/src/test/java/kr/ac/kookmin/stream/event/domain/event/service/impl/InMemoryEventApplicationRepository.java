@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
@@ -110,6 +112,16 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
 
     @Override
     public List<EventApplication> findSliceByMemberId(Long memberId, EventApplicationCursor cursor, int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long countUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday) {
         throw new UnsupportedOperationException();
     }
 

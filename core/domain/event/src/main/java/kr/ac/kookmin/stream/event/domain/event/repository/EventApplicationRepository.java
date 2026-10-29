@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.event.domain.event.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
@@ -61,6 +63,19 @@ public interface EventApplicationRepository {
         List<Long> memberIds,
         PageOffset pageOffset
     );
+
+    /**
+     * 회원이 신청한 행사 중 아직 지나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.
+     * 취소한 신청과 삭제된 행사는 뺀다.
+     *
+     * @param startOfToday 오늘 0시. 시작 시각이 아니라 날짜로 거른다 — 당일 행사는 이미 시작했어도 보여줘야 한다
+     */
+    List<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit);
+
+    /**
+     * {@link #findUpcomingAppliedEvents}와 같은 조건의 전체 수. 홈이 "N건 더보기"를 그릴 때 쓴다.
+     */
+    long countUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday);
 
     /**
      * 본인 신청 한 건을 조회한다. 남의 신청은 없는 것으로 보여야 하므로 회원 식별자를 조건에 함께 건다.

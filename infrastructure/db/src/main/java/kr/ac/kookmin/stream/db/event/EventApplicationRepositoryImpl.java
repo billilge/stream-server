@@ -1,11 +1,13 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
@@ -107,6 +109,20 @@ public class EventApplicationRepositoryImpl implements EventApplicationRepositor
             result.getSize(),
             result.getTotalElements()
         );
+    }
+
+    @Override
+    public List<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
+        return eventApplicationJpaRepository.findUpcomingAppliedEvents(
+                memberId, EventApplicationStatus.APPLIED, startOfToday, Pageable.ofSize(limit)).stream()
+            .map(EventJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public long countUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday) {
+        return eventApplicationJpaRepository.countUpcomingAppliedEvents(
+            memberId, EventApplicationStatus.APPLIED, startOfToday);
     }
 
     @Override
