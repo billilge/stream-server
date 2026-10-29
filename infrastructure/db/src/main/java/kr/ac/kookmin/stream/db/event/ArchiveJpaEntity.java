@@ -67,6 +67,7 @@ public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
 
     public Archive toDomain() {
         return Archive.of(
-            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed);
+            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed,
+            getCreatedAt());
     }
 }

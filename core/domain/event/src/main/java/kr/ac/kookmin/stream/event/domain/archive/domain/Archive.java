@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.archive.domain;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,8 @@ public class Archive {
     private List<Long> imageIds;
     /** 슬랑제(연말 행사) 전용 페이지에 띄울지. 삭제 여부와 달리 운영진이 목록에서 보고 켜고 끄는 값이라 도메인이 들고 있다. */
     private boolean exposed;
+    /** 등록 일시. 운영진 목록이 이 순서로 정렬하고 화면에도 보여준다. */
+    private LocalDateTime createdAt;
 
     public static Archive of(
         Long id,
@@ -32,10 +35,11 @@ public class Archive {
         String location,
         String departmentName,
         List<Long> imageIds,
-        boolean exposed
+        boolean exposed,
+        LocalDateTime createdAt
     ) {
         return new Archive(
-            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed);
+            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed, createdAt);
     }
 
     /**
