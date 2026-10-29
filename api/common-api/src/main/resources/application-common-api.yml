@@ -1,0 +1,21 @@
+server:
+  forward-headers-strategy: framework
+
+# Swagger UI / API 문서는 기본으로 닫고 dev 에서만 연다
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true

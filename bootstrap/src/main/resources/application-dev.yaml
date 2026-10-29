@@ -14,13 +14,6 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
 
-# Swagger UI / API 문서는 dev 에서만 노출
-springdoc:
-  swagger-ui:
-    enabled: true
-  api-docs:
-    enabled: true
-
 # actuator 엔드포인트 확장 (health 외 진단용). health 외 엔드포인트는 인증이 필요하다.
 management:
   endpoints:

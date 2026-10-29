@@ -16,7 +16,7 @@ import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
  * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다. 경로 매핑과
  * 파라미터 바인딩(@{@code RequestParam}, @{@code PathVariable} 등)은 구현체에 둔다.
  */
-@Tag(name = "공지", description = "학생 앱 공지사항 조회")
+@Tag(name = "공지", description = "공지사항 조회 (학생 앱·운영진 공용)")
 public interface AppNoticeApi {
 
     /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링한다. */
@@ -30,8 +30,10 @@ public interface AppNoticeApi {
         int size
     );
 
-    /** 공지 상세. */
-    @Operation(summary = "공지 상세 조회")
+    /** 공지 상세. 운영진 수정 화면도 이 응답으로 폼을 채운다. */
+    @Operation(summary = "공지 상세 조회",
+        description = "공지 한 건을 조회한다. 고정 여부(pinned), 이미지·첨부 파일의 ID와 URL을 함께 내려준다. "
+            + "삭제된 파일은 목록에서 빠진다.")
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     ApiResponse<NoticeDetailResponse> getNotice(Long noticeId);
 }

@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
+import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
@@ -35,5 +37,13 @@ class PayerServiceImpl implements PayerService {
     // 학번 앞 4자리를 입학년도로 본다 (레거시 빌릴게 백엔드의 PayerService와 동일한 규칙)
     private String enrollmentYearOf(String studentId) {
         return studentId.substring(0, 4);
+    }
+
+    // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(PR#67/#69 원칙 — 조회니까 붙이는 게 아니라 실제 이득이 있을 때만 붙인다).
+    @Override
+    public void validatePayer(Long memberId) {
+        if (payerRepository.findByMemberId(memberId).isEmpty()) {
+            throw new BusinessException(FeeErrorCode.MEMBER_IS_NOT_PAYER);
+        }
     }
 }

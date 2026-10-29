@@ -1,11 +1,14 @@
 package kr.ac.kookmin.stream.event.domain.locker.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 
 /**
  * 사물함 운영 회차·구역·사물함 저장소. 사물함 신청은 {@link LockerApplicationRepository}가 맡는다.
@@ -16,8 +19,6 @@ public interface LockerRepository {
      * 게시된 운영 회차가 있는지. 아직 공개하지 않은 회차는 학생에게 없는 것으로 보여야 한다.
      */
     boolean existsPublishedPeriod(Long lockerPeriodId);
-
-    boolean existsSection(Long sectionId);
 
     /**
      * 게시된 운영 회차 한 건. 아직 공개하지 않은 회차는 없는 것으로 본다.
@@ -30,9 +31,26 @@ public interface LockerRepository {
     List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds);
 
     /**
+     * 게시된 운영 회차 중 신청 마감 일시가 {@code [from, to)}인 회차. 모집 마감 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 게시된 운영 회차 중 이용 종료일이 {@code usageEndAt}인 회차. 이용 기간 만료 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt);
+
+    /**
      * 전체 구역을 식별자 오름차순으로 조회한다.
      */
     List<LockerSection> findAllSections();
+
+    Optional<LockerSection> findSectionById(Long sectionId);
+
+    /**
+     * 구역의 배치 구조와 사진. 아직 등록하지 않은 구역이면 비어 있다.
+     */
+    Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId);
 
     /**
      * 삭제되지 않은 사물함 전체를 조회한다. 구역별 집계는 서비스가 이 목록을 묶어 센다.

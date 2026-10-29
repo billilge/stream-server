@@ -35,10 +35,10 @@ root
 │   ├── admin-api/        # 운영진 콘솔 (ADMIN, /v1/admin/**)
 │   └── app-api/          # 학생 앱 (STUDENT, /v1/app/**)
 ├── core/                 # (빈 컨테이너 — 코드 없음)
-│   ├── common/           # 공유 커널 (순수 Java). verify 설정에서 shared module로 선언
+│   ├── common/           # 공유 커널 (순수 Java + spring-context·spring-tx). verify 설정에서 shared module로 선언
 │   │   ├── (common)      #   ApiResponse 규격, ErrorCode/CommonErrorCode/BusinessException, ErrorStatus,
 │   │   │                 #   PageResult/CursorSliceResult, PrincipalProvider·Role·Department, RegexPatterns,
-│   │   │                 #   OutboxWriter(아웃박스 쓰기 포트)
+│   │   │                 #   OutboxWriter(아웃박스 쓰기 포트), LockExecutor(낙관적 락 재시도 실행기)
 │   │   └── (common.event)#   크로스 도메인 이벤트 타입 (DomainEvent 마커 + 구체 이벤트)
 │   └── domain/           # (빈 컨테이너 — 코드 없음)
 │       ├── auth/         #   인증 (로그인·토큰 발급 흐름)
@@ -68,7 +68,7 @@ root
 | --- | --- | --- | --- |
 | `bootstrap` | 조립·기동 방식 | `@Modulithic` 메인, 최종 빈 조립, 스케줄링 활성화, 실행 설정, `bootJar` | 비즈니스 로직, 도메인 규칙 |
 | `api:*` | 클라이언트 요구(요청/응답 형태) | Controller, Request/Response DTO, 교차 도메인 `UseCase` | 비즈니스 규칙, 영속화, 보안 정책 구현 |
-| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입 | 특정 도메인 개념(`{Domain}Id` 등), Spring·JPA·web·security |
+| `core:common` | 공유 커널 규격 | 응답/에러 규격, 인증 추상(Principal·Role·Department), 페이지/커서 결과, 아웃박스 포트, 크로스 도메인 이벤트 타입, 낙관적 락 재시도 실행기(`LockExecutor`) | 특정 도메인 개념(`{Domain}Id` 등), JPA·web·security, `spring-context`·`spring-tx` 외 Spring |
 | `core:domain:{도메인}` | 해당 도메인 규칙 | `{Domain}Service`(진입점)·도메인 객체(record)·아웃바운드 포트 인터페이스와 그 구현 로직 | 다른 도메인, web·security·JPA·Modulith core (`@ApplicationModule` 선언용 `spring-modulith-api`는 compileOnly로 허용) |
 | `gateway:*` | 횡단관심사 정책 | 인증/인가(`auth`), 요청 추적·access log(`logging`) | 도메인 규칙, 영속화 |
 | `infrastructure:*` | 외부 기술(구현 세부) | `{Domain}Repository`/`{Domain}Client` 구현, JPA Entity·Flyway(`db`), 외부 API 어댑터(`client`), 아웃박스 릴레이(`outbox`) | 비즈니스 규칙, 도메인 진입점 |
@@ -201,7 +201,11 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 
 ### 4-2. 패키지 컨벤션 (탐지 규칙)
 
-- `@Modulithic` 메인 클래스는 `bootstrap`의 `{basePackage}`에 둔다.
+- 메인 클래스는 `{basePackage}.bootstrap`에 두고, 탐색 범위는 `{basePackage}`로 넓힌다. 기본값(메인 클래스 패키지)으로 두면 다른 모듈의 빈·JPA 엔티티·레포지토리·`@ConfigurationProperties`를 찾지 못한다.
+  - 빈: `@SpringBootApplication(scanBasePackages = ...)`
+  - JPA 엔티티·레포지토리: `@AutoConfigurationPackage(basePackages = ...)`
+  - 설정 바인딩: `@ConfigurationPropertiesScan(...)`
+  - Modulith 모듈 탐지: `ApplicationModules.of("{basePackage}")` (클래스를 넘기면 그 패키지가 루트가 된다)
 - **Gradle 경로와 Java 패키지는 별개다.** 도메인은 Gradle 상 `:core:domain:{도메인}`이지만 패키지는 루트 직속 형제로 둔다.
 
 ```
@@ -209,7 +213,7 @@ Gradle 모듈 분리가 도메인 간 경계를 컴파일 타임에 막고, Spri
 {basePackage}.core.domain.member  // ❌ Gradle 경로를 반영하면 domain이 한 모듈로 뭉쳐 경계가 안 걸림
 ```
 
-- `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(어노테이션 없이 순수 Java 유지).
+- `core:common`은 verify 설정에서 shared module로 선언해, 어디서든 의존해도 위반이 나지 않게 한다(Spring은 `spring-context`·`spring-tx`만 허용).
 - 도메인이 하나일 때부터 **일부러 위반을 만들어 `verify()`가 실패하는지** 확인한다.
 
 ### 4-3. 도메인 모듈의 패키지 구조 & 공개 경계
@@ -262,7 +266,7 @@ import org.springframework.modulith.ApplicationModule;
 // bootstrap/src/test/.../ModularityTests.java
 class ModularityTests {
 
-    private final ApplicationModules modules = ApplicationModules.of(Application.class);
+    private final ApplicationModules modules = ApplicationModules.of("{basePackage}");   // 메인 클래스 패키지(bootstrap)가 아닌 루트 기준
 
     @Test
     void verify() {
@@ -339,6 +343,7 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 - 서로 다른 도메인의 Service 2개 이상을 조합할 때만 UseCase를 만든다. **단일 도메인 흐름은 Controller가 그 `{Domain}Service`를 직접 참조**한다.
 - **트랜잭션은 원자성이 필요한 흐름에만 건다.** 유료 행사 신청(행사 정원 차감 + 회비/결제 반영)처럼 전부 성공/전부 실패해야 하는 경우에만 UseCase 메서드에 `@Transactional`을 선언한다(동일 DataSource 기준 한 트랜잭션). 운영진 대시보드 같은 조회 조합에는 트랜잭션을 걸지 않는다.
 - UseCase 트랜잭션이 도메인 Service를 감싸려면 `{Domain}Service`는 기본 전파(REQUIRED)를 쓴다. REQUIRES_NEW는 원자성을 깨므로 쓰지 않는다.
+- **낙관적 락 충돌을 재시도해야 하는 UseCase**(예: 대여 신청의 재고 차감)는 메서드에 `@Transactional`을 걸지 않고, `core:common`의 `LockExecutor.executeOptimistic()` 안에서 Service를 조합한다. 트랜잭션은 `LockExecutor`가 시도마다 새로 연다 — 같은 트랜잭션 안에서 재시도하면 1차 캐시와 REPEATABLE READ 스냅샷이 예전 값을 계속 돌려줘 매번 충돌하기 때문이다. 충돌하면 람다 전체가 처음부터 다시 실행되므로, 롤백되지 않는 부수효과(외부 API 호출 등)는 넣지 않는다. 이미 트랜잭션이 있는 곳에서 호출하면 `IllegalStateException`으로 실패한다.
 - 롤백 불가한 외부 부수효과(외부 결제 PG 호출 등)가 끼면 트랜잭션으로 원자성을 보장할 수 없다. 그런 UseCase에 한해 보상 로직을 명시한다.
 
 ### 6-2. 비동기 반응 — 이벤트 + 직접 구현 아웃박스
@@ -350,18 +355,21 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
   EventServiceImpl → outboxWriter.record(event)              // core:common 포트
       ↓ 같은 트랜잭션에서 outbox 테이블에 저장 (원 비즈니스 쓰기와 원자적)
 릴레이 (infrastructure:outbox)
-  OutboxRelay(@Scheduled 폴러) → 미발행 레코드 조회
-      → applicationEventPublisher.publishEvent(event)        // 인프로세스 재발행
-      → 전달 성공 시 발행 완료 마킹, 실패 시 다음 폴에서 재시도
-구독 (예: welfare 도메인 — 공지/알림 반영)
-  @TransactionalEventListener void on(EventApplicationConfirmed e)  // spring-tx, Modulith 의존 없음
+  OutboxRelay(@Scheduled 폴러) → PENDING 레코드 조회
+      → applicationEventPublisher.publishEvent(event)        // 트랜잭션 밖에서 인프로세스 재발행, 리스너 동기 실행
+      → 리스너가 예외 없이 끝나면 PUBLISHED, 실패하면 attempts+1 후 다음 폴에서 재시도 (한도 초과 시 FAILED)
+구독 (예: member 도메인 — 푸시 알림)
+  @EventListener void on(EventApplied e)                     // spring-context, Modulith 의존 없음
 ```
 
-- **이벤트 타입은 `core:common.event`에 둔다.** 발행/구독 도메인이 서로를 의존하지 않고 이벤트 타입만 공유한다.
+- **이벤트 타입은 `core:common.event`에 두고 `DomainEvent`를 구현한다.** 발행/구독 도메인이 서로를 의존하지 않고 이벤트 타입만 공유한다. `common.event`는 `@NamedInterface("event")`로 열어 두었다(Modulith는 모듈의 하위 패키지를 비공개로 본다).
 - 이벤트는 **사실**이다. ID·원시값만 담고 애그리거트/값 타입을 싣지 않는다. 커맨드(요청)를 이벤트로 쓰지 않는다.
 - **발행은 `OutboxWriter` 포트로 기록**한다(원 비즈니스 트랜잭션과 원자적). 인프로세스 재발행은 릴레이만 수행한다.
-- **구독은 `@TransactionalEventListener`**(spring-tx)로 한다. `core:domain`에 Modulith 이벤트 의존을 넣지 않는다.
-- 소비 리스너는 **멱등**하게 작성한다(at-least-once).
+- **구독은 `@EventListener`**로 한다. 릴레이가 트랜잭션 밖에서 발행하므로 `@TransactionalEventListener`는 호출되지 않는다. 릴레이는 리스너가 끝난 뒤에 발행 완료로 표시하므로, 리스너가 예외를 던지면 재시도된다. `core:domain`에 Modulith 이벤트 의존을 넣지 않는다.
+- 소비 리스너는 **멱등**하게 작성한다(at-least-once). 리스너가 끝난 뒤 완료 표시 전에 서버가 내려가면 한 번 더 전달된다. 푸시 알림처럼 드문 중복을 감수할 수 있으면 그대로 둔다.
+- **정해진 시각에 기록할 이벤트**(예: 행사 전날·반납 기한 임박 알림)는 그 데이터를 가진 도메인의 `service.impl`에 package-private `@Scheduled` 컴포넌트(`{Domain}NotificationScheduler`)를 두고, 대상만 골라 `OutboxWriter`로 기록한다. 다른 도메인을 조회해야 하는 판단(예: 회원 전체 − 신청자)은 이벤트에 필요한 ID를 실어 구독 측에서 한다.
+  - cron에는 `zone = "Asia/Seoul"`을 명시하고, 기록이 트랜잭션 안에서 일어나도록 메서드에 `@Transactional`을 건다.
+  - 발송 기록을 따로 남기지 않고 날짜·시간 구간으로 대상을 고른다. 서버가 그 시각에 내려가 있었으면 그 회차는 건너뛴다.
 - 아웃박스 테이블 스키마는 `flyway-migration.md`로 관리한다.
 - 최종적 일관성 경로다. "한 요청 안에서 쓰기 직후 결과를 즉시 조회해 응답에 실어야" 하면 이벤트가 아니라 6-1의 동기 UseCase로 처리한다.
 
@@ -369,13 +377,15 @@ Data Access    {Domain}Repository / {Domain}Client 인터페이스  → core:dom
 
 ## 7. 모듈별 허용 의존성
 
+모든 모듈은 루트 `build.gradle.kts`의 `subprojects`에서 Lombok(compileOnly), `spring-modulith-api`(compileOnly), `spring-boot-starter-logging`(SLF4J 파사드 + Logback)을 공통으로 받는다. 아래 표는 그 밖의 의존성이다. 모듈별 `build.gradle.kts`에 공통 의존성을 다시 선언하지 않는다.
+
 | 모듈 | 허용 의존성 |
 | --- | --- |
 | `bootstrap` | 모든 `api:*` + `gateway:*` + `infrastructure:*` + `core:common` + Spring Boot 실행(Actuator, 스케줄링) + `spring-modulith-core`·ArchUnit(**test scope**) |
 | `api:common-api` | `core:domain:{도메인}` + `core:common` + `gateway:auth`(DepartmentAccessChecker) + `gateway:logging` + Spring MVC + validation |
 | `api:{client}-api` | `api:common-api` + `core:domain:{도메인}` + `core:common` + `gateway:auth` + `gateway:logging` + Spring MVC + validation |
 | `core:domain:{도메인}` | `core:common` + `spring-context`(DI) + `spring-tx` + `spring-modulith-api`(**compileOnly**, `@ApplicationModule` 선언용) + 순수 Java. **Modulith core·web·security·JPA 없음** |
-| `core:common` | 순수 Java / 유틸리티만. Spring·Modulith·web·security·JPA 없음 |
+| `core:common` | 순수 Java / 유틸리티 + `spring-context`(빈 등록) + `spring-tx`(`LockExecutor`의 트랜잭션). Modulith·web·security·JPA 없음 |
 | `gateway:auth` | `core:common` + Spring Security + `jjwt` + `spring-webmvc`(예외 위임) |
 | `gateway:logging` | `core:common` + `spring-web` + `spring-context` + slf4j 등 + Servlet API |
 | `infrastructure:db` | `core:domain:{도메인}` + `core:common` + JPA / Flyway / MySQL 드라이버 |

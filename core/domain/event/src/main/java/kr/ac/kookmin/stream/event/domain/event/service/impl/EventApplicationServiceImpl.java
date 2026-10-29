@@ -7,6 +7,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
+import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -31,6 +34,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
     private final EventRepository eventRepository;
     private final EventApplyAnswerValidator eventApplyAnswerValidator;
+    private final OutboxWriter outboxWriter;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,6 +59,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
             EventApplication.create(eventId, memberId, LocalDateTime.now())
         );
         eventRepository.saveAnswers(toAnswers(application.getId(), command));
+        outboxWriter.record(new EventApplied(memberId, eventId, application.getId(), event.getTitle()));
 
         return new EventApplicationResult(application.getId(), event);
     }
@@ -119,6 +124,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
         application.cancel(now);
         eventRepository.saveApplication(application);
+        outboxWriter.record(new EventApplicationCanceled(memberId, event.getId(), application.getId(), event.getTitle()));
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */

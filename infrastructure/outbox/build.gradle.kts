@@ -10,6 +10,7 @@ dependencies {
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springContext)
     implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterJackson)   // 이벤트를 JSON으로 저장·복원 (Jackson 3, JsonMapper)
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterDataJpaTest)

@@ -9,12 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface ItemJpaRepository extends JpaRepository<ItemJpaEntity, Long> {
 
-    // 커서가 없으면 첫 페이지, 있으면 그 다음부터 조회한다. keyword는 이름 부분 일치 검색이다.
-    // LIKE 대신 LOCATE를 써서 %·_ 같은 문자도 와일드카드가 아닌 글자 그대로 검색된다
+    // 커서가 없으면 첫 페이지, 있으면 그 다음부터 조회한다. keyword는 이름 부분 일치 검색이며 LikePatterns.escape로
+    // 이스케이프한 값을 받는다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query("""
         SELECT i FROM ItemJpaEntity i
         WHERE (:category IS NULL OR i.category = :category)
-        AND (:keyword IS NULL OR LOCATE(:keyword, i.name) > 0)
+        AND (:keyword IS NULL OR i.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND (:cursorName IS NULL OR i.name > :cursorName OR (i.name = :cursorName AND i.id > :cursorId))
         ORDER BY i.name ASC, i.id ASC
         """)

@@ -25,9 +25,16 @@ springBootStarterAspectj = { module = "org.springframework.boot:spring-boot-star
 springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
 springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 springBootStarterFlyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
+springBootStarterJackson = { module = "org.springframework.boot:spring-boot-starter-jackson" }
+springBootStarterLogging = { module = "org.springframework.boot:spring-boot-starter-logging" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 springBootStarterSecurityTest = { module = "org.springframework.boot:spring-boot-starter-security-test" }
 springBootStarterDataJpaTest = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
+springBootTestcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+
+# Testcontainers — 실제 MySQL로 도는 통합 테스트용 (버전은 springBootDependenciesBom이 관리)
+testcontainersMysql = { module = "org.testcontainers:testcontainers-mysql" }
+testcontainersJunitJupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
 
 # Spring Modulith — verify() boundary checks only, bootstrap test scope
 springModulithApi = { module = "org.springframework.modulith:spring-modulith-api" }
@@ -38,12 +45,12 @@ springModulithDocs = { module = "org.springframework.modulith:spring-modulith-do
 springWeb = { module = "org.springframework:spring-web" }
 springContext = { module = "org.springframework:spring-context" }
 springTx = { module = "org.springframework:spring-tx" }
+springJdbc = { module = "org.springframework:spring-jdbc" }
 
 jakartaServletApi = { module = "jakarta.servlet:jakarta.servlet-api" }
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 # Jackson 3 — Spring Boot 4가 만드는 매퍼 빈과 같은 계열
 jackson3Databind = { module = "tools.jackson.core:jackson-databind" }
-slf4jApi = { module = "org.slf4j:slf4j-api" }
 
 flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }

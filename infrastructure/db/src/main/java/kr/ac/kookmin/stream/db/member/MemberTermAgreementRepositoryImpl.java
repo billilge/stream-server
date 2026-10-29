@@ -18,4 +18,11 @@ public class MemberTermAgreementRepositoryImpl implements MemberTermAgreementRep
             .map(MemberTermAgreementJpaEntity::toDomain)
             .toList();
     }
+
+    @Override
+    public void saveAll(List<MemberTermAgreement> agreements) {
+        memberTermAgreementJpaRepository.saveAll(agreements.stream()
+            .map(MemberTermAgreementJpaEntity::from)
+            .toList());
+    }
 }

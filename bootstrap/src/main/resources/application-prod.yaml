@@ -6,13 +6,6 @@ logging:
     root: INFO
     kr.ac.kookmin: INFO
 
-# Swagger UI / API 문서 비활성화
-springdoc:
-  swagger-ui:
-    enabled: false
-  api-docs:
-    enabled: false
-
 # actuator는 health 만 노출
 management:
   endpoints:

@@ -1,11 +1,14 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,16 +19,12 @@ public class LockerRepositoryImpl implements LockerRepository {
 
     private final LockerPeriodJpaRepository lockerPeriodJpaRepository;
     private final LockerSectionJpaRepository lockerSectionJpaRepository;
+    private final LockerSectionLayoutJpaRepository lockerSectionLayoutJpaRepository;
     private final LockerJpaRepository lockerJpaRepository;
 
     @Override
     public boolean existsPublishedPeriod(Long lockerPeriodId) {
         return lockerPeriodJpaRepository.existsByIdAndIsPublishedTrue(lockerPeriodId);
-    }
-
-    @Override
-    public boolean existsSection(Long sectionId) {
-        return lockerSectionJpaRepository.existsById(sectionId);
     }
 
     @Override
@@ -42,10 +41,36 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
+        return lockerPeriodJpaRepository.findPublishedApplyEndingBetween(from, to).stream()
+            .map(LockerPeriodJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+        return lockerPeriodJpaRepository.findAllByIsPublishedTrueAndUsageEndAt(usageEndAt).stream()
+            .map(LockerPeriodJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<LockerSection> findAllSections() {
         return lockerSectionJpaRepository.findAllByOrderByIdAsc().stream()
             .map(LockerSectionJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public Optional<LockerSection> findSectionById(Long sectionId) {
+        return lockerSectionJpaRepository.findById(sectionId)
+            .map(LockerSectionJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
+        return lockerSectionLayoutJpaRepository.findBySectionId(sectionId)
+            .map(LockerSectionLayoutJpaEntity::toDomain);
     }
 
     @Override

@@ -48,6 +48,21 @@ public interface EventRepository {
      */
     Map<Long, Long> countAppliedByEventIds(List<Long> eventIds);
 
+    /**
+     * 게시되고 삭제되지 않은 행사 중 시작 일시가 {@code [from, to)}인 행사. 행사 전날 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedStartingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 신청 마감 일시가 {@code [from, to)}인 행사. 모집 마감 임박 알림 대상을 고를 때 쓴다.
+     */
+    List<Event> findPublishedApplyEndingBetween(LocalDateTime from, LocalDateTime to);
+
+    /**
+     * 행사의 유효 신청(취소하지 않은 신청)을 낸 회원 식별자.
+     */
+    List<Long> findAppliedMemberIds(Long eventId);
+
     List<EventQuestion> findQuestionsByEventId(Long eventId);
 
     long countAppliedByEventId(Long eventId);
