@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -13,6 +14,9 @@ public interface RentalHistoryRepository {
      * @param status 대여 상태. null이면 전체
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
+
+    /** 회원의 대여 이력 중 해당 상태인 것들. */
+    List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses);
 
     /** 모든 회원의 대여 이력 중 해당 상태인 것. 반납 알림 대상을 고를 때 쓴다. */
     List<RentalHistory> findAllByStatus(RentalStatus status);
