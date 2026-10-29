@@ -63,7 +63,7 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public PageResult<Event> findPage(String keyword, PageOffset pageOffset) {
+    public PageResult<Event> search(String keyword, PageOffset pageOffset) {
         Page<EventJpaEntity> result = eventJpaRepository.search(
             LikePatterns.escape(keyword), PageRequest.of(pageOffset.page(), pageOffset.size())
         );

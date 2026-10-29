@@ -74,7 +74,7 @@ public class AdminEventController implements AdminEventApi {
     @GetMapping("/{eventId}")
     public ApiResponse<AdminEventDetailResponse> getEvent(AdminApiUser apiUser, @PathVariable Long eventId) {
         EventManageDetail detail = adminEventService.getEvent(eventId);
-        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.event().getImageIds());
 
         return ApiResponse.success(AdminEventDetailResponse.of(detail, imagesById, LocalDateTime.now()));
     }

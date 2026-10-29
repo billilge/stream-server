@@ -32,7 +32,7 @@ public record EventDetail(
             event.getEventEndAt(),
             event.getApplyStartAt(),
             event.getApplyEndAt(),
-            event.getImageIds() == null ? List.of() : event.getImageIds(),
+            event.getImageIds(),
             recruitStatus,
             event.daysUntilDeadline(now, recruitStatus)
         );

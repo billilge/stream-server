@@ -26,17 +26,17 @@ public class AdminEventWriteUseCase {
     private final FileService fileService;
 
     public Event create(Long createdBy, EventCreateCommand command) {
-        requireImagesExist(command.imageIds());
+        validateImagesExist(command.imageIds());
         return adminEventService.create(createdBy, command);
     }
 
     public Event update(Long eventId, EventUpdateCommand command) {
-        requireImagesExist(command.imageIds());
+        validateImagesExist(command.imageIds());
         return adminEventService.update(eventId, command);
     }
 
     // 요청 DTO가 중복을 걸러 넘기므로 조회 결과 개수와 바로 비교할 수 있다
-    private void requireImagesExist(List<Long> imageIds) {
+    private void validateImagesExist(List<Long> imageIds) {
         if (fileService.findAllByIdIn(imageIds).size() != imageIds.size()) {
             throw new BusinessException(FileErrorCode.FILE_NOT_FOUND);
         }

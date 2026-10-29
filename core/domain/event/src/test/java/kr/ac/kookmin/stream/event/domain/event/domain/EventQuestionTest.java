@@ -1,12 +1,15 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import kr.ac.kookmin.stream.common.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +22,11 @@ class EventQuestionTest {
 
     private static EventQuestion saved(Long id, QuestionType type, List<String> options, boolean otherOptionAllowed) {
         return EventQuestion.of(id, 15L, "참여 종목", type, true, 1, options, otherOptionAllowed);
+    }
+
+    private static void assertRejected(Runnable creation) {
+        BusinessException e = assertThrows(BusinessException.class, creation::run);
+        assertEquals(EventErrorCode.EVENT_INVALID_QUESTION, e.getErrorCode());
     }
 
     @Nested
@@ -61,6 +69,22 @@ class EventQuestionTest {
             options.add("농구");
 
             assertEquals(List.of("축구"), question.getOptions());
+        }
+
+        @Test
+        @DisplayName("선택형 질문에 선택지가 없으면 거부한다")
+        void choiceWithoutOptions() {
+            for (QuestionType type : List.of(QuestionType.SINGLE_CHOICE, QuestionType.MULTIPLE_CHOICE)) {
+                assertRejected(() -> EventQuestion.create(15L, 1, command(type, List.of(), false)));
+                assertRejected(() -> EventQuestion.create(15L, 1, command(type, null, false)));
+            }
+        }
+
+        @Test
+        @DisplayName("텍스트형 질문은 선택지가 없어도 만든다")
+        void textWithoutOptions() {
+            assertDoesNotThrow(() -> EventQuestion.create(15L, 1, command(QuestionType.SHORT_TEXT, null, false)));
+            assertDoesNotThrow(() -> EventQuestion.create(15L, 1, command(QuestionType.LONG_TEXT, List.of(), false)));
         }
     }
 

@@ -43,7 +43,7 @@ public interface EventRepository {
      * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
      *                그대로 검색한다
      */
-    PageResult<Event> findPage(String keyword, PageOffset pageOffset);
+    PageResult<Event> search(String keyword, PageOffset pageOffset);
 
     /**
      * 주어진 식별자의 행사를 조회한다. 삭제 여부로 거르지 않는다.

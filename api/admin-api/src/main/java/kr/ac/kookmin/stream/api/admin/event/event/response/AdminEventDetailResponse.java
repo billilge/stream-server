@@ -60,7 +60,7 @@ public record AdminEventDetailResponse(
             detail.applicantCount(),
             event.calculateRecruitStatus(now, detail.applicantCount()),
             event.isPublished(),
-            detail.imageIds().stream()
+            detail.event().getImageIds().stream()
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
                 .toList(),
@@ -93,7 +93,7 @@ public record AdminEventDetailResponse(
                 question.getQuestionText(),
                 question.isRequired(),
                 question.getDisplayOrder(),
-                question.getOptions() == null ? List.of() : question.getOptions(),
+                question.getOptions(),
                 question.isOtherOptionAllowed()
             );
         }

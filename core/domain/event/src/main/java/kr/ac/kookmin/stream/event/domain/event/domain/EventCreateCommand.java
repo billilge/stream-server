@@ -12,5 +12,5 @@ public record EventCreateCommand(
     boolean feePaidOnly,
     List<Long> imageIds,
     List<EventQuestionCommand> questions
-) implements EventWriteCommand {
+) {
 }
