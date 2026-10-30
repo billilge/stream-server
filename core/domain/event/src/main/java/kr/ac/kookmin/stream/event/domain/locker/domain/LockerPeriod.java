@@ -2,6 +2,8 @@ package kr.ac.kookmin.stream.event.domain.locker.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -13,6 +15,9 @@ import lombok.Getter;
 public class LockerPeriod {
 
     private Long id;
+    private int year;
+    private int semester;
+    /** 연도와 학기로 만든 표시용 이름. 예: 2026-1학기 */
     private String name;
     private LocalDateTime applyStartAt;
     private LocalDateTime applyEndAt;
@@ -23,6 +28,8 @@ public class LockerPeriod {
 
     public static LockerPeriod of(
         Long id,
+        int year,
+        int semester,
         String name,
         LocalDateTime applyStartAt,
         LocalDateTime applyEndAt,
@@ -30,7 +37,67 @@ public class LockerPeriod {
         LocalDate usageEndAt,
         boolean published
     ) {
-        return new LockerPeriod(id, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, published);
+        return new LockerPeriod(id, year, semester, name, applyStartAt, applyEndAt, usageStartAt, usageEndAt, published);
+    }
+
+    /**
+     * 운영진이 새 회차를 만든다. 이름은 연도와 학기로 서버가 만든다.
+     * <p>
+     * 학생에게 회차를 보여주는 경로는 홈 화면 배너뿐이고 그쪽에서 따로 설정하므로, 게시 여부는 요청으로 받지 않고 바로 게시 상태로 둔다.
+     * 미게시로 두면 구역 조회와 신청이 모두 회차를 찾지 못한다.
+     * <p>
+     * 연도와 학기의 값 범위는 요청 DTO의 Bean Validation이 막는다. 여기서는 필드 하나로 표현할 수 없는 기간 순서만 본다.
+     */
+    public static LockerPeriod create(LockerPeriodCreateCommand command) {
+        validateDates(command.applyStartDate(), command.applyEndDate(), command.usageStartDate(), command.usageEndDate());
+
+        return new LockerPeriod(
+            null,
+            command.year(),
+            command.semester(),
+            toName(command.year(), command.semester()),
+            command.applyStartDate().atStartOfDay(),
+            toApplyEndAt(command.applyEndDate()),
+            command.usageStartDate(),
+            command.usageEndDate(),
+            true
+        );
+    }
+
+    /**
+     * 신청·사용 기간을 바꾼다. 연도·학기와 게시 여부는 이 경로로 바뀌지 않는다.
+     *
+     * @param now 회차 상태를 판단할 기준 시각
+     */
+    public void update(LockerPeriodUpdateCommand command, LocalDateTime now) {
+        validateDates(command.applyStartDate(), command.applyEndDate(), command.usageStartDate(), command.usageEndDate());
+        validateChangeable(command.applyStartDate(), now);
+
+        this.applyStartAt = command.applyStartDate().atStartOfDay();
+        this.applyEndAt = toApplyEndAt(command.applyEndDate());
+        this.usageStartAt = command.usageStartDate();
+        this.usageEndAt = command.usageEndDate();
+    }
+
+    /**
+     * 신청 시작 전이면 예정, 사용 종료일이 지났으면 종료, 그 사이는 진행 중이다.
+     */
+    public LockerPeriodStatus calculateStatus(LocalDateTime now) {
+        if (now.isBefore(applyStartAt)) {
+            return LockerPeriodStatus.UPCOMING;
+        }
+        if (isUsageEnded(now.toLocalDate())) {
+            return LockerPeriodStatus.ENDED;
+        }
+        return LockerPeriodStatus.IN_PROGRESS;
+    }
+
+    /**
+     * 회차 범위(신청 시작일 ~ 사용 종료일)가 다른 회차와 겹치는지. 회차는 같은 시기에 둘이 돌 수 없다.
+     */
+    public boolean overlaps(LockerPeriod other) {
+        return !applyStartAt.toLocalDate().isAfter(other.usageEndAt)
+            && !other.applyStartAt.toLocalDate().isAfter(usageEndAt);
     }
 
     /**
@@ -38,5 +105,52 @@ public class LockerPeriod {
      */
     public boolean isUsageEnded(LocalDate today) {
         return today.isAfter(usageEndAt);
+    }
+
+    /**
+     * 신청 마감일의 마지막 순간. MySQL {@code DATETIME}은 소수점 초를 반올림하므로 {@link LocalTime#MAX}를 그대로
+     * 넣으면 다음 날 00:00:00으로 저장된다. 나노초를 떼어 23:59:59로 맞춘다.
+     */
+    private static LocalDateTime toApplyEndAt(LocalDate applyEndDate) {
+        return applyEndDate.atTime(LocalTime.MAX.withNano(0));
+    }
+
+    private static String toName(int year, int semester) {
+        return "%d-%d학기".formatted(year, semester);
+    }
+
+    /**
+     * 신청 마감일과 사용 시작일의 선후는 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감일을 늘리는
+     * 운영이 있어 두 기간이 겹칠 수 있다.
+     * <p>
+     * 다만 신청 마감일은 사용 종료일을 넘을 수 없다. 넘기면 {@link #calculateStatus}가 종료로 보는 뒤에도
+     * 신청 마감일이 남아 있고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
+     */
+    private static void validateDates(
+        LocalDate applyStartDate,
+        LocalDate applyEndDate,
+        LocalDate usageStartDate,
+        LocalDate usageEndDate
+    ) {
+        if (applyStartDate.isAfter(applyEndDate)
+            || usageStartDate.isAfter(usageEndDate)
+            || applyEndDate.isAfter(usageEndDate)) {
+            throw new BusinessException(LockerErrorCode.INVALID_LOCKER_PERIOD_RANGE);
+        }
+    }
+
+    /**
+     * 종료된 회차는 손대지 않는다. 진행 중인 회차는 이미 학생이 신청을 시작했으므로 신청 시작일을 되돌릴 수 없다.
+     * <p>
+     * 수정이 전체 교체라 바뀌지 않은 시작일도 원래 값 그대로 다시 올라온다. 그래서 "보냈는가"가 아니라 "원래와 다른가"를 본다.
+     */
+    private void validateChangeable(LocalDate applyStartDate, LocalDateTime now) {
+        LockerPeriodStatus status = calculateStatus(now);
+        if (status == LockerPeriodStatus.ENDED) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_ALREADY_ENDED);
+        }
+        if (status == LockerPeriodStatus.IN_PROGRESS && !applyStartDate.equals(applyStartAt.toLocalDate())) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_APPLY_ALREADY_STARTED);
+        }
     }
 }

@@ -44,6 +44,8 @@ class LockerApplicationServiceImplTest {
     private static LockerPeriod period() {
         return LockerPeriod.of(
             PERIOD_ID,
+            2026,
+            2,
             "2026-2학기",
             LocalDateTime.of(2026, 8, 20, 10, 0),
             LocalDateTime.of(2026, 8, 25, 18, 0),
@@ -193,7 +195,7 @@ class LockerApplicationServiceImplTest {
 
         private LockerPeriod period(Long id, String name, LocalDate usageStart, LocalDate usageEnd, boolean published) {
             LocalDateTime applyAt = usageStart.atStartOfDay();
-            return LockerPeriod.of(id, name, applyAt, applyAt, usageStart, usageEnd, published);
+            return LockerPeriod.of(id, 2026, 2, name, applyAt, applyAt, usageStart, usageEnd, published);
         }
 
         private LockerApplication application(Long id, Long periodId, Long lockerId, LocalDateTime appliedAt) {
@@ -366,6 +368,26 @@ class LockerApplicationServiceImplTest {
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override
+        public List<LockerPeriod> findAllPeriods() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<LockerPeriod> findPeriodById(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LockerPeriod savePeriod(LockerPeriod period) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean deletePeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean existsPublishedPeriod(Long lockerPeriodId) {
             throw new UnsupportedOperationException();
         }
@@ -404,6 +426,11 @@ class LockerApplicationServiceImplTest {
         private boolean losingSave;
         private final List<LockerApplication> saved = new ArrayList<>();
         private List<LockerApplication> memberApplications = List.of();
+
+        @Override
+        public boolean existsByPeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {

@@ -11,19 +11,24 @@ import org.springframework.data.repository.query.Param;
 
 public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpaEntity, Long> {
 
-    boolean existsByIdAndIsPublishedTrue(Long id);
+    List<LockerPeriodJpaEntity> findAllByIsDeletedFalseOrderByApplyStartAtDesc();
 
-    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrue(Long id);
+    Optional<LockerPeriodJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrue(Collection<Long> ids);
+    boolean existsByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrueAndIsDeletedFalse(Collection<Long> ids);
 
     @Query("""
         SELECT p FROM LockerPeriodJpaEntity p
         WHERE p.isPublished = true
+        AND p.isDeleted = false
         AND p.applyEndAt >= :from
         AND p.applyEndAt < :to
         """)
     List<LockerPeriodJpaEntity> findPublishedApplyEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndUsageEndAt(LocalDate usageEndAt);
+    List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndIsDeletedFalseAndUsageEndAt(LocalDate usageEndAt);
 }
