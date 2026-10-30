@@ -139,6 +139,23 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public void saveLockers(List<Locker> lockers) {
+        lockerJpaRepository.saveAll(lockers.stream()
+            .map(LockerJpaEntity::from)
+            .toList());
+    }
+
+    @Override
+    public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
+        if (lockerIds.isEmpty()) {
+            return List.of();
+        }
+        return lockerJpaRepository.findAllByIdInAndIsDeletedFalse(lockerIds).stream()
+            .map(LockerJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
         return lockerJpaRepository.findAllByIdIn(lockerIds).stream()
             .map(LockerJpaEntity::toDomain)

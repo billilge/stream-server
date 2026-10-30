@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,6 +30,8 @@ public interface LockerApplicationJpaRepository extends JpaRepository<LockerAppl
         WHERE a.lockerPeriodId = :lockerPeriodId
         """)
     List<Long> findMemberIdsByLockerPeriodId(@Param("lockerPeriodId") Long lockerPeriodId);
+
+    boolean existsByLockerPeriodIdInAndLockerIdIn(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds);
 
     /**
      * 회차당 회원 신청은 유니크 제약으로 한 건까지만 존재한다.

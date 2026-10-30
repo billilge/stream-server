@@ -4,6 +4,7 @@ import java.util.List;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 
 /**
  * 운영진 사물함 API가 쓰는 서비스.
@@ -36,4 +37,12 @@ public interface AdminLockerService {
      * 운영 회차를 소프트 삭제한다. 신청이 한 건이라도 있으면 거부한다.
      */
     void deletePeriod(Long lockerPeriodId);
+
+    /**
+     * 구역 안의 사물함 여러 개의 상태를 한 번에 바꾼다.
+     * <p>
+     * 하나라도 바꿀 수 없으면 아무것도 바꾸지 않는다. 사용 기간이 끝나지 않은 회차에 배정된 사물함은
+     * 이용 중인 학생이 있으므로 {@code DISABLED}로 바꿀 수 없다.
+     */
+    void changeLockerStatus(Long sectionId, List<Long> lockerIds, LockerStatus status);
 }

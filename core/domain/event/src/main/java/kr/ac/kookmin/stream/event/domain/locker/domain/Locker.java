@@ -40,6 +40,13 @@ public class Locker {
      * @param applied 해당 운영 회차에 이 사물함이 이미 신청되었는지
      */
     public boolean isSelectable(boolean applied) {
-        return status == LockerStatus.AVAILABLE && !applied;
+        return status.isUsable() && !applied;
+    }
+
+    /**
+     * 사물함 자체 상태를 바꾼다. 이미 그 상태여도 그대로 둔다 — 영속성 컨텍스트가 값이 바뀐 행만 UPDATE한다.
+     */
+    public void changeStatus(LockerStatus status) {
+        this.status = status;
     }
 }

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodParams;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerStatusChangeRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionListResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -19,7 +20,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * <p>
  * 구역은 운영 회차에 묶여 있지 않다. 요청의 회차는 "어느 회차의 배정 현황을 볼지"를 정하는 기준이다.
  */
-@Tag(name = "사물함 구역 관리", description = "운영진 사물함 구역 목록·상세 조회")
+@Tag(name = "사물함 구역 관리", description = "운영진 사물함 구역 목록·상세 조회와 사물함 상태 변경")
 public interface AdminLockerSectionApi {
 
     /** 구역별 전체·선택 가능·배정 사물함 수. */
@@ -46,5 +47,23 @@ public interface AdminLockerSectionApi {
         AdminApiUser apiUser,
         Long sectionId,
         @ParameterObject LockerPeriodParams params
+    );
+
+    /** 구역 안의 사물함 여러 개를 같은 상태로 바꾼다. */
+    @Operation(summary = "사물함 상태 일괄 변경",
+        description = "구역 안의 사물함 여러 개를 AVAILABLE(선택가능) 또는 DISABLED(선택불가)로 한 번에 바꾼다. "
+            + "하나라도 바꿀 수 없으면 아무것도 바뀌지 않는다. "
+            + "사용 기간이 끝나지 않은 회차에 배정된 사물함은 이용 중인 학생이 있으므로 DISABLED로 바꿀 수 없고, "
+            + "AVAILABLE로 되돌리는 것은 막지 않는다. "
+            + "구역 상세가 내려주는 ASSIGNED는 신청으로 생기는 표시용 값이라 이 경로로 바꿀 수 없다. "
+            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다. "
+            + "이용 중 검사와 학생 신청이 겹치면 서로 다른 테이블에 써서 둘 다 성공할 수 있고, "
+            + "그때는 배정된 칸이 사용 중지된 채로 남는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_NOT_IN_SECTION", "LOCKER_IN_USE"})
+    ApiResponse<Void> changeLockerStatus(
+        AdminApiUser apiUser,
+        Long sectionId,
+        LockerStatusChangeRequest request
     );
 }

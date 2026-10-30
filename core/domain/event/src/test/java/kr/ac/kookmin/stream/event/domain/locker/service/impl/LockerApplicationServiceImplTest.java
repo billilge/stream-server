@@ -361,6 +361,16 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public void saveLockers(List<Locker> lockers) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             batchLookups++;
             return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();
@@ -427,6 +437,11 @@ class LockerApplicationServiceImplTest {
         private boolean losingSave;
         private final List<LockerApplication> saved = new ArrayList<>();
         private List<LockerApplication> memberApplications = List.of();
+
+        @Override
+        public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public boolean existsByPeriod(Long lockerPeriodId) {
