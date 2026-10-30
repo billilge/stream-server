@@ -41,16 +41,17 @@ class LockerApplicationServiceImplTest {
     private static final Long MEMBER_ID = 100L;
     private static final Long LOCKER_ID = 11L;
 
+    /** 오늘 날짜와 무관하게 늘 모집 기간 안이도록 신청·사용 기간을 아주 먼 과거부터 먼 미래로 둔다. */
     private static LockerPeriod period() {
         return LockerPeriod.of(
             PERIOD_ID,
-            2026,
-            2,
-            "2026-2학기",
-            LocalDateTime.of(2026, 8, 20, 10, 0),
-            LocalDateTime.of(2026, 8, 25, 18, 0),
-            LocalDate.of(2026, 9, 1),
-            LocalDate.of(2026, 12, 15),
+            2000,
+            1,
+            "2000-1학기",
+            LocalDateTime.of(2000, 1, 1, 0, 0),
+            LocalDateTime.of(2999, 12, 31, 23, 59, 59),
+            LocalDate.of(2000, 1, 2),
+            LocalDate.of(2999, 12, 31),
             true
         );
     }

@@ -27,7 +27,8 @@ public interface AppLockerApi {
     /** 구역별 전체·선택 가능 사물함 수와 표시 상태. */
     @Operation(summary = "사물함 구역 목록 조회",
         description = "운영 회차의 구역별 전체 사물함 수와 현재 선택 가능한 사물함 수를 조회한다. "
-            + "사용 중지된 사물함과 해당 회차에 이미 신청된 사물함은 선택 가능 수에서 빠진다.")
+            + "사용 중지된 사물함과 해당 회차에 이미 신청된 사물함은 선택 가능 수에서 빠진다. "
+            + "선택 가능 수는 모집 기간을 보지 않으므로, 모집 기간 밖에서 신청하면 LOCKER_APPLY_NOT_OPEN이 난다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND"})
     ApiResponse<LockerSectionListResponse> getSections(
@@ -40,7 +41,8 @@ public interface AppLockerApi {
         description = "구역의 칸 배치 구조(layout)와 실제 사진, 구역에 속한 사물함의 선택 가능 여부를 조회한다. "
             + "layout의 칸 번호는 lockers[].lockerNumber와 같다. 배치 구조를 아직 등록하지 않은 구역이면 "
             + "layout과 photoUrl이 null이다. 사물함이 사용 가능한 상태이고 해당 회차에 신청되지 않은 경우에만 "
-            + "선택할 수 있다.")
+            + "선택할 수 있다. 선택 가능 여부는 모집 기간을 보지 않으므로, 모집 기간 밖에서 신청하면 "
+            + "LOCKER_APPLY_NOT_OPEN이 난다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_SECTION_NOT_FOUND"})
     ApiResponse<LockerSectionDetailResponse> getSectionLockers(
@@ -51,10 +53,12 @@ public interface AppLockerApi {
 
     /** 고른 사물함을 신청하고 즉시 배정한다. */
     @Operation(summary = "사물함 신청",
-        description = "게시된 운영 회차에서 고른 사물함을 신청하고 즉시 배정한다. 운영 회차당 한 개만 신청할 수 있고 "
-            + "신청 후에는 취소하거나 변경할 수 없다. 같은 사물함에 동시에 신청하면 먼저 완료된 신청만 성공한다.")
+        description = "게시된 운영 회차에서 고른 사물함을 신청하고 즉시 배정한다. 모집 기간 안에서만 받는다. "
+            + "운영 회차당 한 개만 신청할 수 있고 신청 후에는 취소하거나 변경할 수 없다. "
+            + "같은 사물함에 동시에 신청하면 먼저 완료된 신청만 성공한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_ALREADY_ASSIGNED"})
+    @ApiErrorCode(type = LockerErrorCode.class,
+        codes = {"LOCKER_PERIOD_NOT_FOUND", "LOCKER_APPLY_NOT_OPEN", "LOCKER_ALREADY_ASSIGNED"})
     ApiResponse<LockerApplyResponse> apply(AppApiUser apiUser, LockerApplyRequest request);
 
     /** 내 사물함 신청 내역. */

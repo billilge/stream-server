@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.event.domain.locker.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -93,6 +94,24 @@ public class LockerPeriod {
     }
 
     /**
+     * 지금이 신청을 받는 기간인지. 신청 시작 일시부터 마감 일시까지 양 끝을 포함한다.
+     * <p>
+     * 사용 시작일과의 선후는 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감 일시를 늘리는 운영이 있어
+     * 두 기간이 겹칠 수 있다.
+     * <p>
+     * 사용이 끝난 회차는 받지 않는다. {@link #validateDates}가 마감일을 사용 종료일 안으로 묶어 두므로 정상 등록된
+     * 회차에서는 이 조건이 걸리지 않지만, 관리자 API가 없던 시기에 DB로 직접 넣은 회차(V15·V20 주석)까지 막는다.
+     *
+     * @param now 판단 기준 시각. 마감 일시는 초까지만 저장되므로({@link #toApplyEndAt}) 초 단위로 끊어 견준다.
+     *            그러지 않으면 마감일 23:59:59.001부터는 나노초 때문에 마감으로 보인다
+     */
+    public boolean isApplyOpen(LocalDateTime now) {
+        LocalDateTime at = now.truncatedTo(ChronoUnit.SECONDS);
+        return !at.isBefore(applyStartAt) && !at.isAfter(applyEndAt)
+            && !isUsageEnded(at.toLocalDate());
+    }
+
+    /**
      * 회차 범위(신청 시작일 ~ 사용 종료일)가 다른 회차와 겹치는지. 회차는 같은 시기에 둘이 돌 수 없다.
      */
     public boolean overlaps(LockerPeriod other) {
@@ -124,7 +143,7 @@ public class LockerPeriod {
      * 운영이 있어 두 기간이 겹칠 수 있다.
      * <p>
      * 다만 신청 마감일은 사용 종료일을 넘을 수 없다. 넘기면 {@link #calculateStatus}가 종료로 보는 뒤에도
-     * 신청 마감일이 남아 있고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
+     * {@link #isApplyOpen}이 신청을 받고, {@link #overlaps}가 보는 회차 범위도 신청 기간을 다 담지 못한다.
      */
     private static void validateDates(
         LocalDate applyStartDate,
