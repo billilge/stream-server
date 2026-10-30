@@ -23,13 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 class AdminItemServiceImpl implements AdminItemService {
 
     private final ItemRepository itemRepository;
-    // 물품 삭제 차단(진행 중인 대여 확인)에 쓴다. Item과 RentalHistory는 같은 도메인(rental) 안의 집합체라
-    // UseCase를 거치지 않고 레포지토리를 바로 참조한다 — api:app-api의 RentalApplyUseCase/RentalCancelUseCase가
-    // Service 레이어(ItemService/RentalHistoryService)를 조합하는 것과는 다른 층위다.
+    // 물품 삭제 차단(진행 중인 대여 확인)에 쓴다.
     private final RentalHistoryRepository rentalHistoryRepository;
     private final LockExecutor lockExecutor;
 
-    // 단일 조회라 트랜잭션이 필요 없다(coding-style.md 2-7절).
     @Override
     public PageResult<Item> search(ItemCategory category, ItemType type, String keyword, PageOffset pageOffset) {
         return itemRepository.search(category, type, keyword, pageOffset);
@@ -46,11 +43,7 @@ class AdminItemServiceImpl implements AdminItemService {
         return itemRepository.save(item);
     }
 
-    // command.count()가 재고를 직접 덮어쓰면 낙관적 락(DIRTY) 대상인 Item.count를 건드리면서도 decreaseStock/
-    // increaseStock의 검증(재고 부족 등)을 거치지 않는다 — 그래서 목표 수량과 현재 수량의 차이만큼 기존
-    // 증감 메서드를 재사용한다. LockExecutor로 감싸는 것도, @Transactional을 안 거는 것도 decreaseStock/
-    // increaseStock과 같은 이유다(시도마다 LockExecutor가 새 트랜잭션을 연다). 이름 중복 검증도 재시도마다
-    // 다시 하는데, 가벼운 조회라 RentalApplyUseCase의 결제자 검증과 같은 트레이드오프다.
+    // 재고 변경은 increaseStock/decreaseStock의 검증을 타도록 목표 수량과 현재 수량의 차이만큼 증감시킨다.
     @Override
     public Item update(Long itemId, ItemUpdateCommand command) {
         return lockExecutor.executeOptimistic(() -> {
@@ -73,7 +66,7 @@ class AdminItemServiceImpl implements AdminItemService {
         });
     }
 
-    // 대여품은 반납 정책이 없으면 isReturnRequired·dueAt이 조용히 계산되지 않아 반납 관리 대상에서 빠진다.
+    // 대여품(RENTAL)은 반납 정책이 필수다.
     private void validateReturnPolicyRequired(ItemType type, ReturnPolicy returnPolicy) {
         if (type == ItemType.RENTAL && returnPolicy == null) {
             throw new BusinessException(RentalErrorCode.RETURN_POLICY_REQUIRED);

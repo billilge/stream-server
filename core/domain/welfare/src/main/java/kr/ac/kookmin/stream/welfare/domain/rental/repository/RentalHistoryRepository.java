@@ -26,7 +26,7 @@ public interface RentalHistoryRepository {
      * 모든 회원의 대여 이력을 신청 시각 내림차순(같으면 식별자 내림차순)으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
      *
      * @param status    대여 상태. null이면 전체
-     * @param memberIds 대상 회원 id 목록. null이면 회원 필터 없음(빈 리스트로 호출하지 않는다 — 호출부가 먼저 걸러낸다)
+     * @param memberIds 대상 회원 id 목록. null이면 회원 필터 없음
      */
     PageResult<RentalHistory> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset);
 

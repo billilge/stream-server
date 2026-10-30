@@ -25,29 +25,21 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
 
-    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다(coding-style.md 2-6). AdminItemService.update()가
-    // 물품의 반납 정책·종류를 바꿀 수 있어서(isReturnRequired·dueAt 계산에 직접 쓰이는 필드), 두 조회 사이에
-    // 그 값이 바뀌지 않도록 스냅샷을 고정한다.
+    // 회원의 대여 이력을 물품과 짝지어 반환한다.
     @Override
-    @Transactional(readOnly = true)
     public List<RentalRecord> getHistories(Long memberId, RentalStatus status) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, status));
     }
 
-    // getHistories와 같은 이유로 스냅샷을 고정한다.
     @Override
-    @Transactional(readOnly = true)
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 스냅샷을 고정한다. RentalRecord.isReturnRequired()가 보는
-    // 세 상태(RENTAL·RETURN_PENDING·RETURN_CONFIRMED)를 모두 봐야 반납 신청 후 운영진이 최종 확인하기
-    // 전까지도 알림·목록에 계속 잡힌다.
+    // 반납 기한 임박·연체 알림 대상을 고를 때 쓴다.
     @Override
-    @Transactional(readOnly = true)
     public List<RentalRecord> getAllReturnRequiredRentals() {
         List<RentalHistory> candidates = rentalHistoryRepository.findAllByStatusIn(RentalStatus.awaitingReturnStatuses());
         return toRecords(candidates).stream()
@@ -55,8 +47,6 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .toList();
     }
 
-    // 조회(대상 확인) + 쓰기(상태 전이)만 있는 단순 전이라 트랜잭션 하나로 끝난다. RETURN_PENDING은 재고를
-    // 건드리지 않는다 — 실제 반납 확인(재고 복구)은 운영진이 changeStatusByAdmin으로 RETURNED까지 바꿔야 일어난다.
     @Override
     @Transactional
     public RentalHistory requestReturn(Long memberId, Long historyId) {
@@ -65,8 +55,6 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return rentalHistoryRepository.save(history);
     }
 
-    // PENDING 상태에서만 가능하므로 재고 복구가 항상 일어난다(운영진이 아직 손대지 않은 신청이라 중복 복구
-    // 우려가 없다). 재고(Item)는 다른 집합체라 완료된 이력을 돌려주고 호출부가 ItemService와 조합한다.
     @Override
     @Transactional
     public RentalHistory cancel(Long memberId, Long historyId) {
@@ -75,16 +63,13 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return rentalHistoryRepository.save(history);
     }
 
-    // requestReturn·cancel이 공유하는 "본인 소유 + 특정 상태" 조회. 둘 다 소유자가 아니거나 상태가 다르면
-    // 구분 없이 RENTAL_NOT_FOUND로 처리한다(존재는 하지만 남의 것이거나 상태가 안 맞는다는 걸 굳이 알리지 않는다).
+    // requestReturn·cancel이 공유하는 "본인 소유 + 특정 상태" 조회. 조건에 안 맞으면 RENTAL_NOT_FOUND.
     private RentalHistory getOwnedByStatus(Long historyId, Long memberId, RentalStatus status) {
         return rentalHistoryRepository.findById(historyId)
             .filter(history -> history.getMemberId().equals(memberId) && history.getRentalStatus() == status)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
     }
 
-    // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는
-    // LockExecutor가 시도마다 연 트랜잭션 안에서 호출되므로, 그 시도의 스냅샷을 그대로 공유해서 쓴다.
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryRepository.existsActiveRental(itemId, memberId);

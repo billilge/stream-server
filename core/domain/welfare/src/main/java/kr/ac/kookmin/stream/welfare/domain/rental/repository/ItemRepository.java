@@ -35,7 +35,7 @@ public interface ItemRepository {
 
     Optional<Item> findById(Long id);
 
-    /** id로 조회한다. 없으면 ITEM_NOT_FOUND — 서비스마다 반복되던 findById().orElseThrow()를 여기로 모았다. */
+    /** id로 조회한다. 없으면 ITEM_NOT_FOUND. */
     Item getById(Long id);
 
     boolean existsByName(String name);
