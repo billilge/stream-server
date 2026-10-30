@@ -22,6 +22,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
@@ -95,6 +96,32 @@ class AdminLockerServiceImpl implements AdminLockerService {
     }
 
     @Override
+    @Transactional
+    public void changeSectionLayout(Long sectionId, String layout) {
+        validateSectionExists(sectionId);
+
+        // 배치를 아직 등록하지 않은 구역이면 이 저장이 첫 등록이다
+        LockerSectionLayout sectionLayout = lockerRepository.findLayoutBySectionId(sectionId)
+            .orElseGet(() -> LockerSectionLayout.createEmpty(sectionId));
+        sectionLayout.changeLayout(layout);
+
+        lockerRepository.saveLayout(sectionLayout);
+    }
+
+    @Override
+    @Transactional
+    public void changeSectionPhotos(Long sectionId, List<Long> photoFileIds) {
+        validateSectionExists(sectionId);
+
+        // 사진은 배치와 같은 행에 있고 배치 쪽이 비어 있을 수 없다. 배치부터 등록해야 사진을 올릴 수 있다
+        LockerSectionLayout sectionLayout = lockerRepository.findLayoutBySectionId(sectionId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_SECTION_LAYOUT_NOT_FOUND));
+        sectionLayout.changePhotos(photoFileIds);
+
+        lockerRepository.saveLayout(sectionLayout);
+    }
+
+    @Override
     public PageResult<LockerApplicationResult> getApplications(
         Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset
     ) {
@@ -159,10 +186,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
      * 요청한 사물함을 구역 소속으로 확인하고 돌려준다. 하나라도 그 구역에 없으면 아무것도 바꾸지 않도록 여기서 끊는다.
      */
     private List<Locker> getLockersInSection(Long sectionId, List<Long> lockerIds) {
-        // 구역부터 확인한다. 없는 구역이면 같은 경로의 구역 상세 조회와 같이 404로 나가야 한다
-        if (lockerRepository.findSectionById(sectionId).isEmpty()) {
-            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
-        }
+        validateSectionExists(sectionId);
 
         // 구역 전체가 아니라 요청한 사물함만 읽는다. 36칸 구역에서 두 칸만 바꿔도 전체를 읽지 않도록 한다
         List<Locker> lockers = lockerRepository.findLockersByIds(lockerIds);
@@ -193,6 +217,15 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         if (lockerApplicationRepository.existsByPeriodIdsAndLockerIds(assignedPeriodIds, lockerIds)) {
             throw new BusinessException(LockerErrorCode.LOCKER_IN_USE);
+        }
+    }
+
+    /**
+     * 없는 구역이면 같은 경로의 구역 상세 조회와 같이 404로 나가야 한다. 구역을 먼저 확인해 아무것도 바꾸지 않고 끊는다.
+     */
+    private void validateSectionExists(Long sectionId) {
+        if (lockerRepository.findSectionById(sectionId).isEmpty()) {
+            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
         }
     }
 

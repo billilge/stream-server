@@ -6,9 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodParams;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerSectionLayoutUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerSectionPhotoUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerStatusChangeRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionListResponse;
+import kr.ac.kookmin.stream.api.admin.event.locker.usecase.AdminLockerPhotoUpdateUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +37,7 @@ public class AdminLockerSectionController implements AdminLockerSectionApi {
     private final LockerService lockerService;
     private final AdminLockerService adminLockerService;
     private final FileService fileService;
+    private final AdminLockerPhotoUpdateUseCase adminLockerPhotoUpdateUseCase;
 
     @Override
     @GetMapping
@@ -68,6 +73,28 @@ public class AdminLockerSectionController implements AdminLockerSectionApi {
         @Valid @RequestBody LockerStatusChangeRequest request
     ) {
         adminLockerService.changeLockerStatus(sectionId, request.distinctLockerIds(), request.lockerStatus());
+        return ApiResponse.success();
+    }
+
+    @Override
+    @PutMapping("/{sectionId}/layout")
+    public ApiResponse<Void> changeSectionLayout(
+        AdminApiUser apiUser,
+        @PathVariable Long sectionId,
+        @Valid @RequestBody LockerSectionLayoutUpdateRequest request
+    ) {
+        adminLockerService.changeSectionLayout(sectionId, request.layout());
+        return ApiResponse.success();
+    }
+
+    @Override
+    @PutMapping("/{sectionId}/photos")
+    public ApiResponse<Void> changeSectionPhotos(
+        AdminApiUser apiUser,
+        @PathVariable Long sectionId,
+        @Valid @RequestBody LockerSectionPhotoUpdateRequest request
+    ) {
+        adminLockerPhotoUpdateUseCase.changePhotos(sectionId, request.distinctPhotoFileIds());
         return ApiResponse.success();
     }
 }

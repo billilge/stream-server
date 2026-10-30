@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerPeriodParams;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerSectionLayoutUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerSectionPhotoUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.request.LockerStatusChangeRequest;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.locker.response.AdminLockerSectionListResponse;
@@ -11,6 +13,7 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
+import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
 /**
@@ -20,7 +23,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * <p>
  * 구역은 운영 회차에 묶여 있지 않다. 요청의 회차는 "어느 회차의 배정 현황을 볼지"를 정하는 기준이다.
  */
-@Tag(name = "사물함 구역 관리", description = "운영진 사물함 구역 목록·상세 조회와 사물함 상태 변경")
+@Tag(name = "사물함 구역 관리", description = "운영진 사물함 구역 목록·상세 조회, 사물함 상태 변경, 칸 배치·사진 수정")
 public interface AdminLockerSectionApi {
 
     /** 구역별 전체·선택 가능·배정 사물함 수. */
@@ -65,5 +68,33 @@ public interface AdminLockerSectionApi {
         AdminApiUser apiUser,
         Long sectionId,
         LockerStatusChangeRequest request
+    );
+
+    @Operation(summary = "사물함 구역 칸 배치 수정",
+        description = "구역의 칸 배치 구조(layout)를 바꾼다. 배치를 아직 등록하지 않은 구역이면 이 요청이 첫 등록이다. "
+            + "보낸 JSON은 해석하지 않고 그대로 저장하며, 칸 번호가 구역의 사물함과 맞는지도 보지 않는다 — "
+            + "칸 번호가 어긋나면 없는 칸이 그려지거나 있는 사물함이 화면에서 빠진다. "
+            + "배치 형식 버전은 받지 않고 서버가 박는다. "
+            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_SECTION_NOT_FOUND"})
+    ApiResponse<Void> changeSectionLayout(
+        AdminApiUser apiUser,
+        Long sectionId,
+        LockerSectionLayoutUpdateRequest request
+    );
+
+    @Operation(summary = "사물함 구역 사진 수정",
+        description = "구역 사진을 보낸 목록으로 통째로 바꾼다. 배열 순서가 노출 순서이고, 한 장 이상이어야 한다. "
+            + "지울 사진은 목록에서 빼고 남길 사진까지 함께 보낸다 — 빠진 사진은 연결만 끊기고 파일 자체는 지워지지 않는다. "
+            + "사진은 칸 배치와 같은 행에 저장되므로 배치를 등록하지 않은 구역에는 사진만 올릴 수 없다. "
+            + "응답 본문이 없으므로 바뀐 결과는 구역 상세를 다시 조회해 받는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = LockerErrorCode.class, codes = {"LOCKER_SECTION_NOT_FOUND", "LOCKER_SECTION_LAYOUT_NOT_FOUND"})
+    @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
+    ApiResponse<Void> changeSectionPhotos(
+        AdminApiUser apiUser,
+        Long sectionId,
+        LockerSectionPhotoUpdateRequest request
     );
 }
