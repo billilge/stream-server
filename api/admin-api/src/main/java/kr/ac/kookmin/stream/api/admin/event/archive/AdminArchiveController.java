@@ -6,14 +6,14 @@ import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.archive.request.ArchiveSearchParams;
 import kr.ac.kookmin.stream.api.admin.event.archive.response.AdminArchiveDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.archive.response.AdminArchiveListItemResponse;
+import kr.ac.kookmin.stream.api.admin.event.archive.usecase.AdminArchiveDetailUseCase;
+import kr.ac.kookmin.stream.api.admin.event.archive.usecase.ArchiveWithRelatedEvent;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
 import kr.ac.kookmin.stream.event.domain.archive.service.AdminArchiveService;
-import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminArchiveController implements AdminArchiveApi {
 
     private final AdminArchiveService adminArchiveService;
-    private final ArchiveService archiveService;
+    private final AdminArchiveDetailUseCase adminArchiveDetailUseCase;
     private final FileService fileService;
 
     @Override
@@ -55,9 +55,10 @@ public class AdminArchiveController implements AdminArchiveApi {
         AdminApiUser apiUser,
         @PathVariable Long archiveId
     ) {
-        ArchiveDetail detail = archiveService.getArchive(archiveId);
-        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+        ArchiveWithRelatedEvent archive = adminArchiveDetailUseCase.getArchive(archiveId);
+        Map<Long, File> imagesById = fileService.findAllByIdIn(archive.detail().imageIds());
 
-        return ApiResponse.success(AdminArchiveDetailResponse.of(detail, imagesById));
+        return ApiResponse.success(
+            AdminArchiveDetailResponse.of(archive.detail(), archive.relatedEventTitle(), imagesById));
     }
 }

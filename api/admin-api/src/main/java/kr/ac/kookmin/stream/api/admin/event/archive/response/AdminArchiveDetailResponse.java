@@ -25,11 +25,17 @@ public record AdminArchiveDetailResponse(
     String content,
     boolean isExposed,
     List<Image> images,
+    RelatedEvent relatedEvent,
     LocalDateTime createdAt
 ) {
 
-    /** @param imagesById 활동 사진 파일. 삭제된 파일은 키가 없어 목록에서 조용히 빠진다 */
-    public static AdminArchiveDetailResponse of(ArchiveDetail detail, Map<Long, File> imagesById) {
+    /**
+     * @param relatedEventTitle 연결한 행사의 제목. 연결이 없거나 행사가 사라졌으면 {@code null}
+     * @param imagesById        활동 사진 파일. 삭제된 파일은 키가 없어 목록에서 조용히 빠진다
+     */
+    public static AdminArchiveDetailResponse of(
+        ArchiveDetail detail, String relatedEventTitle, Map<Long, File> imagesById
+    ) {
         return new AdminArchiveDetailResponse(
             detail.archiveId(),
             detail.title(),
@@ -43,8 +49,18 @@ public record AdminArchiveDetailResponse(
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
                 .toList(),
+            RelatedEvent.of(detail.relatedEventId(), relatedEventTitle),
             detail.createdAt()
         );
+    }
+
+    /** 연결한 행사. 수정 화면이 드롭다운의 기존 값을 채울 때도 쓴다. */
+    public record RelatedEvent(Long eventId, String title) {
+
+        /** 연결이 없거나 행사가 사라져 제목을 못 가져왔으면 {@code null}이다. */
+        public static RelatedEvent of(Long eventId, String title) {
+            return eventId == null || title == null ? null : new RelatedEvent(eventId, title);
+        }
     }
 
     public record Image(Long fileId, String fileUrl) {

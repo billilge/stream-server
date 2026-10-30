@@ -9,6 +9,8 @@ import java.util.List;
  * <p>
  * 학생 앱과 운영진이 같이 쓴다. 담는 값이 거의 같고 운영진만 보는 것은 두 개(슬랑제 노출 여부·등록 일시)뿐이라
  * 하나로 두고, 학생 앱 응답이 그 둘을 담지 않는다.
+ *
+ * @param relatedEventId 연결한 행사. 연결하지 않았으면 {@code null}이고, 제목은 담지 않는다
  */
 public record ArchiveDetail(
     Long archiveId,
@@ -19,12 +21,12 @@ public record ArchiveDetail(
     String departmentName,
     String content,
     List<Long> imageIds,
-    List<ArchiveRelatedLink> relatedLinks,
+    Long relatedEventId,
     boolean exposed,
     LocalDateTime createdAt
 ) {
 
-    public static ArchiveDetail of(Archive archive, List<ArchiveRelatedLink> relatedLinks) {
+    public static ArchiveDetail from(Archive archive) {
         return new ArchiveDetail(
             archive.getId(),
             archive.getTitle(),
@@ -34,7 +36,7 @@ public record ArchiveDetail(
             archive.getDepartmentName(),
             archive.getContent(),
             archive.getImageIds() == null ? List.of() : archive.getImageIds(),
-            relatedLinks,
+            archive.getRelatedEventId(),
             archive.isExposed(),
             archive.getCreatedAt()
         );
