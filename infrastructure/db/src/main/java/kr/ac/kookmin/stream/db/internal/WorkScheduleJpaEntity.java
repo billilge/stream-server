@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.internal.domain.schedule.domain.WorkSchedule;
 import lombok.AccessLevel;
@@ -16,7 +17,8 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "work_schedules",
     indexes = {
-        @Index(name = "idx_work_schedules_member_id", columnList = "member_id")
+        @Index(name = "idx_work_schedules_member_id", columnList = "member_id"),
+        @Index(name = "idx_work_schedules_work_date", columnList = "work_date")
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,8 +32,8 @@ public class WorkScheduleJpaEntity extends BaseTimeEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "day_of_week", nullable = false, length = 10)
-    private String dayOfWeek;
+    @Column(name = "work_date", nullable = false)
+    private LocalDate workDate;
 
     @Column(name = "start_hour", nullable = false, columnDefinition = "TINYINT")
     private int startHour;
@@ -42,7 +44,7 @@ public class WorkScheduleJpaEntity extends BaseTimeEntity {
     private WorkScheduleJpaEntity(WorkSchedule schedule) {
         this.id = schedule.getId();
         this.memberId = schedule.getMemberId();
-        this.dayOfWeek = schedule.getDayOfWeek();
+        this.workDate = schedule.getWorkDate();
         this.startHour = schedule.getStartHour();
         this.endHour = schedule.getEndHour();
     }
@@ -52,6 +54,6 @@ public class WorkScheduleJpaEntity extends BaseTimeEntity {
     }
 
     public WorkSchedule toDomain() {
-        return WorkSchedule.of(id, memberId, dayOfWeek, startHour, endHour);
+        return WorkSchedule.of(id, memberId, workDate, startHour, endHour);
     }
 }

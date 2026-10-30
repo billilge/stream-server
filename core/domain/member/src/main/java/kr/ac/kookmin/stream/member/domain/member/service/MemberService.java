@@ -17,6 +17,8 @@ public interface MemberService {
      * 검색할지 말지는 호출하는 쪽이 정하므로, 검색어가 null이거나 공백뿐이면 일치하는 회원이 없어 빈 목록이다.
      */
     List<Long> searchIdsByKeyword(String keyword);
+    // 학생회 구성원(학생회 부서가 있는 회원). 이름, 같은 이름이면 학번 오름차순
+    List<Member> findAllCouncilMembers();
     Member updateProfile(Long id, MemberProfileCommand command);
     Member registerOrUpdateByStudentId(MemberProfileCommand command);
     Member signUp(Long memberId, MemberSignUpCommand command);

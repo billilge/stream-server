@@ -31,6 +31,14 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
     @Query("SELECT m.id FROM MemberJpaEntity m WHERE m.isDeleted = false")
     List<Long> findAllActiveIds();
 
+    @Query("""
+        SELECT m FROM MemberJpaEntity m
+        WHERE m.isDeleted = false
+        AND m.councilDepartment IS NOT NULL
+        ORDER BY m.name, m.studentId
+        """)
+    List<MemberJpaEntity> findAllCouncilMembers();
+
     // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)은 푸시 대상에서 빠진다
     @Query("""
         SELECT new kr.ac.kookmin.stream.db.member.PushTargetProjection(m.id, m.fcmToken, s)
