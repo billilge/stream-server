@@ -11,10 +11,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalBlockPeriodConfig
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * 대여 이용 제한 기간 조회·설정. {@code internal}(설정값 저장)을 쓴다. 전용 테이블 없이 기존
- * admin_config_values key-value를 그대로 재사용한다.
- */
+/** 대여 이용 제한 기간 조회·설정. admin_config_values key-value를 그대로 쓴다. */
 @Component
 @RequiredArgsConstructor
 public class AdminRentalBlockPeriodUseCase {

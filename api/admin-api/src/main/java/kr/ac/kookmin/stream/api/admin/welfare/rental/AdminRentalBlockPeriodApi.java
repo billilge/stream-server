@@ -12,8 +12,7 @@ import kr.ac.kookmin.stream.common.CommonErrorCode;
 /**
  * 대여 이용 제한 기간 설정 API의 문서 명세. 구현은 {@link AdminRentalBlockPeriodController}가 맡는다.
  * <p>
- * 설정한 기간 동안은 학생의 대여 신청이 막힌다({@code RentalApplyUseCase} 참고). 접근은 {@code ADMIN} role이면
- * 된다(부서 제한 없음, 다른 billilge 관리자 API와 동일).
+ * 접근은 {@code ADMIN} role이면 된다. 부서 제한은 두지 않았다.
  */
 @Tag(name = "이용 제한 기간 설정", description = "대여 신청을 막는 기간 조회·설정")
 public interface AdminRentalBlockPeriodApi {

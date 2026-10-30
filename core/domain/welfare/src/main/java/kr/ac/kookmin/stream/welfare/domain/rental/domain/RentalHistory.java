@@ -23,12 +23,8 @@ public class RentalHistory {
     private LocalDateTime returnedAt;
 
     /**
-     * 새 대여 이력을 만든다. workerId가 null이면(학생 본인 신청) 물품 종류와 관계없이 승인 대기(PENDING)로
-     * 시작한다 — 운영진이 {@link #changeStatusByAdmin}으로 승인해야 다음 단계로 넘어간다(PR #75가 남겨둔
-     * "신청 즉시 확정" 전제를 이 PR에서 되돌린다). workerId가 있으면(관리자가 현장에서 대신 등록) 이미
-     * 물건을 건네준 걸 사후 기록하는 용도라 승인 대기 단계 없이, 물품 종류에 따라 바로 시작 상태가 정해진다
-     * — 대여품은 RENTAL, 소모품은 RETURNED로 바로 종료 상태로 간다. 처리자(workerId)는 호출한 관리자가
-     * 아니라 폼에서 고른 근무자다.
+     * 새 대여 이력을 만든다. workerId가 null이면 학생 본인 신청으로 승인 대기(PENDING) 상태에서 시작하고,
+     * workerId가 있으면 관리자 대행 등록으로 물품 종류에 따라 RENTAL 또는 RETURNED로 바로 시작한다.
      */
     public static RentalHistory create(
         Item item, Long memberId, Long workerId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt
@@ -52,13 +48,7 @@ public class RentalHistory {
         this.rentalStatus = RentalStatus.CANCEL;
     }
 
-    /**
-     * 운영진이 상태를 직접 바꾼다. 전이 규칙은 없다(어떤 값이든 허용). 호출부({@code RentalHistoryServiceImpl})가
-     * 직전 상태와 같은 요청은 걸러내므로, 여기 도달했다는 건 실제로 상태가 바뀐다는 뜻이다. RENTAL로 바뀌면
-     * 지금을 실제 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다 — 신청 시점에 학생이
-     * 고른 희망 시각(rentAt)은 승인까지 걸린 기간만큼 실제 수령 시각과 벌어질 수 있어, 전이 시점에 덮어써야
-     * 반납 기한(dueAt) 계산이 실제 보유 기간을 반영한다.
-     */
+    /** 운영진이 상태를 직접 바꾼다. RENTAL로 바뀌면 지금을 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다. */
     public void changeStatusByAdmin(RentalStatus newStatus, LocalDateTime now) {
         if (newStatus == RentalStatus.RENTAL) {
             this.rentAt = now;

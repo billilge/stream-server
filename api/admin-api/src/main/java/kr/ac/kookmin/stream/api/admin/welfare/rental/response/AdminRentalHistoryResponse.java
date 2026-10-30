@@ -9,11 +9,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 
-/**
- * 처리자 정보는 이 응답에 없다 — 상태 변경 처리자 이력은 대여 기록 옆 버튼으로 따로 조회하는
- * 전용 API(상태변경 처리자 로그 조회)가 맡는다. "최근 처리자 1명"을 여기 끼워 넣으면 이력이 쌓이는
- * 그 API와 의미가 겹치고 어긋난다.
- */
+/** 대여 기록 하나의 상세. 처리자 이력은 상태 변경 처리자 로그 조회 API가 따로 맡는다. */
 public record AdminRentalHistoryResponse(
     @Schema(description = "대여 기록 ID", example = "501")
     Long rentalId,

@@ -14,11 +14,10 @@ public enum RentalStatus {
     RETURNED,
     RETURN_CONFIRMED;
 
-    // 더 이상 손댈 일이 없는(재고가 이미 돌아왔거나 애초에 나가지 않은) 상태. 물품 삭제 차단·중복 대여 차단·
-    // 재고 복구 중복 방지가 모두 "이 셋이 아니면 진행 중"이라는 같은 기준을 쓴다.
+    // 완전히 끝난 상태.
     private static final Set<RentalStatus> FINISHED_STATUSES = Set.of(RETURNED, CANCEL, REJECTED);
 
-    // 아직 운영진이 반납을 최종 확인(RETURNED)하지 않은, "들고 있거나 반납 절차가 진행 중인" 상태.
+    // 아직 반납이 최종 확인되지 않은 상태.
     private static final Set<RentalStatus> AWAITING_RETURN_STATUSES = Set.of(RENTAL, RETURN_PENDING, RETURN_CONFIRMED);
 
     public static RentalStatus from(String value) {

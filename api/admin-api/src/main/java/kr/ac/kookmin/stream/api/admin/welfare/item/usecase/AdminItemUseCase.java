@@ -8,11 +8,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * 물품 등록·수정. {@code file}(이미지 파일 조회)과 {@code rental}(물품 저장) 두 도메인을 조합한다
- * (coding-style.md 2-9절). 실제 쓰기는 {@code AdminItemService}의 트랜잭션 하나뿐이라 여기엔
- * {@code @Transactional}을 걸지 않는다.
- */
+/** 물품 등록·수정. {@code file}(이미지 파일 조회)과 {@code rental}(물품 저장) 두 도메인을 조합한다. */
 @Component
 @RequiredArgsConstructor
 public class AdminItemUseCase {

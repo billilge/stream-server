@@ -28,8 +28,7 @@ public interface RentalHistoryJpaRepository extends JpaRepository<RentalHistoryJ
 
     boolean existsByItemIdAndRentalStatusNotIn(Long itemId, Collection<RentalStatus> excludedStatuses);
 
-    // 관리자 콘솔용 페이지 번호 조회. memberIds가 null이면(filterByMember=false) 회원 필터를 안 건다
-    // (StudentTransferStatusJpaRepository.search와 같은 패턴)
+    // 관리자 콘솔용 페이지 번호 조회. memberIds가 null이면 회원 필터를 안 건다.
     @Query(value = """
         SELECT h FROM RentalHistoryJpaEntity h
         WHERE (:status IS NULL OR h.rentalStatus = :status)
