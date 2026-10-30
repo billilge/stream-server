@@ -71,6 +71,13 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
     }
 
     @Override
+    public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
+        return answers.stream()
+            .filter(answer -> answer.getEventApplicationId().equals(applicationId))
+            .toList();
+    }
+
+    @Override
     public Optional<EventApplication> findByIdAndEventId(Long applicationId, Long eventId) {
         return Optional.ofNullable(applications.get(applicationId))
             .filter(application -> application.getEventId().equals(eventId));
@@ -108,11 +115,6 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
 
     @Override
     public Optional<EventApplication> findByIdAndMemberId(Long applicationId, Long memberId) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
         throw new UnsupportedOperationException();
     }
 }

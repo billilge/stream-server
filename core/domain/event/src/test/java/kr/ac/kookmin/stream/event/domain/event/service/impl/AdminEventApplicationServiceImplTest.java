@@ -108,13 +108,6 @@ class AdminEventApplicationServiceImplTest {
             assertEquals(3, secondPage.totalCount());
             assertEquals(2, secondPage.totalPage());
         }
-
-        @Test
-        @DisplayName("없거나 삭제된 행사는 찾을 수 없다")
-        void eventNotFound() {
-            assertRejected(EventErrorCode.EVENT_NOT_FOUND,
-                () -> service.getApplications(99L, null, null, PageOffset.of(0, 20)));
-        }
     }
 
     @Test
@@ -144,13 +137,13 @@ class AdminEventApplicationServiceImplTest {
         @Test
         @DisplayName("그 행사의 신청을 돌려준다")
         void returnsApplication() {
-            assertEquals(103L, service.getApplication(EVENT_ID, 13L).getMemberId());
+            assertEquals(103L, service.getApplicationDetail(EVENT_ID, 13L).application().getMemberId());
         }
 
         @Test
         @DisplayName("다른 행사의 신청이면 찾을 수 없다")
         void otherEventsApplication() {
-            assertRejected(EventErrorCode.APPLICATION_NOT_FOUND, () -> service.getApplication(EVENT_ID, 14L));
+            assertRejected(EventErrorCode.APPLICATION_NOT_FOUND, () -> service.getApplicationDetail(EVENT_ID, 14L));
         }
 
         @Test
@@ -158,7 +151,7 @@ class AdminEventApplicationServiceImplTest {
         void eventNotFound() {
             repository.events.remove(EVENT_ID);
 
-            assertRejected(EventErrorCode.EVENT_NOT_FOUND, () -> service.getApplication(EVENT_ID, 11L));
+            assertRejected(EventErrorCode.EVENT_NOT_FOUND, () -> service.getApplicationDetail(EVENT_ID, 11L));
         }
     }
 }

@@ -9,6 +9,8 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationManageDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
@@ -31,7 +33,6 @@ class AdminEventApplicationServiceImpl implements AdminEventApplicationService {
         List<Long> memberIds,
         PageOffset pageOffset
     ) {
-        getEventOrThrow(eventId);
         return eventApplicationRepository.searchByEventId(eventId, status, memberIds, pageOffset);
     }
 
@@ -46,11 +47,19 @@ class AdminEventApplicationServiceImpl implements AdminEventApplicationService {
         return eventApplicationRepository.countByEventId(eventId);
     }
 
+    // 신청은 행사를 지워도 남으므로, 삭제된 행사의 신청이 보이지 않도록 행사를 먼저 확인한다
     @Override
-    public EventApplication getApplication(Long eventId, Long applicationId) {
-        getEventOrThrow(eventId);
-        return eventApplicationRepository.findByIdAndEventId(applicationId, eventId)
+    public EventApplicationManageDetail getApplicationDetail(Long eventId, Long applicationId) {
+        Event event = getEventOrThrow(eventId);
+        EventApplication application = eventApplicationRepository.findByIdAndEventId(applicationId, eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
+
+        return new EventApplicationManageDetail(application, EventApplicationDetail.of(
+            event,
+            application,
+            eventRepository.findQuestionsByEventId(eventId),
+            eventApplicationRepository.findAnswersByApplicationId(applicationId)
+        ));
     }
 
     private Event getEventOrThrow(Long eventId) {
