@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.api.app.event.locker;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerApplyRequest;
@@ -69,16 +69,13 @@ public class AppLockerController implements AppLockerApi {
     ) {
         Long lockerPeriodId = params.lockerPeriodId();
         LockerSectionDetail detail = lockerService.getSectionDetail(lockerPeriodId, sectionId);
-        // 배치 구조를 아직 등록하지 않은 구역이면 사진도 없다
-        File photo = Optional.ofNullable(detail.layout())
-            .flatMap(layout -> fileService.findById(layout.getPhotoFileId()))
-            .orElse(null);
+        Map<Long, File> photosById = fileService.findAllByIdIn(detail.photoFileIds());
         Set<Long> appliedLockerIds = lockerService.getAppliedLockerIds(lockerPeriodId);
         Long myLockerId = lockerService.getLockerByMemberId(lockerPeriodId, apiUser.userId())
             .map(Locker::getId)
             .orElse(null);
 
-        return ApiResponse.success(LockerSectionDetailResponse.of(detail, photo, appliedLockerIds, myLockerId));
+        return ApiResponse.success(LockerSectionDetailResponse.of(detail, photosById, appliedLockerIds, myLockerId));
     }
 
     @Override
