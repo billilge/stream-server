@@ -12,10 +12,16 @@ import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 수정은 같은 트랜잭션에서 findById로 엔티티를 영속성 컨텍스트에 올린 뒤
+// merge하므로, 도메인이 들고 있지 않은 is_deleted는 읽어 둔 값 그대로여서 변경으로 잡히지 않고 UPDATE에서 빠진다.
+// 덕분에 운영진 A가 수정하는 사이 B가 삭제를 커밋해도 A의 UPDATE가 삭제를 되돌리지 않는다.
+// (NoticeJpaEntity·LockerJpaEntity가 같은 이유로 붙이고 있다)
 @Entity
+@DynamicUpdate
 @Table(name = "archives")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArchiveJpaEntity extends BaseSoftDeleteEntity {

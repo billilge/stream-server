@@ -40,6 +40,8 @@ public interface ArchiveJpaRepository extends JpaRepository<ArchiveJpaEntity, Lo
 
     Optional<ArchiveJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
+    List<ArchiveJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
+
     /**
      * 운영진 목록. 제목 검색은 {@code LIKE '%...%'}라 인덱스를 타지 못하고 테이블을 훑는다 — 아카이빙이 연간
      * 수십 건 규모라 그대로 둔다. 검색어 이스케이프는 {@code LikePatterns}가 한다.

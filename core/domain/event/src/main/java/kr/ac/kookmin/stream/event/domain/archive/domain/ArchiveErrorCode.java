@@ -11,7 +11,8 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 public enum ArchiveErrorCode implements ErrorCode {
 
-    ARCHIVE_NOT_FOUND(ErrorStatus.NOT_FOUND, "아카이빙을 찾을 수 없습니다.");
+    ARCHIVE_NOT_FOUND(ErrorStatus.NOT_FOUND, "아카이빙을 찾을 수 없습니다."),
+    INVALID_ARCHIVE_PERIOD(ErrorStatus.BAD_REQUEST, "활동 종료일이 시작일보다 앞설 수 없습니다.");
 
     private final int status;
     private final String message;

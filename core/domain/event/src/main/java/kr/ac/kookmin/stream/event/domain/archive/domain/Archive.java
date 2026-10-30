@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.event.domain.archive.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -43,6 +44,61 @@ public class Archive {
     ) {
         return new Archive(id, title, content, startDate, endDate, location, departmentName, imageIds,
             exposed, relatedEventId, createdAt);
+    }
+
+    /** 등록 일시는 DB 기본값으로 채워져 저장 전에는 비어 있다. */
+    public static Archive create(ArchiveWriteCommand command) {
+        validatePeriod(command.startDate(), command.endDate());
+
+        return new Archive(
+            null,
+            command.title(),
+            command.content(),
+            command.startDate(),
+            command.endDate(),
+            command.location(),
+            command.departmentName(),
+            command.imageIds(),
+            command.exposed(),
+            command.relatedEventId(),
+            null
+        );
+    }
+
+    /**
+     * 전체 필드를 통째로 바꾼다. 사진과 연결 행사도 받은 값으로 교체하므로, 빈 사진 목록은 전체 삭제이고
+     * {@code relatedEventId}가 {@code null}이면 연결을 끊는다.
+     */
+    public void update(ArchiveWriteCommand command) {
+        validatePeriod(command.startDate(), command.endDate());
+
+        this.title = command.title();
+        this.content = command.content();
+        this.startDate = command.startDate();
+        this.endDate = command.endDate();
+        this.location = command.location();
+        this.departmentName = command.departmentName();
+        this.imageIds = command.imageIds();
+        this.exposed = command.exposed();
+        this.relatedEventId = command.relatedEventId();
+    }
+
+    /**
+     * 노출 여부를 바꾼다. 이미 그 값이어도 그대로 둔다 — 영속성 컨텍스트가 값이 바뀐 행만 UPDATE한다.
+     */
+    public void changeExposure(boolean exposed) {
+        this.exposed = exposed;
+    }
+
+    /**
+     * 당일 활동은 종료일이 없다. 종료일을 줬다면 시작일보다 앞설 수 없다.
+     * <p>
+     * 값 하나의 형식이 아니라 두 값 사이의 규칙이라 요청 어노테이션으로는 표현할 수 없어 도메인에서 본다.
+     */
+    private static void validatePeriod(LocalDate startDate, LocalDate endDate) {
+        if (endDate != null && endDate.isBefore(startDate)) {
+            throw new BusinessException(ArchiveErrorCode.INVALID_ARCHIVE_PERIOD);
+        }
     }
 
     /**
