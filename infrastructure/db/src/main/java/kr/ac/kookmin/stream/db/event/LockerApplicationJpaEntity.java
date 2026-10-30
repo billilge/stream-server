@@ -14,19 +14,15 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
+// uk_locker_applications_active_member_key·uk_locker_applications_active_locker_key(V26)는 generated column
+// active_member_key·active_locker_key에 걸려 있다. Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(
     name = "locker_applications",
     indexes = {
-        @Index(
-            name = "uk_locker_applications_locker_period_id_locker_id",
-            columnList = "locker_period_id, locker_id",
-            unique = true
-        ),
         @Index(name = "idx_locker_applications_member_id_applied_at", columnList = "member_id, applied_at"),
         @Index(
-            name = "uk_locker_applications_locker_period_id_member_id",
-            columnList = "locker_period_id, member_id",
-            unique = true
+            name = "idx_locker_applications_locker_period_id_locker_id_is_canceled",
+            columnList = "locker_period_id, locker_id, is_canceled"
         )
     }
 )
@@ -50,12 +46,16 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
+    @Column(name = "is_canceled", nullable = false)
+    private boolean isCanceled;
+
     private LockerApplicationJpaEntity(LockerApplication application) {
         this.id = application.getId();
         this.lockerPeriodId = application.getLockerPeriodId();
         this.memberId = application.getMemberId();
         this.lockerId = application.getLockerId();
         this.appliedAt = application.getAppliedAt();
+        this.isCanceled = application.isCanceled();
     }
 
     public static LockerApplicationJpaEntity from(LockerApplication application) {
@@ -63,6 +63,6 @@ public class LockerApplicationJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public LockerApplication toDomain() {
-        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId, appliedAt);
+        return LockerApplication.of(id, lockerPeriodId, memberId, lockerId, appliedAt, isCanceled);
     }
 }
