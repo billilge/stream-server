@@ -24,7 +24,7 @@ class EventApplyAnswerValidatorTest {
     private final EventApplyAnswerValidator validator = new EventApplyAnswerValidator();
 
     private static EventQuestion question(Long id, QuestionType type, boolean required, List<String> options) {
-        return EventQuestion.of(id, 1L, "질문", type, required, 0, options);
+        return EventQuestion.of(id, 1L, "질문", type, required, 0, options, false);
     }
 
     /** 단답(필수) / 장문(선택) / 객관식 3지(필수) / 체크박스 2지(선택) */

@@ -90,7 +90,7 @@ class EventApplyAnswerValidator {
 
     /** selectedOptions는 질문 options 배열의 0-based 인덱스다. */
     private void validateSelectedOptionRange(EventQuestion question, List<Integer> selectedOptions) {
-        int optionSize = question.getOptions() == null ? 0 : question.getOptions().size();
+        int optionSize = question.getOptions().size();
         boolean outOfRange = selectedOptions.stream()
             .anyMatch(index -> index == null || index < 0 || index >= optionSize);
         if (outOfRange) {

@@ -53,6 +53,9 @@ public class EventQuestionJpaEntity extends BaseTimeEntity {
     @Column(columnDefinition = "json")
     private List<String> options;
 
+    @Column(name = "has_other_option", nullable = false)
+    private boolean otherOptionAllowed;
+
     private EventQuestionJpaEntity(EventQuestion question) {
         this.id = question.getId();
         this.eventId = question.getEventId();
@@ -61,6 +64,7 @@ public class EventQuestionJpaEntity extends BaseTimeEntity {
         this.required = question.isRequired();
         this.displayOrder = question.getDisplayOrder();
         this.options = question.getOptions();
+        this.otherOptionAllowed = question.isOtherOptionAllowed();
     }
 
     public static EventQuestionJpaEntity from(EventQuestion question) {
@@ -68,6 +72,7 @@ public class EventQuestionJpaEntity extends BaseTimeEntity {
     }
 
     public EventQuestion toDomain() {
-        return EventQuestion.of(id, eventId, questionText, questionType, required, displayOrder, options);
+        return EventQuestion.of(id, eventId, questionText, questionType, required, displayOrder, options,
+            otherOptionAllowed);
     }
 }
