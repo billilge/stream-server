@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.QuestionType;
-import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 
 /**
  * 신청자 상세(폼 조회). 신청 현황 표에서 잘린 답변을 질문 전체와 함께 보여준다.
@@ -26,12 +25,11 @@ public record AdminEventApplicationDetailResponse(
 ) {
 
     public static AdminEventApplicationDetailResponse from(EventApplicantDetail applicant) {
-        Member member = applicant.member();
         EventApplicationDetail detail = applicant.detail();
         return new AdminEventApplicationDetailResponse(
             applicant.application().getId(),
-            member == null ? null : member.getName(),
-            member == null ? null : member.getStudentId(),
+            applicant.memberName(),
+            applicant.memberStudentId(),
             detail.appliedAt(),
             detail.applicationStatus(),
             detail.canceledAt(),

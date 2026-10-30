@@ -18,4 +18,12 @@ public record EventApplicant(
     Member member,
     List<EventApplicationDetail.AnsweredQuestion> answeredQuestions
 ) {
+
+    public String memberName() {
+        return member == null ? null : member.getName();
+    }
+
+    public String memberStudentId() {
+        return member == null ? null : member.getStudentId();
+    }
 }

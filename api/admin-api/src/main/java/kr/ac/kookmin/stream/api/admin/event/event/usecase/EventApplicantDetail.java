@@ -10,4 +10,12 @@ import kr.ac.kookmin.stream.member.domain.member.domain.Member;
  * @param member 탈퇴(소프트 삭제)한 회원의 신청이면 {@code null}
  */
 public record EventApplicantDetail(EventApplication application, Member member, EventApplicationDetail detail) {
+
+    public String memberName() {
+        return member == null ? null : member.getName();
+    }
+
+    public String memberStudentId() {
+        return member == null ? null : member.getStudentId();
+    }
 }

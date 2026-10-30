@@ -9,7 +9,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
-import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 
 /**
  * 신청 현황 화면. 질문은 답변 열의 헤더이고, 신청 한 줄의 답변은 같은 순서로 담는다.
@@ -61,11 +60,10 @@ public record AdminEventApplicationListResponse(
     ) {
 
         public static Application from(EventApplicant applicant) {
-            Member member = applicant.member();
             return new Application(
                 applicant.application().getId(),
-                member == null ? null : member.getName(),
-                member == null ? null : member.getStudentId(),
+                applicant.memberName(),
+                applicant.memberStudentId(),
                 applicant.application().getAppliedAt(),
                 applicant.application().getStatus(),
                 applicant.answeredQuestions().stream().map(Answer::from).toList()
