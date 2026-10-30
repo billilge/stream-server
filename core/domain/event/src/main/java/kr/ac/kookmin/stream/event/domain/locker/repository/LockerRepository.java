@@ -16,6 +16,27 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 public interface LockerRepository {
 
     /**
+     * 운영 회차 전체를 신청 시작 일시 최신순으로 조회한다. 운영진 화면용이라 아직 게시하지 않은 회차도 포함한다.
+     */
+    List<LockerPeriod> findAllPeriods();
+
+    /**
+     * 운영 회차 한 건. 운영진 화면용이라 아직 게시하지 않은 회차도 포함한다.
+     */
+    Optional<LockerPeriod> findPeriodById(Long lockerPeriodId);
+
+    /**
+     * 운영 회차를 저장한다. 식별자가 없으면 새로 만들고, 있으면 그 회차를 바꾼다.
+     */
+    LockerPeriod savePeriod(LockerPeriod period);
+
+    /**
+     * 운영 회차를 소프트 삭제한다. 이미 삭제됐거나 없는 회차면 false를 돌려준다.
+     * 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
+     */
+    boolean deletePeriod(Long lockerPeriodId);
+
+    /**
      * 게시된 운영 회차가 있는지. 아직 공개하지 않은 회차는 학생에게 없는 것으로 보여야 한다.
      */
     boolean existsPublishedPeriod(Long lockerPeriodId);
@@ -71,4 +92,14 @@ public interface LockerRepository {
      * 식별자에 해당하는 사물함. 지난 신청 이력의 사물함 이름을 보여줘야 하므로 삭제된 사물함도 포함한다.
      */
     List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds);
+
+    /**
+     * 식별자에 해당하는 사물함. 삭제된 사물함은 없는 것으로 본다. 순서는 보장하지 않는다.
+     */
+    List<Locker> findLockersByIds(Collection<Long> lockerIds);
+
+    /**
+     * 사물함 여러 건을 저장한다. 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
+     */
+    void saveLockers(List<Locker> lockers);
 }

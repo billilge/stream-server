@@ -89,12 +89,18 @@ class LockerServiceImpl implements LockerService {
         int availableCount = (int) lockers.stream()
             .filter(locker -> locker.isSelectable(appliedLockerIds.contains(locker.getId())))
             .count();
+        // 사용 중지된 사물함도 배정돼 있으면 센다. 상태 변경 API가 이용 중인 칸의 사용 중지를 막아 그 조합은 흔치
+        // 않지만, DB 직접 수정이나 검사와 신청이 겹친 경우로 남을 수 있다
+        int assignedCount = (int) lockers.stream()
+            .filter(locker -> appliedLockerIds.contains(locker.getId()))
+            .count();
 
         return new LockerSectionSummary(
             section.getId(),
             section.getLabel(),
             availableCount,
             totalCount,
+            assignedCount,
             SectionAvailabilityStatus.from(availableCount, totalCount)
         );
     }

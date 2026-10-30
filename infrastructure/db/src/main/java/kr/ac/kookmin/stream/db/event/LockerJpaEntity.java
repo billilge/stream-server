@@ -14,6 +14,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(
@@ -23,6 +24,10 @@ import lombok.NoArgsConstructor;
         columnList = "section_id, is_deleted, row_no, column_no"
     )
 )
+// 바뀐 컬럼만 UPDATE한다. 상태 변경은 도메인에서 만든 엔티티를 merge하는데, 그 엔티티는 삭제 여부를 들고 있지 않아
+// is_deleted가 늘 false다. 사물함 삭제 기능이 붙은 뒤 수정과 삭제가 겹치면 읽어 둔 값으로 되써서 삭제가 되돌아간다
+// (LockerPeriodJpaEntity와 같은 이유).
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LockerJpaEntity extends BaseSoftDeleteEntity {
 

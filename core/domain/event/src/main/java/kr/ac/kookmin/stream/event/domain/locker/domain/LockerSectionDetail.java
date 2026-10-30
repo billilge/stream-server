@@ -13,4 +13,9 @@ public record LockerSectionDetail(
     LockerSectionLayout layout,
     List<Locker> lockers
 ) {
+
+    /** 구역 사진 파일 식별자를 노출 순서대로. 배치 구조를 아직 등록하지 않은 구역이면 사진도 없어 빈 목록이다. */
+    public List<Long> photoFileIds() {
+        return layout == null ? List.of() : layout.getPhotoFileIds();
+    }
 }

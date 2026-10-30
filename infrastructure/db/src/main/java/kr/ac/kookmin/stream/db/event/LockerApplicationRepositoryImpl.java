@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +22,11 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     private final LockerApplicationJpaRepository lockerApplicationJpaRepository;
 
     @Override
+    public boolean existsByPeriod(Long lockerPeriodId) {
+        return lockerApplicationJpaRepository.existsByLockerPeriodId(lockerPeriodId);
+    }
+
+    @Override
     public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
         return lockerApplicationJpaRepository.existsByLockerPeriodIdAndLockerId(lockerPeriodId, lockerId);
     }
@@ -38,6 +44,14 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     @Override
     public Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId) {
         return lockerApplicationJpaRepository.findLockerIdByLockerPeriodIdAndMemberId(lockerPeriodId, memberId);
+    }
+
+    @Override
+    public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
+        if (lockerPeriodIds.isEmpty() || lockerIds.isEmpty()) {
+            return false;
+        }
+        return lockerApplicationJpaRepository.existsByLockerPeriodIdInAndLockerIdIn(lockerPeriodIds, lockerIds);
     }
 
     @Override
