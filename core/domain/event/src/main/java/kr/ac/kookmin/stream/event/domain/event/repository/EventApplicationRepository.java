@@ -55,7 +55,7 @@ public interface EventApplicationRepository {
      * @param status    {@code null}이면 상태로 거르지 않는다
      * @param memberIds {@code null}이면 신청자로 거르지 않는다
      */
-    PageResult<EventApplication> findPageByEventId(
+    PageResult<EventApplication> searchByEventId(
         Long eventId,
         EventApplicationStatus status,
         List<Long> memberIds,

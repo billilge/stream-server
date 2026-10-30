@@ -269,7 +269,7 @@ class EventServiceImplTest {
         }
 
         @Override
-        public PageResult<EventApplication> findPageByEventId(
+        public PageResult<EventApplication> searchByEventId(
             Long eventId, EventApplicationStatus status, List<Long> memberIds, PageOffset pageOffset) {
             throw new UnsupportedOperationException();
         }

@@ -32,7 +32,7 @@ class AdminEventApplicationServiceImpl implements AdminEventApplicationService {
         PageOffset pageOffset
     ) {
         getEventOrThrow(eventId);
-        return eventApplicationRepository.findPageByEventId(eventId, status, memberIds, pageOffset);
+        return eventApplicationRepository.searchByEventId(eventId, status, memberIds, pageOffset);
     }
 
     @Override
