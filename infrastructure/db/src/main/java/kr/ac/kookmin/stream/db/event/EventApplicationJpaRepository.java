@@ -75,6 +75,40 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
         Pageable pageable
     );
 
+    /**
+     * 회원이 신청한 행사 중 아직 지나지 않은 것. 행사와 신청은 FK로 묶여 있지 않아 식별자로 직접 잇는다.
+     * 홈 미리보기용이라 정렬은 행사 시작 임박순이고, 당일 행사가 빠지지 않도록 오늘 0시를 기준으로 거른다.
+     */
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        JOIN EventApplicationJpaEntity a ON a.eventId = e.id
+        WHERE a.memberId = :memberId
+        AND a.status = :appliedStatus
+        AND e.isDeleted = false
+        AND e.eventStartAt >= :startOfToday
+        ORDER BY e.eventStartAt ASC, e.id ASC
+        """)
+    List<EventJpaEntity> findUpcomingAppliedEvents(
+        @Param("memberId") Long memberId,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus,
+        @Param("startOfToday") LocalDateTime startOfToday,
+        Pageable pageable
+    );
+
+    @Query("""
+        SELECT COUNT(e) FROM EventJpaEntity e
+        JOIN EventApplicationJpaEntity a ON a.eventId = e.id
+        WHERE a.memberId = :memberId
+        AND a.status = :appliedStatus
+        AND e.isDeleted = false
+        AND e.eventStartAt >= :startOfToday
+        """)
+    long countUpcomingAppliedEvents(
+        @Param("memberId") Long memberId,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus,
+        @Param("startOfToday") LocalDateTime startOfToday
+    );
+
     @Query("""
         SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountProjection(a.eventId, COUNT(a))
         FROM EventApplicationJpaEntity a

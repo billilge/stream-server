@@ -1,12 +1,15 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -22,6 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 class RentalHistoryServiceImpl implements RentalHistoryService {
+
+    /** 운영진이 반납을 최종 확인(RETURNED)하기 전까지, 물건이 아직 회원에게 있는 상태. */
+    private static final Set<RentalStatus> ACTIVE_STATUSES =
+        Set.of(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED);
 
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
@@ -42,6 +49,18 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
+    }
+
+    @Override
+    public PreviewResult<RentalRecord> getActiveRentals(Long memberId, int limit) {
+        // 반납 기한은 물품 정책으로 계산하는 값이라 DB에서 정렬할 수 없다
+        List<RentalRecord> active = toRecords(
+                rentalHistoryRepository.findAllByMemberIdAndStatusIn(memberId, ACTIVE_STATUSES)).stream()
+            .filter(RentalRecord::hasDueAt)
+            .sorted(Comparator.comparing(RentalRecord::dueAt))
+            .toList();
+
+        return new PreviewResult<>(active.stream().limit(limit).toList(), active.size());
     }
 
     // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다

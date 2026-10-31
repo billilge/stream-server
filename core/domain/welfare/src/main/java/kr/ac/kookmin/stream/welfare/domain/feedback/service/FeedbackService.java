@@ -18,6 +18,9 @@ public interface FeedbackService {
     // 회차는 현재 열려 있는 회차로 서버가 자동 배정한다
     Feedback create(Long memberId, String question);
 
+    /** 회원이 작성한 질문 수. 연도·회차를 가리지 않는 누적이다. */
+    long countByMemberId(Long memberId);
+
     // 회차가 하나라도 존재했던 연도 목록(최신순)
     List<Integer> getAvailableYears();
 

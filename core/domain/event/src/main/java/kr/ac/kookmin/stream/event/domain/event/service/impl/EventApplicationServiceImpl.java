@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
 import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -168,5 +170,19 @@ class EventApplicationServiceImpl implements EventApplicationService {
                 answer.selectedOptions() == null ? List.of() : answer.selectedOptions()
             ))
             .toList();
+    }
+
+    // 목록과 전체 수를 쿼리 둘로 읽으므로 한 스냅샷으로 묶는다. 사이에 신청·취소가 커밋되면
+    // "2건 보여주는데 전체는 1건"이 된다
+    @Override
+    @Transactional(readOnly = true)
+    public PreviewResult<Event> getUpcomingAppliedEvents(Long memberId, int limit) {
+        // 당일 행사는 이미 시작했어도 "오늘"로 보여줘야 하므로 시작 시각이 아니라 날짜로 거른다
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+
+        return new PreviewResult<>(
+            eventApplicationRepository.findUpcomingAppliedEvents(memberId, startOfToday, limit),
+            eventApplicationRepository.countUpcomingAppliedEvents(memberId, startOfToday)
+        );
     }
 }

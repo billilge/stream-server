@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.welfare;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -17,6 +18,13 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     @Override
     public List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status) {
         return rentalHistoryJpaRepository.findAllByMemberId(memberId, status).stream()
+            .map(RentalHistoryJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses) {
+        return rentalHistoryJpaRepository.findAllByMemberIdAndRentalStatusIn(memberId, statuses).stream()
             .map(RentalHistoryJpaEntity::toDomain)
             .toList();
     }

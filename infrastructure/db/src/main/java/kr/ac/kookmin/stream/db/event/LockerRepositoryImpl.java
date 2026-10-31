@@ -80,6 +80,9 @@ public class LockerRepositoryImpl implements LockerRepository {
 
     @Override
     public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
+        if (lockerPeriodIds.isEmpty()) {
+            return List.of();
+        }
         return lockerPeriodJpaRepository.findAllByIdInAndIsPublishedTrueAndIsDeletedFalse(lockerPeriodIds).stream()
             .map(LockerPeriodJpaEntity::toDomain)
             .toList();

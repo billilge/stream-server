@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
@@ -21,6 +22,12 @@ public interface RentalHistoryService {
      * 반납 정책이 없는 물품의 대여는 기한을 계산할 수 없어 제외한다.
      */
     List<RentalRecord> getReturnRequiredRentals(Long memberId);
+
+    /**
+     * 회원이 지금 빌려 간 물품을 반납 기한 임박순으로 {@code limit}건까지, 전체 수와 함께 조회한다.
+     * 반납을 신청했어도 물건은 손에 있으므로 포함한다. 반납 정책이 없는 대여는 기한을 계산할 수 없어 제외한다.
+     */
+    PreviewResult<RentalRecord> getActiveRentals(Long memberId, int limit);
 
     /**
      * 모든 회원의 반납해야 하는 대여를 조회한다. 반납 기한 임박·연체 알림 대상을 고를 때 쓴다.
