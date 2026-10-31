@@ -27,17 +27,17 @@ public interface HomeBannerJpaRepository extends JpaRepository<HomeBannerJpaEnti
     // 노출 중과 노출 예정을 가르지 않고 "끝나지 않은 것"까지만 본다. 둘의 구분은 HomeBanner가 한다 —
     // 같은 판정을 SQL에도 두면 둘이 어긋날 수 있다.
     //
-    // 분류 필터는 findPublishedSlice와 같이 boolean 플래그로 끈다. IN에 빈 목록을 넘길 수 없어서다.
+    // 분류 필터는 StudentTransferStatusJpaRepository.search와 같이 boolean 플래그로 켠다.
     @Query("""
         SELECT b FROM HomeBannerJpaEntity b
         WHERE b.isDeleted = false
         AND b.exposureEndAt >= :at
-        AND (:filterAllTypes = true OR b.bannerType IN :bannerTypes)
+        AND (:filterByType = false OR b.bannerType IN :bannerTypes)
         ORDER BY b.displayOrder ASC, b.id ASC
         """)
     List<HomeBannerJpaEntity> findNotEndedAt(
         @Param("at") LocalDateTime at,
-        @Param("filterAllTypes") boolean filterAllTypes,
+        @Param("filterByType") boolean filterByType,
         @Param("bannerTypes") Collection<HomeBannerType> bannerTypes
     );
 
@@ -45,18 +45,18 @@ public interface HomeBannerJpaRepository extends JpaRepository<HomeBannerJpaEnti
         SELECT b FROM HomeBannerJpaEntity b
         WHERE b.isDeleted = false
         AND b.exposureEndAt < :at
-        AND (:filterAllTypes = true OR b.bannerType IN :bannerTypes)
+        AND (:filterByType = false OR b.bannerType IN :bannerTypes)
         ORDER BY b.exposureEndAt DESC, b.id DESC
         """,
         countQuery = """
         SELECT COUNT(b) FROM HomeBannerJpaEntity b
         WHERE b.isDeleted = false
         AND b.exposureEndAt < :at
-        AND (:filterAllTypes = true OR b.bannerType IN :bannerTypes)
+        AND (:filterByType = false OR b.bannerType IN :bannerTypes)
         """)
     Page<HomeBannerJpaEntity> findEndedBefore(
         @Param("at") LocalDateTime at,
-        @Param("filterAllTypes") boolean filterAllTypes,
+        @Param("filterByType") boolean filterByType,
         @Param("bannerTypes") Collection<HomeBannerType> bannerTypes,
         Pageable pageable
     );

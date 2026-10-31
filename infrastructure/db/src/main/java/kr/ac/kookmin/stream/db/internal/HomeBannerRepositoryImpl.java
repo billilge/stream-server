@@ -18,9 +18,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class HomeBannerRepositoryImpl implements HomeBannerRepository {
 
-    // IN에 빈 목록을 넘기면 JPQL이 깨지므로, 필터를 끌 때는 값이 쓰이지 않도록 플래그로 분기한다
-    private static final List<HomeBannerType> NO_TYPES = List.of(HomeBannerType.GENERAL);
-
     private final HomeBannerJpaRepository homeBannerJpaRepository;
 
     @Override
@@ -32,8 +29,7 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
 
     @Override
     public List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerType> bannerTypes) {
-        return homeBannerJpaRepository.findNotEndedAt(at, bannerTypes.isEmpty(), typesOrPlaceholder(bannerTypes))
-            .stream()
+        return homeBannerJpaRepository.findNotEndedAt(at, !bannerTypes.isEmpty(), bannerTypes).stream()
             .map(HomeBannerJpaEntity::toDomain)
             .toList();
     }
@@ -46,8 +42,8 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
     ) {
         Page<HomeBannerJpaEntity> result = homeBannerJpaRepository.findEndedBefore(
             at,
-            bannerTypes.isEmpty(),
-            typesOrPlaceholder(bannerTypes),
+            !bannerTypes.isEmpty(),
+            bannerTypes,
             PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
@@ -62,9 +58,5 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
     @Override
     public Optional<HomeBanner> findById(Long bannerId) {
         return homeBannerJpaRepository.findByIdAndIsDeletedFalse(bannerId).map(HomeBannerJpaEntity::toDomain);
-    }
-
-    private static Collection<HomeBannerType> typesOrPlaceholder(Collection<HomeBannerType> bannerTypes) {
-        return bannerTypes.isEmpty() ? NO_TYPES : bannerTypes;
     }
 }
