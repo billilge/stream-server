@@ -12,4 +12,12 @@ public interface NoticeService {
     CursorSliceResult<Notice> getNotices(NoticeCategory category, NoticeCursor cursor, int size);
 
     Notice getById(Long id);
+
+    /**
+     * 공지 한 건. 없거나 삭제됐으면 {@code null}이다.
+     * <p>
+     * 다른 화면이 공지를 곁들여 보여줄 때(홈 배너의 연결 공지) 쓴다. 공지가 사라졌다고 그 화면까지 404가 되면
+     * 안 되므로 {@link #getById(Long)}와 달리 던지지 않는다.
+     */
+    Notice getByIdOrNull(Long id);
 }
