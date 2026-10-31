@@ -15,6 +15,11 @@ public record RentalRecord(RentalHistory history, Item item) {
         return history.getRentalStatus() == RentalStatus.RENTAL && hasDueAt();
     }
 
+    /** 반납을 신청해 운영진의 확인을 기다리는 중인지. 홈이 "반납 신청함"을 표시할 때 쓴다. */
+    public boolean isReturnRequested() {
+        return history.getRentalStatus() == RentalStatus.RETURN_PENDING;
+    }
+
     /** 반납 기한을 계산할 수 있는지. 상태는 보지 않아 반납 신청한 대여도 포함한다. */
     public boolean hasDueAt() {
         return history.getRentAt() != null
