@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -254,6 +256,11 @@ class EventServiceImplTest {
         @Override
         public List<EventApplication> findSliceByMemberId(
             Long memberId, EventApplicationCursor cursor, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
             throw new UnsupportedOperationException();
         }
 

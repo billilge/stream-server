@@ -2,8 +2,10 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -90,6 +92,11 @@ class EventApplicationServiceImpl implements EventApplicationService {
             application -> EventApplicationSummary.of(application, events.get(application.getEventId())),
             summary -> EventApplicationCursor.of(summary).format()
         );
+    }
+
+    @Override
+    public Set<Long> getAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+        return eventApplicationRepository.findAppliedEventIds(memberId, eventIds);
     }
 
     @Override
