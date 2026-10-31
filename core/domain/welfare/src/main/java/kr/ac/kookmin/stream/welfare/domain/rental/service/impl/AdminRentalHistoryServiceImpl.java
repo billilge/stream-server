@@ -27,11 +27,11 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     @Override
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
-        Map<Long, Item> itemsByItemId = findItemsByItemId(result.content());
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(result.content());
         return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
-    private Map<Long, Item> findItemsByItemId(List<RentalHistory> histories) {
+    private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();
         }

@@ -75,13 +75,13 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {
-        Map<Long, Item> itemsByItemId = findItemsByItemId(histories);
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(histories);
         return histories.stream()
             .map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())))
             .toList();
     }
 
-    private Map<Long, Item> findItemsByItemId(List<RentalHistory> histories) {
+    private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();
         }
