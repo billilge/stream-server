@@ -56,8 +56,4 @@ public class HomeBanner {
         }
         return targetId != null;
     }
-
-    public boolean isExposedAt(LocalDateTime at) {
-        return !at.isBefore(exposureStartAt) && !at.isAfter(exposureEndAt);
-    }
 }
