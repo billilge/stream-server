@@ -204,6 +204,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Optional<Event> findPublishedById(Long id) {
             throw new UnsupportedOperationException();
         }

@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -92,6 +93,16 @@ public class EventRepositoryImpl implements EventRepository {
             return List.of();
         }
         return eventJpaRepository.findAllById(eventIds).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return List.of();
+        }
+        return eventJpaRepository.findAllByIdInAndIsDeletedFalseAndIsPublishedTrue(eventIds).stream()
+            .map(EventJpaEntity::toDomain)
+            .toList();
     }
 
     @Override

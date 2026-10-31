@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -24,6 +26,25 @@ class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
+
+    // 행사 목록과 신청자 수를 따로 읽어 정원 판정에 함께 쓰므로 한 스냅샷으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public List<Event> getApplicableEvents(Collection<Long> eventIds) {
+        List<Event> events = eventRepository.findPublishedByIds(eventIds);
+
+        // 신청자 수는 한 번에 모아 읽는다. 행사마다 따로 세면 개수만큼 쿼리가 더 나간다
+        Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
+            events.stream().map(Event::getId).toList());
+
+        // 모집 상태 판정은 목록·상세·신청과 같은 기준을 써야 하므로 Event의 계산을 그대로 쓴다
+        LocalDateTime now = LocalDateTime.now();
+        return events.stream()
+            .filter(event -> event.calculateRecruitStatus(
+                now, applicantCounts.getOrDefault(event.getId(), 0L)) == RecruitStatus.OPEN)
+            .sorted(Comparator.comparing(Event::getApplyEndAt).thenComparing(Event::getId))
+            .toList();
+    }
 
     @Override
     @Transactional(readOnly = true)

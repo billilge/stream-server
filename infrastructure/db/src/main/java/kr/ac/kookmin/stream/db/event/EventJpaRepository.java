@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
@@ -17,6 +18,8 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
     Optional<EventJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
     Optional<EventJpaEntity> findByIdAndIsDeletedFalseAndIsPublishedTrue(Long id);
+
+    List<EventJpaEntity> findAllByIdInAndIsDeletedFalseAndIsPublishedTrue(Collection<Long> ids);
 
     /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순으로 페이지 조회한다. 운영진 목록용이다.
