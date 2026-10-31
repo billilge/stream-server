@@ -80,9 +80,9 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
      * 홈 미리보기용이라 정렬은 행사 시작 임박순이고, 당일 행사가 빠지지 않도록 오늘 0시를 기준으로 거른다.
      */
     @Query("""
-        SELECT e FROM EventJpaEntity e, EventApplicationJpaEntity a
+        SELECT e FROM EventJpaEntity e
+        JOIN EventApplicationJpaEntity a ON a.eventId = e.id
         WHERE a.memberId = :memberId
-        AND a.eventId = e.id
         AND a.status = :appliedStatus
         AND e.isDeleted = false
         AND e.eventStartAt >= :startOfToday
@@ -96,9 +96,9 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
     );
 
     @Query("""
-        SELECT COUNT(e) FROM EventJpaEntity e, EventApplicationJpaEntity a
+        SELECT COUNT(e) FROM EventJpaEntity e
+        JOIN EventApplicationJpaEntity a ON a.eventId = e.id
         WHERE a.memberId = :memberId
-        AND a.eventId = e.id
         AND a.status = :appliedStatus
         AND e.isDeleted = false
         AND e.eventStartAt >= :startOfToday

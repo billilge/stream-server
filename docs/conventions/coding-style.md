@@ -135,14 +135,17 @@ public final class ApiResponse<T> {
 | --- | --- | --- |
 | 커서/슬라이스 | 무한 스크롤 등 다음 페이지 여부 + 커서만 필요 | `CursorSliceResult<T>` / `CursorSliceResponse<T>` |
 | 오프셋 | 페이지 번호·전체 개수·전체 페이지 필요 | `PageResult<T>` / `PageResponse<T>` |
+| 미리보기 | 홈처럼 앞의 몇 건과 전체 수만 필요하고 이어서 더 읽지 않음 | `PreviewResult<T>` / `PreviewResponse<T>` |
 
-- 커서 기반 응답 필드는 항상 `content`/`hasNext`/`nextCursor`로 통일한다.
+- 목록 필드명은 세 방식 모두 `content`로 통일한다. 커서 기반은 여기에 `hasNext`/`nextCursor`를 더한다.
+- 미리보기는 자르는 일을 조회가 맡는다. 전체를 돌려주고 화면이 자르면 목록이 긴 회원의 홈에 이력 전체가 실린다.
 - `nextCursor`는 **클라이언트에게 불투명한 문자열**이다. 정렬 키가 여러 개인 keyset 커서를 담아야 하므로 도메인이 `{Domain}Cursor` record로 정렬 키와 그 문자열 표현(`format()`/`from(String)`)을 소유하고, Base64 URL-safe 인코딩은 웹 계층에서 `CursorCodec`(`api:common-api`)으로 처리한다.
 
 ```java
 // core:common
 public record CursorSliceResult<T>(List<T> content, boolean hasNext, String nextCursor) {}
 public record PageResult<T>(List<T> content, int page, int size, long totalCount, int totalPage) {}
+public record PreviewResult<T>(List<T> content, long totalCount) {}
 ```
 
 ### 2-5. JPA Entity
