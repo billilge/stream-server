@@ -1,15 +1,25 @@
 package kr.ac.kookmin.stream.db.internal;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 import kr.ac.kookmin.stream.internal.domain.home.repository.HomeBannerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class HomeBannerRepositoryImpl implements HomeBannerRepository {
+
+    // IN에 빈 목록을 넘기면 JPQL이 깨지므로, 필터를 끌 때는 값이 쓰이지 않도록 플래그로 분기한다
+    private static final List<HomeBannerType> NO_TYPES = List.of(HomeBannerType.GENERAL);
 
     private final HomeBannerJpaRepository homeBannerJpaRepository;
 
@@ -18,5 +28,43 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
         return homeBannerJpaRepository.findExposedAt(at).stream()
             .map(HomeBannerJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerType> bannerTypes) {
+        return homeBannerJpaRepository.findNotEndedAt(at, bannerTypes.isEmpty(), typesOrPlaceholder(bannerTypes))
+            .stream()
+            .map(HomeBannerJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public PageResult<HomeBanner> findEndedBefore(
+        LocalDateTime at,
+        Collection<HomeBannerType> bannerTypes,
+        PageOffset pageOffset
+    ) {
+        Page<HomeBannerJpaEntity> result = homeBannerJpaRepository.findEndedBefore(
+            at,
+            bannerTypes.isEmpty(),
+            typesOrPlaceholder(bannerTypes),
+            PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(HomeBannerJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
+    }
+
+    @Override
+    public Optional<HomeBanner> findById(Long bannerId) {
+        return homeBannerJpaRepository.findByIdAndIsDeletedFalse(bannerId).map(HomeBannerJpaEntity::toDomain);
+    }
+
+    private static Collection<HomeBannerType> typesOrPlaceholder(Collection<HomeBannerType> bannerTypes) {
+        return bannerTypes.isEmpty() ? NO_TYPES : bannerTypes;
     }
 }
