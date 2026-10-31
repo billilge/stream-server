@@ -28,6 +28,8 @@ public class HomeBanner {
     private int displayOrder;
     private LocalDateTime exposureStartAt;
     private LocalDateTime exposureEndAt;
+    /** 등록 일시. 운영진 상세가 보여준다 */
+    private LocalDateTime createdAt;
 
     public static HomeBanner of(
         Long id,
@@ -40,11 +42,12 @@ public class HomeBanner {
         String linkUrl,
         int displayOrder,
         LocalDateTime exposureStartAt,
-        LocalDateTime exposureEndAt
+        LocalDateTime exposureEndAt,
+        LocalDateTime createdAt
     ) {
         return new HomeBanner(
             id, title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
-            displayOrder, exposureStartAt, exposureEndAt
+            displayOrder, exposureStartAt, exposureEndAt, createdAt
         );
     }
 

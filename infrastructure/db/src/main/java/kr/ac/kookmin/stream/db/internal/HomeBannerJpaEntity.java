@@ -61,7 +61,7 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
     public HomeBanner toDomain() {
         return HomeBanner.of(
             id, title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
-            displayOrder, exposureStartAt, exposureEndAt
+            displayOrder, exposureStartAt, exposureEndAt, getCreatedAt()
         );
     }
 }

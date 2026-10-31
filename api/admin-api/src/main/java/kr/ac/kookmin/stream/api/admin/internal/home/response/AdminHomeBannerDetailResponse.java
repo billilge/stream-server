@@ -23,7 +23,8 @@ public record AdminHomeBannerDetailResponse(
     LocalDateTime exposureEndAt,
     HomeBannerLandingType landingType,
     LinkedTarget linkedTarget,
-    String linkUrl
+    String linkUrl,
+    LocalDateTime createdAt
 ) {
 
     public static AdminHomeBannerDetailResponse of(
@@ -43,7 +44,8 @@ public record AdminHomeBannerDetailResponse(
             banner.getExposureEndAt(),
             banner.getLandingType(),
             linkedTarget,
-            banner.getLinkUrl()
+            banner.getLinkUrl(),
+            banner.getCreatedAt()
         );
     }
 
