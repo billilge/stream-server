@@ -17,6 +17,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
@@ -26,9 +27,9 @@ import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplySection;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTargetType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
 import kr.ac.kookmin.stream.internal.domain.home.service.HomeService;
-import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
+import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -190,16 +191,22 @@ public class AppHomeUseCase {
     /**
      * 지금 쓰는 사물함이 있으면 그것을, 없으면 지난 배정이 있었는지만 알려준다. 회차는 기간이 겹치지 않아
      * 사용 중인 배정은 많아야 하나다.
+     * <p>
+     * 배정·종료 판정은 "내 사물함" 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
      */
     private HomeResponse.Locker toLocker(List<LockerApplicationResult> applications, LocalDate today) {
+        if (applications.isEmpty()) {
+            return new HomeResponse.Locker(HomeLockerStatus.NOT_APPLIED, null);
+        }
+
         return applications.stream()
-            .filter(application -> !application.period().isUsageEnded(today))
+            .filter(application -> LockerApplicationStatus.from(application.period(), today)
+                == LockerApplicationStatus.ASSIGNED)
             .findFirst()
             .map(application -> new HomeResponse.Locker(
-                HomeLockerStatus.ASSIGNED, application.locker().getLockerLabel()))
+                HomeLockerStatus.from(LockerApplicationStatus.ASSIGNED),
+                application.locker().getLockerLabel()))
             .orElseGet(() -> new HomeResponse.Locker(
-                applications.isEmpty() ? HomeLockerStatus.NOT_APPLIED : HomeLockerStatus.EXPIRED,
-                null
-            ));
+                HomeLockerStatus.from(LockerApplicationStatus.EXPIRED), null));
     }
 }
