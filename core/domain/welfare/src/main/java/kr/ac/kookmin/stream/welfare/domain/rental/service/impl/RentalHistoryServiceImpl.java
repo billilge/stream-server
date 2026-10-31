@@ -26,8 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 class RentalHistoryServiceImpl implements RentalHistoryService {
 
-    /** 물건이 아직 회원에게 있는 상태. */
-    private static final Set<RentalStatus> ACTIVE_STATUSES = Set.of(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING);
+    /** 운영진이 반납을 최종 확인(RETURNED)하기 전까지, 물건이 아직 회원에게 있는 상태. */
+    private static final Set<RentalStatus> ACTIVE_STATUSES =
+        Set.of(RentalStatus.RENTAL, RentalStatus.RETURN_PENDING, RentalStatus.RETURN_CONFIRMED);
 
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
