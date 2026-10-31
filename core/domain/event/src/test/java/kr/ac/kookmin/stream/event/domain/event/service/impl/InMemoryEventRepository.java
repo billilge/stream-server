@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,11 @@ class InMemoryEventRepository implements EventRepository {
 
     @Override
     public List<Event> findAllByIds(List<Long> eventIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Event> findPublishedByIds(Collection<Long> eventIds) {
         throw new UnsupportedOperationException();
     }
 

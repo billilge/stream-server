@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -51,6 +52,11 @@ public interface EventRepository {
      * 내 신청 내역에서 신청마다 행사 정보를 붙일 때 쓴다. 여기서 걸러내면 커서 페이지의 크기 계산이 어긋난다.
      */
     List<Event> findAllByIds(List<Long> eventIds);
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     */
+    List<Event> findPublishedByIds(Collection<Long> eventIds);
 
     /**
      * 게시되고 삭제되지 않은 행사 한 건을 조회한다. 아직 공개하지 않은 행사는 학생에게 없는 것으로 보여야 한다.

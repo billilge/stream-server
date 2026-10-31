@@ -1,9 +1,11 @@
 package kr.ac.kookmin.stream.event.domain.event.repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -38,6 +40,12 @@ public interface EventApplicationRepository {
     boolean existsByEventId(Long eventId);
 
     boolean existsAppliedByEventIdAndMemberId(Long eventId, Long memberId);
+
+    /**
+     * 주어진 행사 중 회원이 유효 신청을 낸 것의 식별자. 홈처럼 여러 행사의 신청 여부를 한꺼번에 알아야 할 때
+     * 쓴다 — 행사마다 따로 물으면 섹션 수만큼 쿼리가 늘어난다.
+     */
+    Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds);
 
     /**
      * 행사의 유효 신청(취소하지 않은 신청)을 낸 회원 식별자.

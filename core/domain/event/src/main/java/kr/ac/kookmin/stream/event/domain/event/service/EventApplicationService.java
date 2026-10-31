@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.service;
 
+import java.util.Collection;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -34,6 +36,11 @@ public interface EventApplicationService {
      * 취소한 신청과 지난 행사는 빼고 행사 자체를 돌려준다 — 화면이 어떤 필드를 쓸지는 응답이 고른다.
      */
     PreviewResult<Event> getUpcomingAppliedEvents(Long memberId, int limit);
+
+    /**
+     * 주어진 행사 중 회원이 신청한 것의 식별자. 취소한 신청은 빼고 본다.
+     */
+    Set<Long> getAppliedEventIds(Long memberId, Collection<Long> eventIds);
 
     EventApplicationDetail getMyApplication(Long applicationId, Long memberId);
 

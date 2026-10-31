@@ -2,11 +2,13 @@ package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -112,6 +114,11 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
 
     @Override
     public List<EventApplication> findSliceByMemberId(Long memberId, EventApplicationCursor cursor, int limit) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
         throw new UnsupportedOperationException();
     }
 
