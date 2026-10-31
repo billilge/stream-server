@@ -22,7 +22,9 @@ public interface AppEmailVerificationApi {
         description = """
             로그인한 회원이 입력한 이메일로 6자리 인증 코드를 보낸다. 코드는 5분 동안 유효하다.
             다시 보내려면 1분을 기다려야 하고, 하루(자정 기준)에 10번까지 보낼 수 있다.
-            새 코드를 받으면 앞서 받은 코드는 쓸 수 없다. 다른 회원이 쓰는 이메일로는 보낼 수 없다.""")
+            새 코드를 받으면 앞서 받은 코드는 쓸 수 없다. 다른 회원이 쓰는 이메일로는 보낼 수 없다.
+            메일은 응답한 뒤에 보내므로 성공 응답이 메일 도착을 보장하지 않는다. 메일이 오지 않으면 1분 뒤 다시 요청한다.
+            EMAIL_SEND_FAILED는 발송 요청이 몰려 받지 못했을 때 응답한다.""")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "EMAIL_ALREADY_EXISTS"})
     @ApiErrorCode(type = EmailVerificationErrorCode.class, codes = {

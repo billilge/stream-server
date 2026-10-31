@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Locale;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.TaskExecutorNames;
 import kr.ac.kookmin.stream.member.domain.verification.client.EmailClient;
 import kr.ac.kookmin.stream.member.domain.verification.domain.EmailMessage;
 import kr.ac.kookmin.stream.member.domain.verification.domain.EmailVerificationErrorCode;
@@ -24,6 +25,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.thymeleaf.TemplateEngine;
@@ -61,6 +63,16 @@ public class SmtpEmailClient implements EmailClient {
             // 거절된 받는 주소가 예외 메시지에 들어 있을 수 있어 원인 예외의 종류만 남긴다
             log.warn("메일 발송 실패: {}", e.getMostSpecificCause().getClass().getName());
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    @Override
+    @Async(TaskExecutorNames.EMAIL_TASK_EXECUTOR)
+    public void sendAsync(EmailMessage message) {
+        try {
+            send(message);
+        } catch (BusinessException e) {
+            // send가 실패를 로그로 남긴다
         }
     }
 

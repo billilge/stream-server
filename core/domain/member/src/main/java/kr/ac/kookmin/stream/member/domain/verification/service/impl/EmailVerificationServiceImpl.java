@@ -15,11 +15,16 @@ import kr.ac.kookmin.stream.member.domain.verification.domain.EmailVerificationS
 import kr.ac.kookmin.stream.member.domain.verification.repository.EmailVerificationRepository;
 import kr.ac.kookmin.stream.member.domain.verification.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 class EmailVerificationServiceImpl implements EmailVerificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailVerificationServiceImpl.class);
 
     private static final int MAX_SENDS_PER_DAY = 10;
     private static final int CODE_BOUND = 1_000_000;
@@ -37,7 +42,7 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
         validateDailyLimitNotExceeded(memberId, now);
 
         String code = generateCode();
-        emailClient.send(createCodeMessage(command.email(), code));
+        sendCodeMail(command.email(), code);
         emailVerificationRepository.save(EmailVerification.create(memberId, command.email(), code, now));
     }
 
@@ -109,6 +114,15 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_ATTEMPTS_EXCEEDED);
         }
         throw new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_CODE_MISMATCH);
+    }
+
+    private void sendCodeMail(String email, String code) {
+        try {
+            emailClient.sendAsync(createCodeMessage(email, code));
+        } catch (TaskRejectedException e) {
+            log.warn("인증 메일 발송 대기열이 가득 차 요청을 거절했습니다");
+            throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
+        }
     }
 
     private String generateCode() {

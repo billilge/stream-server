@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.client.email.log;
 
+import kr.ac.kookmin.stream.common.TaskExecutorNames;
 import kr.ac.kookmin.stream.member.domain.verification.client.EmailClient;
 import kr.ac.kookmin.stream.member.domain.verification.domain.EmailMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,5 +22,11 @@ public class LogEmailClient implements EmailClient {
     public void send(EmailMessage message) {
         log.info("메일 발송(로그 모드): to={}, subject={}, template={}, variables={}",
             message.to(), message.subject(), message.template(), message.variables());
+    }
+
+    @Override
+    @Async(TaskExecutorNames.EMAIL_TASK_EXECUTOR)
+    public void sendAsync(EmailMessage message) {
+        send(message);
     }
 }
