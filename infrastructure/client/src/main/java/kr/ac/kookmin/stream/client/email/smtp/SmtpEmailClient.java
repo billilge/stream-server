@@ -2,8 +2,11 @@ package kr.ac.kookmin.stream.client.email.smtp;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Locale;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.member.domain.verification.client.EmailClient;
@@ -14,8 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.retry.RetryPolicy;
+import org.springframework.core.retry.RetryTemplate;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -30,6 +36,12 @@ public class SmtpEmailClient implements EmailClient {
 
     private static final Logger log = LoggerFactory.getLogger(SmtpEmailClient.class);
 
+    private static final RetryTemplate RETRY_TEMPLATE = new RetryTemplate(RetryPolicy.builder()
+        .maxRetries(2)
+        .delay(Duration.ofSeconds(2))
+        .predicate(SmtpEmailClient::isTransient)
+        .build());
+
     private final SmtpEmailProperties properties;
     private final JavaMailSender javaMailSender;
 
@@ -39,8 +51,9 @@ public class SmtpEmailClient implements EmailClient {
     @Override
     public void send(EmailMessage message) {
         validateFromConfigured();
+        MimeMessage mimeMessage = toMimeMessage(message);
         try {
-            javaMailSender.send(toMimeMessage(message));
+            RETRY_TEMPLATE.invoke(() -> javaMailSender.send(mimeMessage));
         } catch (MailAuthenticationException e) {
             log.error("SMTP 인증 실패(설정 확인 필요)", e);
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
@@ -49,6 +62,24 @@ public class SmtpEmailClient implements EmailClient {
             log.warn("메일 발송 실패: {}", e.getMostSpecificCause().getClass().getName());
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
         }
+    }
+
+    // 연결 실패·시간 초과 같은 네트워크 오류만 다시 보낸다
+    private static boolean isTransient(Throwable e) {
+        if (!(e instanceof MailSendException sendException)) {
+            return false;
+        }
+        return hasIoCause(sendException)
+            || Arrays.stream(sendException.getMessageExceptions()).anyMatch(SmtpEmailClient::hasIoCause);
+    }
+
+    private static boolean hasIoCause(Throwable e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof IOException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void validateFromConfigured() {
