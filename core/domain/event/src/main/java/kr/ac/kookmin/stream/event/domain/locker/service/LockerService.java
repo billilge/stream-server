@@ -1,14 +1,22 @@
 package kr.ac.kookmin.stream.event.domain.locker.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
+
+    /**
+     * 주어진 운영 회차 중 지금 신청할 수 있는 것을 신청 마감 임박순으로 조회한다.
+     * 미게시·삭제된 회차와 신청 기간이 아닌 회차는 빠진다.
+     */
+    List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds);
 
     /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
