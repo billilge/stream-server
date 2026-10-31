@@ -32,4 +32,13 @@ class ItemServiceImpl implements ItemService {
         item.decreaseStock(amount);
         return itemRepository.save(item);
     }
+
+    @Override
+    @Transactional
+    public Item increaseStock(Long itemId, int amount) {
+        Item item = itemRepository.findById(itemId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.ITEM_NOT_FOUND));
+        item.increaseStock(amount);
+        return itemRepository.save(item);
+    }
 }

@@ -48,6 +48,7 @@ class RentalNotificationScheduler {
         }
     }
 
+    // 기한이 지났으면 매번 알림을 보낸다("반납할 때까지 평일마다 간다") — 상태 전이 없이 매번 dueAt만 다시 본다.
     @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "Asia/Seoul")
     @Transactional
     public void recordOverdue() {
