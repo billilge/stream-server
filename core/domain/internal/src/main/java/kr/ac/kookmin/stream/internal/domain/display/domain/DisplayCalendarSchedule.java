@@ -12,10 +12,11 @@ import lombok.Getter;
 public class DisplayCalendarSchedule {
 
     private Long id;
-    private LocalDate date;
-    private String schedules;
+    private String title;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
-    public static DisplayCalendarSchedule of(Long id, LocalDate date, String schedules) {
-        return new DisplayCalendarSchedule(id, date, schedules);
+    public static DisplayCalendarSchedule of(Long id, String title, LocalDate startDate, LocalDate endDate) {
+        return new DisplayCalendarSchedule(id, title, startDate, endDate);
     }
 }

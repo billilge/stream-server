@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.internal.domain.display.domain;
 
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -12,10 +13,11 @@ public class DisplayPoster {
 
     private Long id;
     private String title;
-    private String imageKey;
+    private Long imageFileId;
     private boolean active;
+    private LocalDateTime createdAt;
 
-    public static DisplayPoster of(Long id, String title, String imageKey, boolean active) {
-        return new DisplayPoster(id, title, imageKey, active);
+    public static DisplayPoster of(Long id, String title, Long imageFileId, boolean active, LocalDateTime createdAt) {
+        return new DisplayPoster(id, title, imageFileId, active, createdAt);
     }
 }
