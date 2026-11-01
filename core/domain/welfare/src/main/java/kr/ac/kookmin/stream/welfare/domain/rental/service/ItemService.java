@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -15,6 +16,12 @@ public interface ItemService {
      * @param cursor   이전 페이지의 마지막 항목. null이면 첫 페이지
      */
     CursorSliceResult<Item> getItems(ItemCategory category, String keyword, ItemCursor cursor, int size);
+
+    /**
+     * 전체 물품을 식별자 오름차순으로 조회한다. 오프라인 디스플레이가 재고를 한 화면에 모두 보여줄 때 쓴다.
+     * 재고가 0인 물품도 포함한다.
+     */
+    List<Item> getAllItems();
 
     /**
      * 재고를 차감한다.

@@ -19,6 +19,9 @@ public interface ItemRepository {
      */
     CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size);
 
+    // 전체 물품을 식별자 오름차순으로
+    List<Item> findAll();
+
     List<Item> findAllByIds(Collection<Long> ids);
 
     Optional<Item> findById(Long id);

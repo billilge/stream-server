@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -22,6 +23,11 @@ class ItemServiceImpl implements ItemService {
     @Override
     public CursorSliceResult<Item> getItems(ItemCategory category, String keyword, ItemCursor cursor, int size) {
         return itemRepository.findSlice(category, keyword, cursor, size);
+    }
+
+    @Override
+    public List<Item> getAllItems() {
+        return itemRepository.findAll();
     }
 
     @Override
