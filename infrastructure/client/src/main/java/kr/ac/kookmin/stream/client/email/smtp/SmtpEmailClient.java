@@ -98,7 +98,7 @@ public class SmtpEmailClient implements EmailClient {
 
     private void validateFromConfigured() {
         if (!StringUtils.hasText(properties.from())) {
-            throw new IllegalStateException("email.type=smtp이면 보내는 주소(EMAIL_FROM 또는 spring.mail.username)가 필요하다");
+            throw new IllegalStateException("email.type=smtp이면 보내는 주소(EMAIL_FROM 또는 SMTP_USERNAME)가 필요하다");
         }
     }
 

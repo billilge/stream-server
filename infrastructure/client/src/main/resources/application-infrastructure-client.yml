@@ -30,7 +30,6 @@ push:
   fcm:
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
 
-# SMTP 접속 정보(spring.mail.host 등)는 application.yml에 둔다. 이 파일 값이 우선해 여기 두면 덮어쓴다
 email:
   type: ${EMAIL_TYPE:log}
   smtp:
@@ -39,6 +38,10 @@ email:
 
 spring:
   mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
     properties:
       "[mail.smtp.auth]": true
       "[mail.smtp.starttls.enable]": true
