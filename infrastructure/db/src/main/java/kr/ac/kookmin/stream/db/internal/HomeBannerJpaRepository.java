@@ -15,6 +15,9 @@ public interface HomeBannerJpaRepository extends JpaRepository<HomeBannerJpaEnti
 
     Optional<HomeBannerJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
+    @Query("SELECT MAX(b.displayOrder) FROM HomeBannerJpaEntity b WHERE b.isDeleted = false")
+    Integer findMaxDisplayOrder();
+
     @Query("""
         SELECT b FROM HomeBannerJpaEntity b
         WHERE b.isDeleted = false
