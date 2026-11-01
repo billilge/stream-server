@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DisplayPosterJpaRepository extends JpaRepository<DisplayPosterJpaEntity, Long> {
 
     List<DisplayPosterJpaEntity> findAllByOrderByIdDesc();
+
+    List<DisplayPosterJpaEntity> findAllByActiveTrueOrderByIdAsc();
 }

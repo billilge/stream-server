@@ -11,6 +11,9 @@ public interface DisplayPosterRepository {
     // 최신 등록 순(id 내림차순)
     List<DisplayPoster> findAll();
 
+    // 활성 포스터를 등록 순(id 오름차순)으로
+    List<DisplayPoster> findAllActive();
+
     DisplayPoster save(DisplayPoster poster);
 
     void deleteById(Long id);

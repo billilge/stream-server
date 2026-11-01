@@ -25,6 +25,10 @@ public enum PublicEndpoints {
     )),
     AUTH(List.of(
         "/v1/auth/login/*"
+    )),
+    // 오프라인 디스플레이 기기는 로그인하지 않는다
+    DISPLAY(List.of(
+        "/v1/display"
     ));
 
     private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())

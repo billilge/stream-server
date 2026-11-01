@@ -33,6 +33,11 @@ public class DisplayCalendarSchedule {
         this.endDate = command.endDate();
     }
 
+    // 시작일·종료일 당일도 기간에 든다
+    public boolean includes(LocalDate date) {
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
+    }
+
     // 시작일과 종료일이 같은 하루 일정은 허용한다
     private static void validatePeriod(LocalDate startDate, LocalDate endDate) {
         if (endDate.isBefore(startDate)) {

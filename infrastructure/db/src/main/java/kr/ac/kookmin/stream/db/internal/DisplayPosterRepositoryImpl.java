@@ -26,6 +26,13 @@ public class DisplayPosterRepositoryImpl implements DisplayPosterRepository {
     }
 
     @Override
+    public List<DisplayPoster> findAllActive() {
+        return displayPosterJpaRepository.findAllByActiveTrueOrderByIdAsc().stream()
+            .map(DisplayPosterJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public DisplayPoster save(DisplayPoster poster) {
         return displayPosterJpaRepository.save(DisplayPosterJpaEntity.from(poster)).toDomain();
     }
