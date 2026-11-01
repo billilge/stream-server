@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Locale;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.RetryExecutor;
 import kr.ac.kookmin.stream.common.TaskExecutorNames;
 import kr.ac.kookmin.stream.member.domain.verification.client.EmailClient;
 import kr.ac.kookmin.stream.member.domain.verification.domain.EmailMessage;
@@ -18,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.retry.RetryPolicy;
-import org.springframework.core.retry.RetryTemplate;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
@@ -38,14 +37,12 @@ public class SmtpEmailClient implements EmailClient {
 
     private static final Logger log = LoggerFactory.getLogger(SmtpEmailClient.class);
 
-    private static final RetryTemplate RETRY_TEMPLATE = new RetryTemplate(RetryPolicy.builder()
-        .maxRetries(2)
-        .delay(Duration.ofSeconds(2))
-        .predicate(SmtpEmailClient::isTransient)
-        .build());
+    private static final int MAX_RETRIES = 2;
+    private static final Duration RETRY_DELAY = Duration.ofSeconds(2);
 
     private final SmtpEmailProperties properties;
     private final JavaMailSender javaMailSender;
+    private final RetryExecutor retryExecutor;
 
     @Qualifier("emailTemplateEngine")
     private final TemplateEngine emailTemplateEngine;
@@ -55,7 +52,12 @@ public class SmtpEmailClient implements EmailClient {
         validateFromConfigured();
         MimeMessage mimeMessage = toMimeMessage(message);
         try {
-            RETRY_TEMPLATE.invoke(() -> javaMailSender.send(mimeMessage));
+            retryExecutor.executeWithRetry(
+                () -> javaMailSender.send(mimeMessage),
+                SmtpEmailClient::isTransient,
+                MAX_RETRIES,
+                RETRY_DELAY
+            );
         } catch (MailAuthenticationException e) {
             log.error("SMTP 인증 실패(설정 확인 필요)", e);
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
