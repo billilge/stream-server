@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.member.domain.verification.service.impl;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -17,6 +18,8 @@ import kr.ac.kookmin.stream.member.domain.verification.service.EmailVerification
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.retry.RetryPolicy;
+import org.springframework.core.retry.RetryTemplate;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,11 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
     private static final String CODE_FORMAT = "%06d";
     private static final String CODE_MAIL_SUBJECT = "[소프트웨어융합대학 학생회] 이메일 인증 코드";
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final RetryTemplate SEND_RETRY_TEMPLATE = new RetryTemplate(RetryPolicy.builder()
+        .includes(TaskRejectedException.class)
+        .maxRetries(2)
+        .delay(Duration.ofMillis(500))
+        .build());
 
     private final EmailVerificationRepository emailVerificationRepository;
     private final EmailClient emailClient;
@@ -117,8 +125,9 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     private void sendCodeMail(String email, String code) {
+        EmailMessage message = createCodeMessage(email, code);
         try {
-            emailClient.sendAsync(createCodeMessage(email, code));
+            SEND_RETRY_TEMPLATE.invoke(() -> emailClient.sendAsync(message));
         } catch (TaskRejectedException e) {
             log.warn("인증 메일 발송 대기열이 가득 차 요청을 거절했습니다");
             throw new BusinessException(EmailVerificationErrorCode.EMAIL_SEND_FAILED);
