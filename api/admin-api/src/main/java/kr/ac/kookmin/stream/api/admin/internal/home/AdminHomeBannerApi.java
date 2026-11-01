@@ -41,7 +41,7 @@ public interface AdminHomeBannerApi {
 
     @Operation(summary = "배너 상세 조회",
         description = "배너 한 건을 조회한다. 수정 화면의 초기값으로도 쓴다. "
-            + "연결된 공지·행사가 지워졌거나 아직 공개 전이면 연결 대상만 비워 내려준다.")
+            + "연결된 공지·행사가 지워졌으면 연결 대상만 비워 내려준다. 아직 공개하지 않은 행사는 그대로 내려준다.")
     @ApiErrorCode(type = HomeErrorCode.class, codes = {"HOME_BANNER_NOT_FOUND"})
     ApiResponse<AdminHomeBannerDetailResponse> getBanner(AdminApiUser apiUser, Long bannerId);
 }

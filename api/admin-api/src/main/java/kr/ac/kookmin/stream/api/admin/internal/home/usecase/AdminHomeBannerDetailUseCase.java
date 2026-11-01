@@ -39,8 +39,10 @@ public class AdminHomeBannerDetailUseCase {
     }
 
     /**
-     * 연결 대상이 지워졌거나 아직 공개 전이면 비워 둔다. 배너는 멀쩡하므로 상세까지 막지 않는다 —
+     * 연결 대상이 지워졌으면 비워 둔다. 배너는 멀쩡하므로 상세까지 막지 않는다 —
      * 막으면 고쳐야 할 배너를 열지 못한다.
+     * <p>
+     * 아직 공개하지 않은 행사는 담는다. 운영진이 공개 예정 행사의 배너를 미리 만들어 두기 때문이다.
      */
     private AdminHomeBannerDetailResponse.LinkedTarget toLinkedTarget(HomeBanner banner) {
         if (banner.getLandingType() == HomeBannerLandingType.NOTICE) {
