@@ -33,7 +33,7 @@ public record ItemCreateRequest(
     @NotNull(message = "이미지 파일 ID를 입력해 주세요.")
     Long imageFileId,
 
-    @Schema(description = "대여일부터 최대 대여 가능 일수. 대여품(RENTAL)만 의미 있고 소모품이면 무시된다. 0이면 당일 반납", example = "7")
+    @Schema(description = "대여일부터 최대 대여 가능 일수. 대여품(RENTAL)이면 필수이고 소모품이면 무시된다. 0이면 당일 반납", example = "7")
     @Min(value = 0, message = "최대 대여 일수는 0 이상이어야 합니다.")
     Integer maxRentalDays
 ) {

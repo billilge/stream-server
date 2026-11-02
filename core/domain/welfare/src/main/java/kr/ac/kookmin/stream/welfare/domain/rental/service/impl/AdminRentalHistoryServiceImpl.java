@@ -30,7 +30,7 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     private final ItemRepository itemRepository;
     private final RentalStatusWorkerLogRepository rentalStatusWorkerLogRepository;
 
-    // 단일 조회라 트랜잭션이 필요 없다. 페이지 내용만큼만 물품을 모아 짝짓는다(coding-style.md 2-6).
+    // 대여 이력을 물품과 짝지어 페이지 단위로 반환한다.
     @Override
     public PageResult<RentalRecord> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset) {
         PageResult<RentalHistory> result = rentalHistoryRepository.search(status, memberIds, pageOffset);
@@ -38,7 +38,6 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
         return result.map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())));
     }
 
-    // 단일 조회라 트랜잭션이 필요 없다.
     @Override
     public RentalRecord getById(Long historyId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
@@ -52,13 +51,18 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     public RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+
+        // 직전과 같은 상태로의 변경은 아무것도 하지 않는다.
+        if (history.getRentalStatus() == newStatus) {
+            return history;
+        }
+
         history.changeStatusByAdmin(newStatus, LocalDateTime.now());
         RentalHistory saved = rentalHistoryRepository.save(history);
         rentalStatusWorkerLogRepository.save(RentalStatusWorkerLog.create(historyId, workerId, newStatus));
         return saved;
     }
 
-    // 단일 조회라 트랜잭션이 필요 없다. 이력 존재 확인만 먼저 한다.
     @Override
     public List<RentalStatusWorkerLog> getWorkerLogs(Long historyId) {
         if (rentalHistoryRepository.findById(historyId).isEmpty()) {

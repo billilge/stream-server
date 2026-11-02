@@ -25,12 +25,6 @@ public interface ItemService {
      */
     Item decreaseStock(Long itemId, int amount);
 
-    /**
-     * 재고를 복구한다(반납, 대여 취소/반려 시).
-     * <p>
-     * "상한이 없다"는 더 늘어나면 안 된다는 비즈니스 규칙이 없다는 뜻일 뿐, {@link #decreaseStock}과 똑같은 낙관적
-     * 락 충돌 감지를 받는다 — 같은 물품에 다른 트랜잭션이 먼저 count를 바꾸면 똑같이 {@code OptimisticLockingFailureException}이
-     * 난다. 호출부는 {@code decreaseStock}과 같은 이유로 {@code LockExecutor}로 감싸야 한다.
-     */
+    /** 재고를 복구한다(반납, 대여 취소/반려 시). {@link #decreaseStock}과 같은 낙관적 락 충돌 감지를 받는다. */
     Item increaseStock(Long itemId, int amount);
 }

@@ -13,7 +13,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminRentalHistoryServ
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** 대여·반납 현황 조회. {@code AdminFeeSearchUseCase}와 같은 패턴 — 키워드로 회원 id를 먼저 찾아 필터로 넘긴다. */
+/** 대여·반납 현황 조회. 키워드로 회원 id를 먼저 찾아 필터로 넘긴다. */
 @Component
 @RequiredArgsConstructor
 public class AdminRentalSearchUseCase {
