@@ -38,6 +38,9 @@ public interface RentalHistoryService {
     /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 
-    /** 대여 신청으로 새 이력을 만들고 저장한다. */
-    RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
+    /**
+     * 새 이력을 만들고 저장한다. workerId는 학생 본인 신청이면 null, 관리자가 현장에서 대신 등록한 것이면
+     * 호출한 관리자가 아니라 폼에서 고른 근무자다.
+     */
+    RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt);
 }

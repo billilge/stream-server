@@ -5,10 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -59,9 +56,8 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     @Override
     @Transactional
     public RentalHistory returnRental(Long memberId, Long historyId) {
-        RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
-        history.markReturned(LocalDateTime.now(DateUtil.KST));
+        RentalHistory history = rentalHistoryRepository.getRentalToReturn(historyId, memberId);
+        history.markReturned(LocalDateTime.now());
         return rentalHistoryRepository.save(history);
     }
 
@@ -74,18 +70,18 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     @Override
     @Transactional
-    public RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
-        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, count, appliedAt, rentAt));
+    public RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
+        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, workerId, count, appliedAt, rentAt));
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {
-        Map<Long, Item> items = findItemsOf(histories);
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(histories);
         return histories.stream()
-            .map(history -> new RentalRecord(history, items.get(history.getItemId())))
+            .map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())))
             .toList();
     }
 
-    private Map<Long, Item> findItemsOf(List<RentalHistory> histories) {
+    private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();
         }
