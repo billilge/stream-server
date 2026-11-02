@@ -12,5 +12,5 @@ ALTER TABLE archives
 --    적용 전 SELECT COUNT(*) FROM archive_related_links 로 행 수를 확인한다.
 --    연결은 행사 한 건이면 충분하다고 정해서 옮기는 백필을 두지 않았다. 행이 있으면 적용 전에 손으로 옮긴다.
 --    그리고 한 파일에 ADD COLUMN과 DROP TABLE이 함께 있는데 MySQL은 DDL을 트랜잭션으로 묶지 않는다.
---    중간에 실패하면 앞 문장이 이미 적용된 채로 남아 손으로 되돌려야 한다 (V21과 같은 상황이다).
+--    중간에 실패하면 앞 문장이 이미 적용된 채로 남아 손으로 되돌려야 한다 (V28과 같은 상황이다).
 DROP TABLE archive_related_links;
