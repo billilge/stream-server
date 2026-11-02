@@ -45,8 +45,8 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     }
 
     /**
-     * 트랜잭션을 걸지 않는다. 신청은 취소·변경이 없고, 조회 사이에 회차 게시·이름이 바뀌어도 각 건은 그 시점에 맞는
-     * 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
+     * 트랜잭션을 걸지 않는다. 조회 사이에 회차 게시·이름이 바뀌거나 운영진이 신청을 취소해도 각 건은 그 시점에
+     * 맞는 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
      */
     @Override
     public List<LockerApplicationResult> getApplicationsByMemberId(Long memberId) {

@@ -47,11 +47,6 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event getByIdOrNull(Long eventId) {
-        return eventRepository.findById(eventId).orElse(null);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public CursorSliceResult<EventSummary> getPublishedEvents(
         RecruitStatus recruitStatus,
@@ -83,5 +78,10 @@ class EventServiceImpl implements EventService {
 
         LocalDateTime now = LocalDateTime.now();
         return EventDetail.of(event, eventApplicationRepository.countAppliedByEventId(eventId), now);
+    }
+
+    @Override
+    public Event getByIdOrNull(Long eventId) {
+        return eventRepository.findById(eventId).orElse(null);
     }
 }
