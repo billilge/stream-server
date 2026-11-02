@@ -7,7 +7,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 
 public interface HomeBannerRepository {
 
@@ -22,17 +22,17 @@ public interface HomeBannerRepository {
      * <p>
      * 운영진 목록은 순서를 드래그로 바꾸므로 페이지로 자르지 않는다. 노출 중인 배너는 많아야 몇 건이다.
      *
-     * @param bannerTypes 비어 있으면 분류로 거르지 않는다
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
      */
-    List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerType> bannerTypes);
+    List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerCategory> categories);
 
     /**
      * 노출이 끝난 배너를 노출 종료 일시 최신순으로 페이지 조회한다. 학기가 지나며 쌓이므로 페이지로 자른다.
      *
-     * @param bannerTypes 비어 있으면 분류로 거르지 않는다
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
      */
     PageResult<HomeBanner> findEndedBefore(
-        LocalDateTime at, Collection<HomeBannerType> bannerTypes, PageOffset pageOffset);
+        LocalDateTime at, Collection<HomeBannerCategory> categories, PageOffset pageOffset);
 
     /**
      * 배너 한 건. 삭제한 배너는 없는 것으로 본다.

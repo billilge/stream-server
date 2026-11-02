@@ -2,9 +2,9 @@ package kr.ac.kookmin.stream.api.admin.internal.home.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 
 /**
  * 배너 상세. 수정 화면의 초기값으로도 쓴다.
@@ -14,7 +14,7 @@ import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
  */
 public record AdminHomeBannerDetailResponse(
     Long bannerId,
-    HomeBannerType bannerType,
+    HomeBannerCategory category,
     HomeBannerStatus status,
     String title,
     String subtitle,
@@ -35,7 +35,7 @@ public record AdminHomeBannerDetailResponse(
     ) {
         return new AdminHomeBannerDetailResponse(
             banner.getId(),
-            banner.getBannerType(),
+            banner.getCategory(),
             banner.calculateStatus(now),
             banner.getTitle(),
             banner.getSubtitle(),

@@ -3,8 +3,8 @@ package kr.ac.kookmin.stream.api.admin.internal.home;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerCategoryParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerSearchParams;
-import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerTypeParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerDetailResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerSummaryResponse;
@@ -35,7 +35,7 @@ public interface AdminHomeBannerApi {
         description = "노출이 끝난 배너를 종료 일시 최신순으로 페이지 조회한다.")
     ApiResponse<PageResponse<AdminHomeBannerSummaryResponse>> getPastBanners(
         AdminApiUser apiUser,
-        @ParameterObject AdminHomeBannerTypeParams params,
+        @ParameterObject AdminHomeBannerCategoryParams params,
         @ParameterObject PageParams pageParams
     );
 

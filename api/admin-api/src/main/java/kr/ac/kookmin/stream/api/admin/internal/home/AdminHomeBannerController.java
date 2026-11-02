@@ -4,8 +4,8 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerCategoryParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerSearchParams;
-import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerTypeParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerDetailResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerSummaryResponse;
@@ -38,7 +38,7 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
         @Valid @ModelAttribute AdminHomeBannerSearchParams params
     ) {
         List<HomeBanner> banners =
-            adminHomeService.getCurrentBanners(params.bannerTypesOrEmpty(), params.statusesOrEmpty());
+            adminHomeService.getCurrentBanners(params.categoriesOrEmpty(), params.statusesOrEmpty());
         return ApiResponse.success(AdminHomeBannerListResponse.of(banners, LocalDateTime.now()));
     }
 
@@ -46,13 +46,13 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
     @GetMapping("/past")
     public ApiResponse<PageResponse<AdminHomeBannerSummaryResponse>> getPastBanners(
         AdminApiUser apiUser,
-        @Valid @ModelAttribute AdminHomeBannerTypeParams params,
+        @Valid @ModelAttribute AdminHomeBannerCategoryParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
         // 지난 배너는 전부 노출 종료라 어느 시각으로 판정해도 같지만, 상태 계산 경로를 하나로 둔다
         LocalDateTime now = LocalDateTime.now();
         PageResult<HomeBanner> result =
-            adminHomeService.getPastBanners(params.bannerTypesOrEmpty(), pageParams.toOffset());
+            adminHomeService.getPastBanners(params.categoriesOrEmpty(), pageParams.toOffset());
         return ApiResponse.success(
             PageResponse.from(result, banner -> AdminHomeBannerSummaryResponse.of(banner, now)));
     }

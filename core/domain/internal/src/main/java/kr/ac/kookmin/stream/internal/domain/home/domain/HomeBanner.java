@@ -20,7 +20,7 @@ public class HomeBanner {
     private Long id;
     private String title;
     private String subtitle;
-    private HomeBannerType bannerType;
+    private HomeBannerCategory category;
     private Long imageFileId;
     private HomeBannerLandingType landingType;
     private Long targetId;
@@ -35,7 +35,7 @@ public class HomeBanner {
         Long id,
         String title,
         String subtitle,
-        HomeBannerType bannerType,
+        HomeBannerCategory category,
         Long imageFileId,
         HomeBannerLandingType landingType,
         Long targetId,
@@ -46,7 +46,7 @@ public class HomeBanner {
         LocalDateTime createdAt
     ) {
         return new HomeBanner(
-            id, title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
+            id, title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
             displayOrder, exposureStartAt, exposureEndAt, createdAt
         );
     }

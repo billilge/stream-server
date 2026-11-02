@@ -7,7 +7,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.repository.HomeBannerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,8 +28,8 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
     }
 
     @Override
-    public List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerType> bannerTypes) {
-        return homeBannerJpaRepository.findNotEndedAt(at, !bannerTypes.isEmpty(), bannerTypes).stream()
+    public List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerCategory> categories) {
+        return homeBannerJpaRepository.findNotEndedAt(at, !categories.isEmpty(), categories).stream()
             .map(HomeBannerJpaEntity::toDomain)
             .toList();
     }
@@ -37,13 +37,13 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
     @Override
     public PageResult<HomeBanner> findEndedBefore(
         LocalDateTime at,
-        Collection<HomeBannerType> bannerTypes,
+        Collection<HomeBannerCategory> categories,
         PageOffset pageOffset
     ) {
         Page<HomeBannerJpaEntity> result = homeBannerJpaRepository.findEndedBefore(
             at,
-            !bannerTypes.isEmpty(),
-            bannerTypes,
+            !categories.isEmpty(),
+            categories,
             PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
