@@ -18,6 +18,7 @@ public class Notification {
     private static final String FORMAT_VALUE_DELIMITER = "\u001F";
 
     private Long id;
+    // 레거시에서 이관한 관리자 공용 알림은 받는 회원이 없어 null이다
     private Long memberId;
     private NotificationType type;
     // 문구 값을 순서대로 이어 붙인 문자열. 값이 없으면 null
