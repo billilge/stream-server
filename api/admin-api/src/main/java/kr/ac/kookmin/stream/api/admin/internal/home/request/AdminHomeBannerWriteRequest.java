@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerUpdateCommand;
 
 /**
@@ -32,7 +32,7 @@ public record AdminHomeBannerWriteRequest(
     @Schema(description = "분류. 운영진 화면이 고른 이미지에 따라 자동으로 채워 보낸다(제휴 프리셋이면 PARTNERSHIP). "
         + "서버는 이 값이 이미지와 맞는지 보지 않는다")
     @NotNull(message = "배너 분류를 입력해 주세요.")
-    HomeBannerType bannerType,
+    HomeBannerCategory category,
 
     @Schema(description = "배너 이미지 파일 ID. 프리셋도 직접 업로드와 같이 파일 ID로 보낸다", example = "101")
     @NotNull(message = "배너 이미지를 입력해 주세요.")
@@ -60,14 +60,14 @@ public record AdminHomeBannerWriteRequest(
 
     public HomeBannerCreateCommand toCreateCommand() {
         return new HomeBannerCreateCommand(
-            title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
+            title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
             exposureStartAt, exposureEndAt
         );
     }
 
     public HomeBannerUpdateCommand toUpdateCommand() {
         return new HomeBannerUpdateCommand(
-            title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
+            title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
             exposureStartAt, exposureEndAt
         );
     }

@@ -12,9 +12,9 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerUpdateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeErrorCode;
 import kr.ac.kookmin.stream.internal.domain.home.repository.HomeBannerRepository;
@@ -31,20 +31,20 @@ class AdminHomeServiceImpl implements AdminHomeService {
 
     @Override
     public List<HomeBanner> getCurrentBanners(
-        Collection<HomeBannerType> bannerTypes,
+        Collection<HomeBannerCategory> categories,
         Collection<HomeBannerStatus> statuses
     ) {
         // 노출 중과 노출 예정을 가르는 일은 HomeBanner가 한다. SQL에 같은 판정을 두면 둘이 어긋난다.
         // 끝나지 않은 배너는 많아야 몇 건이라 전부 읽어 걸러도 된다
         LocalDateTime now = LocalDateTime.now();
-        return homeBannerRepository.findNotEndedAt(now, bannerTypes).stream()
+        return homeBannerRepository.findNotEndedAt(now, categories).stream()
             .filter(banner -> statuses.isEmpty() || statuses.contains(banner.calculateStatus(now)))
             .toList();
     }
 
     @Override
-    public PageResult<HomeBanner> getPastBanners(Collection<HomeBannerType> bannerTypes, PageOffset pageOffset) {
-        return homeBannerRepository.findEndedBefore(LocalDateTime.now(), bannerTypes, pageOffset);
+    public PageResult<HomeBanner> getPastBanners(Collection<HomeBannerCategory> categories, PageOffset pageOffset) {
+        return homeBannerRepository.findEndedBefore(LocalDateTime.now(), categories, pageOffset);
     }
 
     @Override

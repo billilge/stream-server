@@ -3,9 +3,9 @@ package kr.ac.kookmin.stream.api.admin.internal.home;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerCategoryParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerOrderUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerSearchParams;
-import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerTypeParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerWriteRequest;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerDetailResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListResponse;
@@ -43,7 +43,7 @@ public interface AdminHomeBannerApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<PageResponse<AdminHomeBannerSummaryResponse>> getPastBanners(
         AdminApiUser apiUser,
-        @ParameterObject AdminHomeBannerTypeParams params,
+        @ParameterObject AdminHomeBannerCategoryParams params,
         @ParameterObject PageParams pageParams
     );
 

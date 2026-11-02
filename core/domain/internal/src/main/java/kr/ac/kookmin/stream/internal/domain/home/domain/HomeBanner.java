@@ -24,7 +24,7 @@ public class HomeBanner {
     private Long id;
     private String title;
     private String subtitle;
-    private HomeBannerType bannerType;
+    private HomeBannerCategory category;
     private Long imageFileId;
     private HomeBannerLandingType landingType;
     private Long targetId;
@@ -39,7 +39,7 @@ public class HomeBanner {
         Long id,
         String title,
         String subtitle,
-        HomeBannerType bannerType,
+        HomeBannerCategory category,
         Long imageFileId,
         HomeBannerLandingType landingType,
         Long targetId,
@@ -50,7 +50,7 @@ public class HomeBanner {
         LocalDateTime createdAt
     ) {
         return new HomeBanner(
-            id, title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
+            id, title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
             displayOrder, exposureStartAt, exposureEndAt, createdAt
         );
     }
@@ -68,7 +68,7 @@ public class HomeBanner {
             null,
             command.title(),
             command.subtitle(),
-            command.bannerType(),
+            command.category(),
             command.imageFileId(),
             command.landingType(),
             targetIdOf(command.landingType(), command.targetId()),
@@ -89,7 +89,7 @@ public class HomeBanner {
 
         this.title = command.title();
         this.subtitle = command.subtitle();
-        this.bannerType = command.bannerType();
+        this.category = command.category();
         this.imageFileId = command.imageFileId();
         this.landingType = command.landingType();
         this.targetId = targetIdOf(command.landingType(), command.targetId());

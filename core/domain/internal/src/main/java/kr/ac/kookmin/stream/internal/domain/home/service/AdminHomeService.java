@@ -5,9 +5,9 @@ import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerUpdateCommand;
 
 /**
@@ -20,17 +20,18 @@ public interface AdminHomeService {
      * <p>
      * 순서를 드래그로 바꾸는 목록이라 페이지로 자르지 않는다.
      *
-     * @param bannerTypes 비어 있으면 분류로 거르지 않는다
-     * @param statuses    비어 있으면 상태로 거르지 않는다. 노출 종료는 이 목록에 들어올 수 없다
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
+     * @param statuses  비어 있으면 상태로 거르지 않는다. 노출 종료는 이 목록에 들어올 수 없다
      */
-    List<HomeBanner> getCurrentBanners(Collection<HomeBannerType> bannerTypes, Collection<HomeBannerStatus> statuses);
+    List<HomeBanner> getCurrentBanners(
+        Collection<HomeBannerCategory> categories, Collection<HomeBannerStatus> statuses);
 
     /**
      * 노출이 끝난 배너를 종료 일시 최신순으로 페이지 조회한다.
      *
-     * @param bannerTypes 비어 있으면 분류로 거르지 않는다
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
      */
-    PageResult<HomeBanner> getPastBanners(Collection<HomeBannerType> bannerTypes, PageOffset pageOffset);
+    PageResult<HomeBanner> getPastBanners(Collection<HomeBannerCategory> categories, PageOffset pageOffset);
 
     /**
      * 배너 한 건. 삭제한 배너는 없는 것으로 본다.

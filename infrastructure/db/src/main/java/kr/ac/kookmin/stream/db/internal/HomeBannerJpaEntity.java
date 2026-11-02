@@ -11,8 +11,8 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -37,8 +37,8 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
     private String subtitle;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "banner_type", nullable = false, length = 20)
-    private HomeBannerType bannerType;
+    @Column(name = "category", nullable = false, length = 20)
+    private HomeBannerCategory category;
 
     @Column(name = "image_file_id", nullable = false)
     private Long imageFileId;
@@ -66,7 +66,7 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
         this.id = banner.getId();
         this.title = banner.getTitle();
         this.subtitle = banner.getSubtitle();
-        this.bannerType = banner.getBannerType();
+        this.category = banner.getCategory();
         this.imageFileId = banner.getImageFileId();
         this.landingType = banner.getLandingType();
         this.targetId = banner.getTargetId();
@@ -82,7 +82,7 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
 
     public HomeBanner toDomain() {
         return HomeBanner.of(
-            id, title, subtitle, bannerType, imageFileId, landingType, targetId, linkUrl,
+            id, title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
             displayOrder, exposureStartAt, exposureEndAt, getCreatedAt()
         );
     }

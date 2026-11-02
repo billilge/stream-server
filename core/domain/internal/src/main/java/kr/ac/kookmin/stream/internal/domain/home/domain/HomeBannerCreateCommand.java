@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public record HomeBannerCreateCommand(
     String title,
     String subtitle,
-    HomeBannerType bannerType,
+    HomeBannerCategory category,
     Long imageFileId,
     HomeBannerLandingType landingType,
     Long targetId,

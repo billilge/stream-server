@@ -2,16 +2,16 @@ package kr.ac.kookmin.stream.api.admin.internal.home.response;
 
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
-import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerType;
 
 /**
  * 운영진 배너 목록의 한 행. 노출 중 탭과 지난 배너 탭이 같은 모양을 쓴다.
  */
 public record AdminHomeBannerSummaryResponse(
     Long bannerId,
-    HomeBannerType bannerType,
+    HomeBannerCategory category,
     String title,
     HomeBannerLandingType landingType,
     LocalDateTime exposureStartAt,
@@ -25,7 +25,7 @@ public record AdminHomeBannerSummaryResponse(
     public static AdminHomeBannerSummaryResponse of(HomeBanner banner, LocalDateTime now) {
         return new AdminHomeBannerSummaryResponse(
             banner.getId(),
-            banner.getBannerType(),
+            banner.getCategory(),
             banner.getTitle(),
             banner.getLandingType(),
             banner.getExposureStartAt(),
