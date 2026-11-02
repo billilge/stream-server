@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.List;
-import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
+import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "archives")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ArchiveJpaEntity extends BaseTimeEntity {
+public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +46,9 @@ public class ArchiveJpaEntity extends BaseTimeEntity {
     @Column(name = "image_ids", columnDefinition = "json")
     private List<Long> imageIds;
 
+    @Column(name = "is_exposed", nullable = false)
+    private boolean exposed;
+
     private ArchiveJpaEntity(Archive archive) {
         this.id = archive.getId();
         this.title = archive.getTitle();
@@ -55,6 +58,7 @@ public class ArchiveJpaEntity extends BaseTimeEntity {
         this.location = archive.getLocation();
         this.departmentName = archive.getDepartmentName();
         this.imageIds = archive.getImageIds();
+        this.exposed = archive.isExposed();
     }
 
     public static ArchiveJpaEntity from(Archive archive) {
@@ -62,6 +66,8 @@ public class ArchiveJpaEntity extends BaseTimeEntity {
     }
 
     public Archive toDomain() {
-        return Archive.of(id, title, content, startDate, endDate, location, departmentName, imageIds);
+        return Archive.of(
+            id, title, content, startDate, endDate, location, departmentName, imageIds, exposed,
+            getCreatedAt());
     }
 }

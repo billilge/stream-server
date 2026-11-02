@@ -1,0 +1,63 @@
+package kr.ac.kookmin.stream.api.admin.event.archive;
+
+import jakarta.validation.Valid;
+import java.util.Map;
+import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.event.archive.request.ArchiveSearchParams;
+import kr.ac.kookmin.stream.api.admin.event.archive.response.AdminArchiveDetailResponse;
+import kr.ac.kookmin.stream.api.admin.event.archive.response.AdminArchiveListItemResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.PageParams;
+import kr.ac.kookmin.stream.api.common.dto.PageResponse;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
+import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
+import kr.ac.kookmin.stream.event.domain.archive.service.AdminArchiveService;
+import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
+import kr.ac.kookmin.stream.file.domain.File;
+import kr.ac.kookmin.stream.file.service.FileService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 목록은 정렬 기준이 달라 {@link AdminArchiveService}가, 상세는 학생 앱과 내용이 같아 {@link ArchiveService}가 맡는다
+ * ({@code coding-style.md} 2-7절).
+ */
+@RestController
+@RequestMapping("/v1/admin/archives")
+@RequiredArgsConstructor
+public class AdminArchiveController implements AdminArchiveApi {
+
+    private final AdminArchiveService adminArchiveService;
+    private final ArchiveService archiveService;
+    private final FileService fileService;
+
+    @Override
+    @GetMapping
+    public ApiResponse<PageResponse<AdminArchiveListItemResponse>> getArchives(
+        AdminApiUser apiUser,
+        @Valid @ModelAttribute ArchiveSearchParams searchParams,
+        @Valid @ModelAttribute PageParams pageParams
+    ) {
+        PageResult<Archive> result = adminArchiveService.getArchives(
+            searchParams.keyword(), searchParams.isExposed(), pageParams.toOffset());
+
+        return ApiResponse.success(PageResponse.from(result, AdminArchiveListItemResponse::from));
+    }
+
+    @Override
+    @GetMapping("/{archiveId}")
+    public ApiResponse<AdminArchiveDetailResponse> getArchive(
+        AdminApiUser apiUser,
+        @PathVariable Long archiveId
+    ) {
+        ArchiveDetail detail = archiveService.getArchive(archiveId);
+        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+
+        return ApiResponse.success(AdminArchiveDetailResponse.of(detail, imagesById));
+    }
+}

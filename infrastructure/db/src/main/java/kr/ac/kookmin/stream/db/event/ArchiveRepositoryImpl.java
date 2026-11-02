@@ -3,10 +3,15 @@ package kr.ac.kookmin.stream.db.event;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.DateUtil;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -34,8 +39,24 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
     }
 
     @Override
+    public PageResult<Archive> search(String keyword, Boolean exposed, PageOffset pageOffset) {
+        Page<ArchiveJpaEntity> result = archiveJpaRepository.search(
+            LikePatterns.escape(keyword),
+            exposed,
+            PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(ArchiveJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
+    }
+
+    @Override
     public Optional<Archive> findById(Long id) {
-        return archiveJpaRepository.findById(id).map(ArchiveJpaEntity::toDomain);
+        return archiveJpaRepository.findByIdAndIsDeletedFalse(id).map(ArchiveJpaEntity::toDomain);
     }
 
     @Override
