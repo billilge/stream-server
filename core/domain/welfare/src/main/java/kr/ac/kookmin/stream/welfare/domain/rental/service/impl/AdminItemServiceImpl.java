@@ -23,7 +23,7 @@ class AdminItemServiceImpl implements AdminItemService {
 
     private final ItemRepository itemRepository;
     // 물품 삭제 차단(진행 중인 대여 확인)에 쓴다. Item과 RentalHistory는 같은 도메인(rental) 안의 집합체라
-    // UseCase를 거치지 않고 레포지토리를 바로 참조한다 — api:app-api의 RentalApplyUseCase/RentalReturnUseCase가
+    // UseCase를 거치지 않고 레포지토리를 바로 참조한다 — api:app-api의 RentalApplyUseCase/RentalCancelUseCase가
     // Service 레이어(ItemService/RentalHistoryService)를 조합하는 것과는 다른 층위다.
     private final RentalHistoryRepository rentalHistoryRepository;
     private final LockExecutor lockExecutor;

@@ -1,12 +1,10 @@
 package kr.ac.kookmin.stream.db.welfare;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.RentalHistoryRepository;
@@ -19,9 +17,6 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
-    // 완전히 끝난(더는 손댈 일 없는) 상태. 물품 삭제 차단은 이 셋이 아닌 모든 기록을 "진행 중"으로 본다.
-    private static final Set<RentalStatus> TERMINAL_STATUSES = Set.of(RentalStatus.RETURNED, RentalStatus.CANCEL, RentalStatus.REJECTED);
-
     private final RentalHistoryJpaRepository rentalHistoryJpaRepository;
 
     @Override
@@ -32,10 +27,15 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
-    public List<RentalHistory> findAllByStatus(RentalStatus status) {
-        return rentalHistoryJpaRepository.findAllByRentalStatus(status).stream()
+    public List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses) {
+        return rentalHistoryJpaRepository.findAllByRentalStatusIn(statuses).stream()
             .map(RentalHistoryJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public Optional<RentalHistory> findById(Long id) {
+        return rentalHistoryJpaRepository.findById(id).map(RentalHistoryJpaEntity::toDomain);
     }
 
     @Override
@@ -45,19 +45,9 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatus(itemId, memberId, RentalStatus.RENTAL);
-    }
-
-    @Override
-    public Optional<RentalHistory> findRentalToReturn(Long id, Long memberId) {
-        return rentalHistoryJpaRepository.findByIdAndMemberIdAndRentalStatus(id, memberId, RentalStatus.RENTAL)
-            .map(RentalHistoryJpaEntity::toDomain);
-    }
-
-    @Override
-    public RentalHistory getRentalToReturn(Long id, Long memberId) {
-        return findRentalToReturn(id, memberId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusNotIn(
+            itemId, memberId, RentalStatus.finishedStatuses()
+        );
     }
 
     @Override
@@ -79,6 +69,6 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
 
     @Override
     public boolean existsActiveRentalForItem(Long itemId) {
-        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, TERMINAL_STATUSES);
+        return rentalHistoryJpaRepository.existsByItemIdAndRentalStatusNotIn(itemId, RentalStatus.finishedStatuses());
     }
 }
