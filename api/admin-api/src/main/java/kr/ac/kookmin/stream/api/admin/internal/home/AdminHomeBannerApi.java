@@ -55,13 +55,15 @@ public interface AdminHomeBannerApi {
 
     /** 배너 등록. 표시 순서는 서버가 맨 뒤로 정한다. */
     @Operation(summary = "배너 등록",
-        description = "배너를 등록하고 노출 순서의 맨 뒤에 붙인다. 이미지는 업로드를 마친 파일 ID로 넘기며 "
-            + "프리셋도 같은 방식이다. 랜딩이 NOTICE·EVENT면 targetId가, EXTERNAL_LINK면 linkUrl이 있어야 하고 "
+        description = "배너를 등록하고 노출 순서의 맨 뒤에 붙인다. 배경 이미지는 카테고리가 정한다 — ETC일 때만 "
+            + "업로드를 마친 imageFileId를 보내고, 나머지 카테고리는 서버가 프리셋으로 채우므로 보내도 무시한다. "
+            + "랜딩이 NOTICE·EVENT면 targetId가, EXTERNAL_LINK면 linkUrl이 있어야 하고 "
             + "연결 대상이 실제로 있는지 확인한다. 아직 공개하지 않은 행사도 연결할 수 있다. "
             + "응답 본문은 없다 — 등록을 마치면 목록으로 돌아간다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = HomeErrorCode.class,
-        codes = {"HOME_BANNER_INVALID_LANDING", "HOME_BANNER_INVALID_EXPOSURE_PERIOD"})
+        codes = {"HOME_BANNER_INVALID_LANDING", "HOME_BANNER_INVALID_EXPOSURE_PERIOD",
+            "HOME_BANNER_IMAGE_REQUIRED", "HOME_BANNER_PRESET_NOT_CONFIGURED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
@@ -70,11 +72,13 @@ public interface AdminHomeBannerApi {
     /** 배너 수정. 두 운영진이 겹쳐 수정하면 나중에 저장한 내용이 반영된다. */
     @Operation(summary = "배너 수정",
         description = "배너의 입력값을 통째로 바꾼다. 표시 순서는 그대로 두며, 순서는 노출 순서 변경으로 바꾼다. "
-            + "수정 화면은 배너 상세 조회로 채운다. 다른 운영진이 먼저 고쳤는지는 확인하지 않으므로 나중에 저장한 "
-            + "내용이 그대로 반영된다.")
+            + "배경 이미지는 등록과 같이 카테고리가 정하므로, 프리셋 카테고리로 바꾸면 올렸던 이미지는 프리셋으로 "
+            + "교체된다. 수정 화면은 배너 상세 조회로 채운다. 다른 운영진이 먼저 고쳤는지는 확인하지 않으므로 "
+            + "나중에 저장한 내용이 그대로 반영된다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = HomeErrorCode.class,
-        codes = {"HOME_BANNER_NOT_FOUND", "HOME_BANNER_INVALID_LANDING", "HOME_BANNER_INVALID_EXPOSURE_PERIOD"})
+        codes = {"HOME_BANNER_NOT_FOUND", "HOME_BANNER_INVALID_LANDING", "HOME_BANNER_INVALID_EXPOSURE_PERIOD",
+            "HOME_BANNER_IMAGE_REQUIRED", "HOME_BANNER_PRESET_NOT_CONFIGURED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})

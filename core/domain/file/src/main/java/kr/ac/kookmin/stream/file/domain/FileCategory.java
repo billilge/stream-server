@@ -8,5 +8,7 @@ public enum FileCategory {
     ARCHIVE_IMAGE,
     LOCKER_SECTION_PHOTO,
     // 학생회비 납부 때 남은 학기 수의 근거로 올리는 K스마트멘토 학점이수현황 캡처
-    FEE_TRANSCRIPT_IMAGE
+    FEE_TRANSCRIPT_IMAGE,
+    // 홈 배너의 기타 카테고리에서 운영진이 직접 올리는 배경 이미지
+    HOME_BANNER_IMAGE
 }

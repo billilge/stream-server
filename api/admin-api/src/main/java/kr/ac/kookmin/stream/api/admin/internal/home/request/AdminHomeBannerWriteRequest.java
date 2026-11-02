@@ -16,6 +16,9 @@ import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerUpdateCommand;
  * <p>
  * 표시 순서는 어느 쪽도 받지 않는다. 등록은 서버가 맨 뒤로 정하고, 수정은 순서를 손대지 않는다.
  * <p>
+ * {@code imageFileId}는 {@code ETC}에만 필요해 어노테이션으로 필수를 걸 수 없다 — 다른 필드(카테고리)에
+ * 따라 갈리는 규칙이라 {@code AdminHomeBannerWriteUseCase}가 본다.
+ * <p>
  * 랜딩 타입과 값의 짝({@code NOTICE}·{@code EVENT}면 {@code targetId},
  * {@code EXTERNAL_LINK}면 {@code linkUrl})은 한 필드만 봐서는 판정할 수 없어 도메인이 검증한다.
  */
@@ -29,13 +32,12 @@ public record AdminHomeBannerWriteRequest(
     @Size(max = 100, message = "부제목은 100자 이하로 입력해 주세요.")
     String subtitle,
 
-    @Schema(description = "분류. 운영진 화면이 고른 이미지에 따라 자동으로 채워 보낸다(제휴 프리셋이면 PARTNERSHIP). "
-        + "서버는 이 값이 이미지와 맞는지 보지 않는다")
-    @NotNull(message = "배너 분류를 입력해 주세요.")
+    @Schema(description = "카테고리. 배경 이미지가 이 값으로 정해진다")
+    @NotNull(message = "배너 카테고리를 입력해 주세요.")
     HomeBannerCategory category,
 
-    @Schema(description = "배너 이미지 파일 ID. 프리셋도 직접 업로드와 같이 파일 ID로 보낸다", example = "101")
-    @NotNull(message = "배너 이미지를 입력해 주세요.")
+    @Schema(description = "직접 올린 배경 이미지의 파일 ID. ETC일 때만 보낸다 — 나머지 카테고리는 서버가 "
+        + "프리셋으로 채우므로 보내도 무시한다", example = "101")
     Long imageFileId,
 
     @Schema(description = "배너를 눌렀을 때 가는 곳")
