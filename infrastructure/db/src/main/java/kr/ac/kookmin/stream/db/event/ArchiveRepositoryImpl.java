@@ -7,7 +7,6 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Repository;
 public class ArchiveRepositoryImpl implements ArchiveRepository {
 
     private final ArchiveJpaRepository archiveJpaRepository;
-    private final ArchiveRelatedLinkJpaRepository archiveRelatedLinkJpaRepository;
 
     /**
      * 연도를 반개구간으로 바꿔 조회한다. {@code YEAR(start_date) = ?}처럼 컬럼에 함수를 씌우면 인덱스를
@@ -57,12 +55,5 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
     @Override
     public Optional<Archive> findById(Long id) {
         return archiveJpaRepository.findByIdAndIsDeletedFalse(id).map(ArchiveJpaEntity::toDomain);
-    }
-
-    @Override
-    public List<ArchiveRelatedLink> findRelatedLinksByArchiveId(Long archiveId) {
-        return archiveRelatedLinkJpaRepository.findAllByArchiveIdOrderByDisplayOrderAscIdAsc(archiveId).stream()
-            .map(ArchiveRelatedLinkJpaEntity::toDomain)
-            .toList();
     }
 }

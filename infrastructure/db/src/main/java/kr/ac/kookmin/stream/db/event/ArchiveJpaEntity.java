@@ -49,6 +49,9 @@ public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
     @Column(name = "is_exposed", nullable = false)
     private boolean exposed;
 
+    @Column(name = "related_event_id")
+    private Long relatedEventId;
+
     private ArchiveJpaEntity(Archive archive) {
         this.id = archive.getId();
         this.title = archive.getTitle();
@@ -59,6 +62,7 @@ public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
         this.departmentName = archive.getDepartmentName();
         this.imageIds = archive.getImageIds();
         this.exposed = archive.isExposed();
+        this.relatedEventId = archive.getRelatedEventId();
     }
 
     public static ArchiveJpaEntity from(Archive archive) {
@@ -68,6 +72,6 @@ public class ArchiveJpaEntity extends BaseSoftDeleteEntity {
     public Archive toDomain() {
         return Archive.of(
             id, title, content, startDate, endDate, location, departmentName, imageIds, exposed,
-            getCreatedAt());
+            relatedEventId, getCreatedAt());
     }
 }

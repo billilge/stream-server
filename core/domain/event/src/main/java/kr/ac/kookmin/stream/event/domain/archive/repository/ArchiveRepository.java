@@ -5,7 +5,6 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 
 public interface ArchiveRepository {
 
@@ -30,6 +29,4 @@ public interface ArchiveRepository {
     PageResult<Archive> search(String keyword, Boolean exposed, PageOffset pageOffset);
 
     Optional<Archive> findById(Long id);
-
-    List<ArchiveRelatedLink> findRelatedLinksByArchiveId(Long archiveId);
 }

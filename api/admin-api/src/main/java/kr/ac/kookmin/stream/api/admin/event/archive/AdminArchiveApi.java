@@ -39,7 +39,9 @@ public interface AdminArchiveApi {
     @Operation(summary = "아카이빙 상세 조회",
         description = "아카이빙 한 건을 조회한다. 당일 활동은 endDate가 null이다. "
             + "활동 사진은 노출 순서대로 담고 첫 장이 대표 이미지다 — 대표를 따로 내려주지 않는다. "
-            + "삭제된 파일은 사진 목록에서 조용히 빠진다.")
+            + "삭제된 파일은 사진 목록에서 조용히 빠진다. "
+            + "relatedEvent는 연결한 행사이고, 제목은 저장하지 않고 조회할 때마다 원본에서 가져온다. "
+            + "연결하지 않았거나 행사가 삭제됐으면 null이다 — 운영진 화면이므로 아직 게시하지 않은 행사도 보여준다.")
     @ApiErrorCode(type = ArchiveErrorCode.class, codes = {"ARCHIVE_NOT_FOUND"})
     ApiResponse<AdminArchiveDetailResponse> getArchive(AdminApiUser apiUser, Long archiveId);
 }
