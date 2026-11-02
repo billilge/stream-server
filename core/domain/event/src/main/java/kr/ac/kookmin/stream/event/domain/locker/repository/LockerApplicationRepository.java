@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 
 /**
@@ -27,12 +29,12 @@ public interface LockerApplicationRepository {
     Set<Long> findAppliedLockerIds(Long lockerPeriodId);
 
     /**
-     * 해당 운영 회차에 신청한 회원 식별자. 취소가 없어 신청 행이 곧 사물함을 가진 회원이다.
+     * 해당 운영 회차에 사물함을 가진 회원 식별자. 취소된 신청은 뺀다.
      */
     List<Long> findMemberIds(Long lockerPeriodId);
 
     /**
-     * 해당 운영 회차에서 회원이 신청한 사물함 식별자. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
+     * 해당 운영 회차에서 회원이 쓰고 있는 사물함 식별자. 취소되지 않은 신청은 회차당 한 건까지라 최대 하나다.
      */
     Optional<Long> findAppliedLockerId(Long lockerPeriodId, Long memberId);
 
@@ -45,6 +47,18 @@ public interface LockerApplicationRepository {
      * 회원의 사물함 신청 전체를 신청 일시 최신순으로 조회한다.
      */
     List<LockerApplication> findByMemberId(Long memberId);
+
+    /**
+     * 신청 한 건. 취소된 신청도 돌려준다 — 운영진이 취소 여부를 보고 판단한다.
+     */
+    Optional<LockerApplication> findById(Long lockerApplicationId);
+
+    /**
+     * 운영 회차의 신청을 신청 일시 최신순으로 조회한다. 운영진 화면이 쓰므로 취소된 신청도 담는다.
+     *
+     * @param memberIds 회원으로 좁힐 때만 넘긴다. {@code null}이면 회차 전체를 본다
+     */
+    PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset);
 
     /**
      * 신청을 저장한다. 같은 회차의 같은 사물함에 먼저 저장된 신청이 있으면

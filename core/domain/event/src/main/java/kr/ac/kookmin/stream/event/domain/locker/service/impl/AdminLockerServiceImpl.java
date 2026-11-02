@@ -3,11 +3,19 @@ package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
+import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
@@ -28,6 +36,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     private final LockerRepository lockerRepository;
     private final LockerApplicationRepository lockerApplicationRepository;
+    private final OutboxWriter outboxWriter;
 
     @Override
     public List<LockerPeriodSummary> getAllPeriods() {
@@ -83,6 +92,67 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         lockers.forEach(locker -> locker.changeStatus(status));
         lockerRepository.saveLockers(lockers);
+    }
+
+    @Override
+    public PageResult<LockerApplicationResult> getApplications(
+        Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset
+    ) {
+        LockerPeriod period = getPeriod(lockerPeriodId);
+        PageResult<LockerApplication> applications =
+            lockerApplicationRepository.search(lockerPeriodId, memberIds, pageOffset);
+
+        List<Long> lockerIds = applications.content().stream()
+            .map(LockerApplication::getLockerId)
+            .distinct()
+            .toList();
+        // 철거된 사물함도 지난 신청의 이름을 보여줘야 하므로 삭제된 사물함까지 읽는다
+        Map<Long, Locker> lockers = lockerIds.isEmpty()
+            ? Map.of()
+            : lockerRepository.findLockersByIdsIncludingDeleted(lockerIds).stream()
+                .collect(Collectors.toMap(Locker::getId, Function.identity()));
+
+        return applications.map(
+            application -> new LockerApplicationResult(application, lockers.get(application.getLockerId()), period));
+    }
+
+    @Override
+    @Transactional
+    public void cancelApplication(Long lockerApplicationId) {
+        LockerApplication application = lockerApplicationRepository.findById(lockerApplicationId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_APPLICATION_NOT_FOUND));
+        validateUsageNotEnded(application.getLockerPeriodId(), LocalDate.now());
+
+        application.cancel();
+        lockerApplicationRepository.save(application);
+        outboxWriter.record(new LockerAssignmentCanceled(application.getMemberId(), application.getLockerPeriodId()));
+    }
+
+    @Override
+    @Transactional
+    public void assignLocker(Long lockerPeriodId, Long memberId, Long lockerId) {
+        // 사용 기간 판정과 신청 시각이 같은 시계를 보게 한 번만 읽는다. 따로 읽으면 자정을 걸칠 때 기간 안으로
+        // 통과한 신청이 다음 날짜로 기록된다
+        LocalDateTime now = LocalDateTime.now();
+        validateUsageNotEnded(lockerPeriodId, now.toLocalDate());
+        Locker locker = lockerRepository.findLockerById(lockerId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION));
+        if (!locker.isSelectable(lockerApplicationRepository.existsByLocker(lockerPeriodId, lockerId))) {
+            throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
+        }
+
+        // 회원이 이미 가진 칸이 있으면 저장 시 유니크 제약이 막는다
+        lockerApplicationRepository.save(LockerApplication.create(lockerPeriodId, memberId, lockerId, now));
+        outboxWriter.record(new LockerAssignedByAdmin(memberId, lockerPeriodId));
+    }
+
+    /**
+     * 사용 기간이 끝난 회차는 신청을 손댈 수 없다. 취소해도 되돌릴 자리가 없고, 배정해도 쓸 수 없다.
+     */
+    private void validateUsageNotEnded(Long lockerPeriodId, LocalDate today) {
+        if (getPeriod(lockerPeriodId).isUsageEnded(today)) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_ALREADY_ENDED);
+        }
     }
 
     /**
