@@ -24,6 +24,10 @@ public enum NotificationType {
 
     // 값: 없음
     LOCKER_ASSIGNED(NotificationCategory.LOCKER, "사물함을 신청했어요.", "배정된 사물함 번호를 확인해 주세요."),
+    LOCKER_ASSIGNED_BY_ADMIN(NotificationCategory.LOCKER,
+        "운영진이 사물함을 배정했어요.", "배정된 사물함 번호를 확인해 주세요."),
+    LOCKER_ASSIGNMENT_CANCELED(NotificationCategory.LOCKER,
+        "사물함 배정이 취소됐어요.", "신청 기간이 남아 있으면 다시 신청할 수 있어요."),
     LOCKER_APPLY_CLOSING(NotificationCategory.LOCKER, "사물함 신청이 내일 마감돼요.", "이용하려면 기간 내에 신청해 주세요."),
     LOCKER_USAGE_ENDING(NotificationCategory.LOCKER, "사물함 이용 기간이 얼마 남지 않았어요.", "만료 전에 개인 물품을 미리 정리해 주세요."),
 

@@ -3,17 +3,26 @@ package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
+import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerStatus;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
@@ -28,6 +37,7 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     private final LockerRepository lockerRepository;
     private final LockerApplicationRepository lockerApplicationRepository;
+    private final OutboxWriter outboxWriter;
 
     @Override
     public List<LockerPeriodSummary> getAllPeriods() {
@@ -85,14 +95,98 @@ class AdminLockerServiceImpl implements AdminLockerService {
         lockerRepository.saveLockers(lockers);
     }
 
+    @Override
+    @Transactional
+    public void changeSectionLayout(Long sectionId, String layout) {
+        validateSectionExists(sectionId);
+
+        // 배치를 아직 등록하지 않은 구역이면 이 저장이 첫 등록이다
+        LockerSectionLayout sectionLayout = lockerRepository.findLayoutBySectionId(sectionId)
+            .orElseGet(() -> LockerSectionLayout.createEmpty(sectionId));
+        sectionLayout.changeLayout(layout);
+
+        lockerRepository.saveLayout(sectionLayout);
+    }
+
+    @Override
+    @Transactional
+    public void changeSectionPhotos(Long sectionId, List<Long> photoFileIds) {
+        validateSectionExists(sectionId);
+
+        // 사진은 배치와 같은 행에 있고 배치 쪽이 비어 있을 수 없다. 배치부터 등록해야 사진을 올릴 수 있다
+        LockerSectionLayout sectionLayout = lockerRepository.findLayoutBySectionId(sectionId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_SECTION_LAYOUT_NOT_FOUND));
+        sectionLayout.changePhotos(photoFileIds);
+
+        lockerRepository.saveLayout(sectionLayout);
+    }
+
+    @Override
+    public PageResult<LockerApplicationResult> getApplications(
+        Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset
+    ) {
+        LockerPeriod period = getPeriod(lockerPeriodId);
+        PageResult<LockerApplication> applications =
+            lockerApplicationRepository.search(lockerPeriodId, memberIds, pageOffset);
+
+        List<Long> lockerIds = applications.content().stream()
+            .map(LockerApplication::getLockerId)
+            .distinct()
+            .toList();
+        // 철거된 사물함도 지난 신청의 이름을 보여줘야 하므로 삭제된 사물함까지 읽는다
+        Map<Long, Locker> lockers = lockerIds.isEmpty()
+            ? Map.of()
+            : lockerRepository.findLockersByIdsIncludingDeleted(lockerIds).stream()
+                .collect(Collectors.toMap(Locker::getId, Function.identity()));
+
+        return applications.map(
+            application -> new LockerApplicationResult(application, lockers.get(application.getLockerId()), period));
+    }
+
+    @Override
+    @Transactional
+    public void cancelApplication(Long lockerApplicationId) {
+        LockerApplication application = lockerApplicationRepository.findById(lockerApplicationId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_APPLICATION_NOT_FOUND));
+        validateUsageNotEnded(application.getLockerPeriodId(), LocalDate.now());
+
+        application.cancel();
+        lockerApplicationRepository.save(application);
+        outboxWriter.record(new LockerAssignmentCanceled(application.getMemberId(), application.getLockerPeriodId()));
+    }
+
+    @Override
+    @Transactional
+    public void assignLocker(Long lockerPeriodId, Long memberId, Long lockerId) {
+        // 사용 기간 판정과 신청 시각이 같은 시계를 보게 한 번만 읽는다. 따로 읽으면 자정을 걸칠 때 기간 안으로
+        // 통과한 신청이 다음 날짜로 기록된다
+        LocalDateTime now = LocalDateTime.now();
+        validateUsageNotEnded(lockerPeriodId, now.toLocalDate());
+        Locker locker = lockerRepository.findLockerById(lockerId)
+            .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_NOT_IN_SECTION));
+        if (!locker.isSelectable(lockerApplicationRepository.existsByLocker(lockerPeriodId, lockerId))) {
+            throw new BusinessException(LockerErrorCode.LOCKER_ALREADY_ASSIGNED);
+        }
+
+        // 회원이 이미 가진 칸이 있으면 저장 시 유니크 제약이 막는다
+        lockerApplicationRepository.save(LockerApplication.create(lockerPeriodId, memberId, lockerId, now));
+        outboxWriter.record(new LockerAssignedByAdmin(memberId, lockerPeriodId));
+    }
+
+    /**
+     * 사용 기간이 끝난 회차는 신청을 손댈 수 없다. 취소해도 되돌릴 자리가 없고, 배정해도 쓸 수 없다.
+     */
+    private void validateUsageNotEnded(Long lockerPeriodId, LocalDate today) {
+        if (getPeriod(lockerPeriodId).isUsageEnded(today)) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_ALREADY_ENDED);
+        }
+    }
+
     /**
      * 요청한 사물함을 구역 소속으로 확인하고 돌려준다. 하나라도 그 구역에 없으면 아무것도 바꾸지 않도록 여기서 끊는다.
      */
     private List<Locker> getLockersInSection(Long sectionId, List<Long> lockerIds) {
-        // 구역부터 확인한다. 없는 구역이면 같은 경로의 구역 상세 조회와 같이 404로 나가야 한다
-        if (lockerRepository.findSectionById(sectionId).isEmpty()) {
-            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
-        }
+        validateSectionExists(sectionId);
 
         // 구역 전체가 아니라 요청한 사물함만 읽는다. 36칸 구역에서 두 칸만 바꿔도 전체를 읽지 않도록 한다
         List<Locker> lockers = lockerRepository.findLockersByIds(lockerIds);
@@ -123,6 +217,15 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         if (lockerApplicationRepository.existsByPeriodIdsAndLockerIds(assignedPeriodIds, lockerIds)) {
             throw new BusinessException(LockerErrorCode.LOCKER_IN_USE);
+        }
+    }
+
+    /**
+     * 없는 구역이면 같은 경로의 구역 상세 조회와 같이 404로 나가야 한다. 구역을 먼저 확인해 아무것도 바꾸지 않고 끊는다.
+     */
+    private void validateSectionExists(Long sectionId) {
+        if (lockerRepository.findSectionById(sectionId).isEmpty()) {
+            throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
         }
     }
 
