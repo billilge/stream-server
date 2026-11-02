@@ -25,7 +25,9 @@ public record ArchiveWriteRequest(
     @Size(max = 200, message = "활동 제목은 200자 이하여야 합니다.")
     String title,
 
+    // content는 TEXT 컬럼(최대 65,535바이트)이다. 글자당 최대 4바이트로 잡아도 넘치지 않는 길이로 막는다
     @NotBlank(message = "활동 내용을 입력해 주세요.")
+    @Size(max = 16000, message = "활동 내용은 16000자 이하여야 합니다.")
     String content,
 
     @NotNull(message = "활동 시작일을 입력해 주세요.")
@@ -57,8 +59,8 @@ public record ArchiveWriteRequest(
     }
 
     /**
-     * 중복을 걷어낸 사진 식별자. 같은 사진을 두 번 보여줄 일이 없고, 파일 존재 확인이 개수를 견주므로 중복이
-     * 남아 있으면 있는 파일도 없다고 판단한다. 처음 나온 자리를 지켜 노출 순서는 그대로 둔다.
+     * 중복을 걷어낸 사진 식별자. 같은 사진을 두 번 보여줄 일이 없어 저장 전에 뺀다. 처음 나온 자리를 지켜 노출
+     * 순서는 그대로 둔다.
      */
     private List<Long> distinctImageIds() {
         return imageIds.stream().distinct().toList();

@@ -66,8 +66,8 @@ public class Archive {
     }
 
     /**
-     * 전체 필드를 통째로 바꾼다. 사진과 연결 행사도 받은 값으로 교체하므로, 빈 사진 목록은 전체 삭제이고
-     * {@code relatedEventId}가 {@code null}이면 연결을 끊는다.
+     * 전체 필드를 통째로 바꾼다. 사진과 연결 행사도 받은 값으로 교체하므로, {@code relatedEventId}가
+     * {@code null}이면 연결을 끊는다.
      */
     public void update(ArchiveWriteCommand command) {
         validatePeriod(command.startDate(), command.endDate());
@@ -104,7 +104,7 @@ public class Archive {
     /**
      * 대표 이미지 파일 id. 사진 배열의 첫 장을 대표로 쓴다.
      * <p>
-     * 사진 없는 아카이빙은 등록되지 않는다는 전제지만 최소 1장 제약이 없어, 비어 있으면 예외 대신 null을 돌린다.
+     * 등록·수정은 사진을 한 장 이상 받지만 그 전에 DB로 직접 넣은 행은 비어 있을 수 있어, 예외 대신 null을 돌린다.
      */
     public Long thumbnailFileId() {
         return imageIds == null || imageIds.isEmpty() ? null : imageIds.getFirst();
