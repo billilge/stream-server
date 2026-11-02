@@ -11,10 +11,10 @@ import kr.ac.kookmin.stream.api.app.welfare.rental.response.ItemListItemResponse
 import kr.ac.kookmin.stream.api.app.welfare.rental.response.RentalHistoryListResponse;
 import kr.ac.kookmin.stream.api.app.welfare.rental.response.ReturnRequiredListResponse;
 import kr.ac.kookmin.stream.api.app.welfare.rental.usecase.RentalApplyUseCase;
+import kr.ac.kookmin.stream.api.app.welfare.rental.usecase.RentalCancelUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
@@ -38,6 +38,7 @@ public class AppRentalController implements AppRentalApi {
     private final ItemService itemService;
     private final RentalHistoryService rentalHistoryService;
     private final RentalApplyUseCase rentalApplyUseCase;
+    private final RentalCancelUseCase rentalCancelUseCase;
 
     @Override
     @GetMapping("/items")
@@ -71,7 +72,7 @@ public class AppRentalController implements AppRentalApi {
     @PostMapping("/histories")
     public ApiResponse<Void> applyRental(AppApiUser apiUser, @Valid @RequestBody RentalApplyRequest request) {
         // DB에 안 닿는 순수 검증은 트랜잭션(UseCase) 진입 전에 끝낸다 — 잘못된 요청이 커넥션을 잡지 않게 한다
-        RentalTimeValidator.validate(request.rentAtHour(), request.rentAtMinute(), LocalTime.now(DateUtil.KST));
+        RentalTimeValidator.validate(request.rentAtHour(), request.rentAtMinute(), LocalTime.now());
         rentalApplyUseCase.apply(
             apiUser.userId(),
             request.itemId(),
@@ -86,7 +87,14 @@ public class AppRentalController implements AppRentalApi {
     @Override
     @PatchMapping("/histories/{rentalHistoryId}/return")
     public ApiResponse<Void> returnRental(AppApiUser apiUser, @PathVariable Long rentalHistoryId) {
-        rentalHistoryService.returnRental(apiUser.userId(), rentalHistoryId);
+        rentalHistoryService.requestReturn(apiUser.userId(), rentalHistoryId);
+        return ApiResponse.success();
+    }
+
+    @Override
+    @PatchMapping("/histories/{rentalHistoryId}/cancel")
+    public ApiResponse<Void> cancelRental(AppApiUser apiUser, @PathVariable Long rentalHistoryId) {
+        rentalCancelUseCase.cancel(apiUser.userId(), rentalHistoryId);
         return ApiResponse.success();
     }
 }
