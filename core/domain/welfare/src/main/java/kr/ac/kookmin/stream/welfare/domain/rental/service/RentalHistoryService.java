@@ -30,9 +30,10 @@ public interface RentalHistoryService {
 
     /**
      * 반납 신청. 본인 소유의 대여 중(RENTAL) 이력만 대상이며, 신청 즉시 반납 완료로 전이한다
-     * (운영진의 최종 확인 단계가 없어서다).
+     * (운영진의 최종 확인 단계가 없어서다). 재고 복구에 필요한 물품 ID·수량을 호출부가 쓸 수 있도록
+     * 갱신된 이력을 돌려준다.
      */
-    void returnRental(Long memberId, Long historyId);
+    RentalHistory returnRental(Long memberId, Long historyId);
 
     /** 같은 회원이 같은 물품을 이미 대여 중인지(상태가 RENTAL인 이력이 있는지) 확인한다. */
     boolean existsActiveRental(Long itemId, Long memberId);

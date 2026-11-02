@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 public record RentalRecord(RentalHistory history, Item item) {
 
     /**
-     * 지금 반납해야 하는 대여인지. 대여 중이고, 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다.
+     * 지금 반납해야 하는 대여인지. 대여 중이면(기한이 지나도 상태는 그대로 RENTAL — 연체는 dueAt으로 조회
+     * 시점에 판단한다) 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다. 반납 절차가
+     * 이미 시작된(RETURN_PENDING 이후) 건은 제외한다 — 더 이상 학생이 반납을 미루고 있는 상태가 아니라서다.
      */
     public boolean isReturnRequired() {
         return history.getRentalStatus() == RentalStatus.RENTAL

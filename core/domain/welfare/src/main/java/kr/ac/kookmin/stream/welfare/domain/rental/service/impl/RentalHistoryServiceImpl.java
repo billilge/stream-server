@@ -39,12 +39,13 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
     @Override
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
-        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL)).stream()
+        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다
+    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다. 연체 여부는 상태가 아니라 dueAt으로
+    // 조회 시점에 판단하므로(RentalRecord.isReturnRequired), 상태는 RENTAL 하나만 보면 된다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
         return toRecords(rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL)).stream()
@@ -52,14 +53,16 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
             .toList();
     }
 
-    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
+    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다. 재고 복구는
+    // RentalHistory만으로 할 수 없는 다른 집합체(Item)의 책임이라, 완료된 이력을 돌려주고 호출부
+    // (api:app-api의 UseCase)가 ItemService와 조합한다(coding-style.md 2-9절).
     @Override
     @Transactional
-    public void returnRental(Long memberId, Long historyId) {
+    public RentalHistory returnRental(Long memberId, Long historyId) {
         RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
         history.markReturned(LocalDateTime.now(DateUtil.KST));
-        rentalHistoryRepository.save(history);
+        return rentalHistoryRepository.save(history);
     }
 
     // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는
