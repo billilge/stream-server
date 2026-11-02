@@ -21,7 +21,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class LockerApplicationRepositoryImpl implements LockerApplicationRepository {
 
-    // V26에서 유니크 둘을 generated column(active_locker_key·active_member_key)으로 옮겼다. 취소된 신청이 자리를
+    // V29에서 유니크 둘을 generated column(active_locker_key·active_member_key)으로 옮겼다. 취소된 신청이 자리를
     // 잡지 않도록 한 것이라 제약 이름도 함께 바뀐다
     private static final String LOCKER_UNIQUE_CONSTRAINT = "uk_locker_applications_active_locker_key";
     private static final String MEMBER_UNIQUE_CONSTRAINT = "uk_locker_applications_active_member_key";

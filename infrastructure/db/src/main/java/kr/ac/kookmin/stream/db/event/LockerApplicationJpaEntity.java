@@ -14,7 +14,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
-// uk_locker_applications_active_member_key·uk_locker_applications_active_locker_key(V26)는 generated column
+// uk_locker_applications_active_member_key·uk_locker_applications_active_locker_key(V29)는 generated column
 // active_member_key·active_locker_key에 걸려 있다. Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(
     name = "locker_applications",
