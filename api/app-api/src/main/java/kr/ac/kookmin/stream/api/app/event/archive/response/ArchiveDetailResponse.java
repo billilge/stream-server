@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveRelatedLink;
 import kr.ac.kookmin.stream.file.domain.File;
 
 public record ArchiveDetailResponse(
@@ -17,13 +16,17 @@ public record ArchiveDetailResponse(
     String departmentName,
     String content,
     List<Image> images,
-    List<RelatedLink> relatedLinks
+    RelatedEvent relatedEvent
 ) {
 
     /**
      * 존재하지 않는(삭제된) fileId는 imagesById에 키가 없다 — 그런 항목은 목록에서 조용히 제외한다.
+     *
+     * @param relatedEventTitle 연결한 행사의 제목. 연결이 없거나 행사가 사라졌으면 {@code null}
      */
-    public static ArchiveDetailResponse from(ArchiveDetail detail, Map<Long, File> imagesById) {
+    public static ArchiveDetailResponse of(
+        ArchiveDetail detail, String relatedEventTitle, Map<Long, File> imagesById
+    ) {
         return new ArchiveDetailResponse(
             detail.archiveId(),
             detail.title(),
@@ -36,21 +39,23 @@ public record ArchiveDetailResponse(
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
                 .toList(),
-            detail.relatedLinks().stream().map(RelatedLink::from).toList()
+            RelatedEvent.of(detail.relatedEventId(), relatedEventTitle)
         );
+    }
+
+    /** 눌러서 이동할 행사. */
+    public record RelatedEvent(Long eventId, String title) {
+
+        /** 연결이 없거나 행사가 사라져 제목을 못 가져왔으면 {@code null}이다. */
+        public static RelatedEvent of(Long eventId, String title) {
+            return eventId == null || title == null ? null : new RelatedEvent(eventId, title);
+        }
     }
 
     public record Image(Long fileId, String fileUrl) {
 
         public static Image of(Long fileId, File file) {
             return new Image(fileId, StorageUrlBuilder.build(file.getFileKey()));
-        }
-    }
-
-    public record RelatedLink(String title, String url) {
-
-        public static RelatedLink from(ArchiveRelatedLink relatedLink) {
-            return new RelatedLink(relatedLink.getTitle(), relatedLink.getUrl());
         }
     }
 }

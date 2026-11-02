@@ -10,9 +10,14 @@ import java.time.LocalDateTime;
  */
 public record RentalRecord(RentalHistory history, Item item) {
 
-    /** 지금 반납해야 하는 대여인지. 반납을 신청한 대여는 빠진다. */
+    /**
+     * 지금 반납해야 하는 대여인지. 대여 시각이 있고, 반납 정책이 있는 물품이어야 기한을 계산할 수 있다.
+     */
     public boolean isReturnRequired() {
-        return history.getRentalStatus() == RentalStatus.RENTAL && hasDueAt();
+        return RentalStatus.awaitingReturnStatuses().contains(history.getRentalStatus())
+            && history.getRentAt() != null
+            && item != null
+            && item.getReturnPolicy() != null;
     }
 
     /** 반납을 신청해 운영진의 확인을 기다리는 중인지. 홈이 "반납 신청함"을 표시할 때 쓴다. */
@@ -20,15 +25,8 @@ public record RentalRecord(RentalHistory history, Item item) {
         return history.getRentalStatus() == RentalStatus.RETURN_PENDING;
     }
 
-    /** 반납 기한을 계산할 수 있는지. 상태는 보지 않아 반납 신청한 대여도 포함한다. */
-    public boolean hasDueAt() {
-        return history.getRentAt() != null
-            && item != null
-            && item.getReturnPolicy() != null;
-    }
-
     /**
-     * 반납 기한 시각. {@link #hasDueAt()}가 true일 때만 계산할 수 있다.
+     * 반납 기한 시각. {@link #isReturnRequired()}가 true일 때만 계산할 수 있다.
      */
     public LocalDateTime dueAt() {
         return item.getReturnPolicy().dueAt(history.getRentAt());
