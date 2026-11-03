@@ -5,6 +5,6 @@ import kr.ac.kookmin.stream.member.domain.notification.domain.MemberNotification
 
 public interface MemberNotificationSettingService {
     MemberNotificationSetting getByMemberId(Long memberId);
-    void createDefaultIfAbsent(Long memberId);
+    void createDefaultIfAbsent(Long memberId, boolean notificationConsentAgreed);
     MemberNotificationSetting update(Long memberId, MemberNotificationSettingUpdateCommand command);
 }

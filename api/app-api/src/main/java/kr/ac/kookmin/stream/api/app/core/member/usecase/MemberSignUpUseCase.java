@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.app.core.member.usecase;
 
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
+import kr.ac.kookmin.stream.member.domain.member.domain.TermType;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.member.domain.notification.service.MemberNotificationSettingService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class MemberSignUpUseCase {
     @Transactional
     public void signUp(Long memberId, MemberSignUpCommand command) {
         memberService.signUp(memberId, command);
-        memberNotificationSettingService.createDefaultIfAbsent(memberId);
+        boolean notificationConsentAgreed = Boolean.TRUE.equals(command.termAgreements().get(TermType.NOTIFICATION_CONSENT));
+        memberNotificationSettingService.createDefaultIfAbsent(memberId, notificationConsentAgreed);
     }
 }

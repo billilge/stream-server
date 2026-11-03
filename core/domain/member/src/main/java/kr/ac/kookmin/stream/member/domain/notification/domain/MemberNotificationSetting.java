@@ -18,9 +18,10 @@ public class MemberNotificationSetting {
     // 게시판 알림. 새 공지와 열린피드백 답변을 함께 다룬다
     private boolean noticeEnabled;
 
-    // 회원가입할 때 만든다. 처음에는 모든 알림을 받는다
-    public static MemberNotificationSetting createDefault(Long memberId) {
-        return new MemberNotificationSetting(null, memberId, true, true, true, true);
+    // 회원가입할 때 만든다. 알림 수신 동의(NOTIFICATION_CONSENT) 약관에 동의했으면 전부 켜고, 동의하지 않았으면 전부 끈다
+    public static MemberNotificationSetting createDefault(Long memberId, boolean notificationConsentAgreed) {
+        return new MemberNotificationSetting(
+            null, memberId, notificationConsentAgreed, notificationConsentAgreed, notificationConsentAgreed, notificationConsentAgreed);
     }
 
     public static MemberNotificationSetting of(
