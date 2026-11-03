@@ -19,11 +19,11 @@ public interface FeedbackRepository {
 
     /**
      * 관리자 질문 검색. keyword는 질문 내용에, memberIds는 작성자에 걸고 둘을 OR로 묶는다.
-     * 작성자 이름은 member 모듈에 있어 welfare가 조인할 수 없으므로, 이름으로 찾은 회원 ID를 받아
+     * 작성자 이름·학번은 member 모듈에 있어 welfare가 조인할 수 없으므로, 이름·학번으로 찾은 회원 ID를 받아
      * 자기 테이블의 created_by와만 비교한다.
      *
      * @param keyword   null이면 검색 조건 없이 그 회차 전체
-     * @param memberIds 이름이 keyword와 일치한 회원 ID. 일치가 없으면 빈 목록
+     * @param memberIds 이름 또는 학번이 keyword와 부분 일치한 회원 ID. 일치가 없으면 빈 목록
      */
     PageResult<Feedback> searchByKeyword(
         int year, int round, String keyword, List<Long> memberIds, PageOffset pageOffset);

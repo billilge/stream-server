@@ -36,7 +36,7 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
     List<FeedbackJpaEntity> findAllByYearAndRound(@Param("year") int year, @Param("round") int round);
 
     // createdBy는 welfare 자기 테이블의 숫자 컬럼이라 member 테이블과 조인하지 않는다.
-    // 이름으로 찾은 회원 ID를 호출부가 넘겨주고 여기서는 IN으로만 비교한다.
+    // 이름·학번으로 찾은 회원 ID를 호출부가 넘겨주고 여기서는 IN으로만 비교한다.
     // keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
         SELECT f FROM FeedbackJpaEntity f
