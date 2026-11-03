@@ -35,8 +35,8 @@ public interface AdminDisplayPosterApi {
 
     /** 포스터 등록. 등록하면 바로 활성 상태가 되어 디스플레이에 노출된다. */
     @Operation(summary = "포스터 등록",
-        description = "포스터를 등록한다. 이미지는 업로드를 마친 파일 ID로 넘기며, 없는 파일이면 등록하지 않는다. "
-            + "등록한 포스터는 바로 활성 상태다.")
+        description = "포스터를 등록한다. 이미지는 업로드를 마친 파일 ID로 넘긴다. 없는 파일이거나 포스터용(DISPLAY_POSTER)으로 "
+            + "올린 파일이 아니면 FILE_NOT_FOUND로 등록하지 않는다. 등록한 포스터는 바로 활성 상태다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<DisplayPosterCreateResponse> createPoster(AdminApiUser apiUser, DisplayPosterCreateRequest request);
@@ -44,7 +44,8 @@ public interface AdminDisplayPosterApi {
     /** 포스터 수정. 포스터명·이미지를 통째로 바꾸고, 이미지가 바뀌면 이전 이미지 파일을 지운다. */
     @Operation(summary = "포스터 수정",
         description = "포스터명과 이미지를 통째로 바꾼다. 이미지를 그대로 두려면 목록 조회에서 받은 imageFileId를 다시 보낸다. "
-            + "이미지가 바뀌면 이전 이미지 파일을 지운다. 활성화 여부는 바뀌지 않는다.")
+            + "없는 파일이거나 포스터용(DISPLAY_POSTER)으로 올린 파일이 아니면 FILE_NOT_FOUND다. 이미지가 바뀌면 이전 이미지 "
+            + "파일을 지운다. 활성화 여부는 바뀌지 않는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     @ApiErrorCode(type = DisplayErrorCode.class, codes = {"DISPLAY_POSTER_NOT_FOUND"})

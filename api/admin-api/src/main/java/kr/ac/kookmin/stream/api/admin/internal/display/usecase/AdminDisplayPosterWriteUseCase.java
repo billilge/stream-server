@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.api.admin.internal.display.usecase;
 
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.file.domain.File;
+import kr.ac.kookmin.stream.file.domain.FileCategory;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayPoster;
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * 포스터를 쓰기 전에 이미지 파일이 실제로 있는지 확인하고, 포스터를 지우거나 이미지를 바꾸면 더는 쓰이지 않는 이전 파일을 지운다.
+ * 포스터를 쓰기 전에 포스터용으로 올린 이미지 파일인지 확인하고, 포스터를 지우거나 이미지를 바꾸면 더는 쓰이지 않는 이전 파일을 지운다.
  * 포스터(internal)와 파일(file)은 서로 다른 도메인이라 도메인끼리 직접 의존하지 않고 이 UseCase가 두 Service를 조합한다.
  * <p>
  * 공지·행사는 소프트 삭제라 지운 뒤에도 행이 파일을 가리키므로 파일을 남긴다. 포스터는 물리 삭제라 남기면 아무도 가리키지 않는
@@ -33,13 +35,13 @@ public class AdminDisplayPosterWriteUseCase {
     private final FileService fileService;
 
     public DisplayPoster create(DisplayPosterCreateCommand command) {
-        validateImageExists(command.imageFileId());
+        validatePosterImage(command.imageFileId());
         return adminDisplayPosterService.create(command);
     }
 
     public DisplayPoster update(Long posterId, DisplayPosterUpdateCommand command) {
         Long previousImageFileId = adminDisplayPosterService.getPoster(posterId).getImageFileId();
-        validateImageExists(command.imageFileId());
+        validatePosterImage(command.imageFileId());
 
         DisplayPoster updated = adminDisplayPosterService.update(posterId, command);
         if (!previousImageFileId.equals(updated.getImageFileId())) {
@@ -53,8 +55,13 @@ public class AdminDisplayPosterWriteUseCase {
         deleteImageQuietly(deleted.getImageFileId());
     }
 
-    private void validateImageExists(Long imageFileId) {
-        if (fileService.findById(imageFileId).isEmpty()) {
+    // 포스터를 지우거나 이미지를 바꾸면 이 파일도 지우므로 포스터용(DISPLAY_POSTER)으로 올린 파일만 받는다.
+    // 다른 용도의 파일(공지 이미지, 회비 인증 캡처 등)이 들어오면 그 파일이 포스터와 함께 지워진다.
+    // 용도가 다른 파일도 없는 파일과 같은 에러로 거절한다
+    private void validatePosterImage(Long imageFileId) {
+        File image = fileService.findById(imageFileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
+        if (image.getCategory() != FileCategory.DISPLAY_POSTER) {
             throw new BusinessException(FileErrorCode.FILE_NOT_FOUND);
         }
     }
