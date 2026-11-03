@@ -74,6 +74,11 @@ public interface LockerRepository {
     Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId);
 
     /**
+     * 구역의 배치 구조와 사진을 저장한다. 식별자가 없으면 새로 만든다.
+     */
+    void saveLayout(LockerSectionLayout sectionLayout);
+
+    /**
      * 삭제되지 않은 사물함 전체를 조회한다. 구역별 집계는 서비스가 이 목록을 묶어 센다.
      */
     List<Locker> findAllLockers();

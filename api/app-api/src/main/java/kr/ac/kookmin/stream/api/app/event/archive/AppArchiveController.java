@@ -7,7 +7,8 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.request.ArchiveListParams;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.archive.response.ArchiveListResponse;
-import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveDetail;
+import kr.ac.kookmin.stream.api.app.event.archive.usecase.ArchiveDetailUseCase;
+import kr.ac.kookmin.stream.api.app.event.archive.usecase.ArchiveWithRelatedEvent;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveSummary;
 import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
 import kr.ac.kookmin.stream.file.domain.File;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppArchiveController implements AppArchiveApi {
 
     private final ArchiveService archiveService;
+    private final ArchiveDetailUseCase archiveDetailUseCase;
     private final FileService fileService;
 
     /**
@@ -46,9 +48,10 @@ public class AppArchiveController implements AppArchiveApi {
     @Override
     @GetMapping("/{archiveId}")
     public ApiResponse<ArchiveDetailResponse> getArchive(@PathVariable Long archiveId) {
-        ArchiveDetail detail = archiveService.getArchive(archiveId);
-        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+        ArchiveWithRelatedEvent archive = archiveDetailUseCase.getArchive(archiveId);
+        Map<Long, File> imagesById = fileService.findAllByIdIn(archive.detail().imageIds());
 
-        return ApiResponse.success(ArchiveDetailResponse.from(detail, imagesById));
+        return ApiResponse.success(
+            ArchiveDetailResponse.of(archive.detail(), archive.relatedEventTitle(), imagesById));
     }
 }

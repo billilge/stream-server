@@ -23,22 +23,40 @@ public class RentalHistory {
     private LocalDateTime returnedAt;
 
     /**
-     * 대여 신청으로 새 이력을 만든다. 소모품(반납 개념이 없는 물품)은 처음부터 반납 완료로,
-     * 대여품은 대여 중으로 시작한다 — 이 프로젝트엔 운영진이 수령을 확정해 주는 단계가 없어서,
-     * 레거시(billilge/backend) {@code RentalService.updateRentalStatus()}가 물품 인도 시점에 하던
-     * "소모품이면 RENTAL 대신 RETURNED" 분기를 신청 시점으로 그대로 옮겼다.
+     * 새 대여 이력을 만든다. workerId가 null이면 학생 본인 신청으로 승인 대기(PENDING) 상태에서 시작하고,
+     * workerId가 있으면 관리자 대행 등록으로 물품 종류에 따라 RENTAL 또는 RETURNED로 바로 시작한다.
      */
-    public static RentalHistory create(Item item, Long memberId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt) {
+    public static RentalHistory create(
+        Item item, Long memberId, Long workerId, int rentedCount, LocalDateTime appliedAt, LocalDateTime rentAt
+    ) {
+        if (workerId == null) {
+            return new RentalHistory(null, item.getId(), memberId, null, null, RentalStatus.PENDING, rentedCount, appliedAt, rentAt, null);
+        }
         boolean returnable = item.getType() == ItemType.RENTAL;
         RentalStatus status = returnable ? RentalStatus.RENTAL : RentalStatus.RETURNED;
         LocalDateTime returnedAt = returnable ? null : appliedAt;
-        return new RentalHistory(null, item.getId(), memberId, null, null, status, rentedCount, appliedAt, rentAt, returnedAt);
+        return new RentalHistory(null, item.getId(), memberId, workerId, null, status, rentedCount, appliedAt, rentAt, returnedAt);
     }
 
-    /** 반납 신청 처리. 운영진의 최종 확인 단계가 없어 신청 즉시 반납 완료로 전이한다. */
-    public void markReturned(LocalDateTime returnedAt) {
-        this.rentalStatus = RentalStatus.RETURNED;
-        this.returnedAt = returnedAt;
+    /** 반납 신청 처리. 운영진이 실제 반납을 확인해 줘야 하므로 신청 즉시 완료가 아니라 반납 대기(RETURN_PENDING)로 전이한다. */
+    public void requestReturn() {
+        this.rentalStatus = RentalStatus.RETURN_PENDING;
+    }
+
+    /** 본인이 PENDING 상태로 걸어 둔 신청을 취소한다. 아직 운영진이 승인하기 전이라 재고를 그대로 되돌릴 수 있다. */
+    public void cancel() {
+        this.rentalStatus = RentalStatus.CANCEL;
+    }
+
+    /** 운영진이 상태를 직접 바꾼다. RENTAL로 바뀌면 지금을 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다. */
+    public void changeStatusByAdmin(RentalStatus newStatus, LocalDateTime now) {
+        if (newStatus == RentalStatus.RENTAL) {
+            this.rentAt = now;
+        }
+        if (newStatus == RentalStatus.RETURNED) {
+            this.returnedAt = now;
+        }
+        this.rentalStatus = newStatus;
     }
 
     public static RentalHistory of(

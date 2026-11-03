@@ -38,7 +38,7 @@ public interface LockerService {
     Map<Long, List<Locker>> getLockerMapBySectionId();
 
     /**
-     * 해당 운영 회차에서 회원이 신청한 사물함. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
+     * 해당 운영 회차에서 회원이 쓰고 있는 사물함. 취소되지 않은 신청은 회차당 한 건까지라 최대 하나다.
      * <p>
      * 회차 게시 여부와 노출 범위는 확인하지 않는다. 호출하는 쪽이 판단한다.
      */

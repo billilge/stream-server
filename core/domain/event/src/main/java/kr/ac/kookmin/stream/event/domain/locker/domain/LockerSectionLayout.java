@@ -17,6 +17,13 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class LockerSectionLayout {
 
+    /**
+     * 지금 서버가 쓰는 배치 형식 버전. 블록 종류·필드가 바뀌면 올린다.
+     * <p>
+     * 운영진이 화면에서 고르는 값이 아니다. 형식 버전은 서버와 앱 사이의 약속이라 저장할 때 서버가 박는다.
+     */
+    public static final int CURRENT_VERSION = 1;
+
     private Long id;
     private Long sectionId;
     /** root 블록 트리 JSON 원문. 서버는 해석하지 않고 그대로 내려준다. */
@@ -34,5 +41,32 @@ public class LockerSectionLayout {
         List<Long> photoFileIds
     ) {
         return new LockerSectionLayout(id, sectionId, layout, version, photoFileIds);
+    }
+
+    /**
+     * 배치 구조를 아직 등록하지 않은 구역에 쓸 빈 행.
+     * <p>
+     * 배치 JSON과 형식 버전은 {@link #changeLayout(String)}이 함께 채운다 — 두 값을 넣는 자리를 한 곳으로 모은다.
+     * 사진은 따로 올리므로 빈 목록으로 시작한다.
+     */
+    public static LockerSectionLayout createEmpty(Long sectionId) {
+        return new LockerSectionLayout(null, sectionId, null, 0, List.of());
+    }
+
+    /**
+     * 배치 구조를 바꾼다. 형식 버전도 지금 버전으로 맞춘다 — 저장되는 JSON은 현재 콘솔이 만든 형식이다.
+     */
+    public void changeLayout(String layout) {
+        this.layout = layout;
+        this.version = CURRENT_VERSION;
+    }
+
+    /**
+     * 구역 사진을 받은 목록으로 통째로 바꾼다. 배열 순서가 노출 순서다.
+     * <p>
+     * 화면이 사진을 지우고 추가한 뒤 저장 버튼 하나로 올리므로 개별 추가·삭제가 아니라 전체 교체다.
+     */
+    public void changePhotos(List<Long> photoFileIds) {
+        this.photoFileIds = photoFileIds;
     }
 }

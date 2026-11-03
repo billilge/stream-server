@@ -24,6 +24,7 @@ final class FileUploadPolicy {
         FileCategory.ARCHIVE_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS,
         FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_EXTENSIONS,
+        FileCategory.ITEM_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.DISPLAY_POSTER, IMAGE_EXTENSIONS
     );
 
@@ -35,6 +36,7 @@ final class FileUploadPolicy {
         FileCategory.ARCHIVE_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE,
         FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_MAX_FILE_SIZE,
+        FileCategory.ITEM_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.DISPLAY_POSTER, IMAGE_MAX_FILE_SIZE
     );
 

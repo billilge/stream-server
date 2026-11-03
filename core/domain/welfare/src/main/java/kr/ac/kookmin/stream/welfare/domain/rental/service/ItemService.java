@@ -31,4 +31,7 @@ public interface ItemService {
      * 시도마다 새 트랜잭션에서 실행해야 충돌한 요청이 다시 시도된다.
      */
     Item decreaseStock(Long itemId, int amount);
+
+    /** 재고를 복구한다(반납, 대여 취소/반려 시). {@link #decreaseStock}과 같은 낙관적 락 충돌 감지를 받는다. */
+    Item increaseStock(Long itemId, int amount);
 }
