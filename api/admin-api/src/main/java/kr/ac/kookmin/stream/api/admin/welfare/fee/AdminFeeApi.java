@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminPayerSearchResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -54,6 +55,19 @@ public interface AdminFeeApi {
         AdminApiUser apiUser,
         Long studentTransferStatusId,
         FeeStatusUpdateRequest request
+    );
+
+    /** 납부자 명부. 납부 요청 목록과 달리 앱에 가입하지 않은 레거시 이관 납부자도 나온다. */
+    @Operation(summary = "학생회비 납부자 명부 조회",
+        description = "이름·학번 검색으로 학생회비 납부자 명부를 이름순으로 조회한다. 납부가 확인(PAID)된 회원과 "
+            + "앱에 가입하지 않은 레거시 이관 납부자가 함께 나오고, 레거시 납부자는 memberId가 null이다(학번도 null일 수 있다). "
+            + "사물함 배정에서 학생을 고를 수 있도록 부서 제한이 없다. "
+            + "memberId가 null인 행은 배정 API에 넘길 회원 식별자가 없어 사물함 배정에 쓸 수 없으므로 화면에서 선택을 막아야 한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    ApiResponse<PageResponse<AdminPayerSearchResponse>> getPayers(
+        AdminApiUser apiUser,
+        String keyword,
+        @ParameterObject PageParams pageParams
     );
 
     /** 회비 납부 설정 조회. 수정 폼의 초기값으로 쓴다. */
