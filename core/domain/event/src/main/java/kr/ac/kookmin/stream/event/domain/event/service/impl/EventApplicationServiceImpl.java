@@ -172,17 +172,9 @@ class EventApplicationServiceImpl implements EventApplicationService {
             .toList();
     }
 
-    // 목록과 전체 수를 쿼리 둘로 읽으므로 한 스냅샷으로 묶는다. 사이에 신청·취소가 커밋되면
-    // "2건 보여주는데 전체는 1건"이 된다
     @Override
-    @Transactional(readOnly = true)
     public PreviewResult<Event> getUpcomingAppliedEvents(Long memberId, int limit) {
-        // 당일 행사는 이미 시작했어도 "오늘"로 보여줘야 하므로 시작 시각이 아니라 날짜로 거른다
-        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-
-        return new PreviewResult<>(
-            eventRepository.findUpcomingAppliedEvents(memberId, startOfToday, limit),
-            eventRepository.countUpcomingAppliedEvents(memberId, startOfToday)
-        );
+        // 오늘 끝나는 행사는 이미 지났어도 "오늘"로 보여줘야 하므로 시각이 아니라 날짜로 거른다
+        return eventRepository.findUpcomingAppliedEvents(memberId, LocalDate.now().atStartOfDay(), limit);
     }
 }

@@ -118,37 +118,33 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
      *
      * @param startOfToday 오늘 0시. 시각이 아니라 날짜로 거른다 — 오늘 끝나는 행사는 이미 지났어도 보여줘야 한다
      */
-    @Query("""
-        SELECT e FROM EventJpaEntity e
-        WHERE e.isDeleted = false
-        AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
-        AND EXISTS (
-            SELECT a.id FROM EventApplicationJpaEntity a
-            WHERE a.eventId = e.id
-            AND a.memberId = :memberId
-            AND a.status = :appliedStatus)
-        ORDER BY e.eventStartAt ASC, e.id ASC
-        """)
-    List<EventJpaEntity> findUpcomingAppliedEvents(
+    @Query(
+        value = """
+            SELECT e FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
+            AND EXISTS (
+                SELECT a.id FROM EventApplicationJpaEntity a
+                WHERE a.eventId = e.id
+                AND a.memberId = :memberId
+                AND a.status = :appliedStatus)
+            ORDER BY e.eventStartAt ASC, e.id ASC
+            """,
+        countQuery = """
+            SELECT COUNT(e) FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
+            AND EXISTS (
+                SELECT a.id FROM EventApplicationJpaEntity a
+                WHERE a.eventId = e.id
+                AND a.memberId = :memberId
+                AND a.status = :appliedStatus)
+            """
+    )
+    Page<EventJpaEntity> findUpcomingAppliedEvents(
         @Param("memberId") Long memberId,
         @Param("appliedStatus") EventApplicationStatus appliedStatus,
         @Param("startOfToday") LocalDateTime startOfToday,
         Pageable pageable
-    );
-
-    @Query("""
-        SELECT COUNT(e) FROM EventJpaEntity e
-        WHERE e.isDeleted = false
-        AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
-        AND EXISTS (
-            SELECT a.id FROM EventApplicationJpaEntity a
-            WHERE a.eventId = e.id
-            AND a.memberId = :memberId
-            AND a.status = :appliedStatus)
-        """)
-    long countUpcomingAppliedEvents(
-        @Param("memberId") Long memberId,
-        @Param("appliedStatus") EventApplicationStatus appliedStatus,
-        @Param("startOfToday") LocalDateTime startOfToday
     );
 }

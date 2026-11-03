@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -77,14 +78,11 @@ public interface EventRepository {
      * 거르는 조건에 회원과 신청 상태가 들어가지만 돌려주는 것은 행사다. 신청 조건으로 행사를 좁히는 조회는
      * {@link #findPublishedSlice}의 정원 판정처럼 이 저장소가 맡는다.
      *
+     * 홈이 "N건 더보기"를 그려야 해서 앞의 {@code limit}건과 함께 전체 수를 준다.
+     *
      * @param startOfToday 오늘 0시. 종료 일시를 시각이 아니라 날짜로 견준다 — 오늘 끝나는 행사도 보여줘야 한다
      */
-    List<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit);
-
-    /**
-     * {@link #findUpcomingAppliedEvents}와 같은 조건의 전체 수. 홈이 "N건 더보기"를 그릴 때 쓴다.
-     */
-    long countUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday);
+    PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit);
 
     /**
      * 게시되고 삭제되지 않은 행사 중 시작 일시가 {@code [from, to)}인 행사. 행사 전날 알림 대상을 고를 때 쓴다.
