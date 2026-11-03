@@ -31,6 +31,11 @@ class LockerServiceImpl implements LockerService {
     private final LockerApplicationRepository lockerApplicationRepository;
 
     @Override
+    public Optional<LockerPeriod> getCurrentPeriod() {
+        return lockerRepository.findCurrentPublishedPeriod(LocalDateTime.now());
+    }
+
+    @Override
     public List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds) {
         // 신청과 같은 기준을 써야 하므로 기간 판정은 LockerPeriod의 계산을 그대로 쓴다
         LocalDateTime now = LocalDateTime.now();

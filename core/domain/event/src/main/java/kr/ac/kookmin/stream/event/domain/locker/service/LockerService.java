@@ -13,6 +13,11 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 public interface LockerService {
 
     /**
+     * 지금 학생에게 보여줄 운영 회차. 진행 중인 회차가 있으면 그것이고, 없으면 다가오는 회차다.
+     */
+    Optional<LockerPeriod> getCurrentPeriod();
+
+    /**
      * 주어진 운영 회차 중 지금 신청할 수 있는 것을 신청 마감 임박순으로 조회한다.
      * 미게시·삭제된 회차와 신청 기간이 아닌 회차는 빠진다.
      */

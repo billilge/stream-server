@@ -42,11 +42,14 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     @Override
     public PreviewResult<RentalRecord> getActiveRentals(Long memberId, int limit) {
-        // 반납 기한은 물품 정책으로 계산하는 값이라 DB에서 정렬할 수 없다
+        // 반납 기한은 물품 정책으로 계산하는 값이라 DB에서 정렬할 수 없다. 기한 오름차순이면 기한이 지난 대여가
+        // 먼저 오고 그 뒤는 남은 시간이 적은 순이다. 기한이 같을 때는 식별자로 순서를 고정한다 — 조회 쿼리에
+        // 정렬이 없어, 두지 않으면 미리보기에 무엇이 실릴지가 DB가 준 순서에 달린다
         List<RentalRecord> active = toRecords(rentalHistoryRepository
                 .findAllByMemberIdAndStatusIn(memberId, RentalStatus.awaitingReturnStatuses())).stream()
             .filter(RentalRecord::isReturnRequired)
-            .sorted(Comparator.comparing(RentalRecord::dueAt))
+            .sorted(Comparator.comparing(RentalRecord::dueAt)
+                .thenComparing(rentalRecord -> rentalRecord.history().getId()))
             .toList();
 
         return new PreviewResult<>(active.stream().limit(limit).toList(), active.size());

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -90,6 +91,11 @@ class InMemoryEventRepository implements EventRepository {
 
     @Override
     public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
         throw new UnsupportedOperationException();
     }
 
