@@ -1,4 +1,5 @@
 -- 근무 시간표는 주마다 달라서 요일 대신 근무일을 저장한다.
+-- ⚠️ 적용 후에는 이전 버전 이미지로 되돌릴 수 없다(ddl-auto: validate에서 기동 실패).
 ALTER TABLE work_schedules
     DROP COLUMN day_of_week,
     ADD COLUMN work_date DATE NOT NULL AFTER member_id;
