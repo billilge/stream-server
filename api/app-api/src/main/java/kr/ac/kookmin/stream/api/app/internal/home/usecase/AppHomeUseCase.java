@@ -123,6 +123,7 @@ public class AppHomeUseCase {
             .toList();
     }
 
+    // 대상 종류를 switch 식으로 모두 받는다. 값이 늘면 컴파일이 막으므로 새 종류가 조용히 사물함으로 처리되지 않는다
     private HomeResponse.ApplySection toApplySection(
         HomeApplySection section,
         Map<Long, Event> events,
@@ -130,18 +131,34 @@ public class AppHomeUseCase {
         Set<Long> appliedEventIds,
         Set<Long> appliedPeriodIds
     ) {
-        Long targetId = section.getTargetId();
-        if (section.getTargetType() == HomeApplyTargetType.EVENT) {
-            Event event = events.get(targetId);
-            return event == null ? null : new HomeResponse.ApplySection(
-                HomeApplyTargetType.EVENT,
-                targetId,
-                event.getTitle(),
-                event.getApplyEndAt(),
-                appliedEventIds.contains(targetId)
-            );
-        }
+        return switch (section.getTargetType()) {
+            case EVENT -> toEventSection(section.getTargetId(), events, appliedEventIds);
+            case LOCKER -> toLockerSection(section.getTargetId(), periods, appliedPeriodIds);
+        };
+    }
 
+    /** 마감됐거나 미게시라 {@code events}에 없으면 누를 수 없는 섹션이므로 {@code null}로 빼 달라고 알린다. */
+    private HomeResponse.ApplySection toEventSection(
+        Long targetId,
+        Map<Long, Event> events,
+        Set<Long> appliedEventIds
+    ) {
+        Event event = events.get(targetId);
+        return event == null ? null : new HomeResponse.ApplySection(
+            HomeApplyTargetType.EVENT,
+            targetId,
+            event.getTitle(),
+            event.getApplyEndAt(),
+            appliedEventIds.contains(targetId)
+        );
+    }
+
+    /** 신청 기간이 아니거나 미게시라 {@code periods}에 없으면 {@code null}로 빼 달라고 알린다. */
+    private HomeResponse.ApplySection toLockerSection(
+        Long targetId,
+        Map<Long, LockerPeriod> periods,
+        Set<Long> appliedPeriodIds
+    ) {
         LockerPeriod period = periods.get(targetId);
         return period == null ? null : new HomeResponse.ApplySection(
             HomeApplyTargetType.LOCKER,
