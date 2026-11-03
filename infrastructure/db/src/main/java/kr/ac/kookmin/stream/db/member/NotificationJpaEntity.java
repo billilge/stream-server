@@ -60,6 +60,6 @@ public class NotificationJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public Notification toDomain() {
-        return Notification.of(id, memberId, type, formatValues, targetId, read);
+        return Notification.of(id, memberId, type, formatValues, targetId, read, getCreatedAt());
     }
 }
