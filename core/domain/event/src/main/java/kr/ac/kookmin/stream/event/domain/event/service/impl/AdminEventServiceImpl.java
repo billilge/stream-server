@@ -117,10 +117,10 @@ class AdminEventServiceImpl implements AdminEventService {
         }
     }
 
-    // 학생 앱이 아직 납부자 전용 신청 제한과 기타 입력칸을 지원하지 않아, 공개하면 운영진 설정대로 동작하지 않는다.
+    // 학생 앱이 아직 기타 입력칸을 지원하지 않아, 공개하면 운영진 설정대로 동작하지 않는다.
     // 학생 쪽이 지원되면 이 검사를 지운다. 비공개로 돌리는 건 언제든 된다
     private void validatePublishable(Event event) {
-        if (event.isFeePaidOnly() || eventRepository.findQuestionsByEventId(event.getId()).stream()
+        if (eventRepository.findQuestionsByEventId(event.getId()).stream()
             .anyMatch(EventQuestion::isOtherOptionAllowed)) {
             throw new BusinessException(EventErrorCode.EVENT_UNSUPPORTED_OPTION);
         }

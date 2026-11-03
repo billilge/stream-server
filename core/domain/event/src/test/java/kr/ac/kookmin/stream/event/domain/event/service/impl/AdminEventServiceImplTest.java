@@ -397,6 +397,32 @@ class AdminEventServiceImplTest {
         void notFound() {
             assertRejected(EventErrorCode.EVENT_NOT_FOUND, () -> service.changePublished(EVENT_ID, true));
         }
+
+        @Test
+        @DisplayName("학생회비 납부자 전용 행사도 공개할 수 있다 — 학생 앱 신청이 납부자 명부를 확인한다")
+        void publishesFeePaidOnlyEvent() {
+            repository.events.put(EVENT_ID, unpublishedEvent(true));
+
+            assertTrue(service.changePublished(EVENT_ID, true).isPublished());
+            assertTrue(repository.events.get(EVENT_ID).isPublished());
+        }
+
+        @Test
+        @DisplayName("기타 선택지를 허용한 질문이 있으면 공개할 수 없다")
+        void rejectsOtherOption() {
+            repository.events.put(EVENT_ID, unpublishedEvent(false));
+            repository.questions.put(EVENT_ID, savedQuestions(SPORTS));
+
+            assertRejected(EventErrorCode.EVENT_UNSUPPORTED_OPTION, () -> service.changePublished(EVENT_ID, true));
+            assertFalse(repository.events.get(EVENT_ID).isPublished());
+        }
+
+        private Event unpublishedEvent(boolean feePaidOnly) {
+            return Event.of(
+                EVENT_ID, "체육대회", "설명", "종합운동장", EVENT_START_AT, EVENT_END_AT, APPLY_START_AT, APPLY_END_AT,
+                RecruitType.FIRST_COME, List.of(31L), 100, feePaidOnly, false, 7L, UPDATED_AT
+            );
+        }
     }
 
     @Nested
