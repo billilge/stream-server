@@ -32,6 +32,11 @@ public class NotificationRecipientRepositoryImpl implements NotificationRecipien
     }
 
     @Override
+    public List<PushTarget> findAllAdminPushTargets() {
+        return toPushTargets(memberJpaRepository.findAllAdminPushTargets());
+    }
+
+    @Override
     public int clearFcmTokens(Collection<String> fcmTokens) {
         if (fcmTokens.isEmpty()) {
             return 0;
