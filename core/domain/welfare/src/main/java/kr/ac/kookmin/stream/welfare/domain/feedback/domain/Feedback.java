@@ -49,6 +49,11 @@ public class Feedback {
         return answer != null;
     }
 
+    // 답변(내용·시각·작성자)을 비운 사본. 원본은 바꾸지 않는다
+    public Feedback withoutAnswer() {
+        return new Feedback(id, year, round, question, questionedAt, null, null, createdBy, null);
+    }
+
     // 답변을 작성한다. 이미 답변이 있으면 덮어쓴다 — 답변 수정이 같은 경로로 들어오기 때문이다
     public void writeAnswer(String answer, Long answeredBy, LocalDateTime answeredAt) {
         this.answer = answer;
