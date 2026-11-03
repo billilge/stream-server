@@ -55,7 +55,7 @@ class NotificationDispatcher {
     }
 
     /**
-     * 특정 회원이 아니라 운영진 전체가 공동으로 보는 알림 한 건을 만든다(레거시에서 이관한 관리자 공용 알림과 같은 모양).
+     * 특정 회원이 아니라 운영진 전체가 공동으로 보는 알림 한 건을 만든다.
      * 운영진 수만큼 행을 만들지 않고 {@code memberId}가 없는 행 하나만 저장하므로, 읽음 여부도 운영진 전체가 공유한다.
      */
     void dispatchToAdmins(NotificationType type, List<String> formatValues, long targetId) {

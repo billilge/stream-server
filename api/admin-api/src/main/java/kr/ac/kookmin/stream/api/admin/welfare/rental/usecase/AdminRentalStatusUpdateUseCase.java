@@ -58,7 +58,7 @@ public class AdminRentalStatusUpdateUseCase {
         });
     }
 
-    // 레거시(빌릴게)에서 이관한 학생 알림. 소모품은 승인 즉시 RETURNED로 가므로(위 isConsumable) "승인" 없이 "반납 완료"만 간다
+    // 소모품은 승인 즉시 RETURNED로 가므로(위 isConsumable) "승인" 없이 "반납 완료"만 간다
     private void recordStatusChangeEvent(RentalStatus newStatus, Long memberId, Long historyId, String itemName) {
         DomainEvent event = switch (newStatus) {
             case CONFIRMED -> new RentalApproved(memberId, historyId, itemName);
