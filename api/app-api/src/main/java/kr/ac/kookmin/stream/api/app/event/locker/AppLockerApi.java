@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerApplyRequest;
 import kr.ac.kookmin.stream.api.app.event.locker.request.LockerPeriodParams;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerApplyResponse;
+import kr.ac.kookmin.stream.api.app.event.locker.response.LockerPeriodResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.LockerSectionListResponse;
 import kr.ac.kookmin.stream.api.app.event.locker.response.MyLockerApplicationListResponse;
@@ -23,6 +24,15 @@ import org.springdoc.core.annotations.ParameterObject;
  */
 @Tag(name = "사물함", description = "학생 앱 사물함 구역·배치 조회와 신청")
 public interface AppLockerApi {
+
+    /** 지금 보여줄 운영 회차의 신청·사용 기간. */
+    @Operation(summary = "사물함 신청/사용 기간 조회",
+        description = "지금 보여줄 운영 회차의 신청 기간과 사용 기간을 조회한다. 신청을 받는 중인 회차가 있으면 그 "
+            + "회차이고, 없으면 다가오는 회차다. 신청이 끝난 회차는 사용 기간이 남아 있어도 내려가지 않으며, "
+            + "보여줄 회차가 없으면 data가 null이다. status는 서버 현재 시각으로 계산하며 신청 API가 받아주는 "
+            + "조건과 같아 OPEN이 아닐 때 신청하면 LOCKER_APPLY_NOT_OPEN이 난다. "
+            + "이 응답의 lockerPeriodId로 구역 목록을 조회한다.")
+    ApiResponse<LockerPeriodResponse> getCurrentPeriod(AppApiUser apiUser);
 
     /** 구역별 전체·선택 가능 사물함 수와 표시 상태. */
     @Operation(summary = "사물함 구역 목록 조회",
