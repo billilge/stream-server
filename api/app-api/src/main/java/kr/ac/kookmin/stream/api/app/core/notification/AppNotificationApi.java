@@ -4,17 +4,37 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.core.notification.request.MemberNotificationSettingUpdateRequest;
+import kr.ac.kookmin.stream.api.app.core.notification.request.NotificationListParams;
 import kr.ac.kookmin.stream.api.app.core.notification.response.MemberNotificationSettingResponse;
+import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationListItemResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
+import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.member.domain.notification.domain.NotificationErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 알림 API의 문서 명세. 구현은 {@link AppNotificationController}가 맡는다.
  */
-@Tag(name = "알림", description = "학생 앱 알림 설정")
+@Tag(name = "알림", description = "학생 앱 알림함·알림 설정")
 public interface AppNotificationApi {
+
+    /** 알림함 목록. */
+    @Operation(summary = "알림함 조회",
+        description = "커서 기반으로 내 알림을 최신순으로 조회한다. cursor/size로 다음 페이지를 넘긴다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_INVALID_CURSOR"})
+    ApiResponse<CursorSliceResponse<NotificationListItemResponse>> getNotifications(
+        AppApiUser apiUser,
+        @ParameterObject NotificationListParams params
+    );
+
+    /** 알림 읽음 처리. */
+    @Operation(summary = "알림 읽음 처리",
+        description = "알림 한 건을 읽음으로 바꾼다. 이미 읽은 알림이면 그대로 성공한다.")
+    @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_NOT_FOUND"})
+    ApiResponse<Void> markRead(AppApiUser apiUser, Long notificationId);
 
     /** 알림 설정 조회. */
     @Operation(summary = "알림 설정 조회",
