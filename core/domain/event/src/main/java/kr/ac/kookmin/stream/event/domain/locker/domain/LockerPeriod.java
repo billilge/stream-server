@@ -94,6 +94,16 @@ public class LockerPeriod {
     }
 
     /**
+     * 지금 신청을 받는지. 시작 전 판정도 {@link #isApplyOpen}과 같은 절삭 기준으로 본다.
+     */
+    public LockerApplyStatus calculateApplyStatus(LocalDateTime now) {
+        if (now.truncatedTo(ChronoUnit.SECONDS).isBefore(applyStartAt)) {
+            return LockerApplyStatus.BEFORE_OPEN;
+        }
+        return isApplyOpen(now) ? LockerApplyStatus.OPEN : LockerApplyStatus.CLOSED;
+    }
+
+    /**
      * 지금이 신청을 받는 기간인지. 신청 시작 일시부터 마감 일시까지 양 끝을 포함한다.
      * <p>
      * 사용 시작일과의 선후는 보지 않는다. 사용을 시작한 뒤 남은 자리를 추가 모집하려고 마감 일시를 늘리는 운영이 있어

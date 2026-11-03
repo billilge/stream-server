@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
@@ -124,6 +125,18 @@ public class EventRepositoryImpl implements EventRepository {
             cursor == null ? null : cursor.eventId(),
             Pageable.ofSize(limit)
         ).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
+        Page<EventJpaEntity> result = eventJpaRepository.findUpcomingAppliedEvents(
+            memberId, EventApplicationStatus.APPLIED, startOfToday, Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

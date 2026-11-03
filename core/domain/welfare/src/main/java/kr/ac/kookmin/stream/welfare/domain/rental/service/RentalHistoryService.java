@@ -24,8 +24,9 @@ public interface RentalHistoryService {
     List<RentalRecord> getReturnRequiredRentals(Long memberId);
 
     /**
-     * 회원이 지금 빌려 간 물품을 반납 기한 임박순으로 {@code limit}건까지, 전체 수와 함께 조회한다.
-     * 반납을 신청했어도 물건은 손에 있으므로 포함한다. 반납 정책이 없는 대여는 기한을 계산할 수 없어 제외한다.
+     * 회원이 지금 빌려 간 물품을 반납 기한 임박순(같으면 식별자 오름차순)으로 {@code limit}건까지, 전체 수와 함께
+     * 조회한다. 기한이 지난 대여가 가장 앞에 온다. 반납을 신청했어도 물건은 손에 있으므로 포함한다.
+     * 반납 정책이 없는 대여는 기한을 계산할 수 없어 제외한다.
      */
     PreviewResult<RentalRecord> getActiveRentals(Long memberId, int limit);
 

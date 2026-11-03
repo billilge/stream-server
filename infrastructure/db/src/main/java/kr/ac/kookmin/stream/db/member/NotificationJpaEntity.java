@@ -30,7 +30,7 @@ public class NotificationJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "notification_id")
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
+    @Column(name = "member_id")
     private Long memberId;
 
     @Enumerated(EnumType.STRING)
