@@ -16,9 +16,11 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventApplyResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventDetailResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
+import kr.ac.kookmin.stream.api.app.event.event.usecase.EventApplyUseCase;
+import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailUseCase;
+import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailWithFeeEligibility;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
-import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
@@ -49,6 +51,8 @@ public class AppEventController implements AppEventApi {
 
     private final EventService eventService;
     private final EventApplicationService eventApplicationService;
+    private final EventDetailUseCase eventDetailUseCase;
+    private final EventApplyUseCase eventApplyUseCase;
     private final FileService fileService;
 
     @Override
@@ -101,11 +105,11 @@ public class AppEventController implements AppEventApi {
 
     @Override
     @GetMapping("/{eventId}")
-    public ApiResponse<EventDetailResponse> getEvent(@PathVariable Long eventId) {
-        EventDetail detail = eventService.getPublishedEvent(eventId);
-        Map<Long, File> imagesById = fileService.findAllByIdIn(detail.imageIds());
+    public ApiResponse<EventDetailResponse> getEvent(AppApiUser apiUser, @PathVariable Long eventId) {
+        EventDetailWithFeeEligibility event = eventDetailUseCase.getEvent(eventId, apiUser.userId());
+        Map<Long, File> imagesById = fileService.findAllByIdIn(event.detail().imageIds());
 
-        return ApiResponse.success(EventDetailResponse.from(detail, imagesById));
+        return ApiResponse.success(EventDetailResponse.of(event.detail(), event.feeEligible(), imagesById));
     }
 
     @Override
@@ -122,7 +126,7 @@ public class AppEventController implements AppEventApi {
         @Valid @RequestBody EventApplyRequest request
     ) {
         return ApiResponse.success(
-            EventApplyResponse.from(eventApplicationService.apply(eventId, apiUser.userId(), request.toCommand()))
+            EventApplyResponse.from(eventApplyUseCase.apply(eventId, apiUser.userId(), request.toCommand()))
         );
     }
 
