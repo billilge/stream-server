@@ -18,6 +18,11 @@ public class PayerRepositoryImpl implements PayerRepository {
     }
 
     @Override
+    public Optional<Payer> findByStudentIdAndMemberIdIsNull(String studentId) {
+        return payerJpaRepository.findByStudentIdAndMemberIdIsNull(studentId).map(PayerJpaEntity::toDomain);
+    }
+
+    @Override
     public Payer save(Payer payer) {
         return payerJpaRepository.save(PayerJpaEntity.from(payer)).toDomain();
     }

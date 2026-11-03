@@ -46,4 +46,13 @@ class PayerServiceImpl implements PayerService {
             throw new BusinessException(FeeErrorCode.MEMBER_IS_NOT_PAYER);
         }
     }
+
+    @Override
+    @Transactional
+    public void linkMember(Long memberId, String studentId) {
+        payerRepository.findByStudentIdAndMemberIdIsNull(studentId).ifPresent(payer -> {
+            payer.linkMember(memberId);
+            payerRepository.save(payer);
+        });
+    }
 }
