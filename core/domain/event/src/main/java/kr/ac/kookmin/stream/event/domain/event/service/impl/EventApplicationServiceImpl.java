@@ -181,8 +181,8 @@ class EventApplicationServiceImpl implements EventApplicationService {
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
 
         return new PreviewResult<>(
-            eventApplicationRepository.findUpcomingAppliedEvents(memberId, startOfToday, limit),
-            eventApplicationRepository.countUpcomingAppliedEvents(memberId, startOfToday)
+            eventRepository.findUpcomingAppliedEvents(memberId, startOfToday, limit),
+            eventRepository.countUpcomingAppliedEvents(memberId, startOfToday)
         );
     }
 }

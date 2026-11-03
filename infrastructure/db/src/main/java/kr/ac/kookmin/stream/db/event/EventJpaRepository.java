@@ -105,4 +105,50 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         AND e.applyEndAt < :to
         """)
     List<EventJpaEntity> findPublishedApplyEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    /**
+     * 회원이 신청한 행사 중 아직 끝나지 않은 것. 행사와 신청은 FK로 묶여 있지 않아 식별자로 직접 잇는다.
+     * 홈 미리보기용이라 정렬은 행사 시작 임박순이다.
+     * <p>
+     * 신청을 JOIN하지 않고 {@code EXISTS}로 거른다. (행사, 회원) 유니크가 없어 유효 신청이 두 건 생길 수 있는데,
+     * JOIN이면 같은 행사가 신청 수만큼 복제된다. 신청했는지만 알면 되므로 존재 여부로 본다.
+     * <p>
+     * 종료 일시로 거르므로 여러 날에 걸친 행사는 마지막 날까지 남는다. {@code event_end_at}이 NULL인 기존 행은
+     * 시작 일시로 대신한다.
+     *
+     * @param startOfToday 오늘 0시. 시각이 아니라 날짜로 거른다 — 오늘 끝나는 행사는 이미 지났어도 보여줘야 한다
+     */
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
+        AND EXISTS (
+            SELECT a.id FROM EventApplicationJpaEntity a
+            WHERE a.eventId = e.id
+            AND a.memberId = :memberId
+            AND a.status = :appliedStatus)
+        ORDER BY e.eventStartAt ASC, e.id ASC
+        """)
+    List<EventJpaEntity> findUpcomingAppliedEvents(
+        @Param("memberId") Long memberId,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus,
+        @Param("startOfToday") LocalDateTime startOfToday,
+        Pageable pageable
+    );
+
+    @Query("""
+        SELECT COUNT(e) FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND COALESCE(e.eventEndAt, e.eventStartAt) >= :startOfToday
+        AND EXISTS (
+            SELECT a.id FROM EventApplicationJpaEntity a
+            WHERE a.eventId = e.id
+            AND a.memberId = :memberId
+            AND a.status = :appliedStatus)
+        """)
+    long countUpcomingAppliedEvents(
+        @Param("memberId") Long memberId,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus,
+        @Param("startOfToday") LocalDateTime startOfToday
+    );
 }
