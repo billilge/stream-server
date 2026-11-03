@@ -39,6 +39,12 @@ class PayerServiceImpl implements PayerService {
         return studentId.substring(0, 4);
     }
 
+    // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(validatePayer와 같은 이유).
+    @Override
+    public boolean isPayer(Long memberId) {
+        return payerRepository.findByMemberId(memberId).isPresent();
+    }
+
     // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(PR#67/#69 원칙 — 조회니까 붙이는 게 아니라 실제 이득이 있을 때만 붙인다).
     @Override
     public void validatePayer(Long memberId) {
