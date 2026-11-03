@@ -1,6 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +30,7 @@ class LockerServiceImpl implements LockerService {
 
     @Override
     public Optional<LockerPeriod> getCurrentPeriod() {
-        return lockerRepository.findCurrentPublishedPeriod(LocalDate.now());
+        return lockerRepository.findCurrentPublishedPeriod(LocalDateTime.now());
     }
 
     @Override

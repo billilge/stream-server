@@ -80,8 +80,8 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
-    public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDate today) {
-        return lockerPeriodJpaRepository.findCurrentPublished(today, Pageable.ofSize(1)).stream()
+    public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at) {
+        return lockerPeriodJpaRepository.findCurrentPublished(at, Pageable.ofSize(1)).stream()
             .findFirst()
             .map(LockerPeriodJpaEntity::toDomain);
     }

@@ -52,12 +52,14 @@ public interface LockerRepository {
     List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds);
 
     /**
-     * 지금 학생에게 보여줄 게시 회차 한 건. 사용이 끝나지 않은 회차 중 신청 시작이 가장 이른 것이다.
+     * 지금 학생에게 보여줄 게시 회차 한 건. 신청이 끝나지 않은 회차 중 신청 시작이 가장 이른 것이다.
      * <p>
-     * 회차 범위는 겹치지 않으므로({@link LockerPeriod#overlaps}) 진행 중인 회차가 있으면 그것이 잡히고, 없으면
-     * 다가오는 회차가 잡힌다. 신청 시작 전에도 기간을 안내해야 해서 앞당겨 본다.
+     * 회차 범위는 겹치지 않으므로({@link LockerPeriod#overlaps}) 신청을 받는 중인 회차가 있으면 그것이 잡히고,
+     * 없으면 다가오는 회차가 잡힌다. 신청 시작 전에도 기간을 안내해야 해서 앞당겨 본다.
+     * <p>
+     * 신청이 끝난 회차는 사용 기간이 남아 있어도 뺀다. 모집 종료를 안내하는 화면이 없어 받아줄 곳이 없다.
      */
-    Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDate today);
+    Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at);
 
     /**
      * 게시된 운영 회차 중 신청 마감 일시가 {@code [from, to)}인 회차. 모집 마감 임박 알림 대상을 고를 때 쓴다.

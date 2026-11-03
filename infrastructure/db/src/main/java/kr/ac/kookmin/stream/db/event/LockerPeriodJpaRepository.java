@@ -33,13 +33,13 @@ public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpa
 
     List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndIsDeletedFalseAndUsageEndAt(LocalDate usageEndAt);
 
-    /** 사용이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 호출부가 앞의 한 건만 쓴다. */
+    /** 신청이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 호출부가 앞의 한 건만 쓴다. */
     @Query("""
         SELECT p FROM LockerPeriodJpaEntity p
         WHERE p.isPublished = true
         AND p.isDeleted = false
-        AND p.usageEndAt >= :today
+        AND p.applyEndAt >= :at
         ORDER BY p.applyStartAt ASC, p.id ASC
         """)
-    List<LockerPeriodJpaEntity> findCurrentPublished(@Param("today") LocalDate today, Pageable pageable);
+    List<LockerPeriodJpaEntity> findCurrentPublished(@Param("at") LocalDateTime at, Pageable pageable);
 }

@@ -344,7 +344,7 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
-        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDate today) {
+        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at) {
             throw new UnsupportedOperationException();
         }
 
