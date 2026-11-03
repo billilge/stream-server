@@ -35,6 +35,19 @@ public enum NotificationType {
     RENTAL_DUE_SOON(NotificationCategory.BILLILGE, "반납까지 1시간 남았어요.", "늦지 않게 %s을(를) 반납해 주세요."),
     RENTAL_OVERDUE(NotificationCategory.BILLILGE, "반납 기한이 지났어요.", "학생회실에 방문해 %s을(를) 반납해 주세요."),
 
+    // 레거시(빌릴게)에서 이관한 관리자 공용 알림. 값: 이름, 학번, (APPLY만)대여 시각, 물품명
+    ADMIN_RENTAL_APPLY(NotificationCategory.BILLILGE, "%s(%s) 님이 %s에 %s 대여를 신청했어요.", null),
+    ADMIN_RENTAL_CANCEL(NotificationCategory.BILLILGE, "%s(%s) 님이 %s 대여 신청을 취소했어요.", null),
+    ADMIN_RETURN_APPLY(NotificationCategory.BILLILGE, "%s(%s) 님이 %s 반납을 신청했어요.", null),
+
+    // 레거시(빌릴게)에서 이관한 학생용 알림. 값: 물품명
+    RENTAL_APPLY(NotificationCategory.BILLILGE, "%s 대여를 신청했어요!", "관리자가 처리할 때까지 잠시만 기다려 주세요."),
+    RENTAL_APPROVED(NotificationCategory.BILLILGE, "관리자가 %s 대여 신청을 승인했어요!", "대여 시각에 과방으로 오시면 물품을 빌릴 수 있어요."),
+    RENTAL_REJECTED(NotificationCategory.BILLILGE, "%s 대여 신청이 반려되었어요.", "자세한 사항은 소프트웨어융합대학 카카오톡에 문의해 주세요."),
+    RETURN_APPLY(NotificationCategory.BILLILGE, "%s 반납을 신청했어요!", "관리자가 처리할 때까지 잠시만 기다려 주세요."),
+    RETURN_APPROVED(NotificationCategory.BILLILGE, "관리자가 %s 반납 신청을 승인했어요!", "과방으로 오시면 물품을 반납할 수 있어요."),
+    RETURN_COMPLETED(NotificationCategory.BILLILGE, "%s 반납을 완료했어요.", null),
+
     // 값: 없음
     NOTICE_CREATED(NotificationCategory.NOTICE, "새로운 공지사항이 올라왔어요.", "자세한 내용을 확인해 주세요.");
 
