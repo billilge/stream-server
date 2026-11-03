@@ -16,6 +16,14 @@ public enum HomeStudentFeeStatus {
     REJECTED;
 
     public static HomeStudentFeeStatus from(TransferStatus status) {
-        return status == null ? NOT_PAID : valueOf(status.name());
+        if (status == null) {
+            return NOT_PAID;
+        }
+        // switch 식이라 TransferStatus에 값이 늘면 컴파일이 막는다. 이름으로 찾으면 그때 홈 전체가 500이 된다
+        return switch (status) {
+            case PENDING -> PENDING;
+            case PAID -> PAID;
+            case REJECTED -> REJECTED;
+        };
     }
 }
