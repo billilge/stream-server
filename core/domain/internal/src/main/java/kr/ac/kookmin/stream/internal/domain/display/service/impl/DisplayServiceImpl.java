@@ -35,12 +35,12 @@ class DisplayServiceImpl implements DisplayService {
         List<DisplayCalendarSchedule> schedules = displayCalendarScheduleRepository.findAllOverlapping(startDate, endDate);
 
         return startDate.datesUntil(endDate.plusDays(1))
-            .map(date -> new DisplayDailySchedule(date, titlesOn(schedules, date)))
+            .map(date -> new DisplayDailySchedule(date, collectTitlesOn(schedules, date)))
             .toList();
     }
 
     // schedules가 시작일 → 등록 순이라 그날의 일정명도 그 순서를 따른다
-    private List<String> titlesOn(List<DisplayCalendarSchedule> schedules, LocalDate date) {
+    private List<String> collectTitlesOn(List<DisplayCalendarSchedule> schedules, LocalDate date) {
         return schedules.stream()
             .filter(schedule -> schedule.includes(date))
             .map(DisplayCalendarSchedule::getTitle)
