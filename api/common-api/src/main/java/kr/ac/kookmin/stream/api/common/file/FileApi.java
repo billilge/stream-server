@@ -21,9 +21,11 @@ public interface FileApi {
 
     /** 업로드용 presigned URL 발급. 파일 형식·크기 정책을 통과하면 업로드 URL을 내려준다. */
     @Operation(summary = "파일 업로드 URL 발급",
-        description = "파일 형식·크기 정책을 검증한 뒤 업로드용 presigned URL을 발급한다.")
+        description = "파일 형식·크기 정책을 검증한 뒤 업로드용 presigned URL을 발급한다. "
+            + "contentType은 파일 확장자에 맞는 MIME 타입이어야 한다(예: png는 image/png).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    @ApiErrorCode(type = FileErrorCode.class, codes = {"UNSUPPORTED_FILE_EXTENSION", "FILE_SIZE_EXCEEDED"})
+    @ApiErrorCode(type = FileErrorCode.class,
+        codes = {"UNSUPPORTED_FILE_EXTENSION", "CONTENT_TYPE_MISMATCH", "FILE_SIZE_EXCEEDED"})
     ApiResponse<FileUploadUrlIssueResponse> issuePresignedUrl(FileUploadUrlIssueRequest request);
 
     /** 파일 삭제. 올린 본인만 지울 수 있다. */

@@ -14,6 +14,7 @@ public enum FileErrorCode implements ErrorCode {
     FILE_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 파일입니다."),
     FILE_DELETE_FORBIDDEN(ErrorStatus.FORBIDDEN, "본인이 올린 파일만 삭제할 수 있습니다."),
     UNSUPPORTED_FILE_EXTENSION(ErrorStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
+    CONTENT_TYPE_MISMATCH(ErrorStatus.BAD_REQUEST, "파일 확장자와 MIME 타입이 맞지 않습니다."),
     FILE_SIZE_EXCEEDED(ErrorStatus.BAD_REQUEST, "파일의 최대 업로드 용량을 초과했습니다.");
 
     private final int status;

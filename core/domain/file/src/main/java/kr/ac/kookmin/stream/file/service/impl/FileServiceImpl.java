@@ -32,7 +32,7 @@ class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command) {
-        FileUploadPolicy.validate(command.category(), command.originalName(), command.fileSize());
+        FileUploadPolicy.validate(command.category(), command.originalName(), command.contentType(), command.fileSize());
 
         String fileKey = generateFileKey(command.originalName());
         UploadUrl uploadUrl = fileStorageClient.issuePresignedUrl(fileKey, command.contentType());
