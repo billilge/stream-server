@@ -16,6 +16,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -52,6 +53,15 @@ public class GlobalExceptionHandler {
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), e.getMessage()));
+    }
+
+    // path variable·query parameter가 선언된 타입(Long 등)과 안 맞는 경우. 이 핸들러가 없으면 catch-all에 걸려 500이 된다
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
+            MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
+        return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), CommonErrorCode.INVALID_INPUT.message()));
     }
 
     // JSON 문법 오류, enum에 없는 값 등 요청 본문을 읽지 못한 경우. 파서 메시지는 내부 타입 이름을 담고 있어 응답에는 넣지 않는다
