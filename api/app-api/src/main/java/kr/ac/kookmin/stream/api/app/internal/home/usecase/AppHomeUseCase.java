@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.internal.home.usecase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,6 +124,7 @@ public class AppHomeUseCase {
             .toList();
     }
 
+    // 대상 종류를 switch 식으로 모두 받는다. 값이 늘면 컴파일이 막으므로 새 종류가 조용히 사물함으로 처리되지 않는다
     private HomeResponse.ApplySection toApplySection(
         HomeApplySection section,
         Map<Long, Event> events,
@@ -130,18 +132,34 @@ public class AppHomeUseCase {
         Set<Long> appliedEventIds,
         Set<Long> appliedPeriodIds
     ) {
-        Long targetId = section.getTargetId();
-        if (section.getTargetType() == HomeApplyTargetType.EVENT) {
-            Event event = events.get(targetId);
-            return event == null ? null : new HomeResponse.ApplySection(
-                HomeApplyTargetType.EVENT,
-                targetId,
-                event.getTitle(),
-                event.getApplyEndAt(),
-                appliedEventIds.contains(targetId)
-            );
-        }
+        return switch (section.getTargetType()) {
+            case EVENT -> toEventSection(section.getTargetId(), events, appliedEventIds);
+            case LOCKER -> toLockerSection(section.getTargetId(), periods, appliedPeriodIds);
+        };
+    }
 
+    /** 마감됐거나 미게시라 {@code events}에 없으면 누를 수 없는 섹션이므로 {@code null}로 빼 달라고 알린다. */
+    private HomeResponse.ApplySection toEventSection(
+        Long targetId,
+        Map<Long, Event> events,
+        Set<Long> appliedEventIds
+    ) {
+        Event event = events.get(targetId);
+        return event == null ? null : new HomeResponse.ApplySection(
+            HomeApplyTargetType.EVENT,
+            targetId,
+            event.getTitle(),
+            event.getApplyEndAt(),
+            appliedEventIds.contains(targetId)
+        );
+    }
+
+    /** 신청 기간이 아니거나 미게시라 {@code periods}에 없으면 {@code null}로 빼 달라고 알린다. */
+    private HomeResponse.ApplySection toLockerSection(
+        Long targetId,
+        Map<Long, LockerPeriod> periods,
+        Set<Long> appliedPeriodIds
+    ) {
         LockerPeriod period = periods.get(targetId);
         return period == null ? null : new HomeResponse.ApplySection(
             HomeApplyTargetType.LOCKER,
@@ -189,8 +207,11 @@ public class AppHomeUseCase {
     }
 
     /**
-     * 지금 쓰는 사물함이 있으면 그것을, 없으면 지난 배정이 있었는지만 알려준다. 회차는 기간이 겹치지 않아
-     * 사용 중인 배정은 많아야 하나다.
+     * 지금 쓰는 사물함이 있으면 그것을, 없으면 지난 배정이 있었는지만 알려준다.
+     * <p>
+     * 사용이 안 끝난 배정이 둘일 수 있다. 학생 신청은 신청 기간에만 생겨 회차가 겹치지 않지만, 운영진 배정
+     * ({@code AdminLockerServiceImpl.assignLocker})은 사용 종료만 보므로 다음 회차 칸을 미리 줄 수 있다.
+     * 그중 지금 쓰는 칸은 사용 시작이 가장 이른 것이다 — 신청 시각순으로 고르면 다음 학기 칸이 뜬다.
      * <p>
      * 배정·종료 판정은 "내 사물함" 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
      */
@@ -202,7 +223,7 @@ public class AppHomeUseCase {
         return applications.stream()
             .filter(application -> LockerApplicationStatus.from(application.period(), today)
                 == LockerApplicationStatus.ASSIGNED)
-            .findFirst()
+            .min(Comparator.comparing(application -> application.period().getUsageStartAt()))
             .map(application -> new HomeResponse.Locker(
                 HomeLockerStatus.from(LockerApplicationStatus.ASSIGNED),
                 application.locker().getLockerLabel()))
