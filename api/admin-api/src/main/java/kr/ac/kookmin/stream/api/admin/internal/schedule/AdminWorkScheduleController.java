@@ -39,7 +39,7 @@ public class AdminWorkScheduleController implements AdminWorkScheduleApi {
         @Valid @ModelAttribute WorkScheduleWeekParams params
     ) {
         return ApiResponse.success(
-            WorkScheduleWeekResponse.from(adminWorkScheduleUseCase.getWeek(params.date())));
+            WorkScheduleWeekResponse.from(adminWorkScheduleUseCase.getWeek(params.toDate())));
     }
 
     @Override
