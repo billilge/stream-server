@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.member.domain.notification.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -25,10 +26,11 @@ public class Notification {
     // 알림을 눌렀을 때 이동할 대상의 ID. 무엇의 ID인지는 type이 정한다
     private Long targetId;
     private boolean read;
+    private LocalDateTime createdAt;
 
     public static Notification create(Long memberId, NotificationType type, List<String> formatValues, Long targetId) {
         String joined = formatValues.isEmpty() ? null : String.join(FORMAT_VALUE_DELIMITER, formatValues);
-        return new Notification(null, memberId, type, joined, targetId, false);
+        return new Notification(null, memberId, type, joined, targetId, false, null);
     }
 
     public static Notification of(
@@ -37,12 +39,17 @@ public class Notification {
         NotificationType type,
         String formatValues,
         Long targetId,
-        boolean read
+        boolean read,
+        LocalDateTime createdAt
     ) {
-        return new Notification(id, memberId, type, formatValues, targetId, read);
+        return new Notification(id, memberId, type, formatValues, targetId, read, createdAt);
     }
 
     public List<String> getFormatValueList() {
         return formatValues == null ? List.of() : List.of(formatValues.split(FORMAT_VALUE_DELIMITER, -1));
+    }
+
+    public void markRead() {
+        this.read = true;
     }
 }
