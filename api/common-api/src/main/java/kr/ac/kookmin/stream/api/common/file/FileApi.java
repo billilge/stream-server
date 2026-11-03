@@ -26,8 +26,9 @@ public interface FileApi {
     @ApiErrorCode(type = FileErrorCode.class, codes = {"UNSUPPORTED_FILE_EXTENSION", "FILE_SIZE_EXCEEDED"})
     ApiResponse<FileUploadUrlIssueResponse> issuePresignedUrl(FileUploadUrlIssueRequest request);
 
-    /** 파일 삭제. */
-    @Operation(summary = "파일 삭제")
-    @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
+    /** 파일 삭제. 올린 본인만 지울 수 있다. */
+    @Operation(summary = "파일 삭제",
+        description = "올린 본인만 삭제할 수 있다. 관리자도 다른 사람이 올린 파일은 지울 수 없다.")
+    @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND", "FILE_DELETE_FORBIDDEN"})
     ApiResponse<Void> delete(Long fileId);
 }
