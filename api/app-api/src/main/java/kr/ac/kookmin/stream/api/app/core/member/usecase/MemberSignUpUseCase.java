@@ -22,7 +22,7 @@ public class MemberSignUpUseCase {
     @Transactional
     public void signUp(Long memberId, MemberSignUpCommand command) {
         memberService.signUp(memberId, command);
-        boolean notificationConsentAgreed = Boolean.TRUE.equals(command.termAgreements().get(TermType.NOTIFICATION_CONSENT));
+        boolean notificationConsentAgreed = command.termAgreements().getOrDefault(TermType.NOTIFICATION_CONSENT, false);
         memberNotificationSettingService.createDefaultIfAbsent(memberId, notificationConsentAgreed);
     }
 }
