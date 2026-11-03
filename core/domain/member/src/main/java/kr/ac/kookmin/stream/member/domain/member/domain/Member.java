@@ -68,8 +68,9 @@ public class Member {
         return phoneNumber != null;
     }
 
-    public boolean hasCouncilDepartment() {
-        return councilDepartment != null;
+    // 학생회 부서가 있는 운영진. 학생회 부서는 ADMIN에게만 의미가 있어, 운영진에서 내려가 부서 값만 남은 회원은 아니다
+    public boolean isCouncilMember() {
+        return role == Role.ADMIN && councilDepartment != null;
     }
 
     // 회원이 바꾼 전화번호로 갱신한다. 바뀐 값이 있으면 true를 돌려준다

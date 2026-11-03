@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 /**
  * 근무 시간표 화면이 쓰는 조합. 근무 시간(internal)에 근무자(member)를 붙인다.
  * <p>
- * 근무자는 학생회 부서가 있는 회원이다. 회원 도메인은 학생회 부서가 있는지만 알려주고, 그 회원을 근무자로 볼지는
+ * 근무자는 학생회 구성원(학생회 부서가 있는 운영진)이다. 회원 도메인은 학생회 구성원인지만 알려주고, 그 회원을 근무자로 볼지는
  * 근무 시간표의 규칙이라 이 UseCase에서만 정한다({@code getWorkers}, {@code getWorker}).
  * <p>
  * 근무자 확인은 읽기뿐이고 근무 시간 쓰기는 서비스 트랜잭션 하나로 끝나므로 트랜잭션을 걸지 않는다.
@@ -59,10 +59,10 @@ public class AdminWorkScheduleUseCase {
         return new MemberWorkSchedule(adminWorkScheduleService.update(scheduleId, memberId, command), worker);
     }
 
-    // 없는 회원(탈퇴 포함)은 MEMBER_NOT_FOUND, 학생회 부서가 없는 회원은 WORKER_NOT_FOUND다
+    // 없는 회원(탈퇴 포함)은 MEMBER_NOT_FOUND, 학생회 구성원이 아닌 회원은 WORKER_NOT_FOUND다
     private Member getWorker(Long memberId) {
         Member member = memberService.getById(memberId);
-        if (!member.hasCouncilDepartment()) {
+        if (!member.isCouncilMember()) {
             throw new BusinessException(WorkScheduleErrorCode.WORKER_NOT_FOUND);
         }
         return member;

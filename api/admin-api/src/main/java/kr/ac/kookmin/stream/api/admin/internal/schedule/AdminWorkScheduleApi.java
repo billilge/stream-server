@@ -23,7 +23,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * 접근은 {@code ADMIN} role이면 된다. 부서 제한은 두지 않았다.
  * <p>
  * 근무는 평일(월~금) 10~17시에 1시간 단위로 서고, 점심시간(12~13시)은 비운다. 한 시간 칸에는 근무자 한 명만 들어간다.
- * 근무자는 학생회 부서가 있는 회원이다. 지난 주(이번 주 월요일보다 앞선 주)의 근무 시간은 바꿀 수 없다.
+ * 근무자는 학생회 부서가 있는 운영진(ADMIN)이다. 지난 주(이번 주 월요일보다 앞선 주)의 근무 시간은 바꿀 수 없다.
  */
 @Tag(name = "근무 시간표 관리", description = "빌릴게 근무 시간표 조회·등록·수정·삭제와 근무자 목록")
 public interface AdminWorkScheduleApi {
@@ -39,8 +39,8 @@ public interface AdminWorkScheduleApi {
 
     /** 등록·수정 모달의 근무자 드롭다운. */
     @Operation(summary = "근무자 목록 조회",
-        description = "근무 시간에 배정할 수 있는 회원(학생회 부서가 있는 회원)을 이름, 같은 이름이면 학번 오름차순으로 조회한다. "
-            + "운영진 권한(role)은 보지 않는다.")
+        description = "근무 시간에 배정할 수 있는 회원(학생회 부서가 있는 운영진)을 이름, 같은 이름이면 학번 오름차순으로 조회한다. "
+            + "운영진에서 내려가 학생회 부서 값만 남은 회원은 빠진다.")
     ApiResponse<List<WorkerResponse>> getWorkers(AdminApiUser apiUser);
 
     /** 근무 시간 등록. 근무자 한 명의 시간대를 여러 개 한 번에 등록한다. */

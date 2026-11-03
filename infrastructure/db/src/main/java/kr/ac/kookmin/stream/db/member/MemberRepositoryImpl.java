@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
@@ -52,7 +53,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public List<Member> findAllCouncilMembers() {
-        return memberJpaRepository.findAllCouncilMembers().stream()
+        return memberJpaRepository.findAllCouncilMembers(Role.ADMIN).stream()
             .map(MemberJpaEntity::toDomain)
             .toList();
     }

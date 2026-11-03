@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -34,10 +35,11 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
     @Query("""
         SELECT m FROM MemberJpaEntity m
         WHERE m.isDeleted = false
+        AND m.role = :role
         AND m.councilDepartment IS NOT NULL
         ORDER BY m.name, m.studentId
         """)
-    List<MemberJpaEntity> findAllCouncilMembers();
+    List<MemberJpaEntity> findAllCouncilMembers(@Param("role") Role role);
 
     // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)은 푸시 대상에서 빠진다
     @Query("""
