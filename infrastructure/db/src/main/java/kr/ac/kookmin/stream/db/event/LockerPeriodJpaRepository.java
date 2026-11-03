@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,4 +32,14 @@ public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpa
     List<LockerPeriodJpaEntity> findPublishedApplyEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndIsDeletedFalseAndUsageEndAt(LocalDate usageEndAt);
+
+    /** 신청이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 호출부가 앞의 한 건만 쓴다. */
+    @Query("""
+        SELECT p FROM LockerPeriodJpaEntity p
+        WHERE p.isPublished = true
+        AND p.isDeleted = false
+        AND p.applyEndAt >= :at
+        ORDER BY p.applyStartAt ASC, p.id ASC
+        """)
+    List<LockerPeriodJpaEntity> findCurrentPublished(@Param("at") LocalDateTime at, Pageable pageable);
 }

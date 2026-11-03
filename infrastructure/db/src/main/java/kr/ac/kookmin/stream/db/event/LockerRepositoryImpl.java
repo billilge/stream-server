@@ -15,6 +15,7 @@ import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionLayout;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -75,6 +76,13 @@ public class LockerRepositoryImpl implements LockerRepository {
     @Override
     public Optional<LockerPeriod> findPublishedPeriodById(Long lockerPeriodId) {
         return lockerPeriodJpaRepository.findByIdAndIsPublishedTrueAndIsDeletedFalse(lockerPeriodId)
+            .map(LockerPeriodJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at) {
+        return lockerPeriodJpaRepository.findCurrentPublished(at, Pageable.ofSize(1)).stream()
+            .findFirst()
             .map(LockerPeriodJpaEntity::toDomain);
     }
 

@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
@@ -25,6 +27,11 @@ class LockerServiceImpl implements LockerService {
 
     private final LockerRepository lockerRepository;
     private final LockerApplicationRepository lockerApplicationRepository;
+
+    @Override
+    public Optional<LockerPeriod> getCurrentPeriod() {
+        return lockerRepository.findCurrentPublishedPeriod(LocalDateTime.now());
+    }
 
     @Override
     @Transactional(readOnly = true)

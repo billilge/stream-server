@@ -5,10 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
+
+    /**
+     * 지금 학생에게 보여줄 운영 회차. 진행 중인 회차가 있으면 그것이고, 없으면 다가오는 회차다.
+     */
+    Optional<LockerPeriod> getCurrentPeriod();
 
     /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
