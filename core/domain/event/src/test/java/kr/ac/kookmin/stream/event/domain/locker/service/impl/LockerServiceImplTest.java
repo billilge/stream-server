@@ -313,6 +313,11 @@ class LockerServiceImplTest {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDate today) {
+            throw new UnsupportedOperationException();
+        }
+
         // 아래는 회원별 신청 내역 조회용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override

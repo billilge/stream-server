@@ -344,6 +344,11 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDate today) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
             batchLookups++;
             return periods.stream()
