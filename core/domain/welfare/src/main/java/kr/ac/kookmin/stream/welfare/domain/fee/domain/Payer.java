@@ -11,7 +11,6 @@ import lombok.Getter;
 public class Payer {
 
     private Long id;
-    // 레거시 명부에서 이관한 미가입 납부자는 연결할 회원이 없어 null이다
     private Long memberId;
     private String name;
     private String studentId;
