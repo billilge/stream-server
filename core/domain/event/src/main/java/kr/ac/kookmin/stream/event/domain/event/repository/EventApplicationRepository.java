@@ -65,10 +65,10 @@ public interface EventApplicationRepository {
     );
 
     /**
-     * 회원이 신청한 행사 중 아직 지나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.
-     * 취소한 신청과 삭제된 행사는 뺀다.
+     * 회원이 신청한 행사 중 아직 끝나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.
+     * 취소한 신청과 삭제된 행사는 뺀다. 여러 날에 걸친 행사는 마지막 날까지 남는다.
      *
-     * @param startOfToday 오늘 0시. 시작 시각이 아니라 날짜로 거른다 — 당일 행사는 이미 시작했어도 보여줘야 한다
+     * @param startOfToday 오늘 0시. 종료 일시를 시각이 아니라 날짜로 견준다 — 오늘 끝나는 행사도 보여줘야 한다
      */
     List<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit);
 
