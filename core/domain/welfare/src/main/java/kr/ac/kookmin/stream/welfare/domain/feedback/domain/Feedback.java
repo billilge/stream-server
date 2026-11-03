@@ -55,4 +55,11 @@ public class Feedback {
         this.answeredBy = answeredBy;
         this.answeredAt = answeredAt;
     }
+
+    // 답변을 지워 미답변으로 되돌린다. 답변 여부와 회차 답변 수가 answer 기준이라 답변자·답변 시각도 같이 비운다
+    public void deleteAnswer() {
+        this.answer = null;
+        this.answeredBy = null;
+        this.answeredAt = null;
+    }
 }

@@ -118,6 +118,18 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
 
     @Override
     @Transactional
+    public void deleteAnswer(Long roundId, Long feedbackId) {
+        FeedbackRound round = getRoundById(roundId);
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+            .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
+        validateInRound(round, feedback);
+
+        feedback.deleteAnswer();
+        feedbackRepository.save(feedback);
+    }
+
+    @Override
+    @Transactional
     public FeedbackRoundDetail publishAnswers(Long roundId) {
         LocalDateTime now = LocalDateTime.now(DateUtil.KST);
         FeedbackRound round = getRoundById(roundId);
@@ -146,6 +158,13 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         }
         if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
+        }
+    }
+
+    // 저장 경로와 같은 기준으로, 경로의 회차에 접수된 질문이 아니면 막는다
+    private void validateInRound(FeedbackRound round, Feedback feedback) {
+        if (feedback.getYear() != round.getYear() || feedback.getRound() != round.getRound()) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_IN_ROUND);
         }
     }
 
