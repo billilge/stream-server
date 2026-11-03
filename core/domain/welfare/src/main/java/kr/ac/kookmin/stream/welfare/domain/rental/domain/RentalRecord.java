@@ -20,9 +20,15 @@ public record RentalRecord(RentalHistory history, Item item) {
             && item.getReturnPolicy() != null;
     }
 
-    /** 반납을 신청해 운영진의 확인을 기다리는 중인지. 홈이 "반납 신청함"을 표시할 때 쓴다. */
+    /**
+     * 반납을 신청해 운영진이 최종 확인(RETURNED)하기 전인지. 홈이 "반납 신청함"을 표시할 때 쓴다.
+     * <p>
+     * 운영진이 확인한 {@code RETURN_CONFIRMED}도 담는다. 빼면 운영진이 확인해 줄수록 학생 화면이
+     * 신청 전 모양으로 되돌아간다.
+     */
     public boolean isReturnRequested() {
-        return history.getRentalStatus() == RentalStatus.RETURN_PENDING;
+        RentalStatus status = history.getRentalStatus();
+        return status == RentalStatus.RETURN_PENDING || status == RentalStatus.RETURN_CONFIRMED;
     }
 
     /**
