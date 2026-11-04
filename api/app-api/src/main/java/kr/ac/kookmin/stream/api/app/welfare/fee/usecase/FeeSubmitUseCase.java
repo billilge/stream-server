@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.usecase;
 
-import java.util.Objects;
 import kr.ac.kookmin.stream.api.app.welfare.fee.FeeAccountProvider;
 import kr.ac.kookmin.stream.api.app.welfare.fee.response.FeeResponse;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -50,7 +49,7 @@ public class FeeSubmitUseCase {
         File proofImage = fileService.findByFileKey(proofImageKey)
             .orElseThrow(() -> new BusinessException(FeeErrorCode.INVALID_PROOF_IMAGE));
 
-        if (!Objects.equals(proofImage.getUploaderId(), memberId)
+        if (!proofImage.isUploadedBy(memberId)
             || proofImage.getCategory() != FileCategory.FEE_TRANSCRIPT_IMAGE) {
             throw new BusinessException(FeeErrorCode.INVALID_PROOF_IMAGE);
         }

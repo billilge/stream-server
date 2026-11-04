@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.notice;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ac.kookmin.stream.api.app.welfare.notice.request.NoticeListParams;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
@@ -9,6 +10,7 @@ import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 공지 API의 문서 명세. 구현은 {@link AppNoticeController}가 맡는다.
@@ -19,21 +21,20 @@ import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
 @Tag(name = "공지", description = "공지사항 조회 (학생 앱·운영진 공용)")
 public interface AppNoticeApi {
 
-    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링한다. */
+    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링하고 제목으로 검색한다. */
     @Operation(summary = "공지 목록 조회",
-        description = "커서 기반으로 공지 목록을 조회한다. category로 분류를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
+        description = "커서 기반으로 공지 목록을 조회한다. category로 분류를 필터링하고, cursor/size로 다음 페이지를 넘긴다. "
+            + "keyword를 주면 제목에 그 검색어가 들어 있는 공지만 조회한다(앞뒤 공백 무시, 공백뿐이면 전체). "
+            + "통합 검색의 공지 탭과 더보기도 이 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_INVALID_CURSOR"})
-    ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
-        String category,
-        String cursor,
-        int size
-    );
+    ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(@ParameterObject NoticeListParams params);
 
     /** 공지 상세. 운영진 수정 화면도 이 응답으로 폼을 채운다. */
     @Operation(summary = "공지 상세 조회",
         description = "공지 한 건을 조회한다. 고정 여부(pinned), 이미지·첨부 파일의 ID와 URL을 함께 내려준다. "
             + "삭제된 파일은 목록에서 빠진다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     ApiResponse<NoticeDetailResponse> getNotice(Long noticeId);
 }

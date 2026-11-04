@@ -6,12 +6,24 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCursor;
 
 public interface NoticeRepository {
-    CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size);
+    /**
+     * 삭제되지 않은 공지를 고정 우선, 최신순으로 커서 단위로 조회한다. {@code category}가 null이 아니면 그 종류만,
+     * 제목에 {@code keyword}가 들어 있는 공지만 고르고, 각각 null이면 그 조건 없이 조회한다.
+     * 검색어는 앞뒤 공백을 정리해서 쓰고(공백뿐이면 조건 없음), 검색어의 {@code %}·{@code _}는 글자 그대로 검색한다.
+     */
+    CursorSliceResult<Notice> findAll(NoticeCategory category, String keyword, NoticeCursor cursor, int size);
+
+    /**
+     * 삭제되지 않은 공지 중 제목에 {@code keyword}가 들어 있는 공지를 {@link #findAll}과 같은 순서로 앞에서
+     * {@code limit}건, 그리고 그 전체 수. 종류는 가리지 않는다. 검색어 처리는 {@link #findAll}과 같다.
+     */
+    PreviewResult<Notice> findSearchPreview(String keyword, int limit);
 
     /**
      * 삭제되지 않은 공지를 고정 우선, 최신순으로 페이지 단위로 조회한다. {@code category}가 null이 아니면 그 종류만,

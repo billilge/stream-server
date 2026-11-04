@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.welfare;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
@@ -17,22 +18,22 @@ public interface StudentTransferStatusJpaRepository extends JpaRepository<Studen
 
     Optional<StudentTransferStatusJpaEntity> findFirstByMemberIdOrderByIdDesc(Long memberId);
 
-    // 회원별 최신 요청만 대상으로 한다. 상태 필터도 최신 요청의 상태로 건다
+    // 회원별 최신 요청만 대상으로 한다. 상태 필터도 최신 요청의 상태로 건다. statuses는 비어 있으면 안 된다
     @Query(value = """
         SELECT r FROM StudentTransferStatusJpaEntity r
         WHERE r.id = (SELECT MAX(r2.id) FROM StudentTransferStatusJpaEntity r2 WHERE r2.memberId = r.memberId)
-        AND (:status IS NULL OR r.status = :status)
+        AND r.status IN :statuses
         AND (:filterByMember = false OR r.memberId IN :memberIds)
         ORDER BY r.createdAt DESC, r.id DESC
         """,
         countQuery = """
         SELECT COUNT(r) FROM StudentTransferStatusJpaEntity r
         WHERE r.id = (SELECT MAX(r2.id) FROM StudentTransferStatusJpaEntity r2 WHERE r2.memberId = r.memberId)
-        AND (:status IS NULL OR r.status = :status)
+        AND r.status IN :statuses
         AND (:filterByMember = false OR r.memberId IN :memberIds)
         """)
     Page<StudentTransferStatusJpaEntity> search(
-        @Param("status") TransferStatus status,
+        @Param("statuses") Collection<TransferStatus> statuses,
         @Param("filterByMember") boolean filterByMember,
         @Param("memberIds") List<Long> memberIds,
         Pageable pageable

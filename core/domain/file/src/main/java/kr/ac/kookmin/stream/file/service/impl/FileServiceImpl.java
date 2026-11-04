@@ -31,7 +31,7 @@ class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command) {
-        FileUploadPolicy.validate(command.category(), command.originalName(), command.fileSize());
+        FileUploadPolicy.validate(command.category(), command.originalName(), command.contentType(), command.fileSize());
 
         String fileKey = generateFileKey(command.originalName());
         UploadUrl uploadUrl = fileStorageClient.issuePresignedUrl(fileKey, command.contentType());
@@ -51,7 +51,17 @@ class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public void delete(Long fileId) {
+    public void delete(Long memberId, Long fileId) {
+        File file = fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
+        validateUploader(file, memberId);
+        fileRepository.deleteById(fileId);
+        fileStorageClient.deleteObject(file.getFileKey());
+    }
+
+    @Override
+    @Transactional
+    public void deleteUnreferenced(Long fileId) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
         fileRepository.deleteById(fileId);
@@ -82,6 +92,12 @@ class FileServiceImpl implements FileService {
         return fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND))
             .getFileKey();
+    }
+
+    private void validateUploader(File file, Long memberId) {
+        if (!file.isUploadedBy(memberId)) {
+            throw new BusinessException(FileErrorCode.FILE_DELETE_FORBIDDEN);
+        }
     }
 
     // 키에 환경 폴더까지 담아 저장한다. 조회 주소는 저장된 키를 그대로 쓰므로, 폴더를 나누기 전에 올린 files/... 파일도 계속 보인다

@@ -6,6 +6,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -24,10 +25,11 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     private final NoticeJpaRepository noticeJpaRepository;
 
     @Override
-    public CursorSliceResult<Notice> findAll(NoticeCategory category, NoticeCursor cursor, int size) {
+    public CursorSliceResult<Notice> findAll(NoticeCategory category, String keyword, NoticeCursor cursor, int size) {
         Pageable pageable = Pageable.ofSize(size + 1);
         List<NoticeJpaEntity> entities = noticeJpaRepository.findSlice(
             category,
+            LikePatterns.escape(keyword),
             cursor == null ? null : cursor.pinned(),
             cursor == null ? null : cursor.createdAt(),
             cursor == null ? null : cursor.id(),
@@ -49,6 +51,19 @@ public class NoticeRepositoryImpl implements NoticeRepository {
             result.getContent().stream().map(NoticeJpaEntity::toDomain).toList(),
             result.getNumber(),
             result.getSize(),
+            result.getTotalElements()
+        );
+    }
+
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
+    @Override
+    public PreviewResult<Notice> findSearchPreview(String keyword, int limit) {
+        Page<NoticeJpaEntity> result = noticeJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(NoticeJpaEntity::toDomain).toList(),
             result.getTotalElements()
         );
     }

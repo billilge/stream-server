@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public record RentalBlockPeriodUpdateRequest(
@@ -16,6 +17,7 @@ public record RentalBlockPeriodUpdateRequest(
 
     @Schema(description = "이용 제한 사유. 학생에게 그대로 노출된다", example = "기말고사 기간")
     @NotBlank(message = "이용 제한 사유를 입력해 주세요.")
+    @Size(max = 255, message = "이용 제한 사유는 255자 이하로 입력해 주세요.")
     String reason
 ) {
 }

@@ -71,6 +71,27 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
         return rentalStatusWorkerLogRepository.findAllByRentalHistoryId(historyId);
     }
 
+    @Override
+    @Transactional
+    public RentalRecord updateItemCode(Long historyId, String itemCode) {
+        RentalHistory history = rentalHistoryRepository.findById(historyId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        history.updateItemCode(itemCode);
+        RentalHistory saved = rentalHistoryRepository.save(history);
+        Item item = itemRepository.findById(saved.getItemId()).orElse(null);
+        return new RentalRecord(saved, item);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long historyId) {
+        if (rentalHistoryRepository.findById(historyId).isEmpty()) {
+            throw new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND);
+        }
+        rentalStatusWorkerLogRepository.deleteAllByRentalHistoryId(historyId);
+        rentalHistoryRepository.deleteById(historyId);
+    }
+
     private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();

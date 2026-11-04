@@ -23,8 +23,8 @@ public class DisplayPosterJpaEntity extends BaseCreatedTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "image_key", nullable = false)
-    private String imageKey;
+    @Column(name = "image_file_id", nullable = false)
+    private Long imageFileId;
 
     @Column(name = "is_active", nullable = false)
     private boolean active;
@@ -32,7 +32,7 @@ public class DisplayPosterJpaEntity extends BaseCreatedTimeEntity {
     private DisplayPosterJpaEntity(DisplayPoster poster) {
         this.id = poster.getId();
         this.title = poster.getTitle();
-        this.imageKey = poster.getImageKey();
+        this.imageFileId = poster.getImageFileId();
         this.active = poster.isActive();
     }
 
@@ -41,6 +41,6 @@ public class DisplayPosterJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public DisplayPoster toDomain() {
-        return DisplayPoster.of(id, title, imageKey, active);
+        return DisplayPoster.of(id, title, imageFileId, active, getCreatedAt());
     }
 }
