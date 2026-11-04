@@ -37,9 +37,11 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
         AdminApiUser apiUser,
         @Valid @ModelAttribute AdminHomeBannerSearchParams params
     ) {
+        // 거르는 시각과 응답에 실리는 시각이 달라지면 statuses로 거른 결과에 다른 상태가 섞인다
+        LocalDateTime now = LocalDateTime.now();
         List<HomeBanner> banners =
-            adminHomeService.getCurrentBanners(params.categoriesOrEmpty(), params.statusesOrEmpty());
-        return ApiResponse.success(AdminHomeBannerListResponse.of(banners, LocalDateTime.now()));
+            adminHomeService.getCurrentBanners(now, params.categoriesOrEmpty(), params.statusesOrEmpty());
+        return ApiResponse.success(AdminHomeBannerListResponse.of(banners, now));
     }
 
     @Override
@@ -49,10 +51,9 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
         @Valid @ModelAttribute AdminHomeBannerCategoryParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        // 지난 배너는 전부 노출 종료라 어느 시각으로 판정해도 같지만, 상태 계산 경로를 하나로 둔다
         LocalDateTime now = LocalDateTime.now();
         PageResult<HomeBanner> result =
-            adminHomeService.getPastBanners(params.categoriesOrEmpty(), pageParams.toOffset());
+            adminHomeService.getPastBanners(now, params.categoriesOrEmpty(), pageParams.toOffset());
         return ApiResponse.success(
             PageResponse.from(result, banner -> AdminHomeBannerSummaryResponse.of(banner, now)));
     }
