@@ -31,10 +31,16 @@ public interface HomeApplySectionRepository {
      */
     Optional<Integer> findMaxDisplayOrder();
 
+    /**
+     * 설정 하나를 저장한다. 설정이 없던 대상의 행을 다른 운영진이 그사이 만들었으면
+     * {@link kr.ac.kookmin.stream.internal.domain.home.domain.HomeErrorCode#HOME_APPLY_SECTION_CONFLICT}로
+     * 막는다 — 같은 대상의 설정 행은 하나뿐이어야 한다.
+     */
     HomeApplySection save(HomeApplySection section);
 
     /**
-     * 여러 설정을 한꺼번에 저장한다. 순서 일괄 변경에 쓴다.
+     * 여러 설정을 한꺼번에 저장한다. 순서 일괄 변경에 쓴다. 같은 경합을 {@link #save(HomeApplySection)}와
+     * 같은 에러로 막는다.
      */
     void saveAll(List<HomeApplySection> sections);
 }
