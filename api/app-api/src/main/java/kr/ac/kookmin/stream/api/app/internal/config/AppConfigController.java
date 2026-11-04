@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/app/service-links")
 @RequiredArgsConstructor
-public class AppServiceLinkController implements AppServiceLinkApi {
+public class AppConfigController implements AppConfigApi {
 
     private final AdminConfigValueService adminConfigValueService;
 

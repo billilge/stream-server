@@ -6,10 +6,10 @@ import kr.ac.kookmin.stream.api.app.internal.config.response.ServiceLinkResponse
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 
 /**
- * 학생 앱 서비스 링크 API의 문서 명세. 구현은 {@link AppServiceLinkController}가 맡는다.
+ * 학생 앱 서비스 링크 API의 문서 명세. 구현은 {@link AppConfigController}가 맡는다.
  */
 @Tag(name = "서비스 링크", description = "학생 앱 설정 화면의 외부 링크 조회")
-public interface AppServiceLinkApi {
+public interface AppConfigApi {
 
     @Operation(summary = "서비스 링크 조회",
         description = """
