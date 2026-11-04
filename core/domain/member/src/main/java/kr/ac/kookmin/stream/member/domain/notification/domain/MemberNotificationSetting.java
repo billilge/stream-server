@@ -35,6 +35,11 @@ public class MemberNotificationSetting {
         return new MemberNotificationSetting(id, memberId, rentalEnabled, eventEnabled, lockerEnabled, noticeEnabled);
     }
 
+    // 네 카테고리가 모두 꺼져 있는지. 전체 알림 동의를 켤 때 같이 켜 줄지 판단하는 데 쓴다
+    public boolean allDisabled() {
+        return !rentalEnabled && !eventEnabled && !lockerEnabled && !noticeEnabled;
+    }
+
     public boolean isEnabled(NotificationCategory category) {
         return switch (category) {
             case BILLILGE -> rentalEnabled;

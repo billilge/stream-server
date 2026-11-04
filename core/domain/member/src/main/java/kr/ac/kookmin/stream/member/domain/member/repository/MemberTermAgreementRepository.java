@@ -7,4 +7,5 @@ public interface MemberTermAgreementRepository {
     List<MemberTermAgreement> findAllByMemberId(Long memberId);
     List<MemberTermAgreement> findAllByMemberIdIn(List<Long> memberIds);
     void saveAll(List<MemberTermAgreement> agreements);
+    MemberTermAgreement save(MemberTermAgreement agreement);
 }
