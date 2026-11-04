@@ -10,6 +10,7 @@ import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeApplySecti
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
 
 /**
@@ -45,7 +46,8 @@ public interface AdminHomeApplySectionApi {
             + "바뀌므로, 목록을 띄워둔 사이 달라졌다고 요청을 거부하면 영문 모를 실패가 된다. 그사이 신청을 "
             + "새로 연 행사는 목록 뒤에 설정 없이 남고, 마감된 대상은 순서만 받고 후보에서 빠진다. 다만 노출 "
             + "여부로 거른 목록으로는 보내지 않는다 — 걸러진 설정의 옛 순서값이 남아 새로 매긴 값과 겹친다. "
-            + "두 운영진이 동시에 바꾸면 나중에 저장한 순서가 반영된다.")
+            + "두 운영진이 동시에 바꾸면 나중에 저장한 순서가 반영된다. 같은 대상을 두 번 보내면 400이다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = HomeErrorCode.class, codes = {"HOME_APPLY_SECTION_DUPLICATE_TARGET"})
     ApiResponse<Void> updateOrders(AdminApiUser apiUser, AdminHomeApplySectionOrderUpdateRequest request);
 }

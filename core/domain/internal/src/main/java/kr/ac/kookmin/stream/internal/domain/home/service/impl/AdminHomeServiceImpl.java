@@ -158,6 +158,7 @@ class AdminHomeServiceImpl implements AdminHomeService {
     @Override
     @Transactional
     public void updateApplySectionOrders(List<HomeApplyTarget> orderedTargets) {
+        validateNoDuplicate(orderedTargets);
         Map<HomeApplyTarget, HomeApplySection> sectionsByTarget = loadByTargets(orderedTargets);
 
         List<HomeApplySection> reordered = new ArrayList<>(orderedTargets.size());
@@ -173,6 +174,17 @@ class AdminHomeServiceImpl implements AdminHomeService {
             }
         }
         homeApplySectionRepository.saveAll(reordered);
+    }
+
+    /**
+     * 같은 대상이 두 번 들어 있지 않은지. 후보 전체와 일치하는지는 보지 않지만 중복은 막아야 한다 — 설정 행이
+     * 아직 없는 후보가 두 번 오면 {@code (target_type, target_id)} 유니크 키에 걸려 저장이 통째로 실패하고,
+     * 설정이 이미 있는 대상이어도 뒤 대상들의 순서가 한 칸씩 밀린다.
+     */
+    private void validateNoDuplicate(List<HomeApplyTarget> orderedTargets) {
+        if (Set.copyOf(orderedTargets).size() != orderedTargets.size()) {
+            throw new BusinessException(HomeErrorCode.HOME_APPLY_SECTION_DUPLICATE_TARGET);
+        }
     }
 
     private int nextApplyDisplayOrder() {
