@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminRentalHistoryService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
@@ -20,8 +22,10 @@ public class AdminRentalRecordDeleteUseCase {
         lockExecutor.executeOptimistic(() -> {
             RentalRecord record = adminRentalHistoryService.getById(historyId);
 
-            // 진행 중인(아직 끝나지 않은) 기록이면 삭제 전에 재고를 복구한다
-            if (!record.history().getRentalStatus().isFinished()) {
+            // 잘못 등록한 기록을 없던 일로 되돌리므로, 재고를 차지하고 있던 기록이면 삭제 전에 재고를 복구한다
+            Item item = record.item();
+            ItemType itemType = item == null ? null : item.getType();
+            if (record.history().getRentalStatus().holdsStock(itemType)) {
                 itemService.increaseStock(record.history().getItemId(), record.history().getRentedCount());
             }
 
