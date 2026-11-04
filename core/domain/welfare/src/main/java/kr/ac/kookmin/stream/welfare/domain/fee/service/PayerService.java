@@ -19,4 +19,7 @@ public interface PayerService {
     // 납부자 명부를 이름순으로 조회한다. keyword는 이름·학번 부분 일치이고, 비어 있으면 전체다.
     // 앱에 가입하지 않은 레거시 이관 납부자도 나오며 이 행은 memberId가 null이다
     PageResult<Payer> search(String keyword, PageOffset pageOffset);
+
+    /** 학번이 같은 미연결 명부 행(member_id가 null)이 있으면 이 회원과 연결한다. 없으면 아무 일도 하지 않는다. */
+    void linkMember(Long memberId, String studentId);
 }

@@ -38,4 +38,9 @@ class FakePayerService implements PayerService {
     public PageResult<Payer> search(String keyword, PageOffset pageOffset) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void linkMember(Long memberId, String studentId) {
+        throw new UnsupportedOperationException();
+    }
 }

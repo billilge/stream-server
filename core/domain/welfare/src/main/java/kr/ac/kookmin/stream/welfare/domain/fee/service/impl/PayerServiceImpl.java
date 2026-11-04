@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 class PayerServiceImpl implements PayerService {
 
     private final PayerRepository payerRepository;
+    private final StudentTransferStatusService studentTransferStatusService;
 
     @Override
     @Transactional
@@ -61,5 +63,19 @@ class PayerServiceImpl implements PayerService {
     @Transactional(readOnly = true)
     public PageResult<Payer> search(String keyword, PageOffset pageOffset) {
         return payerRepository.search(keyword, pageOffset);
+    }
+
+    @Override
+    @Transactional
+    public void linkMember(Long memberId, String studentId) {
+        // 이미 자기 명부 행이 있는 회원은 연결할 필요가 없다(validatePayer는 그 행으로 통과한다).
+        // 건너뛰지 않으면 uk_payers_member_id 위반으로 로그인이 500이 된다
+        payerRepository.findByStudentIdAndMemberIdIsNull(studentId)
+            .filter(payer -> payerRepository.findByMemberId(memberId).isEmpty())
+            .ifPresent(payer -> {
+                payer.linkMember(memberId);
+                payerRepository.save(payer);
+                studentTransferStatusService.createPaidForLinkedPayer(memberId);
+            });
     }
 }
