@@ -11,8 +11,8 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
  */
 public interface FeedbackService {
 
-    // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
-    Feedback getById(Long id);
+    // 답변이 공개된 질문이거나 본인 질문일 때만 돌려준다. 본인 질문이라도 답변을 공개하지 않은 회차면 답변을 비운다
+    Feedback getById(Long id, Long memberId);
 
     // 답변을 공개한 회차의 답변 있는 질문만 돌려준다. 답변 전 질문은 작성자 본인만 내 작성내역에서 본다
     PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset);

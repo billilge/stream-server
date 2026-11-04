@@ -27,10 +27,15 @@ class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackRoundRepository feedbackRoundRepository;
 
     @Override
-    public Feedback getById(Long id) {
+    public Feedback getById(Long id, Long memberId) {
         Feedback feedback = feedbackRepository.findById(id)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
-        return hideUnpublishedAnswer(feedback, findPublishedPeriods(feedback.getYear()));
+        Feedback visible = hideUnpublishedAnswer(feedback, findPublishedPeriods(feedback.getYear()));
+        // 남의 질문은 공개된 답변이 있을 때만 보인다. 질문이 있다는 것도 드러내지 않게 없는 질문과 같은 오류를 낸다
+        if (!visible.isAnswered() && !feedback.isWrittenBy(memberId)) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND);
+        }
+        return visible;
     }
 
     @Override

@@ -43,9 +43,10 @@ public interface AppFeedbackApi {
             + "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
     ApiResponse<PageResponse<FeedbackResponse>> getMyFeedbacks(AppApiUser apiUser, @ParameterObject PageParams pageParams);
 
-    /** 피드백 상세. */
+    /** 피드백 상세. 답변이 공개된 피드백이거나 본인 질문일 때만 조회된다. */
     @Operation(summary = "피드백 상세 조회",
-        description = "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
+        description = "답변이 공개된 피드백이거나 본인이 쓴 질문일 때만 조회되고, 그 밖에는 FEEDBACK_NOT_FOUND다. "
+            + "본인 질문이라도 답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_NOT_FOUND"})
     ApiResponse<FeedbackResponse> getFeedback(AppApiUser apiUser, Long feedbackId);
 

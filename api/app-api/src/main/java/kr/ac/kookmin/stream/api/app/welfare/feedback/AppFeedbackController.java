@@ -34,7 +34,7 @@ public class AppFeedbackController implements AppFeedbackApi {
     @Override
     @GetMapping("/{feedbackId}")
     public ApiResponse<FeedbackResponse> getFeedback(AppApiUser apiUser, @PathVariable Long feedbackId) {
-        Feedback feedback = feedbackService.getById(feedbackId);
+        Feedback feedback = feedbackService.getById(feedbackId, apiUser.userId());
         return ApiResponse.success(FeedbackResponse.from(feedback));
     }
 
