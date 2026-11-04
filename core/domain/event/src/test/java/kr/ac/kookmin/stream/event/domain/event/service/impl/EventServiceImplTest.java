@@ -271,6 +271,12 @@ class EventServiceImplTest {
         }
 
         @Override
+        public List<EventApplication> findAppliedByMemberIdAndEventIds(
+            Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public PreviewResult<Event> findUpcomingAppliedEvents(
             Long memberId, LocalDateTime startOfToday, int limit) {
             throw new UnsupportedOperationException();

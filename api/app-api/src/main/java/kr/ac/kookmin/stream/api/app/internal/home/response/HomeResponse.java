@@ -58,9 +58,11 @@ public record HomeResponse(
     }
 
     /**
-     * @param eventDate 행사일. 화면이 D-day를 세므로 날짜만 준다
+     * @param applicationId 신청 식별자. 누르면 이것으로 신청 내역 상세를 연다
+     * @param eventDate     행사일. 화면이 D-day를 세므로 날짜만 준다
      */
     public record AppliedEvent(
+        Long applicationId,
         Long eventId,
         String title,
         LocalDate eventDate
