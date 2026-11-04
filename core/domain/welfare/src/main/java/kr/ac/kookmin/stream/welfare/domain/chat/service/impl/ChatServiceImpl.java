@@ -32,35 +32,36 @@ class ChatServiceImpl implements ChatService {
      * 상태 코드로는 거절할 수 없다.
      */
     @Override
-    public void answer(Long memberId, String question, ChatEventListener listener) {
+    public void answer(Long memberId, String conversationId, String question, ChatEventListener listener) {
         if (!chatAnswerLock.tryAcquire(memberId)) {
             listener.onError(BUSY_MESSAGE);
             return;
         }
         // 학생이 연결을 끊으면 예외가 올라오므로 반드시 finally에서 푼다. 안 풀면 재시작 전까지 질문할 수 없다
         try {
-            answerInTurn(memberId, question, listener);
+            answerInTurn(memberId, conversationId, question, listener);
         } finally {
             chatAnswerLock.release(memberId);
         }
     }
 
-    private void answerInTurn(Long memberId, String question, ChatEventListener listener) {
-        List<ChatTurn> turns = loadRecentTurns(memberId);
+    private void answerInTurn(Long memberId, String conversationId, String question, ChatEventListener listener) {
+        List<ChatTurn> turns = loadRecentTurns(memberId, conversationId);
         turns.add(ChatTurn.user(question));
-        chatMessageRepository.save(ChatMessage.create(memberId, ChatTurn.USER, question));
+        chatMessageRepository.save(ChatMessage.create(memberId, conversationId, ChatTurn.USER, question));
 
         AnswerCollector collector = AnswerCollector.from(listener);
         chatClient.stream(memberId, turns, collector);
 
         // 중간에 끊긴 답변이나 빈 답변은 다음 질문의 이력에 섞이므로 남기지 않는다. 실패 원인은 클라이언트가 로그로 남긴다
         collector.completedAnswer()
-            .ifPresent(answer -> chatMessageRepository.save(ChatMessage.create(memberId, ChatTurn.MODEL, answer)));
+            .ifPresent(answer -> chatMessageRepository.save(
+                ChatMessage.create(memberId, conversationId, ChatTurn.MODEL, answer)));
     }
 
-    /** 최근 대화를 오래된 것부터 돌려준다. 저장소는 최신순으로 준다. */
-    private List<ChatTurn> loadRecentTurns(Long memberId) {
-        List<ChatMessage> recent = chatMessageRepository.findRecentByMemberId(memberId, HISTORY_LIMIT);
+    /** 같은 대화의 최근 메시지를 오래된 것부터 돌려준다. 저장소는 최신순으로 준다. */
+    private List<ChatTurn> loadRecentTurns(Long memberId, String conversationId) {
+        List<ChatMessage> recent = chatMessageRepository.findRecentByConversation(memberId, conversationId, HISTORY_LIMIT);
 
         List<ChatTurn> turns = new ArrayList<>(recent.size() + 1);
         for (int i = recent.size() - 1; i >= 0; i--) {

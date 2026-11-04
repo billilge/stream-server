@@ -36,7 +36,7 @@ public class AppChatController implements AppChatApi {
     ) throws IOException {
         ChatSseWriter writer = ChatSseWriter.of(response, objectMapper);
         try {
-            chatService.answer(apiUser.userId(), request.message(), writer);
+            chatService.answer(apiUser.userId(), request.conversationId(), request.message(), writer);
         } catch (UncheckedIOException e) {
             // 학생이 화면을 닫으면 쓰기가 실패한다. 오류가 아니라 정상 종료다
             log.debug("학생이 연결을 끊어 중계를 멈춥니다. memberId={}", apiUser.userId());

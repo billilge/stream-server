@@ -14,9 +14,9 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
     private final ChatMessageJpaRepository chatMessageJpaRepository;
 
     @Override
-    public List<ChatMessage> findRecentByMemberId(Long memberId, int limit) {
+    public List<ChatMessage> findRecentByConversation(Long memberId, String conversationId, int limit) {
         return chatMessageJpaRepository
-            .findByMemberIdOrderByIdDesc(memberId, PageRequest.of(0, limit))
+            .findByMemberIdAndConversationIdOrderByIdDesc(memberId, conversationId, PageRequest.of(0, limit))
             .stream()
             .map(ChatMessageJpaEntity::toDomain)
             .toList();

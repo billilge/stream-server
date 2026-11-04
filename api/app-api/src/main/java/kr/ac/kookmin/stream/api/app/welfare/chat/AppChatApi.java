@@ -35,7 +35,9 @@ public interface AppChatApi {
     @Operation(summary = "챗봇 질문 전송 (SSE)",
         description = "질문을 보내고 답변을 조각으로 받는다. 응답은 JSON 한 번이 아니라 "
             + "text/event-stream이며 delta·bubble·done·error 네 이벤트가 온다. "
-            + "지난 대화는 서버가 DB에서 꺼내 함께 보내므로 요청에는 이번 질문만 담는다.")
+            + "지난 대화는 서버가 DB에서 꺼내 함께 보내므로 요청에는 이번 질문만 담는다. "
+            + "채팅방에 들어올 때 프론트가 UUID로 conversationId를 만들어 그 방의 질문마다 같은 값을 보낸다. "
+            + "이력은 같은 conversationId의 최근 10개만 붙는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     void sendMessage(AppApiUser apiUser, ChatMessageCreateRequest request, HttpServletResponse response)
         throws IOException;
