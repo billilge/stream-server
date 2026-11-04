@@ -24,9 +24,11 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
      * 쓸 수 없어서인데, 어떻게 질의할지는 인프라의 몫이므로 변환을 여기서 한다.
      */
     @Override
-    public List<Archive> findAllByYearOrderByStartDateDesc(Integer year) {
+    public List<Archive> findAllByYearOrderByStartDateDesc(Integer year, String keyword) {
         return archiveJpaRepository
-            .findAllInPeriod(DateUtil.startOfYear(year), DateUtil.startOfNextYear(year)).stream()
+            .findAllInPeriod(
+                DateUtil.startOfYear(year), DateUtil.startOfNextYear(year), LikePatterns.escape(keyword)
+            ).stream()
             .map(ArchiveJpaEntity::toDomain)
             .toList();
     }

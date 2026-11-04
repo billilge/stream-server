@@ -11,9 +11,11 @@ public interface ArchiveRepository {
     /**
      * 활동 시작일 내림차순(같으면 식별자 내림차순)으로 아카이빙을 조회한다.
      *
-     * @param year 활동 연도. null이면 연도 조건 없이 전체를 조회한다
+     * @param year    활동 연도. null이면 연도 조건 없이 전체를 조회한다
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는
+     *                글자 그대로 검색한다
      */
-    List<Archive> findAllByYearOrderByStartDateDesc(Integer year);
+    List<Archive> findAllByYearOrderByStartDateDesc(Integer year, String keyword);
 
     /**
      * 아카이빙이 존재하는 연도를 중복 없이 최신순으로 조회한다.
