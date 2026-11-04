@@ -67,12 +67,12 @@ class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public List<Integer> getAvailableYears() {
-        return feedbackRoundRepository.findDistinctYears();
+        return feedbackRoundRepository.findDistinctPublishedYears();
     }
 
     @Override
     public List<Integer> getRoundsOf(int year) {
-        return feedbackRoundRepository.findRoundsByYear(year);
+        return feedbackRoundRepository.findPublishedRoundsByYear(year);
     }
 
     // 학생에게는 공개된 회차의 답변만 보인다. 공개 전 답변은 운영진이 임시저장한 것이다

@@ -23,9 +23,9 @@ public interface FeedbackService {
     // 회차는 현재 열려 있는 회차로 서버가 자동 배정한다
     Feedback create(Long memberId, String question);
 
-    // 회차가 하나라도 존재했던 연도 목록(최신순)
+    // 답변을 공개한 회차가 있는 연도 목록(최신순). 목록 조회와 같은 기준이다
     List<Integer> getAvailableYears();
 
-    // 해당 연도에 실제로 존재하는 회차 번호(오름차순)
+    // 해당 연도에서 답변을 공개한 회차 번호(오름차순)
     List<Integer> getRoundsOf(int year);
 }

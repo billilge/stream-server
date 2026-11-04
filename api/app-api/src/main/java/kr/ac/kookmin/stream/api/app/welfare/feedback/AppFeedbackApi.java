@@ -59,6 +59,7 @@ public interface AppFeedbackApi {
 
     /** 목록 화면의 연도 드롭다운·회차 칩을 그리기 위한 필터 옵션. */
     @Operation(summary = "피드백 회차 필터 조회",
-        description = "year를 생략하면 현재 연도 기준으로, 회차가 하나라도 존재했던 전체 연도 목록과 그 연도에 실제로 존재하는 회차 목록을 함께 내려준다.")
+        description = "year를 생략하면 현재 연도 기준으로, 답변을 공개한 회차가 있는 전체 연도 목록과 그 연도에서 답변을 공개한 회차 목록을 함께 내려준다. "
+            + "회차 수는 연도마다 다르다.")
     ApiResponse<FeedbackRoundsResponse> getFeedbackRounds(AppApiUser apiUser, Integer year);
 }
