@@ -2,7 +2,7 @@ plugins {
     java
 }
 
-description = "role 무관 공통 인프라 — ApiResponse, GlobalExceptionHandler, WebMvcConfig, ApiUser, @ApiErrorCode"
+description = "role 무관 공통 인프라 — ApiResponse, GlobalExceptionHandler, WebMvcConfig, ApiUser, @ApiErrorCode, ExcelFile"
 
 dependencies {
     implementation(project(":core:common"))
@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.springBootStarterWebmvc)
     implementation(libs.springBootStarterValidation)
     implementation(libs.springdocStarterWebmvcUi)
+    implementation(libs.poiOoxml)
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)

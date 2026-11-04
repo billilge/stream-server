@@ -8,6 +8,7 @@ lombokVersion = "1.18.36"
 springdocVersion = "3.1.1"
 awsSdkVersion = "2.54.15"
 firebaseAdminVersion = "9.11.0"
+poiVersion = "5.5.1"
 
 [libraries]
 # BOMs — import as `platform(...)` in modules that don't apply the Boot plugin directly
@@ -56,6 +57,9 @@ flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 mysqlConnectorJ = { module = "com.mysql:mysql-connector-j" }
 
 awsS3 = { module = "software.amazon.awssdk:s3" }
+
+# 관리자 엑셀 내보내기(xlsx)
+poiOoxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poiVersion" }
 
 firebaseAdmin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdminVersion" }
 
