@@ -80,7 +80,8 @@ public interface AdminLockerService {
         Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset);
 
     /**
-     * 신청 현황 상단에 띄울 개수. 목록과 달리 검색어·상태 필터를 타지 않고 회차 전체를 센다.
+     * 신청 현황 상단에 띄울 개수. 목록과 달리 검색어·상태 필터를 타지 않고 회차 전체를 센다. 없는 회차면
+     * {@code LOCKER_PERIOD_NOT_FOUND}로 실패한다.
      */
     LockerApplicationCounts getApplicationCounts(Long lockerPeriodId);
 

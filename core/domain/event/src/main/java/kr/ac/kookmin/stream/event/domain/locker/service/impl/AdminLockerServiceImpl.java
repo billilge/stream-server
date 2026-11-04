@@ -145,9 +145,9 @@ class AdminLockerServiceImpl implements AdminLockerService {
             application -> new LockerApplicationResult(application, lockers.get(application.getLockerId()), period));
     }
 
-    // 회차가 있는지는 목록 조회가 이미 본다. 개수만 따로 부르는 화면이 없어 여기서 또 확인하지 않는다
     @Override
     public LockerApplicationCounts getApplicationCounts(Long lockerPeriodId) {
+        validatePeriodExists(lockerPeriodId);
         return new LockerApplicationCounts(
             lockerApplicationRepository.countByPeriod(lockerPeriodId),
             lockerApplicationRepository.countAppliedByPeriod(lockerPeriodId));
@@ -236,6 +236,16 @@ class AdminLockerServiceImpl implements AdminLockerService {
     private void validateSectionExists(Long sectionId) {
         if (lockerRepository.findSectionById(sectionId).isEmpty()) {
             throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
+        }
+    }
+
+    /**
+     * 신청 현황은 개수를 먼저 세고, 검색어에 맞는 회원이 없으면 목록 조회를 건너뛴다. 없는 회차가 검색어 유무로
+     * 404와 200으로 갈리지 않게 개수를 셀 때 회차를 확인한다.
+     */
+    private void validatePeriodExists(Long lockerPeriodId) {
+        if (lockerRepository.findPeriodById(lockerPeriodId).isEmpty()) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND);
         }
     }
 
