@@ -13,6 +13,9 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EventQuestion {
 
+    /** '기타'에 쓸 수 있는 문구 길이. 단답형 답변과 같다 */
+    private static final int OTHER_TEXT_MAX_LENGTH = QuestionType.SHORT_TEXT.maxLength();
+
     private Long id;
     private Long eventId;
     private String questionText;
@@ -20,7 +23,7 @@ public class EventQuestion {
     private boolean required;
     private int displayOrder;
     private List<String> options;
-    /** 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙이는지. 학생 앱 노출·답변 저장은 아직 없다(후속 작업) */
+    /** 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙이는지. 학생이 쓴 '기타' 문구는 답변의 answerText에 담긴다 */
     private boolean otherOptionAllowed;
 
     /**
@@ -74,6 +77,17 @@ public class EventQuestion {
             && otherOptionAllowed == other.otherOptionAllowed
             && Objects.equals(questionText, other.questionText)
             && Objects.equals(options, other.options);
+    }
+
+    /**
+     * 답변 문구(answerText) 길이 한도. 텍스트형은 유형별 한도를, 선택형은 '기타'를 허용할 때 '기타' 문구 한도를 따른다.
+     * '기타'를 허용하지 않은 선택형은 문구를 받지 않아 {@code null}이다.
+     */
+    public Integer answerTextMaxLength() {
+        if (!questionType.isChoice()) {
+            return questionType.maxLength();
+        }
+        return otherOptionAllowed ? OTHER_TEXT_MAX_LENGTH : null;
     }
 
     /**
