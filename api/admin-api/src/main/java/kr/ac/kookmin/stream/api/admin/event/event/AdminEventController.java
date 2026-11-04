@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.admin.event.event;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventCreateRequest;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventPublishRequest;
@@ -64,10 +65,12 @@ public class AdminEventController implements AdminEventApi {
         PageResult<Event> events = adminEventService.getEvents(params.keyword(), pageParams.toOffset());
         Map<Long, Long> applicantCounts = adminEventService.getApplicantCounts(
             events.content().stream().map(Event::getId).toList());
+        Map<Long, File> thumbnailsById = fileService.findAllByIdIn(
+            events.content().stream().map(Event::thumbnailFileId).filter(Objects::nonNull).toList());
         LocalDateTime now = LocalDateTime.now();
 
-        return ApiResponse.success(PageResponse.from(events, event ->
-            AdminEventListItemResponse.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now)));
+        return ApiResponse.success(PageResponse.from(events, event -> AdminEventListItemResponse.of(
+            event, applicantCounts.getOrDefault(event.getId(), 0L), thumbnailsById, now)));
     }
 
     @Override

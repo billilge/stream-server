@@ -44,7 +44,8 @@ public interface AdminEventApi {
     /** 행사 목록. 비공개 행사도 함께 내려준다. */
     @Operation(summary = "행사 목록 조회",
         description = "삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순으로 페이지 단위 조회한다. keyword로 제목을 검색한다. "
-            + "모집 상태는 조회 시점의 신청 기간·잔여 정원으로 계산한다.")
+            + "모집 상태는 조회 시점의 신청 기간·잔여 정원으로 계산한다. 대표 이미지는 이미지 목록의 첫 장이며, 이미지가 없으면 "
+            + "thumbnailUrl이 비어 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<PageResponse<AdminEventListItemResponse>> getEvents(
         AdminApiUser apiUser,
