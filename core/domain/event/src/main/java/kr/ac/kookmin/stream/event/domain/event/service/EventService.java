@@ -15,6 +15,10 @@ import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
  */
 public interface EventService {
 
+    /**
+     * 게시된 행사 목록. recruitStatus가 없으면 모집 중 → 모집 예정 → 모집 종료 순으로 이어 붙이고, 같은 상태
+     * 안에서는 {@link EventCursor}의 구간별 정렬 기준을 따른다. recruitStatus가 있으면 그 상태 구간만 준다.
+     */
     CursorSliceResult<EventSummary> getPublishedEvents(RecruitStatus recruitStatus, EventCursor cursor, int size);
 
     /**
