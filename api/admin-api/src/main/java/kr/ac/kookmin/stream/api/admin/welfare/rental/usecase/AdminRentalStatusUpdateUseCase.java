@@ -42,8 +42,10 @@ public class AdminRentalStatusUpdateUseCase {
 
             RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, newStatus, workerId);
 
-            boolean heldBefore = holdsStock(previousStatus, item);
-            boolean heldAfter = holdsStock(newStatus, item);
+            // 전후 상태의 재고 차지 여부를 비교하므로 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다
+            ItemType itemType = item == null ? null : item.getType();
+            boolean heldBefore = previousStatus.holdsStock(itemType);
+            boolean heldAfter = newStatus.holdsStock(itemType);
             if (heldBefore && !heldAfter) {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
             } else if (!heldBefore && heldAfter) {
@@ -60,14 +62,5 @@ public class AdminRentalStatusUpdateUseCase {
         if (worker.getRole() != Role.ADMIN) {
             throw new BusinessException(RentalErrorCode.WORKER_NOT_ADMIN);
         }
-    }
-
-    // 진행 중이면 재고를 차지하고, 끝난 상태 중에는 이미 내준 소모품의 RETURNED만 차지한다.
-    // 전후 상태의 차지 여부를 비교해 재고를 복구·차감하므로 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다.
-    private boolean holdsStock(RentalStatus status, Item item) {
-        if (!status.isFinished()) {
-            return true;
-        }
-        return status == RentalStatus.RETURNED && item != null && item.getType() == ItemType.CONSUMABLE;
     }
 }
