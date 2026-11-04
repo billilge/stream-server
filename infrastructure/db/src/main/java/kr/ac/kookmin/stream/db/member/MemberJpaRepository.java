@@ -76,11 +76,15 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
         Pageable pageable
     );
 
-    // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)은 푸시 대상에서 빠진다
+    // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)과, 알림 수신 동의(NOTIFICATION_CONSENT) 약관에
+    // 동의하지 않은 회원은 푸시 대상에서 빠진다. 카테고리별 설정은 그 동의 안에서의 세부 선택이다
     @Query("""
         SELECT new kr.ac.kookmin.stream.db.member.PushTargetProjection(m.id, m.fcmToken, s)
         FROM MemberJpaEntity m
         JOIN MemberNotificationSettingJpaEntity s ON s.memberId = m.id
+        JOIN MemberTermAgreementJpaEntity t ON t.memberId = m.id
+            AND t.termType = kr.ac.kookmin.stream.member.domain.member.domain.TermType.NOTIFICATION_CONSENT
+            AND t.agreed = true
         WHERE m.isDeleted = false
         AND m.fcmToken IS NOT NULL
         AND m.id IN :memberIds
@@ -91,6 +95,9 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
         SELECT new kr.ac.kookmin.stream.db.member.PushTargetProjection(m.id, m.fcmToken, s)
         FROM MemberJpaEntity m
         JOIN MemberNotificationSettingJpaEntity s ON s.memberId = m.id
+        JOIN MemberTermAgreementJpaEntity t ON t.memberId = m.id
+            AND t.termType = kr.ac.kookmin.stream.member.domain.member.domain.TermType.NOTIFICATION_CONSENT
+            AND t.agreed = true
         WHERE m.isDeleted = false
         AND m.fcmToken IS NOT NULL
         """)
