@@ -31,10 +31,7 @@ class FeedbackServiceImpl implements FeedbackService {
         Feedback feedback = feedbackRepository.findById(id)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
         Feedback visible = hideUnpublishedAnswer(feedback, findPublishedPeriods(feedback.getYear()));
-        // 남의 질문은 공개된 답변이 있을 때만 보인다. 질문이 있다는 것도 드러내지 않게 없는 질문과 같은 오류를 낸다
-        if (!visible.isAnswered() && !feedback.isWrittenBy(memberId)) {
-            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND);
-        }
+        validateReadable(visible, memberId);
         return visible;
     }
 
@@ -75,6 +72,13 @@ class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<Integer> getRoundsOf(int year) {
         return feedbackRoundRepository.findPublishedRoundsByYear(year);
+    }
+
+    // 남의 질문은 공개된 답변이 있을 때만 보인다. 질문이 있다는 것도 드러내지 않게 없는 질문과 같은 오류를 낸다
+    private void validateReadable(Feedback visible, Long memberId) {
+        if (!visible.isAnswered() && !visible.isWrittenBy(memberId)) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND);
+        }
     }
 
     // 학생에게는 공개된 회차의 답변만 보인다. 공개 전 답변은 운영진이 임시저장한 것이다
