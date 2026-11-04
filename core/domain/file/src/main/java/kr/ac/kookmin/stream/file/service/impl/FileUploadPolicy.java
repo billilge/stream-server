@@ -57,7 +57,7 @@ final class FileUploadPolicy {
             case TEMP -> ALL_TYPES;
             case NOTICE_ATTACHMENT -> ATTACHMENT_TYPES;
             case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
-                FEE_TRANSCRIPT_IMAGE, HOME_BANNER_IMAGE -> IMAGE_TYPES;
+                FEE_TRANSCRIPT_IMAGE, HOME_BANNER_IMAGE, DISPLAY_POSTER -> IMAGE_TYPES;
             case ITEM_IMAGE -> ITEM_ICON_TYPES;
         };
     }
@@ -66,7 +66,7 @@ final class FileUploadPolicy {
         return switch (category) {
             case TEMP, NOTICE_ATTACHMENT -> ATTACHMENT_MAX_FILE_SIZE;
             case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
-                FEE_TRANSCRIPT_IMAGE, ITEM_IMAGE, HOME_BANNER_IMAGE -> IMAGE_MAX_FILE_SIZE;
+                FEE_TRANSCRIPT_IMAGE, ITEM_IMAGE, HOME_BANNER_IMAGE, DISPLAY_POSTER -> IMAGE_MAX_FILE_SIZE;
         };
     }
 

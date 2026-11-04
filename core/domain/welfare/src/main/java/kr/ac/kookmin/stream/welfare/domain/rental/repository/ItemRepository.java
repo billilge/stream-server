@@ -38,6 +38,9 @@ public interface ItemRepository {
      */
     PageResult<Item> search(ItemCategory category, ItemType type, String keyword, PageOffset pageOffset);
 
+    // 전체 물품을 식별자 오름차순으로. 오프라인 디스플레이용
+    List<Item> findAll();
+
     List<Item> findAllByIds(Collection<Long> ids);
 
     Optional<Item> findById(Long id);

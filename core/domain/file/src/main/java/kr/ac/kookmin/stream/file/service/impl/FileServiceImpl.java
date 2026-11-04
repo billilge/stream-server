@@ -60,6 +60,15 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional
+    public void deleteUnreferenced(Long fileId) {
+        File file = fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
+        fileRepository.deleteById(fileId);
+        fileStorageClient.deleteObject(file.getFileKey());
+    }
+
+    @Override
     public Optional<File> findById(Long fileId) {
         return fileRepository.findById(fileId);
     }

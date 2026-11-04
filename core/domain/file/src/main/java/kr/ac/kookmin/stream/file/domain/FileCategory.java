@@ -11,5 +11,7 @@ public enum FileCategory {
     FEE_TRANSCRIPT_IMAGE,
     ITEM_IMAGE,
     // 홈 배너의 기타 카테고리에서 운영진이 직접 올리는 배경 이미지
-    HOME_BANNER_IMAGE
+    HOME_BANNER_IMAGE,
+    // 오프라인 디스플레이에 띄우는 행사 포스터
+    DISPLAY_POSTER
 }

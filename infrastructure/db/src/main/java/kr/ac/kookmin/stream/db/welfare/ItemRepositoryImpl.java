@@ -43,6 +43,13 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
+    public List<Item> findAll() {
+        return itemJpaRepository.findAllByOrderByIdAsc().stream()
+            .map(ItemJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<Item> findAllByIds(Collection<Long> ids) {
         return itemJpaRepository.findAllById(ids).stream()
             .map(ItemJpaEntity::toDomain)

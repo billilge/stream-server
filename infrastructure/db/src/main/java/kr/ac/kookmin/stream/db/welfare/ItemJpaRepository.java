@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ItemJpaRepository extends JpaRepository<ItemJpaEntity, Long> {
 
+    List<ItemJpaEntity> findAllByOrderByIdAsc();
+
     // 커서가 없으면 첫 페이지, 있으면 그 다음부터 조회한다. keyword는 이름 부분 일치 검색이며 LikePatterns.escape로
     // 이스케이프한 값을 받는다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
     // 조건·정렬을 바꾸면 통합 검색 미리보기(findSearchPreview)도 함께 고친다

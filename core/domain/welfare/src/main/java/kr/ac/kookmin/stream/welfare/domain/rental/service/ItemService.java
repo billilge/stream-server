@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -24,6 +25,12 @@ public interface ItemService {
      * @param keyword 이름 검색어. null이거나 공백이면 검색하지 않는다
      */
     PreviewResult<Item> searchPreview(String keyword, int limit);
+
+    /**
+     * 전체 물품을 식별자 오름차순으로 조회한다. 오프라인 디스플레이가 재고를 한 화면에 모두 보여줄 때 쓴다.
+     * 재고가 0인 물품도 포함한다.
+     */
+    List<Item> getAllItems();
 
     /**
      * 재고를 차감한다.
