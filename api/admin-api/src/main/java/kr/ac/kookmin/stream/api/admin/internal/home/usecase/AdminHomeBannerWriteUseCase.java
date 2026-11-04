@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
 import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
@@ -53,10 +54,34 @@ public class AdminHomeBannerWriteUseCase {
     }
 
     public void update(Long bannerId, HomeBannerUpdateCommand command) {
-        Long imageFileId = resolveImageFileId(command.category(), command.imageFileId());
+        Long imageFileId = resolveUpdateImageFileId(bannerId, command);
         validateLandingTargetExists(command.landingType(), command.targetId());
 
         adminHomeService.updateBanner(bannerId, command.withImageFileId(imageFileId));
+    }
+
+    /**
+     * 수정할 때 저장할 배경 이미지를 정한다. 등록과 다른 점은 하나뿐이다 — {@code ETC}인데 파일을 보내지
+     * 않았으면 "이미지는 그대로 두고 나머지만 고친다"는 뜻으로 보고 기존 이미지를 유지한다. 수정은 입력값을
+     * 통째로 바꾸는 방식이라 화면이 매번 같은 파일 식별자를 되돌려 보내야 하는데, 한 번 빠뜨리면 제목만
+     * 고치려던 요청이 거부된다.
+     * <p>
+     * 유지하는 식별자는 새로 들어온 입력이 아니라 이미 저장돼 있던 값이므로 파일 존재 확인을 다시 하지 않는다.
+     * 다시 보면 이미지 파일이 지워진 배너는 제목조차 고치지 못한다.
+     * <p>
+     * 다른 카테고리에서 {@code ETC}로 바꾸는 경우는 유지할 이미지가 없다 — 기존 값은 프리셋 파일을 가리키고
+     * 있어 그대로 쓰면 운영진이 고르지 않은 배경이 붙는다. 등록과 같이 파일을 요구한다.
+     */
+    private Long resolveUpdateImageFileId(Long bannerId, HomeBannerUpdateCommand command) {
+        if (command.category() != HomeBannerCategory.ETC || command.imageFileId() != null) {
+            return resolveImageFileId(command.category(), command.imageFileId());
+        }
+
+        HomeBanner banner = adminHomeService.getBanner(bannerId);
+        if (banner.getCategory() != HomeBannerCategory.ETC) {
+            throw new BusinessException(HomeErrorCode.HOME_BANNER_IMAGE_REQUIRED);
+        }
+        return banner.getImageFileId();
     }
 
     /**

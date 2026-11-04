@@ -48,7 +48,8 @@ public interface AdminHomeBannerApi {
     );
 
     @Operation(summary = "배너 상세 조회",
-        description = "배너 한 건을 조회한다. 수정 화면의 초기값으로도 쓴다. "
+        description = "배너 한 건을 조회한다. 수정 화면의 초기값으로도 쓴다. imageFileId는 지금 배경으로 쓰는 "
+            + "파일이고, 프리셋 카테고리면 서버가 채운 프리셋 파일을 가리킨다. "
             + "연결된 공지·행사가 지워졌으면 연결 대상만 비워 내려준다. 아직 공개하지 않은 행사는 그대로 내려준다.")
     @ApiErrorCode(type = HomeErrorCode.class, codes = {"HOME_BANNER_NOT_FOUND"})
     ApiResponse<AdminHomeBannerDetailResponse> getBanner(AdminApiUser apiUser, Long bannerId);
@@ -73,7 +74,9 @@ public interface AdminHomeBannerApi {
     @Operation(summary = "배너 수정",
         description = "배너의 입력값을 통째로 바꾼다. 표시 순서는 그대로 두며, 순서는 노출 순서 변경으로 바꾼다. "
             + "배경 이미지는 등록과 같이 카테고리가 정하므로, 프리셋 카테고리로 바꾸면 올렸던 이미지는 프리셋으로 "
-            + "교체된다. 수정 화면은 배너 상세 조회로 채운다. 다른 운영진이 먼저 고쳤는지는 확인하지 않으므로 "
+            + "교체된다. ETC인데 imageFileId를 보내지 않으면 올려둔 이미지를 그대로 둔다 — 이미지를 바꾸지 "
+            + "않는 수정이다. 다만 다른 카테고리에서 ETC로 바꿀 때는 유지할 이미지가 없어 imageFileId가 "
+            + "있어야 한다. 수정 화면은 배너 상세 조회로 채운다. 다른 운영진이 먼저 고쳤는지는 확인하지 않으므로 "
             + "나중에 저장한 내용이 그대로 반영된다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = HomeErrorCode.class,
