@@ -56,6 +56,11 @@ class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public List<Member> findAllCouncilMembers() {
+        return memberRepository.findAllCouncilMembers();
+    }
+
+    @Override
     @Transactional
     public Member updateProfile(Long id, MemberProfileCommand command) {
         return applyProfile(getById(id), command);
@@ -124,6 +129,17 @@ class MemberServiceImpl implements MemberService {
         if (member.updatePhoneNumber(command.phoneNumber())) {
             memberRepository.save(member);
         }
+    }
+
+    // 탈퇴한 기기로 알림이 가지 않도록 FCM 토큰을 먼저 비운 뒤 소프트 삭제한다
+    @Override
+    @Transactional
+    public void withdraw(Long memberId) {
+        Member member = getById(memberId);
+        if (member.updateFcmToken(null)) {
+            memberRepository.save(member);
+        }
+        memberRepository.delete(memberId);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class FileController implements FileApi {
     @Override
     @DeleteMapping("/{fileId}")
     public ApiResponse<Void> delete(@PathVariable Long fileId) {
-        fileService.delete(fileId);
+        fileService.delete(principalProvider.userId(), fileId);
         return ApiResponse.success();
     }
 }

@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
@@ -52,5 +54,12 @@ class PayerServiceImpl implements PayerService {
         if (!isPayer(memberId)) {
             throw new BusinessException(FeeErrorCode.MEMBER_IS_NOT_PAYER);
         }
+    }
+
+    // 페이지 조회는 목록과 전체 개수를 두 번에 나눠 읽으므로, 그 사이 들어온 쓰기 때문에 둘이 어긋나지 않게 한 트랜잭션으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<Payer> search(String keyword, PageOffset pageOffset) {
+        return payerRepository.search(keyword, pageOffset);
     }
 }

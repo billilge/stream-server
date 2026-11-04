@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
@@ -23,7 +24,13 @@ class FakeEventService implements EventService {
     final Map<Long, Event> events = new HashMap<>();
 
     @Override
-    public CursorSliceResult<EventSummary> getPublishedEvents(RecruitStatus recruitStatus, EventCursor cursor, int size) {
+    public CursorSliceResult<EventSummary> getPublishedEvents(
+        RecruitStatus recruitStatus, String keyword, EventCursor cursor, int size) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PreviewResult<EventSummary> searchPreview(String keyword, int limit) {
         throw new UnsupportedOperationException();
     }
 

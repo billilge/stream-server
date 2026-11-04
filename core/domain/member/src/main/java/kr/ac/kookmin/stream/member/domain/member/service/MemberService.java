@@ -20,6 +20,8 @@ public interface MemberService {
      * 검색할지 말지는 호출하는 쪽이 정하므로, 검색어가 null이거나 공백뿐이면 일치하는 회원이 없어 빈 목록이다.
      */
     List<Long> searchIdsByKeyword(String keyword);
+    // 학생회 구성원(학생회 부서가 있는 운영진). 이름, 같은 이름이면 학번 오름차순
+    List<Member> findAllCouncilMembers();
     Member updateProfile(Long id, MemberProfileCommand command);
     Member registerOrUpdateByStudentId(MemberProfileCommand command);
     Member signUp(Long memberId, MemberSignUpCommand command);
@@ -32,4 +34,9 @@ public interface MemberService {
     void updateFcmToken(Long memberId, String fcmToken);
     void updatePhoneNumber(Long memberId, MemberPhoneNumberUpdateCommand command);
     boolean isEmailUsedByOthers(Long memberId, String email);
+    /**
+     * 회원을 탈퇴(소프트 삭제)시키고 FCM 토큰을 비운다. 탈퇴한 회원은 이후 모든 조회에서 빠지며,
+     * 같은 학번·이메일·전화번호로 다시 가입할 수 있다. 없거나 이미 탈퇴한 회원이면 {@code MEMBER_NOT_FOUND}.
+     */
+    void withdraw(Long memberId);
 }
