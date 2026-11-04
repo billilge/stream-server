@@ -21,7 +21,7 @@ public interface StudentTransferStatusService {
      */
     StudentTransferStatus submit(Long memberId, FeeSubmitCommand command, long amount);
 
-    // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음
+    // status가 null이면 납부 완료를 뺀 처리 대상(납부확인중·확인필요)만, memberIds가 null이면 회원 필터 없음
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
 
     /**

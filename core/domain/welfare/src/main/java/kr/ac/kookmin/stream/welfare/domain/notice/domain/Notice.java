@@ -35,7 +35,12 @@ public class Notice {
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {
-        return new Notice(id, title, content, category, pinned, createdBy, attachmentIds, imageIds, createdAt, updatedAt);
+        return new Notice(
+            id, title, content, category, pinned, createdBy,
+            attachmentIds == null ? List.of() : attachmentIds,
+            imageIds == null ? List.of() : imageIds,
+            createdAt, updatedAt
+        );
     }
 
     // 생성·수정 시각은 DB가 채운다
@@ -61,5 +66,10 @@ public class Notice {
         this.attachmentIds = command.attachmentIds();
         this.imageIds = command.imageIds();
         this.pinned = command.pinned();
+    }
+
+    /** 등록된 이미지 중 첫 번째를 썸네일로 쓴다. 이미지가 없으면 null이다. */
+    public Long getThumbnailImageId() {
+        return imageIds.isEmpty() ? null : imageIds.get(0);
     }
 }

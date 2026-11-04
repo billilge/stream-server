@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackCreateRequest;
+import kr.ac.kookmin.stream.api.app.welfare.feedback.request.FeedbackListParams;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackResponse;
 import kr.ac.kookmin.stream.api.app.welfare.feedback.response.FeedbackRoundsResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -12,7 +13,6 @@ import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
-import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,12 +42,10 @@ public class AppFeedbackController implements AppFeedbackApi {
     @GetMapping
     public ApiResponse<PageResponse<FeedbackResponse>> getFeedbacks(
         AppApiUser apiUser,
-        @RequestParam(required = false) Integer year,
-        @RequestParam(required = false) Integer round,
+        @Valid @ModelAttribute FeedbackListParams params,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        FeedbackPeriod period = FeedbackPeriod.of(year, round);
-        PageResult<Feedback> result = feedbackService.search(period, pageParams.toOffset());
+        PageResult<Feedback> result = feedbackService.search(params.toPeriod(), params.keyword(), pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
     }
 

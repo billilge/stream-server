@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.file.domain;
 
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -39,5 +40,10 @@ public class File {
         Long uploaderId
     ) {
         return new File(id, fileKey, category, originalName, fileSize, contentType, uploaderId);
+    }
+
+    // 파일 삭제와 회비 인증 이미지 검증이 같은 기준으로 "본인이 올린 파일인지"를 본다
+    public boolean isUploadedBy(Long memberId) {
+        return Objects.equals(uploaderId, memberId);
     }
 }

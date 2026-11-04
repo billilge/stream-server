@@ -53,6 +53,8 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
      * 모집 상태는 저장값이 아니라 신청 기간·잔여 정원으로 판정하므로 Event.calculateRecruitStatus와 같은 규칙을
      * SQL로 옮겨 적용한다. 두 곳의 규칙이 어긋나면 거른 결과와 응답에 실린 모집 상태가 달라지고, 응답의 상태로
      * 만든 다음 커서가 엉뚱한 구간을 가리키므로 한쪽을 고치면 다른 쪽도 함께 고쳐야 한다.
+     *
+     * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
      */
 
     /** 모집 중인 행사. 신청 마감 임박순(apply_end_at 오름차순). */
@@ -60,6 +62,7 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         SELECT e FROM EventJpaEntity e
         WHERE e.isDeleted = false
         AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND :now >= e.applyStartAt
         AND :now <= e.applyEndAt
         AND (e.recruitType <> :capacityLimitedType
@@ -74,6 +77,7 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         @Param("capacityLimitedType") RecruitType capacityLimitedType,
         @Param("appliedStatus") EventApplicationStatus appliedStatus,
         @Param("now") LocalDateTime now,
+        @Param("keyword") String keyword,
         @Param("cursorSortAt") LocalDateTime cursorSortAt,
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
@@ -84,6 +88,7 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         SELECT e FROM EventJpaEntity e
         WHERE e.isDeleted = false
         AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND :now <= e.applyEndAt
         AND :now < e.applyStartAt
         AND (:cursorSortAt IS NULL
@@ -93,6 +98,7 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         """)
     List<EventJpaEntity> findBeforeOpenSlice(
         @Param("now") LocalDateTime now,
+        @Param("keyword") String keyword,
         @Param("cursorSortAt") LocalDateTime cursorSortAt,
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
@@ -103,6 +109,7 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         SELECT e FROM EventJpaEntity e
         WHERE e.isDeleted = false
         AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND (:now > e.applyEndAt
             OR (:now >= e.applyStartAt
                 AND e.recruitType = :capacityLimitedType
@@ -117,10 +124,24 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         @Param("capacityLimitedType") RecruitType capacityLimitedType,
         @Param("appliedStatus") EventApplicationStatus appliedStatus,
         @Param("now") LocalDateTime now,
+        @Param("keyword") String keyword,
         @Param("cursorSortAt") LocalDateTime cursorSortAt,
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
     );
+
+    /**
+     * 게시된 행사 중 제목에 검색어가 들어 있는 것의 수. 모집 상태로는 거르지 않으므로 위 세 구간 쿼리를 합친 수와 같다.
+     * <p>
+     * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
+     */
+    @Query("""
+        SELECT COUNT(e) FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    long countPublished(@Param("keyword") String keyword);
 
     @Query("""
         SELECT e FROM EventJpaEntity e
