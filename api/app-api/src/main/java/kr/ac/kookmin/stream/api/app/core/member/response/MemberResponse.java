@@ -4,7 +4,7 @@ import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 
 public record MemberResponse(
     String name,
-    // 이메일 인증이 들어오기 전에 가입한 회원은 이메일이 없어 null이다
+    // 이메일을 등록하지 않은 회원은 null이다
     String email,
     // 하이픈 없이 숫자만 내려준다. 저장된 형식 그대로다
     String phoneNumber
