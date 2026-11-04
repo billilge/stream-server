@@ -1,0 +1,62 @@
+package kr.ac.kookmin.stream.internal.domain.home.repository;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
+
+public interface HomeBannerRepository {
+
+    /**
+     * {@code at}이 노출 기간 안인 배너를 표시 순서대로 조회한다. 삭제한 배너는 뺀다.
+     */
+    List<HomeBanner> findExposedAt(LocalDateTime at);
+
+    /**
+     * 노출이 아직 끝나지 않은 배너를 표시 순서대로 조회한다. 노출 중과 노출 예정이 함께 담긴다 —
+     * 둘을 가르는 일은 {@link HomeBanner#calculateStatus}가 하므로 여기서는 끝났는지만 본다.
+     * <p>
+     * 운영진 목록은 순서를 드래그로 바꾸므로 페이지로 자르지 않는다. 노출 중인 배너는 많아야 몇 건이다.
+     *
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
+     */
+    List<HomeBanner> findNotEndedAt(LocalDateTime at, Collection<HomeBannerCategory> categories);
+
+    /**
+     * 노출이 끝난 배너를 노출 종료 일시 최신순으로 페이지 조회한다. 학기가 지나며 쌓이므로 페이지로 자른다.
+     *
+     * @param categories 비어 있으면 카테고리로 거르지 않는다
+     */
+    PageResult<HomeBanner> findEndedBefore(
+        LocalDateTime at, Collection<HomeBannerCategory> categories, PageOffset pageOffset);
+
+    /**
+     * 배너 한 건. 삭제한 배너는 없는 것으로 본다.
+     */
+    Optional<HomeBanner> findById(Long bannerId);
+
+    /**
+     * 삭제하지 않은 배너의 표시 순서 중 가장 큰 값. 배너가 없으면 비어 있다.
+     * <p>
+     * 노출이 끝난 배너까지 함께 본다. 새 배너를 맨 뒤에 붙이는 데에만 쓰므로 지난 배너의 큰 값이
+     * 섞여도 결과는 같다.
+     */
+    Optional<Integer> findMaxDisplayOrder();
+
+    HomeBanner save(HomeBanner banner);
+
+    /**
+     * 여러 배너를 한꺼번에 저장한다. 순서 일괄 변경에 쓴다.
+     */
+    void saveAll(List<HomeBanner> banners);
+
+    /**
+     * 배너를 소프트 삭제한다. 이미 삭제됐거나 없는 배너면 false를 돌려준다.
+     * 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
+     */
+    boolean delete(Long bannerId);
+}

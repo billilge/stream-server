@@ -7,4 +7,5 @@ import kr.ac.kookmin.stream.auth.domain.oauth.domain.OAuthProvider;
 public interface OAuthAccountRepository {
     Optional<OAuthAccount> findByProviderAndProviderUserId(OAuthProvider provider, String providerUserId);
     OAuthAccount save(OAuthAccount oauthAccount);
+    void deleteAllByMemberId(Long memberId);
 }

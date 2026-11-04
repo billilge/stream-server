@@ -1,8 +1,10 @@
 package kr.ac.kookmin.stream.db.event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -107,6 +109,26 @@ public class EventApplicationRepositoryImpl implements EventApplicationRepositor
             result.getSize(),
             result.getTotalElements()
         );
+    }
+
+    @Override
+    public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Set.of();
+        }
+        return Set.copyOf(eventApplicationJpaRepository.findAppliedEventIds(
+            memberId, eventIds, EventApplicationStatus.APPLIED));
+    }
+
+    @Override
+    public List<EventApplication> findAppliedByMemberIdAndEventIds(Long memberId, Collection<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return List.of();
+        }
+        return eventApplicationJpaRepository.findAllByMemberIdAndEventIdInAndStatus(
+                memberId, eventIds, EventApplicationStatus.APPLIED).stream()
+            .map(EventApplicationJpaEntity::toDomain)
+            .toList();
     }
 
     @Override
