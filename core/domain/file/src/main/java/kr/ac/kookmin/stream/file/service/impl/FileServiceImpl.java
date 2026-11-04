@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.file.service.impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -55,9 +54,7 @@ class FileServiceImpl implements FileService {
     public void delete(Long memberId, Long fileId) {
         File file = fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
-        if (!Objects.equals(file.getUploaderId(), memberId)) {
-            throw new BusinessException(FileErrorCode.FILE_DELETE_FORBIDDEN);
-        }
+        validateUploader(file, memberId);
         fileRepository.deleteById(fileId);
         fileStorageClient.deleteObject(file.getFileKey());
     }
@@ -86,6 +83,12 @@ class FileServiceImpl implements FileService {
         return fileRepository.findById(fileId)
             .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND))
             .getFileKey();
+    }
+
+    private void validateUploader(File file, Long memberId) {
+        if (!file.isUploadedBy(memberId)) {
+            throw new BusinessException(FileErrorCode.FILE_DELETE_FORBIDDEN);
+        }
     }
 
     private String generateFileKey(String originalName) {
