@@ -6,8 +6,8 @@
 -- ETC만 운영진이 직접 올린 파일 id가 들어간다.
 --
 -- 프리셋 다섯 장을 files에 올리는 일과 그 id를 admin_config_values에 넣는 일은 값이 환경마다 달라
--- 이 파일이 하지 못한다. 배포할 때 손으로 넣는다(V32의 두 테이블과 같은 상황이다).
+-- 이 파일이 하지 못한다. 배포할 때 손으로 넣는다(V33의 두 테이블과 같은 상황이다).
 --
--- 쓰기 API가 생기기 전에 DB로 직접 넣은 행(V32 주석 참고)이 있을 수 있어 DEFAULT를 준다(3-3절).
+-- 쓰기 API가 생기기 전에 DB로 직접 넣은 행(V33 주석 참고)이 있을 수 있어 DEFAULT를 준다(3-3절).
 ALTER TABLE home_banners
     ADD COLUMN category VARCHAR(20) NOT NULL DEFAULT 'GENERAL_NOTICE' AFTER subtitle;
