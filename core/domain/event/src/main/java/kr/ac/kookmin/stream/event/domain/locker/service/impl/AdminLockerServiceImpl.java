@@ -13,8 +13,10 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
 import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
+import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
@@ -123,11 +125,11 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     @Override
     public PageResult<LockerApplicationResult> getApplications(
-        Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset
+        Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset
     ) {
         LockerPeriod period = getPeriod(lockerPeriodId);
         PageResult<LockerApplication> applications =
-            lockerApplicationRepository.search(lockerPeriodId, memberIds, pageOffset);
+            lockerApplicationRepository.search(lockerPeriodId, memberIds, status, pageOffset);
 
         List<Long> lockerIds = applications.content().stream()
             .map(LockerApplication::getLockerId)
@@ -141,6 +143,12 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         return applications.map(
             application -> new LockerApplicationResult(application, lockers.get(application.getLockerId()), period));
+    }
+
+    // 회차가 있는지는 목록 조회가 이미 본다. 개수만 따로 부르는 화면이 없어 여기서 또 확인하지 않는다
+    @Override
+    public LockerApplicationCounts getApplicationCounts(Long lockerPeriodId) {
+        return lockerApplicationRepository.countByPeriod(lockerPeriodId);
     }
 
     @Override

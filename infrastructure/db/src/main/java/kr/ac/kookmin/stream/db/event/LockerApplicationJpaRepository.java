@@ -44,25 +44,33 @@ public interface LockerApplicationJpaRepository extends JpaRepository<LockerAppl
         Collection<Long> lockerPeriodIds, Collection<Long> lockerIds);
 
     /**
-     * 운영진 신청 현황. 취소된 신청도 담아 운영진이 그 칸이 왜 비었는지 알 수 있게 한다.
+     * 운영진 신청 현황. 상태로 좁히지 않으면 취소된 신청도 담아 운영진이 그 칸이 왜 비었는지 알 수 있게 한다.
      */
     @Query(value = """
         SELECT a FROM LockerApplicationJpaEntity a
         WHERE a.lockerPeriodId = :lockerPeriodId
         AND (:filterByMember = false OR a.memberId IN :memberIds)
+        AND (:filterByStatus = false OR a.isCanceled = :canceled)
         ORDER BY a.appliedAt DESC, a.id DESC
         """,
         countQuery = """
         SELECT COUNT(a) FROM LockerApplicationJpaEntity a
         WHERE a.lockerPeriodId = :lockerPeriodId
         AND (:filterByMember = false OR a.memberId IN :memberIds)
+        AND (:filterByStatus = false OR a.isCanceled = :canceled)
         """)
     Page<LockerApplicationJpaEntity> search(
         @Param("lockerPeriodId") Long lockerPeriodId,
         @Param("filterByMember") boolean filterByMember,
         @Param("memberIds") List<Long> memberIds,
+        @Param("filterByStatus") boolean filterByStatus,
+        @Param("canceled") boolean canceled,
         Pageable pageable
     );
+
+    long countByLockerPeriodId(Long lockerPeriodId);
+
+    long countByLockerPeriodIdAndIsCanceledFalse(Long lockerPeriodId);
 
     /**
      * 회차당 회원 신청은 유니크 제약으로 한 건까지만 존재한다.

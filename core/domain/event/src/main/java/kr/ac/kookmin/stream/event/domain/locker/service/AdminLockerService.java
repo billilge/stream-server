@@ -3,6 +3,8 @@ package kr.ac.kookmin.stream.event.domain.locker.service;
 import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
@@ -69,11 +71,18 @@ public interface AdminLockerService {
     void changeSectionPhotos(Long sectionId, List<Long> photoFileIds);
 
     /**
-     * 운영 회차의 신청 현황을 신청 일시 최신순으로 조회한다. 취소된 신청도 담는다.
+     * 운영 회차의 신청 현황을 신청 일시 최신순으로 조회한다. 상태로 좁히지 않으면 취소된 신청도 담는다.
      *
      * @param memberIds 회원으로 좁힐 때만 넘긴다. {@code null}이면 회차 전체를 본다
+     * @param status    상태로 좁힐 때만 넘긴다. {@code null}이면 취소 여부를 가리지 않는다
      */
-    PageResult<LockerApplicationResult> getApplications(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset);
+    PageResult<LockerApplicationResult> getApplications(
+        Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset);
+
+    /**
+     * 신청 현황 상단에 띄울 개수. 목록과 달리 검색어·상태 필터를 타지 않고 회차 전체를 센다.
+     */
+    LockerApplicationCounts getApplicationCounts(Long lockerPeriodId);
 
     /**
      * 신청을 취소한다. 행은 남기고 표시만 바꿔 같은 학생·같은 칸에 다시 배정할 수 있게 한다.

@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 
 /**
  * 사물함 신청 저장소. 운영 회차·구역·사물함은 {@link LockerRepository}가 맡는다.
@@ -57,8 +59,15 @@ public interface LockerApplicationRepository {
      * 운영 회차의 신청을 신청 일시 최신순으로 조회한다. 운영진 화면이 쓰므로 취소된 신청도 담는다.
      *
      * @param memberIds 회원으로 좁힐 때만 넘긴다. {@code null}이면 회차 전체를 본다
+     * @param status    상태로 좁힐 때만 넘긴다. {@code null}이면 취소 여부를 가리지 않는다
      */
-    PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset);
+    PageResult<LockerApplication> search(
+        Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset);
+
+    /**
+     * 회차의 전체 신청 수와 취소되지 않은 신청 수. 목록과 달리 검색어·상태 필터를 타지 않는다.
+     */
+    LockerApplicationCounts countByPeriod(Long lockerPeriodId);
 
     /**
      * 신청을 저장한다. 같은 회차의 같은 사물함에 먼저 저장된 신청이 있으면

@@ -8,7 +8,9 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
+import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,12 +77,16 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     }
 
     @Override
-    public PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset) {
+    public PageResult<LockerApplication> search(
+        Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset
+    ) {
         boolean filterByMember = memberIds != null;
         List<Long> ids = filterByMember ? memberIds : List.of();
+        boolean filterByStatus = status != null;
 
         Page<LockerApplicationJpaEntity> result = lockerApplicationJpaRepository.search(
-            lockerPeriodId, filterByMember, ids, PageRequest.of(pageOffset.page(), pageOffset.size())
+            lockerPeriodId, filterByMember, ids, filterByStatus, filterByStatus && status.isCanceled(),
+            PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(
@@ -89,6 +95,13 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
             result.getSize(),
             result.getTotalElements()
         );
+    }
+
+    @Override
+    public LockerApplicationCounts countByPeriod(Long lockerPeriodId) {
+        return new LockerApplicationCounts(
+            lockerApplicationJpaRepository.countByLockerPeriodId(lockerPeriodId),
+            lockerApplicationJpaRepository.countByLockerPeriodIdAndIsCanceledFalse(lockerPeriodId));
     }
 
     @Override
