@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.notice.service;
 
+import java.util.Collection;
+import java.util.List;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -12,4 +14,12 @@ public interface NoticeService {
     CursorSliceResult<Notice> getNotices(NoticeCategory category, NoticeCursor cursor, int size);
 
     Notice getById(Long id);
+
+    /**
+     * 삭제되지 않은 공지 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     * <p>
+     * 다른 화면이 공지를 곁들여 보여줄 때(홈 배너의 연결 공지) 그 공지가 아직 있는지 한 번에 확인하는 데
+     * 쓴다. 없는 식별자는 그냥 빠지므로 {@link #getById(Long)}와 달리 던지지 않는다.
+     */
+    List<Notice> getByIds(Collection<Long> ids);
 }

@@ -28,6 +28,9 @@ public interface FeedbackRepository {
     PageResult<Feedback> searchByKeyword(
         int year, int round, String keyword, List<Long> memberIds, PageOffset pageOffset);
 
+    // 한 회원이 작성한 질문 수(연도·회차 무관)
+    long countByMemberId(Long memberId);
+
     // 회차별 질문 수·답변 수 집계. year가 null이면 전체 연도. 질문이 없는 회차는 결과에 포함되지 않는다
     List<FeedbackCount> findCountsByYear(Integer year);
 

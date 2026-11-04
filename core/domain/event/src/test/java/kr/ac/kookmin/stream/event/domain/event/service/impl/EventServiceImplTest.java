@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -202,6 +205,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Optional<Event> findPublishedById(Long id) {
             throw new UnsupportedOperationException();
         }
@@ -254,6 +262,17 @@ class EventServiceImplTest {
         @Override
         public List<EventApplication> findSliceByMemberId(
             Long memberId, EventApplicationCursor cursor, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreviewResult<Event> findUpcomingAppliedEvents(
+            Long memberId, LocalDateTime startOfToday, int limit) {
             throw new UnsupportedOperationException();
         }
 

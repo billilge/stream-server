@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.notice.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -19,6 +21,12 @@ public interface NoticeRepository {
     PageResult<Notice> search(NoticeCategory category, String keyword, PageOffset pageOffset);
 
     Optional<Notice> findById(Long id);
+
+    /**
+     * 삭제되지 않은 공지 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     */
+    List<Notice> findAllByIds(Collection<Long> ids);
+
     Notice save(Notice notice);
 
     /**

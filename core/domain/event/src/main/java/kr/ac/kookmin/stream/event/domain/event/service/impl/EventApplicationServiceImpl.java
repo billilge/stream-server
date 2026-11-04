@@ -1,13 +1,17 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
 import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -91,6 +95,11 @@ class EventApplicationServiceImpl implements EventApplicationService {
     }
 
     @Override
+    public Set<Long> getAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+        return eventApplicationRepository.findAppliedEventIds(memberId, eventIds);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public EventApplicationDetail getMyApplication(Long applicationId, Long memberId) {
         EventApplication application = getMyApplicationOrThrow(applicationId, memberId);
@@ -168,5 +177,11 @@ class EventApplicationServiceImpl implements EventApplicationService {
                 answer.selectedOptions() == null ? List.of() : answer.selectedOptions()
             ))
             .toList();
+    }
+
+    @Override
+    public PreviewResult<Event> getUpcomingAppliedEvents(Long memberId, int limit) {
+        // 오늘 끝나는 행사는 이미 지났어도 "오늘"로 보여줘야 하므로 시각이 아니라 날짜로 거른다
+        return eventRepository.findUpcomingAppliedEvents(memberId, LocalDate.now().atStartOfDay(), limit);
     }
 }

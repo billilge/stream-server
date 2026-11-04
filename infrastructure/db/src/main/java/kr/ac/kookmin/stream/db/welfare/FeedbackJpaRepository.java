@@ -61,6 +61,8 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
         Pageable pageable
     );
 
+    long countByCreatedByAndIsDeletedFalse(Long createdBy);
+
     // COUNT(f.answer)는 answer가 NULL인 행을 세지 않으므로 그대로 "답변이 작성된 수"가 된다.
     // 생성자 인자는 이름이 아니라 순서로 들어가므로 질문 수·답변 수 순서를 FeedbackCountProjection과 맞춘다
     @Query("""
