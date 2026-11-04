@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +33,16 @@ class LockerServiceImpl implements LockerService {
     @Override
     public Optional<LockerPeriod> getCurrentPeriod() {
         return lockerRepository.findCurrentPublishedPeriod(LocalDateTime.now());
+    }
+
+    @Override
+    public List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds) {
+        // 신청과 같은 기준을 써야 하므로 기간 판정은 LockerPeriod의 계산을 그대로 쓴다
+        LocalDateTime now = LocalDateTime.now();
+        return lockerRepository.findPublishedPeriodsByIds(lockerPeriodIds).stream()
+            .filter(period -> period.isApplyOpen(now))
+            .sorted(Comparator.comparing(LockerPeriod::getApplyEndAt).thenComparing(LockerPeriod::getId))
+            .toList();
     }
 
     @Override

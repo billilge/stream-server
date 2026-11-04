@@ -29,7 +29,9 @@ public interface AppRentalApi {
     /** 물품 목록. 이름순 커서 페이지네이션이며 카테고리·검색어로 거른다. */
     @Operation(summary = "물품 목록 조회",
         description = "물품을 이름순으로 커서 기반 조회한다. category로 분류를, keyword로 이름 검색을 거르고 "
-            + "cursor/size로 다음 페이지를 넘긴다. 반납 정책(returnPolicy)은 대여품(RENTAL)에만 내려가고 소모품은 null이다.")
+            + "cursor/size로 다음 페이지를 넘긴다. 반납 정책(returnPolicy)과 반납 기한 문구(returnDeadlineLabel)는 "
+            + "대여품(RENTAL)에만 내려가고 소모품은 둘 다 null이다. returnDeadlineLabel은 오늘 대여한다고 가정했을 때의 "
+            + "문구다(예: \"오늘 17시까지 반납\", \"내일까지 반납\", \"9/29까지 반납\").")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<ItemListItemResponse>> getItems(@ParameterObject ItemListParams params);
@@ -46,12 +48,14 @@ public interface AppRentalApi {
     /** 지금 반납해야 하는 대여와 반납 기한. */
     @Operation(summary = "반납 필요 대여 조회",
         description = "지금 반납해야 하는 대여(대여 중이거나 반납 절차가 진행 중인 상태)와 반납 기한(dueAt)을 조회한다. "
-            + "반납 기한은 대여일에 최대 대여 일수를 더한 날의 반납 마감 시각이다. 없으면 빈 배열이다.")
+            + "반납 기한은 대여일에 최대 대여 일수를 더한 날의 반납 마감 시각이다. status로 대여 중(RENTAL)·반납 대기"
+            + "(RETURN_PENDING)·반납 확인(RETURN_CONFIRMED)을 구분할 수 있다. 없으면 빈 배열이다.")
     ApiResponse<ReturnRequiredListResponse> getReturnRequired(AppApiUser apiUser);
 
     /** 대여 신청. 회비 납부·재고·중복 대여·대여 가능 시간을 검증한 뒤 이력을 만든다. */
     @Operation(summary = "대여 신청",
-        description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)과 이미 지난 시각은 제외된다. "
+        description = "물품을 대여 신청한다. 대여 시간은 영업시간(10~17시) 안이어야 하고 점심시간(12~13시)은 제외되며, "
+            + "현재 시각(분 단위) 5분 뒤부터 고를 수 있다. "
             + "이미 진행 중인(아직 끝나지 않은) 같은 물품 신청이 있으면 거부하되, ignoreDuplicate=true면 건너뛴다. "
             + "물품 종류와 관계없이 승인 대기(PENDING) 상태로 등록되며, 운영진이 승인해야 다음 단계로 넘어간다. "
             + "재고는 신청 시점에 바로 차감되고, 같은 물품에 신청이 몰려 재고 차감이 충돌하면 서버가 몇 번 다시 시도하고, "

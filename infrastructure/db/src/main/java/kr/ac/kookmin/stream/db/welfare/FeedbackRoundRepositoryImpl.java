@@ -62,13 +62,13 @@ public class FeedbackRoundRepositoryImpl implements FeedbackRoundRepository {
     }
 
     @Override
-    public List<Integer> findDistinctYears() {
-        return feedbackRoundJpaRepository.findDistinctYears();
+    public List<Integer> findDistinctPublishedYears() {
+        return feedbackRoundJpaRepository.findDistinctPublishedYears();
     }
 
     @Override
-    public List<Integer> findRoundsByYear(int year) {
-        return feedbackRoundJpaRepository.findRoundsByYear(year);
+    public List<Integer> findPublishedRoundsByYear(int year) {
+        return feedbackRoundJpaRepository.findPublishedRoundsByYear(year);
     }
 
     @Override

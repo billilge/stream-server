@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.welfare;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
@@ -13,6 +14,8 @@ import org.springframework.data.repository.query.Param;
 public interface NoticeJpaRepository extends JpaRepository<NoticeJpaEntity, Long> {
 
     Optional<NoticeJpaEntity> findByIdAndIsDeletedFalse(Long id);
+
+    List<NoticeJpaEntity> findAllByIdInAndIsDeletedFalse(Collection<Long> ids);
 
     // keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
