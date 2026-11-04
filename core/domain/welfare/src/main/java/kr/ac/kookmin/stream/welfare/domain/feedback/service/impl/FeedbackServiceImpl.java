@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.feedback.service.impl;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,8 +56,10 @@ class FeedbackServiceImpl implements FeedbackService {
     @Transactional
     public Feedback create(Long memberId, String question) {
         // 시각을 한 번만 읽어 회차 판정과 질문 시각에 같은 값을 쓴다. 두 번 읽으면 자정 경계에서
-        // "9월 회차로 판정했는데 질문 시각은 10월"이 될 수 있다
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        // "9월 회차로 판정했는데 질문 시각은 10월"이 될 수 있다.
+        // 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊는다. 그래야 등록 응답과 이후 조회 응답의 시각이 같고,
+        // 마감 23:59:59 직후의 소수 초(23:59:59.5)도 접수 기간 안으로 판정된다
+        LocalDateTime now = LocalDateTime.now(DateUtil.KST).truncatedTo(ChronoUnit.SECONDS);
 
         FeedbackRound openRound = feedbackRoundRepository.findOpenAt(now)
             .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_OPEN));

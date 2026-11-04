@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.welfare.domain.feedback.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,7 +101,8 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     @Transactional
     public FeedbackRoundDetail saveAnswers(Long roundId, List<FeedbackAnswerCommand> commands, Long answeredBy) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        // 답변 시각 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊어, 저장 응답과 이후 조회 응답의 시각을 맞춘다
+        LocalDateTime now = LocalDateTime.now(DateUtil.KST).truncatedTo(ChronoUnit.SECONDS);
         FeedbackRound round = getRoundById(roundId);
 
         Map<Long, Feedback> roundFeedbacks = feedbackRepository
