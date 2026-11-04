@@ -30,6 +30,29 @@ push:
   fcm:
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
 
+email:
+  type: ${EMAIL_TYPE:log}
+  smtp:
+    from: ${EMAIL_FROM:${spring.mail.username:}}
+    from-name: ${EMAIL_FROM_NAME:소프트웨어융합대학 학생회}
+
+spring:
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.connectiontimeout]": 3000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
+
+management:
+  health:
+    mail:
+      enabled: false
 # AI 서버(stream-ai). 내부 토큰은 저장소에 남기지 않는다
 # read-timeout은 전체 답변 시간이 아니라 조각 사이 간격 기준으로 잡는다
 chat:

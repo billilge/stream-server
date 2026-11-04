@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>이메일 인증 코드</title>
+</head>
+<body>
+<p>아래 인증 코드를 앱에 입력해 주세요.</p>
+<p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;" th:text="${code}">000000</p>
+<p th:text="|인증 코드는 ${expiresInMinutes}분 동안 유효합니다.|">인증 코드는 5분 동안 유효합니다.</p>
+<p>본인이 요청하지 않았다면 이 메일을 무시해 주세요.</p>
+</body>
+</html>
