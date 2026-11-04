@@ -111,7 +111,7 @@ class InMemoryEventRepository implements EventRepository {
     }
 
     @Override
-    public PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit) {
+    public long countPublished(String keyword) {
         throw new UnsupportedOperationException();
     }
 

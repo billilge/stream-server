@@ -105,19 +105,11 @@ class EventServiceImpl implements EventService {
         return statuses.subList(from, statuses.size());
     }
 
+    // 미리보기는 "더보기"로 이어지는 목록의 첫 페이지 앞부분이라, 순서가 어긋나지 않도록 목록 조회를 그대로 쓴다
     @Override
     public PreviewResult<EventSummary> searchPreview(String keyword, int limit) {
-        PreviewResult<Event> preview = eventRepository.findPublishedSearchPreview(keyword, limit);
-
-        // 신청자 수는 한 번에 모아 조회한다. 행사마다 따로 세면 미리보기 개수만큼 쿼리가 더 나간다
-        Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
-            preview.content().stream().map(Event::getId).toList());
-
-        LocalDateTime now = LocalDateTime.now();
-        List<EventSummary> summaries = preview.content().stream()
-            .map(event -> EventSummary.of(event, applicantCounts.getOrDefault(event.getId(), 0L), now))
-            .toList();
-        return new PreviewResult<>(summaries, preview.totalCount());
+        List<EventSummary> content = getPublishedEvents(null, keyword, null, limit).content();
+        return new PreviewResult<>(content, eventRepository.countPublished(keyword));
     }
 
     @Override

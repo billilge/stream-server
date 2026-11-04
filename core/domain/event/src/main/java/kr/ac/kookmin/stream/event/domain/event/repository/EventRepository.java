@@ -85,10 +85,10 @@ public interface EventRepository {
     );
 
     /**
-     * 게시되고 삭제되지 않은 행사 중 제목에 {@code keyword}가 들어 있는 것을 {@link #findPublishedSlice}와 같은 순서로
-     * 앞에서 {@code limit}건, 그리고 그 전체 수. 모집 상태로는 거르지 않는다. 검색어 처리는 {@link #findPublishedSlice}와 같다.
+     * 게시되고 삭제되지 않은 행사 중 제목에 {@code keyword}가 들어 있는 것의 수. 모집 상태로는 거르지 않는다.
+     * 검색어 처리는 {@link #findPublishedSlice}와 같다.
      */
-    PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit);
+    long countPublished(String keyword);
 
     /**
      * 회원이 신청한 행사 중 아직 끝나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.

@@ -131,27 +131,17 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
     );
 
     /**
-     * 게시된 행사 중 제목에 검색어가 들어 있는 것을 학생 목록({@link #findPublishedSlice})과 같은 순서로 페이지 조회한다.
-     * 통합 검색 미리보기용이라 모집 상태로는 거르지 않는다.
+     * 게시된 행사 중 제목에 검색어가 들어 있는 것의 수. 모집 상태로는 거르지 않으므로 위 세 구간 쿼리를 합친 수와 같다.
      * <p>
      * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
      */
-    @Query(
-        value = """
-            SELECT e FROM EventJpaEntity e
-            WHERE e.isDeleted = false
-            AND e.isPublished = true
-            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
-            ORDER BY e.eventStartAt ASC, e.id ASC
-            """,
-        countQuery = """
-            SELECT COUNT(e) FROM EventJpaEntity e
-            WHERE e.isDeleted = false
-            AND e.isPublished = true
-            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
-            """
-    )
-    Page<EventJpaEntity> searchPublished(@Param("keyword") String keyword, Pageable pageable);
+    @Query("""
+        SELECT COUNT(e) FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    long countPublished(@Param("keyword") String keyword);
 
     @Query("""
         SELECT e FROM EventJpaEntity e

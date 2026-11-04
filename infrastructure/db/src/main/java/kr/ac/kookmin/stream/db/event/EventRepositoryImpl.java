@@ -133,15 +133,8 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit) {
-        Page<EventJpaEntity> result = eventJpaRepository.searchPublished(
-            LikePatterns.escape(keyword), Pageable.ofSize(limit)
-        );
-
-        return new PreviewResult<>(
-            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
-            result.getTotalElements()
-        );
+    public long countPublished(String keyword) {
+        return eventJpaRepository.countPublished(LikePatterns.escape(keyword));
     }
 
     @Override
