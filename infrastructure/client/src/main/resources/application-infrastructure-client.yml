@@ -7,6 +7,8 @@ file:
       access-key: ${R2_ACCESS_KEY:}
       secret-key: ${R2_SECRET_KEY:}
       upload-url-expiry-seconds: ${S3_UPLOAD_URL_EXPIRY_SECONDS:600}
+      # dev·prod가 한 버킷을 같이 쓰므로 파일 키를 {프로파일}/files/... 로 나눈다. 프로파일이 없으면 dev 폴더를 쓴다
+      environment-directory: ${spring.profiles.active:dev}
 # KConnect 측 요청으로 API 명세(주소·경로·응답 필드)는 환경 변수로만 주입하고 저장소에 남기지 않는다
 oauth:
   kconnect:
