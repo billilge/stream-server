@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "chat_messages",
     indexes = {
-        @Index(name = "idx_chat_messages_member_id", columnList = "member_id")
+        @Index(name = "idx_chat_messages_member_id_conversation_id", columnList = "member_id, conversation_id")
     }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,6 +30,9 @@ public class ChatMessageJpaEntity extends BaseCreatedTimeEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
+    @Column(name = "conversation_id", nullable = false, length = 36, columnDefinition = "CHAR(36)")
+    private String conversationId;
+
     @Column(name = "sender_type", nullable = false, length = 10)
     private String senderType;
 
@@ -39,6 +42,7 @@ public class ChatMessageJpaEntity extends BaseCreatedTimeEntity {
     private ChatMessageJpaEntity(ChatMessage message) {
         this.id = message.getId();
         this.memberId = message.getMemberId();
+        this.conversationId = message.getConversationId();
         this.senderType = message.getSenderType();
         this.content = message.getContent();
     }
@@ -48,6 +52,6 @@ public class ChatMessageJpaEntity extends BaseCreatedTimeEntity {
     }
 
     public ChatMessage toDomain() {
-        return ChatMessage.of(id, memberId, senderType, content);
+        return ChatMessage.of(id, memberId, conversationId, senderType, content);
     }
 }

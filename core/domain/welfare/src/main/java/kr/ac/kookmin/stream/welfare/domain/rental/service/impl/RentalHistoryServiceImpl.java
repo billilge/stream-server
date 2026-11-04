@@ -1,12 +1,13 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.DateUtil;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -26,44 +27,66 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
 
-    // 이력과 물품을 두 번에 나눠 읽어 서비스가 짝짓는다(coding-style.md 2-6). 지금은 items에 쓰기 경로가
-    // 없어 두 조회 사이에 물품이 바뀔 수 없으므로 트랜잭션이 필요 없다. 물품 이름 수정·신규 등록 정도만
-    // 생기는 한 이 필드는 필터·계산에 안 쓰여 트랜잭션 없이도 안전하다. 반납 정책·타입처럼 isReturnRequired·dueAt
-    // 계산에 쓰이는 필드를 수정하는 기능이 생기면 그때 @Transactional(readOnly = true)를 다시 붙인다.
+    // 회원의 대여 이력을 물품과 짝지어 반환한다.
     @Override
     public List<RentalRecord> getHistories(Long memberId, RentalStatus status) {
         return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, status));
     }
 
-    // getHistories와 같은 이유로 트랜잭션이 필요 없다. isReturnRequired가 보는 returnPolicy는 지금 계획된
-    // 쓰기(이름 수정·신규 등록)로는 바뀌지 않으므로, 두 조회 사이에 반납 필요 여부가 달라지지 않는다.
     @Override
     public List<RentalRecord> getReturnRequiredRentals(Long memberId) {
-        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, RentalStatus.RENTAL)).stream()
+        return toRecords(rentalHistoryRepository.findAllByMemberId(memberId, null)).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // getReturnRequiredRentals와 같은 이유로 트랜잭션이 필요 없다
+    @Override
+    public PreviewResult<RentalRecord> getActiveRentals(Long memberId, int limit) {
+        // 반납 기한은 물품 정책으로 계산하는 값이라 DB에서 정렬할 수 없다. 기한 오름차순이면 기한이 지난 대여가
+        // 먼저 오고 그 뒤는 남은 시간이 적은 순이다. 기한이 같을 때는 식별자로 순서를 고정한다 — 조회 쿼리에
+        // 정렬이 없어, 두지 않으면 미리보기에 무엇이 실릴지가 DB가 준 순서에 달린다
+        List<RentalRecord> active = toRecords(rentalHistoryRepository
+                .findAllByMemberIdAndStatusIn(memberId, RentalStatus.awaitingReturnStatuses())).stream()
+            .filter(RentalRecord::isReturnRequired)
+            .sorted(Comparator.comparing(RentalRecord::dueAt)
+                .thenComparing(rentalRecord -> rentalRecord.history().getId()))
+            .toList();
+
+        return new PreviewResult<>(active.stream().limit(limit).toList(), active.size());
+    }
+
+    // 반납 기한 임박·연체 알림 대상을 고를 때 쓴다.
     @Override
     public List<RentalRecord> getAllReturnRequiredRentals() {
-        return toRecords(rentalHistoryRepository.findAllByStatus(RentalStatus.RENTAL)).stream()
+        List<RentalHistory> candidates = rentalHistoryRepository.findAllByStatusIn(RentalStatus.awaitingReturnStatuses());
+        return toRecords(candidates).stream()
             .filter(RentalRecord::isReturnRequired)
             .toList();
     }
 
-    // 조회(대상 확인) + 쓰기(상태 전이)가 원자적으로 묶여야 하므로 일반 트랜잭션이다.
     @Override
     @Transactional
-    public void returnRental(Long memberId, Long historyId) {
-        RentalHistory history = rentalHistoryRepository.findRentalToReturn(historyId, memberId)
-            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
-        history.markReturned(LocalDateTime.now(DateUtil.KST));
-        rentalHistoryRepository.save(history);
+    public RentalHistory requestReturn(Long memberId, Long historyId) {
+        RentalHistory history = getOwnedByStatus(historyId, memberId, RentalStatus.RENTAL);
+        history.requestReturn();
+        return rentalHistoryRepository.save(history);
     }
 
-    // 단일 조회라 dirty-checking 이득이 없어 트랜잭션을 걸지 않는다. 대여 신청(RentalApplyUseCase)에서는
-    // LockExecutor가 시도마다 연 트랜잭션 안에서 호출되므로, 그 시도의 스냅샷을 그대로 공유해서 쓴다.
+    @Override
+    @Transactional
+    public RentalHistory cancel(Long memberId, Long historyId) {
+        RentalHistory history = getOwnedByStatus(historyId, memberId, RentalStatus.PENDING);
+        history.cancel();
+        return rentalHistoryRepository.save(history);
+    }
+
+    // requestReturn·cancel이 공유하는 "본인 소유 + 특정 상태" 조회. 조건에 안 맞으면 RENTAL_NOT_FOUND.
+    private RentalHistory getOwnedByStatus(Long historyId, Long memberId, RentalStatus status) {
+        return rentalHistoryRepository.findById(historyId)
+            .filter(history -> history.getMemberId().equals(memberId) && history.getRentalStatus() == status)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+    }
+
     @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryRepository.existsActiveRental(itemId, memberId);
@@ -71,18 +94,18 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     @Override
     @Transactional
-    public RentalHistory create(Item item, Long memberId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
-        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, count, appliedAt, rentAt));
+    public RentalHistory create(Item item, Long memberId, Long workerId, int count, LocalDateTime appliedAt, LocalDateTime rentAt) {
+        return rentalHistoryRepository.save(RentalHistory.create(item, memberId, workerId, count, appliedAt, rentAt));
     }
 
     private List<RentalRecord> toRecords(List<RentalHistory> histories) {
-        Map<Long, Item> items = findItemsOf(histories);
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(histories);
         return histories.stream()
-            .map(history -> new RentalRecord(history, items.get(history.getItemId())))
+            .map(history -> new RentalRecord(history, itemsByItemId.get(history.getItemId())))
             .toList();
     }
 
-    private Map<Long, Item> findItemsOf(List<RentalHistory> histories) {
+    private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {
         if (histories.isEmpty()) {
             return Map.of();
         }

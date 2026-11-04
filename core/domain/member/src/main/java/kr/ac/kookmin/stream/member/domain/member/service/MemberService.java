@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.member.domain.member.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberPhoneNumberUpdateCommand;
@@ -10,6 +11,8 @@ import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 
 public interface MemberService {
     Member getById(Long id);
+    /** 학번으로 회원을 찾는다. 탈퇴한 회원은 찾지 않는다. */
+    Optional<Member> findByStudentId(String studentId);
     List<Member> findAllByIds(List<Long> ids);
     Map<Long, Member> getMapByIds(List<Long> ids);
     /**

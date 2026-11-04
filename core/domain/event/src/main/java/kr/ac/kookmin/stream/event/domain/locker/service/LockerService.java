@@ -1,14 +1,27 @@
 package kr.ac.kookmin.stream.event.domain.locker.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
+
+    /**
+     * 지금 학생에게 보여줄 운영 회차. 진행 중인 회차가 있으면 그것이고, 없으면 다가오는 회차다.
+     */
+    Optional<LockerPeriod> getCurrentPeriod();
+
+    /**
+     * 주어진 운영 회차 중 지금 신청할 수 있는 것을 신청 마감 임박순으로 조회한다.
+     * 미게시·삭제된 회차와 신청 기간이 아닌 회차는 빠진다.
+     */
+    List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds);
 
     /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
@@ -38,7 +51,7 @@ public interface LockerService {
     Map<Long, List<Locker>> getLockerMapBySectionId();
 
     /**
-     * 해당 운영 회차에서 회원이 신청한 사물함. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
+     * 해당 운영 회차에서 회원이 쓰고 있는 사물함. 취소되지 않은 신청은 회차당 한 건까지라 최대 하나다.
      * <p>
      * 회차 게시 여부와 노출 범위는 확인하지 않는다. 호출하는 쪽이 판단한다.
      */

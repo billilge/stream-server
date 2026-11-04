@@ -28,12 +28,26 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
-    public PageResult<Feedback> search(Integer year, Integer round, PageOffset pageOffset) {
-        Page<FeedbackJpaEntity> result = feedbackJpaRepository.search(
+    public PageResult<Feedback> searchPublished(Integer year, Integer round, PageOffset pageOffset) {
+        Page<FeedbackJpaEntity> result = feedbackJpaRepository.searchPublished(
             year, round, PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return toPageResult(result);
+    }
+
+    @Override
+    public PageResult<Feedback> findAllByCreatedBy(Long memberId, PageOffset pageOffset) {
+        Page<FeedbackJpaEntity> result = feedbackJpaRepository.findAllByCreatedBy(
+            memberId, PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return toPageResult(result);
+    }
+
+    @Override
+    public long countByMemberId(Long memberId) {
+        return feedbackJpaRepository.countByCreatedByAndIsDeletedFalse(memberId);
     }
 
     @Override

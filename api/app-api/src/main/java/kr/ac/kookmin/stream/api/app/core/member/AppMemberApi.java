@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.core.member.request.FcmTokenUpdateRequest;
 import kr.ac.kookmin.stream.api.app.core.member.request.MemberSignUpRequest;
 import kr.ac.kookmin.stream.api.app.core.member.request.PhoneNumberUpdateRequest;
+import kr.ac.kookmin.stream.api.app.core.member.response.MemberResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
@@ -15,10 +16,19 @@ import kr.ac.kookmin.stream.member.domain.verification.domain.EmailVerificationE
 /**
  * 학생 앱 회원 API의 문서 명세. 구현은 {@link AppMemberController}가 맡는다.
  */
-@Tag(name = "회원", description = "학생 앱 회원가입·FCM 토큰 등록·전화번호 변경")
+@Tag(name = "회원", description = "학생 앱 내 정보 조회·회원가입·FCM 토큰 등록·전화번호 변경")
 public interface AppMemberApi {
 
     /** 회원가입. 로그인 응답의 signUpRequired가 true인 회원이 전화번호·이메일과 약관 동의 여부를 등록한다. */
+    /** 내 정보 조회. 설정 화면의 계정 정보 카드가 쓴다. */
+    @Operation(summary = "내 정보 조회",
+        description = """
+            로그인한 회원의 이름·이메일·전화번호를 조회한다.
+            전화번호는 하이픈 없이 숫자만 내려준다. 이메일이 등록되지 않은 회원은 email이 null이다.""")
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
+    ApiResponse<MemberResponse> getMe(AppApiUser apiUser);
+
+    /** 회원가입. 로그인 응답의 signUpRequired가 true인 회원이 전화번호와 약관 동의 여부를 등록한다. */
     @Operation(summary = "회원가입",
         description = """
             로그인한 회원의 전화번호·이메일과 약관 동의 여부를 저장한다.

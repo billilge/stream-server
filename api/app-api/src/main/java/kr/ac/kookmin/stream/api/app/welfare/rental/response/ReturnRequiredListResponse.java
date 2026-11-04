@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 
 public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
 
@@ -15,6 +16,7 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
         Long rentalHistoryId,
         String itemName,
         String itemImageUrl,
+        RentalStatus status,
         LocalDateTime dueAt
     ) {
 
@@ -24,6 +26,7 @@ public record ReturnRequiredListResponse(List<Rental> rentalHistories) {
                 record.history().getId(),
                 record.itemName(),
                 imageUrl,
+                record.history().getRentalStatus(),
                 record.dueAt()
             );
         }

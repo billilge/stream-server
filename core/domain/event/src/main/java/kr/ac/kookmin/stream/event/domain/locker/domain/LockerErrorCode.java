@@ -13,6 +13,7 @@ public enum LockerErrorCode implements ErrorCode {
 
     LOCKER_PERIOD_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 운영 회차를 찾을 수 없습니다."),
     LOCKER_SECTION_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 구역을 찾을 수 없습니다."),
+    LOCKER_SECTION_LAYOUT_NOT_FOUND(ErrorStatus.NOT_FOUND, "구역의 칸 배치가 등록되지 않았습니다."),
     INVALID_LOCKER_PERIOD_RANGE(ErrorStatus.BAD_REQUEST, "신청 기간과 사용 기간의 순서가 올바르지 않습니다."),
     LOCKER_PERIOD_SEMESTER_DUPLICATED(ErrorStatus.CONFLICT, "이미 등록된 학기입니다."),
     LOCKER_PERIOD_OVERLAPPED(ErrorStatus.CONFLICT, "다른 회차와 기간이 겹칩니다."),
@@ -22,7 +23,10 @@ public enum LockerErrorCode implements ErrorCode {
     LOCKER_APPLY_NOT_OPEN(ErrorStatus.CONFLICT, "사물함 신청 기간이 아닙니다."),
     LOCKER_NOT_IN_SECTION(ErrorStatus.BAD_REQUEST, "해당 구역의 사물함이 아닙니다."),
     LOCKER_IN_USE(ErrorStatus.CONFLICT, "이용 중인 사물함은 사용 중지할 수 없습니다."),
-    LOCKER_ALREADY_ASSIGNED(ErrorStatus.CONFLICT, "다른 사용자가 먼저 신청한 사물함입니다.");
+    LOCKER_ALREADY_ASSIGNED(ErrorStatus.CONFLICT, "다른 사용자가 먼저 신청한 사물함입니다."),
+    MEMBER_ALREADY_HAS_LOCKER(ErrorStatus.CONFLICT, "이미 이 회차에 사물함을 배정받은 학생입니다."),
+    LOCKER_APPLICATION_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 신청을 찾을 수 없습니다."),
+    LOCKER_APPLICATION_ALREADY_CANCELED(ErrorStatus.CONFLICT, "이미 취소된 신청입니다.");
 
     private final int status;
     private final String message;

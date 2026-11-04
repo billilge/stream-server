@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.file.service.impl;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,40 +11,43 @@ final class FileUploadPolicy {
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> ATTACHMENT_EXTENSIONS = Set.of("pdf", "doc", "docx", "hwp", "zip");
+    private static final Set<String> ALL_EXTENSIONS = union(IMAGE_EXTENSIONS, ATTACHMENT_EXTENSIONS);
+    // 빌릴게 물품 아이콘은 SVG로만 받는다
+    private static final Set<String> ITEM_ICON_EXTENSIONS = Set.of("svg");
 
     private static final long IMAGE_MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final long ATTACHMENT_MAX_FILE_SIZE = 20 * 1024 * 1024;
-
-    private static final Map<FileCategory, Set<String>> ALLOWED_EXTENSIONS = Map.of(
-        FileCategory.TEMP, union(IMAGE_EXTENSIONS, ATTACHMENT_EXTENSIONS),
-        FileCategory.NOTICE_ATTACHMENT, ATTACHMENT_EXTENSIONS,
-        FileCategory.NOTICE_IMAGE, IMAGE_EXTENSIONS,
-        FileCategory.EVENT_IMAGE, IMAGE_EXTENSIONS,
-        FileCategory.ARCHIVE_IMAGE, IMAGE_EXTENSIONS,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS,
-        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_EXTENSIONS
-    );
-
-    private static final Map<FileCategory, Long> MAX_FILE_SIZE = Map.of(
-        FileCategory.TEMP, ATTACHMENT_MAX_FILE_SIZE,
-        FileCategory.NOTICE_ATTACHMENT, ATTACHMENT_MAX_FILE_SIZE,
-        FileCategory.NOTICE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.EVENT_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.ARCHIVE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE,
-        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_MAX_FILE_SIZE
-    );
 
     private FileUploadPolicy() {}
 
     static void validate(FileCategory category, String originalName, long fileSize) {
         String extension = extractExtension(originalName);
-        if (!ALLOWED_EXTENSIONS.get(category).contains(extension)) {
+        if (!allowedExtensions(category).contains(extension)) {
             throw new BusinessException(FileErrorCode.UNSUPPORTED_FILE_EXTENSION);
         }
-        if (fileSize <= 0 || fileSize > MAX_FILE_SIZE.get(category)) {
+        if (fileSize <= 0 || fileSize > maxFileSize(category)) {
             throw new BusinessException(FileErrorCode.FILE_SIZE_EXCEEDED);
         }
+    }
+
+    // default를 두지 않는다. 카테고리가 늘면 컴파일이 막으므로 정책을 빠뜨린 카테고리가 업로드 시점의
+    // NullPointerException(500)으로 새지 않는다
+    private static Set<String> allowedExtensions(FileCategory category) {
+        return switch (category) {
+            case TEMP -> ALL_EXTENSIONS;
+            case NOTICE_ATTACHMENT -> ATTACHMENT_EXTENSIONS;
+            case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
+                FEE_TRANSCRIPT_IMAGE, HOME_BANNER_IMAGE -> IMAGE_EXTENSIONS;
+            case ITEM_IMAGE -> ITEM_ICON_EXTENSIONS;
+        };
+    }
+
+    private static long maxFileSize(FileCategory category) {
+        return switch (category) {
+            case TEMP, NOTICE_ATTACHMENT -> ATTACHMENT_MAX_FILE_SIZE;
+            case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
+                FEE_TRANSCRIPT_IMAGE, ITEM_IMAGE, HOME_BANNER_IMAGE -> IMAGE_MAX_FILE_SIZE;
+        };
     }
 
     static String extractExtension(String originalName) {
