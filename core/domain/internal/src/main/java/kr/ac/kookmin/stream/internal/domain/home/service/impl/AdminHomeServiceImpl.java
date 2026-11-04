@@ -85,29 +85,33 @@ class AdminHomeServiceImpl implements AdminHomeService {
     @Override
     @Transactional
     public void updateBannerOrders(List<Long> orderedBannerIds) {
-        List<HomeBanner> current = homeBannerRepository.findNotEndedAt(LocalDateTime.now(), List.of());
-        validateCoversAll(current, orderedBannerIds);
-
-        Map<Long, HomeBanner> bannersById = current.stream()
+        Map<Long, HomeBanner> bannersById = homeBannerRepository.findNotEndedAt(LocalDateTime.now(), List.of())
+            .stream()
             .collect(Collectors.toMap(HomeBanner::getId, Function.identity()));
 
-        List<HomeBanner> reordered = new ArrayList<>(orderedBannerIds.size());
-        for (int displayOrder = 0; displayOrder < orderedBannerIds.size(); displayOrder++) {
-            HomeBanner banner = bannersById.get(orderedBannerIds.get(displayOrder));
+        // 목록을 띄워둔 사이 노출이 끝났거나 지워진 배너는 서버 목록에 없다. 건너뛰어 자연 만료만으로
+        // 드래그가 막히지 않게 한다 — 끝나지 않은 배너는 등록·수정 때만 늘고 그 밖에는 줄기만 한다
+        List<Long> targetIds = orderedBannerIds.stream()
+            .filter(bannersById::containsKey)
+            .toList();
+        validateCoversAll(bannersById.keySet(), targetIds);
+
+        List<HomeBanner> reordered = new ArrayList<>(targetIds.size());
+        for (int displayOrder = 0; displayOrder < targetIds.size(); displayOrder++) {
+            HomeBanner banner = bannersById.get(targetIds.get(displayOrder));
             banner.changeDisplayOrder(displayOrder);
             reordered.add(banner);
         }
         homeBannerRepository.saveAll(reordered);
     }
 
-    private void validateCoversAll(List<HomeBanner> current, List<Long> orderedBannerIds) {
-        Set<Long> currentIds = current.stream()
-            .map(HomeBanner::getId)
-            .collect(Collectors.toUnmodifiableSet());
-        Set<Long> requestedIds = Set.copyOf(orderedBannerIds);
-
-        // 같은 식별자가 두 번 와도 집합끼리는 같아 보이므로 개수를 함께 본다
-        if (orderedBannerIds.size() != requestedIds.size() || !requestedIds.equals(currentIds)) {
+    /**
+     * 지금 끝나지 않은 배너가 요청에 모두 들어 있는지. 하나라도 빠졌으면 필터를 켠 일부 목록이거나 그사이
+     * 배너가 늘어난 것이라, 보낸 순서로 전체를 다시 매길 수 없다.
+     */
+    private void validateCoversAll(Set<Long> currentIds, List<Long> targetIds) {
+        // 서버 목록에 있는 식별자만 남은 뒤라, 같은 식별자가 두 번 왔으면 개수가 어긋난다
+        if (targetIds.size() != currentIds.size() || !Set.copyOf(targetIds).equals(currentIds)) {
             throw new BusinessException(HomeErrorCode.HOME_BANNER_ORDER_MISMATCH);
         }
     }

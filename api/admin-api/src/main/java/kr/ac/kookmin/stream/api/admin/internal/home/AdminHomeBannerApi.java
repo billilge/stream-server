@@ -95,9 +95,9 @@ public interface AdminHomeBannerApi {
     @Operation(summary = "배너 노출 순서 변경",
         description = "노출이 끝나지 않은 배너(노출 중·노출 예정)의 표시 순서를 받은 순서대로 다시 매긴다. "
             + "그 배너 전체를 보내야 하며, 분류나 상태 필터를 켠 일부 목록으로는 바꿀 수 없다. "
-            + "보낸 목록이 서버의 목록과 다르면 아무것도 바꾸지 않고 409를 돌려준다. 그사이 다른 운영진이 배너를 "
-            + "등록·삭제한 경우뿐 아니라, 목록을 띄워둔 사이 배너 하나의 노출 기간이 끝나도 어긋난다 — 서버는 "
-            + "요청을 받은 시각으로 다시 읽기 때문이다. 노출이 끝난 배너의 순서는 손대지 않는다.")
+            + "서버가 가진 배너 중 보낸 목록에서 빠진 것이 있으면 아무것도 바꾸지 않고 409를 돌려준다. "
+            + "목록을 띄워둔 사이 노출 기간이 끝났거나 다른 운영진이 지운 배너는 보내도 건너뛰며, 그것만으로는 "
+            + "409가 되지 않는다. 노출이 끝난 배너의 순서는 손대지 않는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = HomeErrorCode.class, codes = {"HOME_BANNER_ORDER_MISMATCH"})
     ApiResponse<Void> updateBannerOrders(AdminApiUser apiUser, AdminHomeBannerOrderUpdateRequest request);
