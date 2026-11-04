@@ -3,6 +3,10 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.Role;
+import kr.ac.kookmin.stream.member.domain.member.domain.Department;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,6 +36,36 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     @Query("SELECT m.id FROM MemberJpaEntity m WHERE m.isDeleted = false")
     List<Long> findAllActiveIds();
+
+    // 운영진 콘솔 회원 목록. keyword는 LikePatterns.escape로 이스케이프한 검색어다.
+    // 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
+    @Query(value = """
+        SELECT m FROM MemberJpaEntity m
+        WHERE m.isDeleted = false
+        AND (:keyword IS NULL
+            OR m.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            OR m.studentId LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            OR m.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        AND (:department IS NULL OR m.department = :department)
+        AND (:role IS NULL OR m.role = :role)
+        ORDER BY m.name ASC, m.id ASC
+        """,
+        countQuery = """
+        SELECT COUNT(m) FROM MemberJpaEntity m
+        WHERE m.isDeleted = false
+        AND (:keyword IS NULL
+            OR m.name LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            OR m.studentId LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            OR m.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        AND (:department IS NULL OR m.department = :department)
+        AND (:role IS NULL OR m.role = :role)
+        """)
+    Page<MemberJpaEntity> search(
+        @Param("keyword") String keyword,
+        @Param("department") Department department,
+        @Param("role") Role role,
+        Pageable pageable
+    );
 
     // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)은 푸시 대상에서 빠진다
     @Query("""
