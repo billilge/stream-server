@@ -64,4 +64,15 @@ public interface AppMemberApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "PHONE_NUMBER_ALREADY_EXISTS"})
     ApiResponse<Void> updatePhoneNumber(AppApiUser apiUser, PhoneNumberUpdateRequest request);
+
+    /** 회원 탈퇴. 로그인한 회원이 스스로 탈퇴한다. */
+    @Operation(summary = "회원 탈퇴",
+        description = """
+            로그인한 회원을 탈퇴시킨다. 진행 중인 대여·신청이 있어도 막지 않고, 운영진도 탈퇴할 수 있다.
+            탈퇴하면 FCM 토큰을 지워 알림이 더 가지 않고, 연결된 학교 계정도 끊는다.
+            같은 학교 계정으로 다시 로그인하면 새 회원으로 가입되어 회원가입부터 다시 해야 한다.
+            지난 대여·신청 기록은 남고, 운영진 화면에는 탈퇴한 회원으로 표시된다.
+            이미 발급된 액세스 토큰은 만료될 때까지 남으므로, 앱은 탈퇴 성공 뒤 저장한 토큰을 지우고 로그인 화면으로 보낸다.""")
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
+    ApiResponse<Void> withdraw(AppApiUser apiUser);
 }

@@ -43,6 +43,12 @@ public class StudentTransferStatus {
             amount, null, null, null, null);
     }
 
+    // Payer 명부에 연결됐지만 앱에 낸 요청이 없는 회원에게, 이미 납부완료인 요청 행을 만들어 둔다.
+    // 남은 학기 수·증빙·금액 입력이 없어 모두 비워 둔다
+    public static StudentTransferStatus createPaidForLinkedPayer(Long memberId, LocalDateTime now) {
+        return new StudentTransferStatus(null, memberId, TransferStatus.PAID, null, null, null, null, now, null, null);
+    }
+
     public static StudentTransferStatus of(
         Long id,
         Long memberId,

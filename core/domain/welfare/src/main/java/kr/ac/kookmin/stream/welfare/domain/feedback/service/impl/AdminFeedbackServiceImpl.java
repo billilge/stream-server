@@ -119,6 +119,18 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
 
     @Override
     @Transactional
+    public void deleteAnswer(Long roundId, Long feedbackId) {
+        FeedbackRound round = getRoundById(roundId);
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+            .orElseThrow(() -> new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_FOUND));
+        validateInRound(round, feedback);
+
+        feedback.deleteAnswer();
+        feedbackRepository.save(feedback);
+    }
+
+    @Override
+    @Transactional
     public FeedbackRoundDetail publishAnswers(Long roundId) {
         // 공개 시각 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊어, 공개 응답과 이후 조회 응답의 시각을 맞춘다
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -148,6 +160,13 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         }
         if (feedbacks.stream().noneMatch(Feedback::isAnswered)) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_ANSWER_NOT_FOUND);
+        }
+    }
+
+    // 저장 경로와 같은 기준으로, 경로의 회차에 접수된 질문이 아니면 막는다
+    private void validateInRound(FeedbackRound round, Feedback feedback) {
+        if (!feedback.belongsTo(round)) {
+            throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_IN_ROUND);
         }
     }
 

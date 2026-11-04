@@ -72,14 +72,23 @@ public interface EventRepository {
      * 페이지를 어디서 끊을지, 여러 상태를 어떤 순서로 이어 붙일지는 호출부가 정한다. 여기서는 한 상태의 행사를
      * 요청한 개수만큼 돌려줄 뿐이다.
      *
-     * @param cursor 같은 모집 상태 구간의 커서. 구간의 처음부터 읽으려면 {@code null}
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
+     *                그대로 검색한다
+     * @param cursor  같은 모집 상태 구간의 커서. 구간의 처음부터 읽으려면 {@code null}
      */
     List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
+        String keyword,
         EventCursor cursor,
         int limit,
         LocalDateTime now
     );
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 제목에 {@code keyword}가 들어 있는 것의 수. 모집 상태로는 거르지 않는다.
+     * 검색어 처리는 {@link #findPublishedSlice}와 같다.
+     */
+    long countPublished(String keyword);
 
     /**
      * 회원이 신청한 행사 중 아직 끝나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.

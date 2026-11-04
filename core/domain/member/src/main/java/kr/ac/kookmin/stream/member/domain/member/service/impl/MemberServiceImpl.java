@@ -131,6 +131,17 @@ class MemberServiceImpl implements MemberService {
         }
     }
 
+    // 탈퇴한 기기로 알림이 가지 않도록 FCM 토큰을 먼저 비운 뒤 소프트 삭제한다
+    @Override
+    @Transactional
+    public void withdraw(Long memberId) {
+        Member member = getById(memberId);
+        if (member.updateFcmToken(null)) {
+            memberRepository.save(member);
+        }
+        memberRepository.delete(memberId);
+    }
+
     @Override
     public boolean isEmailUsedByOthers(Long memberId, String email) {
         return isEmailUsedByOthers(getById(memberId), email);

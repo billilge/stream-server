@@ -40,4 +40,10 @@ public class Payer {
         this.enrollmentYear = enrollmentYear;
         this.registered = true;
     }
+
+    // 가입 전이라 연결할 회원이 없던 명부 행에, 학번이 같은 회원이 가입하면 그 회원과 연결한다.
+    public void linkMember(Long memberId) {
+        this.memberId = memberId;
+        this.registered = true;
+    }
 }
