@@ -34,12 +34,6 @@ public interface EventService {
     EventDetail getPublishedEvent(Long eventId);
 
     /**
-     * 지금 신청할 수 있는 행사 전부를 신청 마감 임박순으로 조회한다. 거르는 기준은
-     * {@link #getApplicableEvents(Collection)}과 같고, 운영진 홈 관리의 노출 후보용이다.
-     */
-    List<Event> getAllApplicableEvents();
-
-    /**
      * 행사 한 건. 없거나 삭제됐으면 {@code null}이다. <b>아직 게시하지 않은 행사도 돌려준다</b> — 운영진 화면은
      * 미게시 행사도 보여야 하고, 학생에게 감추는 일은 부르는 쪽이 {@link Event#isPublished()}로 한다.
      * <p>

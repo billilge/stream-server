@@ -16,6 +16,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
@@ -47,6 +48,21 @@ class AdminEventServiceImpl implements AdminEventService {
     @Override
     public Map<Long, Long> getApplicantCounts(List<Long> eventIds) {
         return eventApplicationRepository.countAppliedByEventIds(eventIds);
+    }
+
+    // 행사 목록과 신청자 수를 따로 읽어 정원 판정에 함께 쓰므로 한 스냅샷으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public List<Event> getAllApplicableEvents() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Event> events = eventRepository.findPublishedApplyNotEndedAt(now);
+        Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
+            events.stream().map(Event::getId).toList());
+
+        return events.stream()
+            .filter(event -> event.calculateRecruitStatus(
+                now, applicantCounts.getOrDefault(event.getId(), 0L)) == RecruitStatus.OPEN)
+            .toList();
     }
 
     @Override

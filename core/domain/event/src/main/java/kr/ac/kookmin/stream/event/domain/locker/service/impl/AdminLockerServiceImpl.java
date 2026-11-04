@@ -48,6 +48,14 @@ class AdminLockerServiceImpl implements AdminLockerService {
     }
 
     @Override
+    public List<LockerPeriod> getAllApplicablePeriods() {
+        LocalDateTime now = LocalDateTime.now();
+        return lockerRepository.findPublishedPeriodsApplyNotEndedAt(now).stream()
+            .filter(period -> period.isApplyOpen(now))
+            .toList();
+    }
+
+    @Override
     public LockerPeriodSummary getPeriodById(Long lockerPeriodId) {
         return LockerPeriodSummary.of(getPeriod(lockerPeriodId), LocalDateTime.now());
     }

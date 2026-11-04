@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeApplySectionListItemResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeApplySectionListResponse;
-import kr.ac.kookmin.stream.event.domain.event.service.EventService;
-import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
+import kr.ac.kookmin.stream.event.domain.locker.service.AdminLockerService;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplySection;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTarget;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTargetType;
@@ -30,8 +30,8 @@ import org.springframework.stereotype.Component;
 public class AdminHomeApplySectionUseCase {
 
     private final AdminHomeService adminHomeService;
-    private final EventService eventService;
-    private final LockerService lockerService;
+    private final AdminEventService adminEventService;
+    private final AdminLockerService adminLockerService;
 
     public AdminHomeApplySectionListResponse getApplySections(Boolean exposed) {
         List<Candidate> candidates = loadCandidates();
@@ -62,14 +62,14 @@ public class AdminHomeApplySectionUseCase {
     // 대상 종류를 switch 식으로 모두 받는다. 값이 늘면 컴파일이 막으므로 새 종류가 후보에서 조용히 빠지지 않는다
     private Stream<Candidate> candidatesOf(HomeApplyTargetType targetType) {
         return switch (targetType) {
-            case EVENT -> eventService.getAllApplicableEvents().stream()
+            case EVENT -> adminEventService.getAllApplicableEvents().stream()
                 .map(event -> new Candidate(
                     new HomeApplyTarget(HomeApplyTargetType.EVENT, event.getId()),
                     event.getTitle(),
                     event.getApplyStartAt(),
                     event.getApplyEndAt()
                 ));
-            case LOCKER -> lockerService.getAllApplicablePeriods().stream()
+            case LOCKER -> adminLockerService.getAllApplicablePeriods().stream()
                 .map(period -> new Candidate(
                     new HomeApplyTarget(HomeApplyTargetType.LOCKER, period.getId()),
                     period.getName(),

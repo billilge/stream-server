@@ -24,12 +24,6 @@ public interface LockerService {
     List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds);
 
     /**
-     * 지금 신청할 수 있는 운영 회차 전부를 신청 마감 임박순으로 조회한다. 거르는 기준은
-     * {@link #getApplicablePeriods(Collection)}과 같고, 운영진 홈 관리의 노출 후보용이다.
-     */
-    List<LockerPeriod> getAllApplicablePeriods();
-
-    /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
      */
     List<LockerSectionSummary> getSections(Long lockerPeriodId);
