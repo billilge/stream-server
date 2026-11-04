@@ -17,6 +17,9 @@ public interface FeedbackService {
     // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
     PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset);
 
+    // 본인이 쓴 질문 전체(답변이 없는 질문도 포함). 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
+    PageResult<Feedback> getMyFeedbacks(Long memberId, PageOffset pageOffset);
+
     // 회차는 현재 열려 있는 회차로 서버가 자동 배정한다
     Feedback create(Long memberId, String question);
 

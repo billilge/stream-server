@@ -37,6 +37,15 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
+    public PageResult<Feedback> findAllByCreatedBy(Long memberId, PageOffset pageOffset) {
+        Page<FeedbackJpaEntity> result = feedbackJpaRepository.findAllByCreatedBy(
+            memberId, PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return toPageResult(result);
+    }
+
+    @Override
     public List<Feedback> findAllByYearAndRound(int year, int round) {
         return feedbackJpaRepository.findAllByYearAndRound(year, round).stream()
             .map(FeedbackJpaEntity::toDomain)

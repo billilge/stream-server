@@ -42,6 +42,14 @@ class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
+    public PageResult<Feedback> getMyFeedbacks(Long memberId, PageOffset pageOffset) {
+        // 내 질문은 여러 연도에 걸칠 수 있어 전체 연도의 공개 회차를 구한다
+        Set<FeedbackPeriod> publishedPeriods = findPublishedPeriods(null);
+        return feedbackRepository.findAllByCreatedBy(memberId, pageOffset)
+            .map(feedback -> hideUnpublishedAnswer(feedback, publishedPeriods));
+    }
+
+    @Override
     @Transactional
     public Feedback create(Long memberId, String question) {
         // 시각을 한 번만 읽어 회차 판정과 질문 시각에 같은 값을 쓴다. 두 번 읽으면 자정 경계에서

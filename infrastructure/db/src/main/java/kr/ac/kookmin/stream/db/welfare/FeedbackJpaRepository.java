@@ -28,6 +28,17 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
         """)
     Page<FeedbackJpaEntity> search(@Param("year") Integer year, @Param("round") Integer round, Pageable pageable);
 
+    @Query(value = """
+        SELECT f FROM FeedbackJpaEntity f
+        WHERE f.isDeleted = false AND f.createdBy = :memberId
+        ORDER BY f.questionedAt DESC, f.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(f) FROM FeedbackJpaEntity f
+        WHERE f.isDeleted = false AND f.createdBy = :memberId
+        """)
+    Page<FeedbackJpaEntity> findAllByCreatedBy(@Param("memberId") Long memberId, Pageable pageable);
+
     @Query("""
         SELECT f FROM FeedbackJpaEntity f
         WHERE f.isDeleted = false AND f.year = :year AND f.round = :round

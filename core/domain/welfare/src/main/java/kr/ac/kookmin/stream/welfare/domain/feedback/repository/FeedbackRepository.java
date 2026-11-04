@@ -14,6 +14,9 @@ public interface FeedbackRepository {
     // year/round가 null이면 그 조건은 필터하지 않는다
     PageResult<Feedback> search(Integer year, Integer round, PageOffset pageOffset);
 
+    // 한 회원이 쓴 질문 전체(답변이 없는 질문도 포함). 질문 시각 내림차순
+    PageResult<Feedback> findAllByCreatedBy(Long memberId, PageOffset pageOffset);
+
     // 한 회차의 질문 전체(답변이 없는 질문도 포함). 질문 시각 오름차순
     List<Feedback> findAllByYearAndRound(int year, int round);
 

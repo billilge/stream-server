@@ -36,6 +36,12 @@ public interface AppFeedbackApi {
         @ParameterObject PageParams pageParams
     );
 
+    /** 내 작성내역. 로그인 회원이 쓴 질문을 답변 여부와 관계없이 조회한다. */
+    @Operation(summary = "내 피드백 목록 조회",
+        description = "로그인 회원이 쓴 질문을 답변이 없는 질문까지 포함해 질문 시각 최신순으로 페이지 단위 조회한다. "
+            + "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
+    ApiResponse<PageResponse<FeedbackResponse>> getMyFeedbacks(AppApiUser apiUser, @ParameterObject PageParams pageParams);
+
     /** 피드백 상세. */
     @Operation(summary = "피드백 상세 조회",
         description = "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")

@@ -52,6 +52,16 @@ public class AppFeedbackController implements AppFeedbackApi {
     }
 
     @Override
+    @GetMapping("/mine")
+    public ApiResponse<PageResponse<FeedbackResponse>> getMyFeedbacks(
+        AppApiUser apiUser,
+        @Valid @ModelAttribute PageParams pageParams
+    ) {
+        PageResult<Feedback> result = feedbackService.getMyFeedbacks(apiUser.userId(), pageParams.toOffset());
+        return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
+    }
+
+    @Override
     @PostMapping
     public ApiResponse<FeedbackResponse> createFeedback(
         AppApiUser apiUser,
