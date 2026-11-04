@@ -1,9 +1,11 @@
 package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,9 +15,44 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
 
     long countByEventIdAndStatus(Long eventId, EventApplicationStatus status);
 
+    boolean existsByEventId(Long eventId);
+
+    long countByEventId(Long eventId);
+
+    List<EventApplicationJpaEntity> findAllByMemberIdAndEventIdInAndStatus(
+        Long memberId,
+        Collection<Long> eventIds,
+        EventApplicationStatus status
+    );
+
+    @Query(
+        value = """
+            SELECT a FROM EventApplicationJpaEntity a
+            WHERE a.eventId = :eventId
+            AND (:status IS NULL OR a.status = :status)
+            AND (:filterByMember = false OR a.memberId IN :memberIds)
+            ORDER BY a.appliedAt ASC, a.id ASC
+            """,
+        countQuery = """
+            SELECT COUNT(a) FROM EventApplicationJpaEntity a
+            WHERE a.eventId = :eventId
+            AND (:status IS NULL OR a.status = :status)
+            AND (:filterByMember = false OR a.memberId IN :memberIds)
+            """
+    )
+    Page<EventApplicationJpaEntity> searchByEventId(
+        @Param("eventId") Long eventId,
+        @Param("status") EventApplicationStatus status,
+        @Param("filterByMember") boolean filterByMember,
+        @Param("memberIds") List<Long> memberIds,
+        Pageable pageable
+    );
+
     boolean existsByEventIdAndMemberIdAndStatus(Long eventId, Long memberId, EventApplicationStatus status);
 
     Optional<EventApplicationJpaEntity> findByIdAndMemberId(Long id, Long memberId);
+
+    Optional<EventApplicationJpaEntity> findByIdAndEventId(Long id, Long eventId);
 
     @Query("""
         SELECT a.memberId FROM EventApplicationJpaEntity a
@@ -43,5 +80,28 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
         @Param("cursorAppliedAt") LocalDateTime cursorAppliedAt,
         @Param("cursorApplicationId") Long cursorApplicationId,
         Pageable pageable
+    );
+
+    @Query("""
+        SELECT a.eventId FROM EventApplicationJpaEntity a
+        WHERE a.memberId = :memberId
+        AND a.eventId IN :eventIds
+        AND a.status = :appliedStatus
+        """)
+    List<Long> findAppliedEventIds(
+        @Param("memberId") Long memberId,
+        @Param("eventIds") Collection<Long> eventIds,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus
+    );
+
+    @Query("""
+        SELECT new kr.ac.kookmin.stream.db.event.EventApplicantCountProjection(a.eventId, COUNT(a))
+        FROM EventApplicationJpaEntity a
+        WHERE a.eventId IN :eventIds AND a.status = :appliedStatus
+        GROUP BY a.eventId
+        """)
+    List<EventApplicantCountProjection> countApplicantsByEventIds(
+        @Param("eventIds") List<Long> eventIds,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus
     );
 }

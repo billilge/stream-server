@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.db.welfare;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
@@ -55,6 +56,16 @@ public class NoticeRepositoryImpl implements NoticeRepository {
     @Override
     public Optional<Notice> findById(Long id) {
         return noticeJpaRepository.findByIdAndIsDeletedFalse(id).map(NoticeJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<Notice> findAllByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return noticeJpaRepository.findAllByIdInAndIsDeletedFalse(ids).stream()
+            .map(NoticeJpaEntity::toDomain)
+            .toList();
     }
 
     @Override

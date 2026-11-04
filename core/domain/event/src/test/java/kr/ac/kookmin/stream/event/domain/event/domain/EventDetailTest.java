@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,16 +15,20 @@ class EventDetailTest {
 
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 9, 12, 10, 0);
 
-    private static Event event(RecruitType recruitType, RecruitStatus recruitStatus, List<Long> imageIds) {
+    private static Event event(RecruitType recruitType, List<Long> imageIds) {
+        return event(recruitType, imageIds, false);
+    }
+
+    private static Event event(RecruitType recruitType, List<Long> imageIds, boolean feePaidOnly) {
         return Event.of(
-            15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "소융대 재학생", "101호",
+            15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            recruitType, imageIds, 30, recruitStatus, true, 1L
+            recruitType, imageIds, 30, feePaidOnly, true, 1L, null
         );
     }
 
     private static Event openEvent() {
-        return event(RecruitType.OPEN, RecruitStatus.OPEN, List.of());
+        return event(RecruitType.OPEN, List.of());
     }
 
     @Test
@@ -34,7 +39,6 @@ class EventDetailTest {
         assertEquals(15L, detail.eventId());
         assertEquals("2026 소융대 개강 행사", detail.title());
         assertEquals("소융대 재학생을 위한 개강 행사입니다.", detail.description());
-        assertEquals("소융대 재학생", detail.target());
         assertEquals("101호", detail.place());
         assertEquals(NOW.plusDays(10), detail.eventStartAt());
         assertEquals(NOW.plusDays(10).plusHours(2), detail.eventEndAt());
@@ -44,25 +48,16 @@ class EventDetailTest {
 
     /**
      * 모집 상태 판정 규칙 자체는 {@code EventTest}가 덮는다.
-     * 여기서는 EventDetail이 저장값을 그대로 베끼지 않고 Event의 계산을 거치는지만 확인한다.
+     * 여기서는 EventDetail이 Event의 계산을 거치는지만 확인한다.
      */
     @Nested
     @DisplayName("모집 상태 위임")
     class RecruitStatusDelegation {
 
         @Test
-        @DisplayName("저장된 모집 상태가 아니라 조회 시점 기준으로 계산한 값을 싣는다")
-        void computesInsteadOfCopying() {
-            Event event = event(RecruitType.OPEN, RecruitStatus.BEFORE_OPEN, List.of());
-
-            assertEquals(RecruitStatus.BEFORE_OPEN, event.getRecruitStatus());
-            assertEquals(RecruitStatus.OPEN, EventDetail.of(event, 0, NOW).recruitStatus());
-        }
-
-        @Test
         @DisplayName("신청자 수를 함께 넘겨 정원 마감까지 반영한다")
         void passesApplicantCount() {
-            Event event = event(RecruitType.FIRST_COME, RecruitStatus.OPEN, List.of());
+            Event event = event(RecruitType.FIRST_COME, List.of());
 
             assertEquals(RecruitStatus.OPEN, EventDetail.of(event, 29, NOW).recruitStatus());
             assertEquals(RecruitStatus.CLOSED, EventDetail.of(event, 30, NOW).recruitStatus());
@@ -86,9 +81,42 @@ class EventDetailTest {
         @Test
         @DisplayName("모집 중이 아니면 내려보내지 않는다")
         void nullWhenNotOpen() {
-            Event forceClosed = event(RecruitType.OPEN, RecruitStatus.CLOSED, List.of());
+            Event full = event(RecruitType.FIRST_COME, List.of());
 
-            assertNull(EventDetail.of(forceClosed, 0, NOW).daysUntilDeadline());
+            assertNull(EventDetail.of(full, 30, NOW).daysUntilDeadline());
+        }
+    }
+
+    /**
+     * 정원 규칙 자체는 {@code RecruitPolicyTest}가 덮는다. 여기서는 학생 앱이 받을 값으로 옮겨지는지만 본다.
+     */
+    @Nested
+    @DisplayName("모집 조건")
+    class RecruitCondition {
+
+        @Test
+        @DisplayName("선착순 모집이면 모집 방식과 정원을 싣는다")
+        void firstComeHasCapacity() {
+            EventDetail detail = EventDetail.of(event(RecruitType.FIRST_COME, List.of()), 0, NOW);
+
+            assertEquals(RecruitType.FIRST_COME, detail.recruitType());
+            assertEquals(30, detail.capacity());
+        }
+
+        @Test
+        @DisplayName("상시 모집이면 저장된 정원 값과 상관없이 정원은 null이다")
+        void openHasNoCapacity() {
+            EventDetail detail = EventDetail.of(openEvent(), 0, NOW);
+
+            assertEquals(RecruitType.OPEN, detail.recruitType());
+            assertNull(detail.capacity());
+        }
+
+        @Test
+        @DisplayName("학생회비 납부자 전용 여부를 싣는다")
+        void copiesFeePaidOnly() {
+            assertTrue(EventDetail.of(event(RecruitType.OPEN, List.of(), true), 0, NOW).feePaidOnly());
+            assertFalse(EventDetail.of(openEvent(), 0, NOW).feePaidOnly());
         }
     }
 
@@ -99,7 +127,7 @@ class EventDetailTest {
         @Test
         @DisplayName("행사 이미지 id를 순서대로 싣는다")
         void keepsOrder() {
-            Event event = event(RecruitType.OPEN, RecruitStatus.OPEN, List.of(31L, 32L));
+            Event event = event(RecruitType.OPEN, List.of(31L, 32L));
 
             assertEquals(List.of(31L, 32L), EventDetail.of(event, 0, NOW).imageIds());
         }
@@ -107,9 +135,9 @@ class EventDetailTest {
         @Test
         @DisplayName("이미지가 없으면 null이 아니라 빈 목록이다")
         void emptyListWhenNoImage() {
-            assertTrue(EventDetail.of(event(RecruitType.OPEN, RecruitStatus.OPEN, List.of()), 0, NOW)
+            assertTrue(EventDetail.of(event(RecruitType.OPEN, List.of()), 0, NOW)
                 .imageIds().isEmpty());
-            assertTrue(EventDetail.of(event(RecruitType.OPEN, RecruitStatus.OPEN, null), 0, NOW)
+            assertTrue(EventDetail.of(event(RecruitType.OPEN, null), 0, NOW)
                 .imageIds().isEmpty());
         }
     }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 public class MemberRepositoryImpl implements MemberRepository {
 
     private static final String PHONE_NUMBER_UNIQUE_CONSTRAINT = "uk_members_active_phone_number";
+    private static final String EMAIL_UNIQUE_CONSTRAINT = "uk_members_active_email";
 
     private final MemberJpaRepository memberJpaRepository;
 
@@ -34,6 +35,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public boolean existsByPhoneNumber(String phoneNumber) {
         return memberJpaRepository.existsByPhoneNumberAndIsDeletedFalse(phoneNumber);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return memberJpaRepository.existsByEmailAndIsDeletedFalse(email);
     }
 
     @Override
@@ -66,6 +72,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         } catch (DataIntegrityViolationException e) {
             if (ConstraintViolationUtil.isViolated(e, PHONE_NUMBER_UNIQUE_CONSTRAINT)) {
                 throw new BusinessException(MemberErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+            }
+            if (ConstraintViolationUtil.isViolated(e, EMAIL_UNIQUE_CONSTRAINT)) {
+                throw new BusinessException(MemberErrorCode.EMAIL_ALREADY_EXISTS);
             }
             throw e;
         }

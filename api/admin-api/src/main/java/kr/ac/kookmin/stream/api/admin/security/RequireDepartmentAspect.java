@@ -25,7 +25,8 @@ public class RequireDepartmentAspect {
     public void check(JoinPoint joinPoint, RequireDepartment requireDepartment) {
         Set<CouncilDepartment> owned = findAdminApiUser(joinPoint).councilDepartments();
 
-        if (owned.contains(SUPER_DEPARTMENT)) {
+        // AdminApiUser는 ADMIN에게만 주입되므로, 부서가 비어 있으면 부서 없는 운영진이다. 모든 부서 권한을 갖는다
+        if (owned.isEmpty() || owned.contains(SUPER_DEPARTMENT)) {
             return;
         }
         for (CouncilDepartment required : requireDepartment.value()) {

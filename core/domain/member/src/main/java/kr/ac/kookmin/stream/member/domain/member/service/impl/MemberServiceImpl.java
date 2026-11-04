@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.member.domain.member.service.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
@@ -30,6 +31,11 @@ class MemberServiceImpl implements MemberService {
     public Member getById(Long id) {
         return memberRepository.findById(id)
             .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    @Override
+    public Optional<Member> findByStudentId(String studentId) {
+        return memberRepository.findByStudentId(studentId);
     }
 
     @Override
@@ -70,15 +76,17 @@ class MemberServiceImpl implements MemberService {
         return applyProfile(found.get(), command);
     }
 
-    // 전화번호 저장과 약관 동의를 한 트랜잭션으로 묶는다. 필수 약관에 동의하지 않으면 전화번호 저장도 롤백된다
+    // 전화번호·이메일 저장과 약관 동의를 한 트랜잭션으로 묶는다. 필수 약관에 동의하지 않으면 전화번호·이메일 저장도 롤백된다
     @Override
     @Transactional
     public Member signUp(Long memberId, MemberSignUpCommand command) {
         Member member = getById(memberId);
         validateNotSignedUp(member);
         validatePhoneNumberNotDuplicated(member, command.phoneNumber());
+        validateEmailNotDuplicated(member, command.email());
 
         member.registerPhoneNumber(command.phoneNumber());
+        member.registerEmail(command.email());
         Member saved = memberRepository.save(member);
         memberTermService.agree(memberId, command.termAgreements());
         return saved;
@@ -87,6 +95,18 @@ class MemberServiceImpl implements MemberService {
     @Override
     public boolean isSignedUp(Long memberId) {
         return isSignedUp(getById(memberId));
+    }
+
+    @Override
+    public Set<Long> findSignedUpIds(List<Long> memberIds) {
+        if (memberIds.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> contactRegisteredIds = findAllByIds(memberIds).stream()
+            .filter(member -> member.hasPhoneNumber() && member.hasEmail())
+            .map(Member::getId)
+            .toList();
+        return memberTermService.findIdsAgreedRequiredTerms(contactRegisteredIds);
     }
 
     // 한 기기를 다른 계정으로 쓰게 되면 이전 회원의 알림이 새 사용자에게 가지 않도록, 다른 회원에게 남은 같은 토큰을 지운다.
@@ -111,9 +131,14 @@ class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 전화번호와 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
+    @Override
+    public boolean isEmailUsedByOthers(Long memberId, String email) {
+        return isEmailUsedByOthers(getById(memberId), email);
+    }
+
+    // 전화번호·이메일과 필수 약관 동의가 모두 있어야 가입을 마친 것으로 본다
     private boolean isSignedUp(Member member) {
-        return member.hasPhoneNumber() && memberTermService.hasAgreedRequiredTerms(member.getId());
+        return member.hasPhoneNumber() && member.hasEmail() && memberTermService.hasAgreedRequiredTerms(member.getId());
     }
 
     private void validateNotSignedUp(Member member) {
@@ -130,6 +155,19 @@ class MemberServiceImpl implements MemberService {
         if (memberRepository.existsByPhoneNumber(phoneNumber)) {
             throw new BusinessException(MemberErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
         }
+    }
+
+    private void validateEmailNotDuplicated(Member member, String email) {
+        if (isEmailUsedByOthers(member, email)) {
+            throw new BusinessException(MemberErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    private boolean isEmailUsedByOthers(Member member, String email) {
+        if (email.equalsIgnoreCase(member.getEmail())) {
+            return false;
+        }
+        return memberRepository.existsByEmail(email);
     }
 
     private Member register(MemberProfileCommand command) {

@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
@@ -244,6 +246,26 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public List<LockerPeriod> findAllPeriods() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<LockerPeriod> findPeriodById(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LockerPeriod savePeriod(LockerPeriod period) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean deletePeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean existsPublishedPeriod(Long lockerPeriodId) {
             return publishedPeriod;
         }
@@ -261,6 +283,11 @@ class LockerServiceImplTest {
         @Override
         public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
             return Optional.empty();
+        }
+
+        @Override
+        public void saveLayout(LockerSectionLayout sectionLayout) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -286,6 +313,11 @@ class LockerServiceImplTest {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
         // 아래는 회원별 신청 내역 조회용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override
@@ -300,6 +332,16 @@ class LockerServiceImplTest {
 
         @Override
         public List<LockerPeriod> findPublishedPeriodsUsageEndingOn(LocalDate usageEndAt) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void saveLockers(List<Locker> lockers) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
             throw new UnsupportedOperationException();
         }
 
@@ -332,12 +374,32 @@ class LockerServiceImplTest {
         // 아래는 사물함 신청(LockerApplicationService)용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override
+        public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsByPeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         public LockerApplication save(LockerApplication application) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<LockerApplication> findById(Long lockerApplicationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset) {
             throw new UnsupportedOperationException();
         }
 

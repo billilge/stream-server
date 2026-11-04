@@ -41,4 +41,9 @@ public class Item {
         }
         this.count -= amount;
     }
+
+    /** 재고를 복구한다(반납, 대여 취소/반려 시). 상한 없이 더한다. */
+    public void increaseStock(int amount) {
+        this.count += amount;
+    }
 }

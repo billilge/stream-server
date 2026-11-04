@@ -6,19 +6,26 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
+import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,9 +39,9 @@ class EventServiceImplTest {
 
     private static Event event(Long id) {
         return Event.of(
-            id, "행사 " + id, "설명", "전교생", "101호",
+            id, "행사 " + id, "설명", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, RecruitStatus.OPEN, true, 1L
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null
         );
     }
 
@@ -45,7 +52,7 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L)),
             Map.of(1L, 3L, 2L, 7L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 20).content();
 
         // 정원 100명이라 신청자 수가 모집 상태를 바꾸지 않는다. 짝이 맞는지는 D-Day가 아니라 아래에서 직접 본다
@@ -61,7 +68,7 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L)),
             Map.of(1L, 3L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 20).content();
 
         assertEquals(2, content.size());
@@ -72,23 +79,25 @@ class EventServiceImplTest {
     @DisplayName("정원이 찬 행사만 마감으로 바뀐다")
     void appliesCountPerEvent() {
         Event full = Event.of(
-            1L, "정원 3명", "설명", "전교생", "101호",
+            1L, "정원 3명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 3, RecruitStatus.OPEN, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 3, false, true, 1L, null);
         Event roomy = Event.of(
-            2L, "정원 100명", "설명", "전교생", "101호",
+            2L, "정원 100명", "설명", "101호",
             NOW.plusDays(10), null, NOW.minusDays(1), NOW.plusDays(3),
-            RecruitType.FIRST_COME, List.of(), 100, RecruitStatus.OPEN, true, 1L);
+            RecruitType.FIRST_COME, List.of(), 100, false, true, 1L, null);
 
         FakeEventRepository repository = new FakeEventRepository(
             List.of(full, roomy),
             Map.of(1L, 3L, 2L, 3L));
 
-        List<EventSummary> content = new EventServiceImpl(repository)
+        List<EventSummary> content = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 20).content();
 
-        assertEquals(RecruitStatus.CLOSED, content.get(0).recruitStatus());
-        assertEquals(RecruitStatus.OPEN, content.get(1).recruitStatus());
+        // 전체 목록은 모집 중 구간이 먼저라 정원이 남은 행사가 앞에 온다
+        assertEquals(List.of(2L, 1L), content.stream().map(EventSummary::eventId).toList());
+        assertEquals(RecruitStatus.OPEN, content.get(0).recruitStatus());
+        assertEquals(RecruitStatus.CLOSED, content.get(1).recruitStatus());
     }
 
     @Test
@@ -97,13 +106,14 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(
             List.of(event(1L), event(2L), event(3L)), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 2);
 
         assertEquals(3, repository.requestedLimit);
         assertEquals(List.of(1L, 2L), result.content().stream().map(EventSummary::eventId).toList());
         assertTrue(result.hasNext());
-        assertEquals(EventCursor.of(event(2L)).format(), result.nextCursor());
+        assertEquals(
+            new EventCursor(RecruitStatus.OPEN, event(2L).getApplyEndAt(), 2L).format(), result.nextCursor());
     }
 
     @Test
@@ -111,7 +121,7 @@ class EventServiceImplTest {
     void noCursorOnLastPage() {
         FakeEventRepository repository = new FakeEventRepository(List.of(event(1L), event(2L)), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 2);
 
         assertFalse(result.hasNext());
@@ -124,15 +134,18 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(
             List.of(), Map.of());
 
-        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository)
+        CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, 20);
 
         assertTrue(result.content().isEmpty());
         assertEquals(List.of(), repository.requestedEventIds);
     }
 
-    /** 목록 조회에 쓰이는 두 메서드만 답하고, 나머지는 이 테스트가 건드리지 않는다. */
-    private static final class FakeEventRepository implements EventRepository {
+    /**
+     * 목록 조회에 쓰이는 두 메서드(행사 조회·신청자 수)만 답하고, 나머지는 이 테스트가 건드리지 않는다.
+     * 행사 조회는 주어진 모집 상태의 행사만 넣은 순서대로 돌려준다. 구간 안의 정렬은 이 테스트가 보지 않는다.
+     */
+    private static final class FakeEventRepository implements EventRepository, EventApplicationRepository {
 
         private final List<Event> fetched;
         private final Map<Long, Long> applicantCounts;
@@ -148,7 +161,11 @@ class EventServiceImplTest {
         public List<Event> findPublishedSlice(
             RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
             this.requestedLimit = limit;
-            return fetched.stream().limit(limit).toList();
+            return fetched.stream()
+                .filter(event -> event.calculateRecruitStatus(
+                    now, applicantCounts.getOrDefault(event.getId(), 0L)) == recruitStatus)
+                .limit(limit)
+                .toList();
         }
 
         @Override
@@ -159,6 +176,46 @@ class EventServiceImplTest {
 
         @Override
         public Optional<Event> findById(Long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Event save(Event event) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventQuestion> saveQuestions(List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean delete(Long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<Event> search(String keyword, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventQuestion> replaceQuestions(Long eventId, List<EventQuestion> questions) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsByEventId(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void touchUpdatedAt(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Event> findPublishedByIds(Collection<Long> eventIds) {
             throw new UnsupportedOperationException();
         }
 
@@ -198,7 +255,7 @@ class EventServiceImplTest {
         }
 
         @Override
-        public EventApplication saveApplication(EventApplication application) {
+        public EventApplication save(EventApplication application) {
             throw new UnsupportedOperationException();
         }
 
@@ -213,19 +270,57 @@ class EventServiceImplTest {
         }
 
         @Override
-        public List<EventApplication> findApplicationSlice(
+        public List<EventApplication> findSliceByMemberId(
             Long memberId, EventApplicationCursor cursor, int limit) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Optional<EventApplication> findApplicationByIdAndMemberId(
+        public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplication> findAppliedByMemberIdAndEventIds(
+            Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreviewResult<Event> findUpcomingAppliedEvents(
+            Long memberId, LocalDateTime startOfToday, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<EventApplication> findByIdAndMemberId(
             Long applicationId, Long memberId) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         public List<EventApplicationAnswer> findAnswersByApplicationId(Long applicationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<EventApplication> searchByEventId(
+            Long eventId, EventApplicationStatus status, List<Long> memberIds, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplicationAnswer> findAnswersByApplicationIds(List<Long> applicationIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<EventApplication> findByIdAndEventId(Long applicationId, Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long countByEventId(Long eventId) {
             throw new UnsupportedOperationException();
         }
     }

@@ -7,4 +7,6 @@ public interface EventApplicationAnswerJpaRepository
     extends JpaRepository<EventApplicationAnswerJpaEntity, Long> {
 
     List<EventApplicationAnswerJpaEntity> findAllByEventApplicationId(Long eventApplicationId);
+
+    List<EventApplicationAnswerJpaEntity> findAllByEventApplicationIdIn(List<Long> eventApplicationIds);
 }

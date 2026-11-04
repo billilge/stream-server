@@ -7,6 +7,8 @@ description = "운영진 콘솔 — ADMIN, /v1/admin/**"
 dependencies {
     implementation(project(":api:common-api"))
     implementation(project(":core:common"))
+    implementation(project(":core:domain:auth"))
+    implementation(project(":core:domain:event"))
     implementation(project(":core:domain:file"))
     implementation(project(":core:domain:internal"))
     implementation(project(":core:domain:member"))

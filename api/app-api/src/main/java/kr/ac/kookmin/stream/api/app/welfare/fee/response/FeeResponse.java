@@ -1,18 +1,53 @@
 package kr.ac.kookmin.stream.api.app.welfare.fee.response;
 
 import java.time.LocalDateTime;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferGuide;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 
+/**
+ * 학생회비 납부 현황. 화면은 feeStatus로 분기한다 — 납부 전(UNPAID)·확인필요(REJECTED)면 남은 학기 입력부터,
+ * 납부확인중·납부완료면 요청 내용 확인 화면이다.
+ * <p>
+ * 금액과 송금 링크는 지금 낼 수 있을 때만 계산해 준다. 납부 전·확인필요인 학생이 남은 학기 수를 보내면 그 값으로
+ * 계산하고, 납부확인중·납부완료면 요청할 때 남긴 금액만 보여주고 링크는 주지 않는다("또 보내라"로 읽히지 않게).
+ */
 public record FeeResponse(
+    Long studentTransferStatusId,
     String feeStatus,
+    String bank,
+    String accountNo,
+    Integer remainingSemesters,
+    Long transferAmount,
     String transferLinkUrl,
     LocalDateTime requestedAt,
-    LocalDateTime confirmedAt
+    LocalDateTime confirmedAt,
+    String rejectReason
 ) {
-    public static FeeResponse of(StudentTransferStatus request, String transferLinkUrl) {
-        LocalDateTime confirmedAt = request.getStatus() == TransferStatus.PAID ? request.getReviewedAt() : null;
-        // student_transfer_statuses엔 별도 requested_at 컬럼이 없어, 확인 요청 시각은 row의 created_at으로 갈음한다.
-        return new FeeResponse(request.getStatus().name(), transferLinkUrl, request.getCreatedAt(), confirmedAt);
+
+    // 한 번도 요청하지 않은 회원의 상태. 도메인 상태에는 없고(행이 없다) 응답에서만 쓰는 이름이다
+    private static final String NOT_REQUESTED_STATUS = "UNPAID";
+
+    /** 한 번도 요청하지 않은 학생. 남은 학기 수를 받았으면 계산한 금액과 송금 링크를 함께 준다. */
+    public static FeeResponse notRequested(FeeAccount account, TransferGuide transferGuide) {
+        return new FeeResponse(null, NOT_REQUESTED_STATUS, account.bank(), account.accountNo(),
+            transferGuide.remainingSemesters(), transferGuide.amount(), transferGuide.linkUrl(), null, null, null);
+    }
+
+    /** 요청이 있는 학생. transferGuide는 확인필요(다시 낼 수 있는 상태)일 때만 쓴다. */
+    public static FeeResponse of(StudentTransferStatus transferStatus, FeeAccount account, TransferGuide transferGuide) {
+        TransferStatus status = transferStatus.getStatus();
+
+        // 반려면 다시 낼 수 있으므로 미납부와 같이 다룬다 — 이전 요청 값 대신 이번에 받은 남은 학기 수로 계산한 값을 준다
+        if (transferStatus.isRequestable()) {
+            return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
+                transferGuide.remainingSemesters(), transferGuide.amount(), transferGuide.linkUrl(),
+                transferStatus.getRequestedAt(), null, transferStatus.getRejectReason());
+        }
+
+        return new FeeResponse(transferStatus.getId(), status.name(), account.bank(), account.accountNo(),
+            transferStatus.getRemainingSemesters(), transferStatus.getAmount(), null,
+            transferStatus.getRequestedAt(), transferStatus.getConfirmedAt(), null);
     }
 }

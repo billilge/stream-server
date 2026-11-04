@@ -14,13 +14,13 @@ public record FeedbackResponse(
 ) {
     public static FeedbackResponse from(Feedback feedback) {
         return new FeedbackResponse(
-            feedback.id(),
-            feedback.year(),
-            feedback.round(),
-            feedback.question(),
-            feedback.questionedAt(),
-            feedback.answeredAt(),
-            feedback.answer()
+            feedback.getId(),
+            feedback.getYear(),
+            feedback.getRound(),
+            feedback.getQuestion(),
+            feedback.getQuestionedAt(),
+            feedback.getAnsweredAt(),
+            feedback.getAnswer()
         );
     }
 }

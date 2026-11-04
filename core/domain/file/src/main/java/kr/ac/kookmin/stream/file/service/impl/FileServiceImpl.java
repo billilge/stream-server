@@ -64,6 +64,11 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
+    public Optional<File> findByFileKey(String fileKey) {
+        return fileRepository.findByFileKey(fileKey);
+    }
+
+    @Override
     public Map<Long, File> findAllByIdIn(List<Long> fileIds) {
         if (fileIds.isEmpty()) {
             return Map.of();
@@ -72,9 +77,17 @@ class FileServiceImpl implements FileService {
             .collect(Collectors.toMap(File::getId, Function.identity()));
     }
 
+    @Override
+    public String resolveKey(Long fileId) {
+        return fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND))
+            .getFileKey();
+    }
+
+    // 키에 환경 폴더까지 담아 저장한다. 조회 주소는 저장된 키를 그대로 쓰므로, 폴더를 나누기 전에 올린 files/... 파일도 계속 보인다
     private String generateFileKey(String originalName) {
         String extension = FileUploadPolicy.extractExtension(originalName);
-        String key = UUID.randomUUID().toString();
-        return extension.isEmpty() ? FILE_KEY_PREFIX + key : FILE_KEY_PREFIX + key + "." + extension;
+        String key = fileStorageClient.getEnvironmentDirectory() + "/" + FILE_KEY_PREFIX + UUID.randomUUID();
+        return extension.isEmpty() ? key : key + "." + extension;
     }
 }

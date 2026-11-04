@@ -36,6 +36,9 @@ public record EventApplicationDetailResponse(
      * <p>
      * 신청서 폼 조회({@link EventFormQuestionResponse})와 달리 답변 길이 제한(maxLength) 대신 제출한 답변을 싣는다.
      * 답하지 않은 선택 질문은 {@code answerText}가 {@code null}, {@code selectedOptions}가 빈 배열이다.
+     *
+     * @param hasOtherOption 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙였는지
+     * @param answerText     텍스트형 답변. 선택형이면 '기타'에 쓴 문구이고, '기타'를 고르지 않았으면 {@code null}
      */
     public record AnsweredQuestion(
         Long questionId,
@@ -44,6 +47,7 @@ public record EventApplicationDetailResponse(
         boolean isRequired,
         int displayOrder,
         List<String> options,
+        boolean hasOtherOption,
         String answerText,
         List<Integer> selectedOptions
     ) {
@@ -56,7 +60,8 @@ public record EventApplicationDetailResponse(
                 question.getQuestionType(),
                 question.isRequired(),
                 question.getDisplayOrder(),
-                question.getOptions() == null ? List.of() : question.getOptions(),
+                question.getOptions(),
+                question.isOtherOptionAllowed(),
                 answeredQuestion.answerText(),
                 answeredQuestion.selectedOptions()
             );

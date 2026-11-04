@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 납부 상태 처리. 상태 변경과 납부자 명부 반영이 어긋나면 안 되므로 한 트랜잭션으로 묶는다.
+ */
 @Component
 @RequiredArgsConstructor
 public class AdminFeeReviewUseCase {
@@ -18,14 +21,13 @@ public class AdminFeeReviewUseCase {
     private final PayerService payerService;
     private final MemberService memberService;
 
-    // 확인요청 처리 + 납부자 명부(Payer) 반영을 하나의 트랜잭션으로 묶는다.
     @Transactional
-    public StudentTransferStatus review(Long transferStatusId, TransferStatus status) {
-        StudentTransferStatus transferStatus = studentTransferStatusService.review(transferStatusId, status);
-        Member member = memberService.getById(transferStatus.getMemberId());
+    public StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason) {
+        StudentTransferStatus reviewed = studentTransferStatusService.review(transferStatusId, status, rejectReason);
+        Member member = memberService.getById(reviewed.getMemberId());
 
-        payerService.sync(member.getId(), member.getName(), member.getStudentId(), transferStatus.getStatus());
+        payerService.sync(member.getId(), member.getName(), member.getStudentId(), reviewed.getStatus());
 
-        return transferStatus;
+        return reviewed;
     }
 }

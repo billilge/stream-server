@@ -57,7 +57,7 @@ class EventApplyAnswerValidator {
         String answerText = answer.answerText();
         List<Integer> selectedOptions = answer.selectedOptions() == null ? List.of() : answer.selectedOptions();
         QuestionType questionType = question.getQuestionType();
-        // 선택형은 answerText를 쓰지 않는다. 미사용 필드를 빈 문자열로 채워 보내는 클라이언트도 있어
+        // 선택형은 answerText를 '기타' 문구로만 쓴다. 미사용 필드를 빈 문자열로 채워 보내는 클라이언트도 있어
         // AnswerCommand.isEmpty()와 같은 기준(null 또는 blank)으로 "값 없음"을 판정한다
         boolean hasAnswerText = answerText != null && !answerText.isBlank();
 
@@ -66,31 +66,52 @@ class EventApplyAnswerValidator {
                 if (!hasAnswerText || !selectedOptions.isEmpty()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
-                if (answerText.length() > questionType.maxLength()) {
-                    throw new BusinessException(EventErrorCode.INVALID_ANSWER);
-                }
+                validateAnswerTextLength(question, answerText);
             }
             case SINGLE_CHOICE -> {
-                if (hasAnswerText || selectedOptions.size() != 1) {
+                // 선택지 하나를 고르거나 '기타'에 문구를 쓴다. 둘을 함께 낼 수는 없다
+                int choiceCount = selectedOptions.size() + (hasAnswerText ? 1 : 0);
+                if (choiceCount != 1) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 validateSelectedOptionRange(question, selectedOptions);
+                if (hasAnswerText) {
+                    validateOtherText(question, answerText);
+                }
             }
             case MULTIPLE_CHOICE -> {
-                if (hasAnswerText || selectedOptions.isEmpty()) {
+                // 선택지와 '기타' 문구를 함께 낼 수 있고, 둘 중 하나는 있어야 한다
+                if (!hasAnswerText && selectedOptions.isEmpty()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 if (selectedOptions.stream().distinct().count() != selectedOptions.size()) {
                     throw new BusinessException(EventErrorCode.INVALID_ANSWER);
                 }
                 validateSelectedOptionRange(question, selectedOptions);
+                if (hasAnswerText) {
+                    validateOtherText(question, answerText);
+                }
             }
+        }
+    }
+
+    // '기타'를 허용한 질문만 문구를 받는다
+    private void validateOtherText(EventQuestion question, String answerText) {
+        if (!question.isOtherOptionAllowed()) {
+            throw new BusinessException(EventErrorCode.INVALID_ANSWER);
+        }
+        validateAnswerTextLength(question, answerText);
+    }
+
+    private void validateAnswerTextLength(EventQuestion question, String answerText) {
+        if (answerText.length() > question.answerTextMaxLength()) {
+            throw new BusinessException(EventErrorCode.INVALID_ANSWER);
         }
     }
 
     /** selectedOptions는 질문 options 배열의 0-based 인덱스다. */
     private void validateSelectedOptionRange(EventQuestion question, List<Integer> selectedOptions) {
-        int optionSize = question.getOptions() == null ? 0 : question.getOptions().size();
+        int optionSize = question.getOptions().size();
         boolean outOfRange = selectedOptions.stream()
             .anyMatch(index -> index == null || index < 0 || index >= optionSize);
         if (outOfRange) {

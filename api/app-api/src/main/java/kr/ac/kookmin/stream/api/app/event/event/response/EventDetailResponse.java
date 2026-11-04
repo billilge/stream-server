@@ -6,13 +6,18 @@ import java.util.Map;
 import kr.ac.kookmin.stream.api.common.StorageUrlBuilder;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import kr.ac.kookmin.stream.file.domain.File;
 
+/**
+ * @param capacity      선착순 모집의 정원. 상시 모집이면 {@code null}이다
+ * @param isFeeEligible 요청한 학생이 학생회비 조건으로 신청할 수 있는지. 납부자 전용이 아니면 항상 {@code true}이고,
+ *                      납부자 전용이면 납부자 명부에 있을 때만 {@code true}다. 모집 기간·정원은 보지 않는다
+ */
 public record EventDetailResponse(
     Long eventId,
     String title,
     String description,
-    String target,
     String place,
     LocalDateTime eventStartAt,
     LocalDateTime eventEndAt,
@@ -20,18 +25,21 @@ public record EventDetailResponse(
     LocalDateTime applyEndAt,
     RecruitStatus recruitStatus,
     Integer daysUntilDeadline,
+    RecruitType recruitType,
+    Integer capacity,
+    boolean feePaidOnly,
+    boolean isFeeEligible,
     List<Image> images
 ) {
 
     /**
      * 존재하지 않는(삭제된) fileId는 imagesById에 키가 없다 — 그런 항목은 목록에서 조용히 제외한다.
      */
-    public static EventDetailResponse from(EventDetail detail, Map<Long, File> imagesById) {
+    public static EventDetailResponse of(EventDetail detail, boolean isFeeEligible, Map<Long, File> imagesById) {
         return new EventDetailResponse(
             detail.eventId(),
             detail.title(),
             detail.description(),
-            detail.target(),
             detail.place(),
             detail.eventStartAt(),
             detail.eventEndAt(),
@@ -39,6 +47,10 @@ public record EventDetailResponse(
             detail.applyEndAt(),
             detail.recruitStatus(),
             detail.daysUntilDeadline(),
+            detail.recruitType(),
+            detail.capacity(),
+            detail.feePaidOnly(),
+            isFeeEligible,
             detail.imageIds().stream()
                 .filter(imagesById::containsKey)
                 .map(fileId -> Image.of(fileId, imagesById.get(fileId)))

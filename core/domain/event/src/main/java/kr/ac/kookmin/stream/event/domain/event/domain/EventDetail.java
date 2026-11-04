@@ -5,12 +5,13 @@ import java.util.List;
 
 /**
  * 행사 상세 한 건. 목록과 마찬가지로 모집 상태와 마감까지 남은 일수는 저장값이 아니라 조회 시점 기준으로 계산한다.
+ *
+ * @param capacity 선착순 모집의 정원. 상시 모집은 인원 제한이 없어 {@code null}이다
  */
 public record EventDetail(
     Long eventId,
     String title,
     String description,
-    String target,
     String place,
     LocalDateTime eventStartAt,
     LocalDateTime eventEndAt,
@@ -18,7 +19,10 @@ public record EventDetail(
     LocalDateTime applyEndAt,
     List<Long> imageIds,
     RecruitStatus recruitStatus,
-    Integer daysUntilDeadline
+    Integer daysUntilDeadline,
+    RecruitType recruitType,
+    Integer capacity,
+    boolean feePaidOnly
 ) {
 
     public static EventDetail of(Event event, long applicantCount, LocalDateTime now) {
@@ -28,15 +32,17 @@ public record EventDetail(
             event.getId(),
             event.getTitle(),
             event.getDescription(),
-            event.getTarget(),
             event.getPlace(),
             event.getEventStartAt(),
             event.getEventEndAt(),
             event.getApplyStartAt(),
             event.getApplyEndAt(),
-            event.getImageIds() == null ? List.of() : event.getImageIds(),
+            event.getImageIds(),
             recruitStatus,
-            event.daysUntilDeadline(now, recruitStatus)
+            event.daysUntilDeadline(now, recruitStatus),
+            event.getRecruitType(),
+            event.capacityLimit(),
+            event.isFeePaidOnly()
         );
     }
 }

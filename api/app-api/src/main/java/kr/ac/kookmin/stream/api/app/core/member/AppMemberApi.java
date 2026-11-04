@@ -6,30 +6,45 @@ import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.core.member.request.FcmTokenUpdateRequest;
 import kr.ac.kookmin.stream.api.app.core.member.request.MemberSignUpRequest;
 import kr.ac.kookmin.stream.api.app.core.member.request.PhoneNumberUpdateRequest;
+import kr.ac.kookmin.stream.api.app.core.member.response.MemberResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
+import kr.ac.kookmin.stream.member.domain.verification.domain.EmailVerificationErrorCode;
 
 /**
  * 학생 앱 회원 API의 문서 명세. 구현은 {@link AppMemberController}가 맡는다.
  */
-@Tag(name = "회원", description = "학생 앱 회원가입·FCM 토큰 등록·전화번호 변경")
+@Tag(name = "회원", description = "학생 앱 내 정보 조회·회원가입·FCM 토큰 등록·전화번호 변경")
 public interface AppMemberApi {
+
+    /** 회원가입. 로그인 응답의 signUpRequired가 true인 회원이 전화번호·이메일과 약관 동의 여부를 등록한다. */
+    /** 내 정보 조회. 설정 화면의 계정 정보 카드가 쓴다. */
+    @Operation(summary = "내 정보 조회",
+        description = """
+            로그인한 회원의 이름·이메일·전화번호를 조회한다.
+            전화번호는 하이픈 없이 숫자만 내려준다. 이메일이 등록되지 않은 회원은 email이 null이다.""")
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
+    ApiResponse<MemberResponse> getMe(AppApiUser apiUser);
 
     /** 회원가입. 로그인 응답의 signUpRequired가 true인 회원이 전화번호와 약관 동의 여부를 등록한다. */
     @Operation(summary = "회원가입",
         description = """
-            로그인한 회원의 전화번호와 약관 동의 여부를 저장한다.
+            로그인한 회원의 전화번호·이메일과 약관 동의 여부를 저장한다.
             전화번호는 하이픈을 넣어도 되고 빼도 된다. 필수 약관(PRIVACY_POLICY, TERMS_OF_SERVICE)에 모두 동의해야 한다.
+            이메일은 이메일 인증 API로 인증을 마친 뒤 30분 안에 같은 이메일로 보내야 한다.
+            회원 정보에 이미 있는 이메일(이관 회원 등)은 인증 없이 그대로 보낼 수 있다.
             가입하면 알림 설정이 모두 켜진 상태로 만들어진다.""")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {
         "MEMBER_NOT_FOUND",
         "REQUIRED_TERMS_NOT_AGREED",
         "ALREADY_SIGNED_UP",
-        "PHONE_NUMBER_ALREADY_EXISTS"
+        "PHONE_NUMBER_ALREADY_EXISTS",
+        "EMAIL_ALREADY_EXISTS"
     })
+    @ApiErrorCode(type = EmailVerificationErrorCode.class, codes = {"EMAIL_NOT_VERIFIED"})
     ApiResponse<Void> signUp(AppApiUser apiUser, MemberSignUpRequest request);
 
     /** FCM 토큰 등록. 앱이 Firebase에서 받은 등록 토큰을 로그인한 회원에게 저장한다. */

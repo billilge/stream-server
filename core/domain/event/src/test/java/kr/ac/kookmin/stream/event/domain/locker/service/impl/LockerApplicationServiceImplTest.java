@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
@@ -41,14 +43,17 @@ class LockerApplicationServiceImplTest {
     private static final Long MEMBER_ID = 100L;
     private static final Long LOCKER_ID = 11L;
 
+    /** 오늘 날짜와 무관하게 늘 모집 기간 안이도록 신청·사용 기간을 아주 먼 과거부터 먼 미래로 둔다. */
     private static LockerPeriod period() {
         return LockerPeriod.of(
             PERIOD_ID,
-            "2026-2학기",
-            LocalDateTime.of(2026, 8, 20, 10, 0),
-            LocalDateTime.of(2026, 8, 25, 18, 0),
-            LocalDate.of(2026, 9, 1),
-            LocalDate.of(2026, 12, 15),
+            2000,
+            1,
+            "2000-1학기",
+            LocalDateTime.of(2000, 1, 1, 0, 0),
+            LocalDateTime.of(2999, 12, 31, 23, 59, 59),
+            LocalDate.of(2000, 1, 2),
+            LocalDate.of(2999, 12, 31),
             true
         );
     }
@@ -193,11 +198,11 @@ class LockerApplicationServiceImplTest {
 
         private LockerPeriod period(Long id, String name, LocalDate usageStart, LocalDate usageEnd, boolean published) {
             LocalDateTime applyAt = usageStart.atStartOfDay();
-            return LockerPeriod.of(id, name, applyAt, applyAt, usageStart, usageEnd, published);
+            return LockerPeriod.of(id, 2026, 2, name, applyAt, applyAt, usageStart, usageEnd, published);
         }
 
         private LockerApplication application(Long id, Long periodId, Long lockerId, LocalDateTime appliedAt) {
-            return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt);
+            return LockerApplication.of(id, periodId, MEMBER_ID, lockerId, appliedAt, false);
         }
 
         private List<Long> applicationIds(List<LockerApplicationResult> results) {
@@ -339,6 +344,11 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
             batchLookups++;
             return periods.stream()
@@ -358,12 +368,42 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public void saveLockers(List<Locker> lockers) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Locker> findLockersByIds(Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<Locker> findLockersByIdsIncludingDeleted(Collection<Long> lockerIds) {
             batchLookups++;
             return lockersIncludingDeleted.stream().filter(value -> lockerIds.contains(value.getId())).toList();
         }
 
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
+
+        @Override
+        public List<LockerPeriod> findAllPeriods() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<LockerPeriod> findPeriodById(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public LockerPeriod savePeriod(LockerPeriod period) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean deletePeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public boolean existsPublishedPeriod(Long lockerPeriodId) {
@@ -382,6 +422,11 @@ class LockerApplicationServiceImplTest {
 
         @Override
         public Optional<LockerSectionLayout> findLayoutBySectionId(Long sectionId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void saveLayout(LockerSectionLayout sectionLayout) {
             throw new UnsupportedOperationException();
         }
 
@@ -406,6 +451,16 @@ class LockerApplicationServiceImplTest {
         private List<LockerApplication> memberApplications = List.of();
 
         @Override
+        public boolean existsByPeriodIdsAndLockerIds(Collection<Long> lockerPeriodIds, Collection<Long> lockerIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existsByPeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public boolean existsByLocker(Long lockerPeriodId, Long lockerId) {
             return appliedPeriodLockerIds.contains(List.of(lockerPeriodId, lockerId));
         }
@@ -421,8 +476,19 @@ class LockerApplicationServiceImplTest {
                 application.getLockerPeriodId(),
                 application.getMemberId(),
                 application.getLockerId(),
-                application.getAppliedAt()
+                application.getAppliedAt(),
+                application.isCanceled()
             );
+        }
+
+        @Override
+        public Optional<LockerApplication> findById(Long lockerApplicationId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

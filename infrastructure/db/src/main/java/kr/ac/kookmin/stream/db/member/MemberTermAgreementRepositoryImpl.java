@@ -20,6 +20,13 @@ public class MemberTermAgreementRepositoryImpl implements MemberTermAgreementRep
     }
 
     @Override
+    public List<MemberTermAgreement> findAllByMemberIdIn(List<Long> memberIds) {
+        return memberTermAgreementJpaRepository.findAllByMemberIdIn(memberIds).stream()
+            .map(MemberTermAgreementJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public void saveAll(List<MemberTermAgreement> agreements) {
         memberTermAgreementJpaRepository.saveAll(agreements.stream()
             .map(MemberTermAgreementJpaEntity::from)
