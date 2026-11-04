@@ -15,6 +15,7 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundStatus;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundSummary;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.AdminFeedbackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -85,6 +86,17 @@ public class AdminFeedbackRoundController implements AdminFeedbackRoundApi {
     ) {
         return ApiResponse.success(FeedbackRoundDetailResponse.from(
             adminFeedbackAnswerUseCase.saveAnswers(roundId, request.toCommands(), apiUser.userId())));
+    }
+
+    @Override
+    @DeleteMapping("/{roundId}/answers/{feedbackId}")
+    public ApiResponse<Void> deleteAnswer(
+        AdminApiUser apiUser,
+        @PathVariable Long roundId,
+        @PathVariable Long feedbackId
+    ) {
+        adminFeedbackService.deleteAnswer(roundId, feedbackId);
+        return ApiResponse.success();
     }
 
     @Override

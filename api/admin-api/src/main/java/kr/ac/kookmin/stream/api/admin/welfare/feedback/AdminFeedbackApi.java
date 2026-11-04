@@ -20,10 +20,10 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "열린피드백 질문 관리", description = "운영진 열린피드백 질문 조회")
 public interface AdminFeedbackApi {
 
-    /** 현재 회차 질문 탭. 질문 내용·작성자 이름으로 검색한다. */
+    /** 현재 회차 질문 탭. 질문 내용·작성자 이름·학번으로 검색한다. */
     @Operation(summary = "사용자 질문 조회",
         description = "회차(roundId)의 질문을 질문 시각 내림차순으로 조회한다. roundId를 생략하면 진행 중 회차를 보고, "
-            + "진행 중 회차도 없으면 빈 목록이다. keyword는 질문 내용과 작성자 이름에 부분 일치로 걸린다.")
+            + "진행 중 회차도 없으면 빈 목록이다. keyword는 질문 내용과 작성자 이름·학번에 부분 일치로 걸린다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_ROUND_NOT_FOUND"})
     ApiResponse<PageResponse<AdminFeedbackResponse>> getFeedbacks(

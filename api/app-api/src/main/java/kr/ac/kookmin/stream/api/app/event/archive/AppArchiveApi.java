@@ -20,9 +20,11 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "행사 아카이브", description = "학생 앱 지난 행사 아카이브 조회")
 public interface AppArchiveApi {
 
-    /** 아카이브 목록과 연도 목록. 연도를 지정하면 해당 연도만 필터링한다. */
+    /** 아카이브 목록과 연도 목록. 연도를 지정하면 해당 연도만 필터링하고, 검색어를 주면 제목으로 검색한다. */
     @Operation(summary = "행사 아카이브 목록 조회",
-        description = "지난 행사 아카이브 목록과 필터용 연도 목록을 함께 조회한다. year를 지정하면 해당 연도만 필터링한다.")
+        description = "지난 행사 아카이브 목록과 필터용 연도 목록을 함께 조회한다. year를 지정하면 해당 연도만 필터링한다. "
+            + "keyword를 주면 제목에 그 검색어가 들어 있는 아카이브만 조회한다(앞뒤 공백 무시, 공백뿐이면 전체). "
+            + "연도 목록은 year·keyword와 상관없이 항상 전체다. 통합 검색의 아카이빙 탭과 더보기도 이 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<ArchiveListResponse> getArchives(@ParameterObject ArchiveListParams params);
 

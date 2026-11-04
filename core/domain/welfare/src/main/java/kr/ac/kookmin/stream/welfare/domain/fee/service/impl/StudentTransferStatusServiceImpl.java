@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -20,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
+
+    // 상태를 지정하지 않은 기본 목록은 처리할 요청만 보여준다. 납부 완료한 회원은 납부자 명부에서 본다
+    private static final Set<TransferStatus> DEFAULT_SEARCH_STATUSES = Set.of(TransferStatus.PENDING, TransferStatus.REJECTED);
 
     private final StudentTransferStatusRepository studentTransferStatusRepository;
 
@@ -46,7 +50,8 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
     @Override
     @Transactional(readOnly = true)
     public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset) {
-        return studentTransferStatusRepository.search(status, memberIds, pageOffset);
+        Set<TransferStatus> statuses = status != null ? Set.of(status) : DEFAULT_SEARCH_STATUSES;
+        return studentTransferStatusRepository.search(statuses, memberIds, pageOffset);
     }
 
     @Override
