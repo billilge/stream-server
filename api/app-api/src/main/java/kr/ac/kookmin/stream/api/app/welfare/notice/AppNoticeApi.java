@@ -34,6 +34,7 @@ public interface AppNoticeApi {
     @Operation(summary = "공지 상세 조회",
         description = "공지 한 건을 조회한다. 고정 여부(pinned), 이미지·첨부 파일의 ID와 URL을 함께 내려준다. "
             + "삭제된 파일은 목록에서 빠진다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_NOT_FOUND"})
     ApiResponse<NoticeDetailResponse> getNotice(Long noticeId);
 }
