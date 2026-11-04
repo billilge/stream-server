@@ -21,16 +21,20 @@ public class DisplayCalendarScheduleJpaEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column(nullable = false, length = 100)
+    private String title;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String schedules;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
 
     private DisplayCalendarScheduleJpaEntity(DisplayCalendarSchedule schedule) {
         this.id = schedule.getId();
-        this.date = schedule.getDate();
-        this.schedules = schedule.getSchedules();
+        this.title = schedule.getTitle();
+        this.startDate = schedule.getStartDate();
+        this.endDate = schedule.getEndDate();
     }
 
     public static DisplayCalendarScheduleJpaEntity from(DisplayCalendarSchedule schedule) {
@@ -38,6 +42,6 @@ public class DisplayCalendarScheduleJpaEntity extends BaseTimeEntity {
     }
 
     public DisplayCalendarSchedule toDomain() {
-        return DisplayCalendarSchedule.of(id, date, schedules);
+        return DisplayCalendarSchedule.of(id, title, startDate, endDate);
     }
 }

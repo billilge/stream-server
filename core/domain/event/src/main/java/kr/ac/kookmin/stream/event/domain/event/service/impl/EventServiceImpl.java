@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
@@ -57,9 +58,9 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CursorSliceResult<EventSummary> getPublishedEvents(
         RecruitStatus recruitStatus,
+        String keyword,
         EventCursor cursor,
         int size
     ) {
@@ -70,7 +71,8 @@ class EventServiceImpl implements EventService {
         List<Event> fetched = new ArrayList<>();
         for (RecruitStatus status : statusesToRead(recruitStatus, cursor)) {
             EventCursor statusCursor = cursor != null && cursor.recruitStatus() == status ? cursor : null;
-            fetched.addAll(eventRepository.findPublishedSlice(status, statusCursor, size + 1 - fetched.size(), now));
+            fetched.addAll(
+                eventRepository.findPublishedSlice(status, keyword, statusCursor, size + 1 - fetched.size(), now));
             if (fetched.size() > size) {
                 break;
             }
@@ -103,8 +105,14 @@ class EventServiceImpl implements EventService {
         return statuses.subList(from, statuses.size());
     }
 
+    // 미리보기는 "더보기"로 이어지는 목록의 첫 페이지 앞부분이라, 순서가 어긋나지 않도록 목록 조회를 그대로 쓴다
     @Override
-    @Transactional(readOnly = true)
+    public PreviewResult<EventSummary> searchPreview(String keyword, int limit) {
+        List<EventSummary> content = getPublishedEvents(null, keyword, null, limit).content();
+        return new PreviewResult<>(content, eventRepository.countPublished(keyword));
+    }
+
+    @Override
     public EventDetail getPublishedEvent(Long eventId) {
         Event event = eventRepository.findPublishedById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));

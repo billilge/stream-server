@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.event.domain.event.service;
 import java.util.Collection;
 import java.util.List;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventDetail;
@@ -18,8 +19,23 @@ public interface EventService {
     /**
      * 게시된 행사 목록. recruitStatus가 없으면 모집 중 → 모집 예정 → 모집 종료 순으로 이어 붙이고, 같은 상태
      * 안에서는 {@link EventCursor}의 구간별 정렬 기준을 따른다. recruitStatus가 있으면 그 상태 구간만 준다.
+     *
+     * @param keyword 제목 검색어. null이거나 공백뿐이면 검색하지 않는다
      */
-    CursorSliceResult<EventSummary> getPublishedEvents(RecruitStatus recruitStatus, EventCursor cursor, int size);
+    CursorSliceResult<EventSummary> getPublishedEvents(
+        RecruitStatus recruitStatus,
+        String keyword,
+        EventCursor cursor,
+        int size
+    );
+
+    /**
+     * 통합 검색의 행사 섹션. 제목에 검색어가 들어 있는 게시된 행사를 목록({@link #getPublishedEvents})과 같은 순서로
+     * 앞에서 {@code limit}건, 그리고 그 전체 수를 돌려준다. 모집 상태로는 거르지 않는다.
+     *
+     * @param keyword 제목 검색어. null이거나 공백뿐이면 검색하지 않는다
+     */
+    PreviewResult<EventSummary> searchPreview(String keyword, int limit);
 
     /**
      * 주어진 행사 중 지금 신청할 수 있는 것을 신청 마감 임박순으로 조회한다.

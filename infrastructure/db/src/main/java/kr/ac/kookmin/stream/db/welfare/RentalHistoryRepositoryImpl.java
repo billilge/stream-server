@@ -51,6 +51,11 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public void deleteById(Long id) {
+        rentalHistoryJpaRepository.deleteById(id);
+    }
+
+    @Override
     public boolean existsActiveRental(Long itemId, Long memberId) {
         return rentalHistoryJpaRepository.existsByItemIdAndMemberIdAndRentalStatusNotIn(
             itemId, memberId, RentalStatus.finishedStatuses()

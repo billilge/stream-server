@@ -5,9 +5,12 @@ import java.util.function.Function;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalStatusUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.request.ItemCodeUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalStatusWorkerLogResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalItemCodeUpdateUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalRecordCreateUseCase;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalRecordDeleteUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalSearchUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalStatusUpdateUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.usecase.AdminRentalStatusWorkerLogUseCase;
@@ -17,6 +20,7 @@ import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,8 +38,10 @@ public class AdminRentalController implements AdminRentalApi {
 
     private final AdminRentalSearchUseCase adminRentalSearchUseCase;
     private final AdminRentalRecordCreateUseCase adminRentalRecordCreateUseCase;
+    private final AdminRentalRecordDeleteUseCase adminRentalRecordDeleteUseCase;
     private final AdminRentalStatusUpdateUseCase adminRentalStatusUpdateUseCase;
     private final AdminRentalStatusWorkerLogUseCase adminRentalStatusWorkerLogUseCase;
+    private final AdminRentalItemCodeUpdateUseCase adminRentalItemCodeUpdateUseCase;
 
     @Override
     @GetMapping
@@ -81,5 +87,25 @@ public class AdminRentalController implements AdminRentalApi {
         @PathVariable Long rentalHistoryId
     ) {
         return ApiResponse.success(adminRentalStatusWorkerLogUseCase.getWorkerLogs(rentalHistoryId));
+    }
+
+    @Override
+    @PatchMapping("/{rentalHistoryId}/item-code")
+    public ApiResponse<AdminRentalHistoryResponse> updateItemCode(
+        AdminApiUser apiUser,
+        @PathVariable Long rentalHistoryId,
+        @Valid @RequestBody ItemCodeUpdateRequest request
+    ) {
+        AdminRentalHistoryResponse response = adminRentalItemCodeUpdateUseCase.updateItemCode(
+            rentalHistoryId, request.itemCode()
+        );
+        return ApiResponse.success(response);
+    }
+
+    @Override
+    @DeleteMapping("/{rentalHistoryId}")
+    public ApiResponse<Void> deleteRentalRecord(AdminApiUser apiUser, @PathVariable Long rentalHistoryId) {
+        adminRentalRecordDeleteUseCase.delete(rentalHistoryId);
+        return ApiResponse.success();
     }
 }
