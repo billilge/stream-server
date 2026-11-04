@@ -120,7 +120,8 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     @Transactional
     public FeedbackRoundDetail publishAnswers(Long roundId) {
-        LocalDateTime now = LocalDateTime.now();
+        // 공개 시각 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊어, 공개 응답과 이후 조회 응답의 시각을 맞춘다
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         FeedbackRound round = getRoundById(roundId);
         List<Feedback> feedbacks = feedbackRepository.findAllByYearAndRound(round.getYear(), round.getRound());
         validatePublishable(round, feedbacks, now);
