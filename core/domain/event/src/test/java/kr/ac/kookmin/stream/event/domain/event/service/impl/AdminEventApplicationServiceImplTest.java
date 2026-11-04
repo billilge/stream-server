@@ -33,7 +33,7 @@ class AdminEventApplicationServiceImplTest {
     private final InMemoryEventRepository repository = new InMemoryEventRepository();
     private final InMemoryEventApplicationRepository applicationRepository = new InMemoryEventApplicationRepository();
     private final AdminEventApplicationServiceImpl service =
-        new AdminEventApplicationServiceImpl(repository, applicationRepository);
+        new AdminEventApplicationServiceImpl(repository, applicationRepository, event -> {});
 
     private static Event event(Long id) {
         return Event.of(
