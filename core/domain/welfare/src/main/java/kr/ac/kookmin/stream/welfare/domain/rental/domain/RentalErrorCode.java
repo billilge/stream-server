@@ -22,7 +22,8 @@ public enum RentalErrorCode implements ErrorCode {
     RENTAL_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 대여 이력입니다."),
     ITEM_NAME_DUPLICATED(ErrorStatus.BAD_REQUEST, "이미 존재하는 물품 이름입니다."),
     RETURN_POLICY_REQUIRED(ErrorStatus.BAD_REQUEST, "대여품(RENTAL)은 반납 정책이 필요합니다."),
-    ITEM_HAS_ACTIVE_RENTAL(ErrorStatus.BAD_REQUEST, "진행 중인 대여 기록이 있어 삭제할 수 없습니다.");
+    ITEM_HAS_ACTIVE_RENTAL(ErrorStatus.BAD_REQUEST, "진행 중인 대여 기록이 있어 삭제할 수 없습니다."),
+    RETURN_POLICY_NOT_APPLICABLE(ErrorStatus.BAD_REQUEST, "소모품에는 반납 정책을 적용할 수 없습니다.");
 
     private final int status;
     private final String message;

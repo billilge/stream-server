@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.LockExecutor;
 import kr.ac.kookmin.stream.common.PageOffset;
@@ -81,5 +82,24 @@ class AdminItemServiceImpl implements AdminItemService {
             throw new BusinessException(RentalErrorCode.ITEM_HAS_ACTIVE_RENTAL);
         }
         itemRepository.delete(itemId);
+    }
+
+    @Override
+    @Transactional
+    public List<Item> updateReturnPolicyBulk(List<Long> itemIds, int maxRentalDays) {
+        ReturnPolicy policy = ReturnPolicy.of(maxRentalDays);
+        List<Item> items = itemRepository.findAllByIds(itemIds);
+        return items.stream()
+            .map(item -> {
+                if (item.getType() != ItemType.RENTAL) {
+                    throw new BusinessException(RentalErrorCode.RETURN_POLICY_NOT_APPLICABLE);
+                }
+                Item updated = Item.of(
+                    item.getId(), item.getName(), item.getCategory(), item.getType(), item.getCount(),
+                    item.getImageKey(), policy
+                );
+                return itemRepository.save(updated);
+            })
+            .toList();
     }
 }
