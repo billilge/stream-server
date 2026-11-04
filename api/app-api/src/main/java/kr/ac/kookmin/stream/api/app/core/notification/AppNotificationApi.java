@@ -43,7 +43,8 @@ public interface AppNotificationApi {
     @Operation(summary = "전체 알림 수신 동의 변경",
         description = """
             전체 알림 수신 동의(NOTIFICATION_CONSENT 약관) 자체를 켜거나 끈다. 가입할 때 한 번만 받던 값을 가입 뒤에도 바꿀 수 있게 한다.
-            동의를 끄면 카테고리 설정과 무관하게 푸시가 전부 나가지 않는다. 카테고리별 설정 값은 그대로 유지된다.""")
+            동의를 끄면 카테고리 설정과 무관하게 푸시가 전부 나가지 않는다. 카테고리별 설정 값은 그대로 유지되지만,
+            동의를 켤 때 네 카테고리가 모두 꺼져 있으면(가입할 때 동의하지 않은 경우) 함께 켠다.""")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_SETTING_NOT_FOUND"})
     ApiResponse<MemberNotificationSettingResponse> updateConsent(
