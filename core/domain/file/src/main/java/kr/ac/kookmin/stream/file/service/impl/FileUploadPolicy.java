@@ -26,6 +26,7 @@ final class FileUploadPolicy {
         "hwp", Set.of("application/x-hwp", "application/haansofthwp"),
         "zip", Set.of("application/zip", "application/x-zip-compressed")
     );
+    private static final Map<String, Set<String>> ALL_TYPES = merge(IMAGE_TYPES, ATTACHMENT_TYPES);
     // 빌릴게 물품 아이콘은 SVG로만 받는다
     private static final Map<String, Set<String>> ITEM_ICON_TYPES = Map.of(
         "svg", Set.of("image/svg+xml")
@@ -34,41 +35,39 @@ final class FileUploadPolicy {
     private static final long IMAGE_MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final long ATTACHMENT_MAX_FILE_SIZE = 20 * 1024 * 1024;
 
-    private static final Map<FileCategory, Map<String, Set<String>>> ALLOWED_TYPES = Map.of(
-        FileCategory.TEMP, merge(IMAGE_TYPES, ATTACHMENT_TYPES),
-        FileCategory.NOTICE_ATTACHMENT, ATTACHMENT_TYPES,
-        FileCategory.NOTICE_IMAGE, IMAGE_TYPES,
-        FileCategory.EVENT_IMAGE, IMAGE_TYPES,
-        FileCategory.ARCHIVE_IMAGE, IMAGE_TYPES,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_TYPES,
-        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_TYPES,
-        FileCategory.ITEM_IMAGE, ITEM_ICON_TYPES
-    );
-
-    private static final Map<FileCategory, Long> MAX_FILE_SIZE = Map.of(
-        FileCategory.TEMP, ATTACHMENT_MAX_FILE_SIZE,
-        FileCategory.NOTICE_ATTACHMENT, ATTACHMENT_MAX_FILE_SIZE,
-        FileCategory.NOTICE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.EVENT_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.ARCHIVE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE,
-        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.ITEM_IMAGE, IMAGE_MAX_FILE_SIZE
-    );
-
     private FileUploadPolicy() {}
 
     static void validate(FileCategory category, String originalName, String contentType, long fileSize) {
-        Set<String> allowedContentTypes = ALLOWED_TYPES.get(category).get(extractExtension(originalName));
+        Set<String> allowedContentTypes = allowedTypes(category).get(extractExtension(originalName));
         if (allowedContentTypes == null) {
             throw new BusinessException(FileErrorCode.UNSUPPORTED_FILE_EXTENSION);
         }
         if (!allowedContentTypes.contains(contentType)) {
             throw new BusinessException(FileErrorCode.CONTENT_TYPE_MISMATCH);
         }
-        if (fileSize <= 0 || fileSize > MAX_FILE_SIZE.get(category)) {
+        if (fileSize <= 0 || fileSize > maxFileSize(category)) {
             throw new BusinessException(FileErrorCode.FILE_SIZE_EXCEEDED);
         }
+    }
+
+    // default를 두지 않는다. 카테고리가 늘면 컴파일이 막으므로 정책을 빠뜨린 카테고리가 업로드 시점의
+    // NullPointerException(500)으로 새지 않는다
+    private static Map<String, Set<String>> allowedTypes(FileCategory category) {
+        return switch (category) {
+            case TEMP -> ALL_TYPES;
+            case NOTICE_ATTACHMENT -> ATTACHMENT_TYPES;
+            case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
+                FEE_TRANSCRIPT_IMAGE, HOME_BANNER_IMAGE -> IMAGE_TYPES;
+            case ITEM_IMAGE -> ITEM_ICON_TYPES;
+        };
+    }
+
+    private static long maxFileSize(FileCategory category) {
+        return switch (category) {
+            case TEMP, NOTICE_ATTACHMENT -> ATTACHMENT_MAX_FILE_SIZE;
+            case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
+                FEE_TRANSCRIPT_IMAGE, ITEM_IMAGE, HOME_BANNER_IMAGE -> IMAGE_MAX_FILE_SIZE;
+        };
     }
 
     static String extractExtension(String originalName) {

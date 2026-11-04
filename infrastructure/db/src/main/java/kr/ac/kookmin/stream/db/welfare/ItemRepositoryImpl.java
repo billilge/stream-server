@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -61,6 +62,19 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item save(Item item) {
         return itemJpaRepository.save(ItemJpaEntity.from(item)).toDomain();
+    }
+
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
+    @Override
+    public PreviewResult<Item> findSearchPreview(String keyword, int limit) {
+        Page<ItemJpaEntity> result = itemJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(ItemJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

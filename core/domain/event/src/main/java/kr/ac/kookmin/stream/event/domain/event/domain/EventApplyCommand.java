@@ -10,7 +10,7 @@ public record EventApplyCommand(List<AnswerCommand> answers) {
     /**
      * 질문 하나에 대한 답변.
      *
-     * @param answerText      단답형·장문형 답변. 선택형이면 null
+     * @param answerText      단답형·장문형 답변. 선택형이면 '기타'에 쓴 문구이고, '기타'를 고르지 않았으면 null
      * @param selectedOptions 선택형 질문에서 고른 선택지의 0-based 인덱스. 주관식이면 빈 목록
      */
     public record AnswerCommand(Long questionId, String answerText, List<Integer> selectedOptions) {

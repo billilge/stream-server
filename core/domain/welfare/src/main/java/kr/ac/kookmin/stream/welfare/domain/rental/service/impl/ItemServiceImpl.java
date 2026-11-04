@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
@@ -20,6 +21,11 @@ class ItemServiceImpl implements ItemService {
     @Override
     public CursorSliceResult<Item> getItems(ItemCategory category, String keyword, ItemCursor cursor, int size) {
         return itemRepository.findSlice(category, keyword, cursor, size);
+    }
+
+    @Override
+    public PreviewResult<Item> searchPreview(String keyword, int limit) {
+        return itemRepository.findSearchPreview(keyword, limit);
     }
 
     @Override
