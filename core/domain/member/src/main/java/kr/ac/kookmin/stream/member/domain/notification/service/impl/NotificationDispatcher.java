@@ -61,7 +61,7 @@ class NotificationDispatcher {
      */
     void dispatchToAdmins(NotificationType type, List<String> formatValues, long targetId) {
         notificationRepository.saveAll(List.of(Notification.create(null, type, formatValues, targetId)));
-        // 운영진 업무 알림(신청/취소/반납신청 등)은 개인 알림 설정과 무관하게 전원에게 보낸다(레거시와 동일)
+        // 운영진 업무 알림(신청/취소/반납신청 등)은 개인 알림 설정과 무관하게 전원에게 보낸다
         sendPush(type, formatValues, targetId, notificationRecipientRepository.findAllAdminPushTargets(), 1);
     }
 
