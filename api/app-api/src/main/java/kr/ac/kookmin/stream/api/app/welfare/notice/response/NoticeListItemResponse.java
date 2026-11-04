@@ -18,9 +18,7 @@ public record NoticeListItemResponse(
 
     /** 등록된 이미지 중 첫 번째를 썸네일로 쓴다. */
     public static NoticeListItemResponse from(Notice notice, Map<Long, File> filesById) {
-        Long thumbnailId = notice.getImageIds() == null || notice.getImageIds().isEmpty()
-            ? null
-            : notice.getImageIds().get(0);
+        Long thumbnailId = notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
 
         return new NoticeListItemResponse(
             notice.getId(),

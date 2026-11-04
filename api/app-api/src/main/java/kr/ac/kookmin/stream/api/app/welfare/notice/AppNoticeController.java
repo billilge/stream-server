@@ -58,17 +58,13 @@ public class AppNoticeController implements AppNoticeApi {
     public ApiResponse<NoticeDetailResponse> getNotice(@PathVariable("noticeId") Long noticeId) {
         Notice notice = noticeService.getById(noticeId);
 
-        Map<Long, File> imagesById = fileService.findAllByIdIn(
-                notice.getImageIds() == null ? List.of() : notice.getImageIds()
-        );
-        Map<Long, File> attachmentsById = fileService.findAllByIdIn(
-                notice.getAttachmentIds() == null ? List.of() : notice.getAttachmentIds()
-        );
+        Map<Long, File> imagesById = fileService.findAllByIdIn(notice.getImageIds());
+        Map<Long, File> attachmentsById = fileService.findAllByIdIn(notice.getAttachmentIds());
 
         return ApiResponse.success(NoticeDetailResponse.from(notice, imagesById, attachmentsById));
     }
 
     private static Long firstImageId(Notice notice) {
-        return notice.getImageIds() == null || notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
+        return notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
     }
 }
