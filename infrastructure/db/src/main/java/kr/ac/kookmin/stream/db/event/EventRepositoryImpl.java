@@ -120,18 +120,18 @@ public class EventRepositoryImpl implements EventRepository {
         int limit,
         LocalDateTime now
     ) {
-        return eventJpaRepository.findPublishedSlice(
-            recruitStatus == null,
-            recruitStatus == RecruitStatus.BEFORE_OPEN,
-            recruitStatus == RecruitStatus.OPEN,
-            recruitStatus == RecruitStatus.CLOSED,
-            RecruitType.FIRST_COME,
-            EventApplicationStatus.APPLIED,
-            now,
-            cursor == null ? null : cursor.eventStartAt(),
-            cursor == null ? null : cursor.eventId(),
-            Pageable.ofSize(limit)
-        ).stream().map(EventJpaEntity::toDomain).toList();
+        LocalDateTime cursorSortAt = cursor == null ? null : cursor.sortAt();
+        Long cursorEventId = cursor == null ? null : cursor.eventId();
+        Pageable pageable = Pageable.ofSize(limit);
+
+        List<EventJpaEntity> entities = switch (recruitStatus) {
+            case OPEN -> eventJpaRepository.findOpenSlice(
+                RecruitType.FIRST_COME, EventApplicationStatus.APPLIED, now, cursorSortAt, cursorEventId, pageable);
+            case BEFORE_OPEN -> eventJpaRepository.findBeforeOpenSlice(now, cursorSortAt, cursorEventId, pageable);
+            case CLOSED -> eventJpaRepository.findClosedSlice(
+                RecruitType.FIRST_COME, EventApplicationStatus.APPLIED, now, cursorSortAt, cursorEventId, pageable);
+        };
+        return entities.stream().map(EventJpaEntity::toDomain).toList();
     }
 
     @Override
