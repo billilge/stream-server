@@ -14,7 +14,7 @@ public interface FeedbackService {
     // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
     Feedback getById(Long id);
 
-    // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
+    // 답변을 공개한 회차의 답변 있는 질문만 돌려준다. 답변 전 질문은 작성자 본인만 내 작성내역에서 본다
     PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset);
 
     // 본인이 쓴 질문 전체(답변이 없는 질문도 포함). 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다

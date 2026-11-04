@@ -35,10 +35,7 @@ class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset) {
-        // 한 페이지에 여러 회차가 섞일 수 있어 공개 여부를 질문마다 조회하지 않고 미리 한 번에 구한다
-        Set<FeedbackPeriod> publishedPeriods = findPublishedPeriods(period.year());
-        return feedbackRepository.search(period.year(), period.round(), pageOffset)
-            .map(feedback -> hideUnpublishedAnswer(feedback, publishedPeriods));
+        return feedbackRepository.searchPublished(period.year(), period.round(), pageOffset);
     }
 
     @Override
