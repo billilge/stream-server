@@ -43,4 +43,10 @@ class OAuthServiceImpl implements OAuthService {
     public void link(OAuthProvider provider, String providerUserId, Long memberId) {
         oauthAccountRepository.save(OAuthAccount.create(memberId, provider, providerUserId));
     }
+
+    @Override
+    @Transactional
+    public void unlinkAll(Long memberId) {
+        oauthAccountRepository.deleteAllByMemberId(memberId);
+    }
 }

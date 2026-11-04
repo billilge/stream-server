@@ -15,4 +15,6 @@ public interface MemberRepository {
     List<Member> findAllCouncilMembers();
     Member save(Member member);
     void clearFcmTokenOfOthers(Long memberId, String fcmToken);
+    // 소프트 삭제한다. 이미 탈퇴했거나 없는 회원이면 아무것도 하지 않는다
+    void delete(Long id);
 }
