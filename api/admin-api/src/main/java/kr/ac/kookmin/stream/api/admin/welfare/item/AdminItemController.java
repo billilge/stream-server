@@ -3,7 +3,6 @@ package kr.ac.kookmin.stream.api.admin.welfare.item;
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
-import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemStockAdjustRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.response.AdminItemDetailResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.item.usecase.AdminItemUseCase;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -69,17 +67,6 @@ public class AdminItemController implements AdminItemApi {
         @Valid @RequestBody ItemUpdateRequest request
     ) {
         Item item = adminItemUseCase.update(itemId, request);
-        return ApiResponse.success(AdminItemDetailResponse.from(item));
-    }
-
-    @Override
-    @PatchMapping("/{itemId}/stock")
-    public ApiResponse<AdminItemDetailResponse> adjustStock(
-        AdminApiUser apiUser,
-        @PathVariable Long itemId,
-        @Valid @RequestBody ItemStockAdjustRequest request
-    ) {
-        Item item = adminItemService.adjustStock(itemId, request.delta());
         return ApiResponse.success(AdminItemDetailResponse.from(item));
     }
 

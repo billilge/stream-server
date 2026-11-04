@@ -43,6 +43,8 @@ class AdminItemServiceImpl implements AdminItemService {
         return itemRepository.save(item);
     }
 
+    // 재고 변경은 increaseStock/decreaseStock의 검증을 타도록, 폼이 읽은 재고(baseCount)와 목표 수량의 차이만큼
+    // 지금 재고를 증감시킨다. 지금 읽은 재고와 비교하면 폼이 열려 있는 사이의 대여·반납을 덮어쓴다.
     @Override
     public Item update(Long itemId, ItemUpdateCommand command) {
         return lockExecutor.executeOptimistic(() -> {
@@ -52,22 +54,16 @@ class AdminItemServiceImpl implements AdminItemService {
             }
             validateReturnPolicyRequired(command.type(), command.returnPolicy());
 
+            int countDiff = command.count() - command.baseCount();
+            if (countDiff > 0) {
+                existing.increaseStock(countDiff);
+            } else if (countDiff < 0) {
+                existing.decreaseStock(-countDiff);
+            }
+
             String imageKey = command.imageKey() != null ? command.imageKey() : existing.getImageKey();
             Item updated = Item.of(itemId, command.name(), command.category(), command.type(), existing.getCount(), imageKey, command.returnPolicy());
             return itemRepository.save(updated);
-        });
-    }
-
-    @Override
-    public Item adjustStock(Long itemId, int delta) {
-        return lockExecutor.executeOptimistic(() -> {
-            Item existing = itemRepository.getById(itemId);
-            if (delta > 0) {
-                existing.increaseStock(delta);
-            } else if (delta < 0) {
-                existing.decreaseStock(-delta);
-            }
-            return itemRepository.save(existing);
         });
     }
 
