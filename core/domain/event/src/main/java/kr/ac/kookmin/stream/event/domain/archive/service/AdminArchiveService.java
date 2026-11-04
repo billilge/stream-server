@@ -1,8 +1,10 @@
 package kr.ac.kookmin.stream.event.domain.archive.service;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
+import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveWriteCommand;
 
 /**
  * 운영진 아카이빙 API가 쓰는 서비스.
@@ -19,4 +21,24 @@ public interface AdminArchiveService {
      * @param exposed 슬랑제 노출 여부. {@code null}이면 노출 여부로 좁히지 않는다
      */
     PageResult<Archive> getArchives(String keyword, Boolean exposed, PageOffset pageOffset);
+
+    /**
+     * 사진 파일과 연결할 행사가 실제로 있는지는 이 서비스가 보지 않는다. 교차 도메인이라
+     * {@code api:admin-api}의 UseCase가 확인한다.
+     */
+    void create(ArchiveWriteCommand command);
+
+    /** 사진과 연결 행사도 받은 값으로 교체한다. 삭제된 아카이빙은 없는 것으로 본다. */
+    void update(Long archiveId, ArchiveWriteCommand command);
+
+    /** 행은 남기고 표시만 바꾼다. 학생 앱 조회에서는 바로 빠진다. */
+    void delete(Long archiveId);
+
+    /**
+     * 여러 아카이빙의 슬랑제 페이지 노출 여부를 한 번에 바꾼다. 목록의 체크박스 일괄 변경과 행별 드롭다운 변경이
+     * 같은 동작이라 하나로 받는다 — 행별 변경은 식별자가 하나인 요청이다.
+     * <p>
+     * 하나라도 없거나 지워진 아카이빙이 섞이면 아무것도 바꾸지 않는다.
+     */
+    void changeExposure(List<Long> archiveIds, boolean exposed);
 }

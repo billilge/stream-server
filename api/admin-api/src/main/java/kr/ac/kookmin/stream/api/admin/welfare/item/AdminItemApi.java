@@ -39,8 +39,8 @@ public interface AdminItemApi {
 
     /** 물품 등록. 이미지는 presigned URL로 먼저 업로드한 파일 ID로 받는다. */
     @Operation(summary = "물품 등록",
-        description = "물품을 등록한다. 이미지는 POST /v1/files/presigned-url(category: ITEM_IMAGE)로 먼저 업로드한 "
-            + "파일 ID(imageFileId)로 받는다. 이름이 이미 있으면 등록하지 않는다. 대여품(RENTAL)은 반납 정책이 필수다.")
+        description = "물품을 등록한다. 이미지는 SVG 파일만 받으며, POST /v1/files/presigned-url(category: ITEM_IMAGE)로 "
+            + "먼저 업로드한 파일 ID(imageFileId)로 받는다. 이름이 이미 있으면 등록하지 않는다. 대여품(RENTAL)은 반납 정책이 필수다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NAME_DUPLICATED", "RETURN_POLICY_REQUIRED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})

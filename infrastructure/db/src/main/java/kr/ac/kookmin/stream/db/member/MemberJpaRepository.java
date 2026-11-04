@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     boolean existsByPhoneNumberAndIsDeletedFalse(String phoneNumber);
 
+    boolean existsByEmailAndIsDeletedFalse(String email);
+
     List<MemberJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
 
     // keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
@@ -30,6 +33,15 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     @Query("SELECT m.id FROM MemberJpaEntity m WHERE m.isDeleted = false")
     List<Long> findAllActiveIds();
+
+    @Query("""
+        SELECT m FROM MemberJpaEntity m
+        WHERE m.isDeleted = false
+        AND m.role = :role
+        AND m.councilDepartment IS NOT NULL
+        ORDER BY m.name, m.studentId
+        """)
+    List<MemberJpaEntity> findAllCouncilMembers(@Param("role") Role role);
 
     // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)은 푸시 대상에서 빠진다
     @Query("""

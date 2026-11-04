@@ -27,6 +27,13 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses) {
+        return rentalHistoryJpaRepository.findAllByMemberIdAndRentalStatusIn(memberId, statuses).stream()
+            .map(RentalHistoryJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses) {
         return rentalHistoryJpaRepository.findAllByRentalStatusIn(statuses).stream()
             .map(RentalHistoryJpaEntity::toDomain)
