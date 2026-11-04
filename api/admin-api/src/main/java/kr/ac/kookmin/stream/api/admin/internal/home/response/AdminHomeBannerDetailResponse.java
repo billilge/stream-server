@@ -9,8 +9,8 @@ import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
 /**
  * 배너 상세. 수정 화면의 초기값으로도 쓴다.
  *
- * @param imageFileId  배경 이미지의 파일 식별자. 수정 화면이 이미지를 그대로 둘지 가리는 데 쓴다 — 프리셋
- *                     카테고리면 서버가 채운 프리셋 파일을 가리킨다
+ * @param imageFileId  운영진이 직접 올린 배경 파일. 수정 화면이 이미지를 그대로 둘지 가리는 데 쓴다.
+ *                     프리셋 카테고리는 서버가 채우므로 {@code null}이고, 그 배경은 {@code imageUrl}로만 보인다
  * @param linkedTarget 연결된 공지·행사. 외부 링크면 비어 있고, 대상이 지워졌어도 비어 있다. 아직 공개하지 않은 행사는 담긴다
  * @param linkUrl      외부 링크 주소. {@code EXTERNAL_LINK}일 때만 채워진다
  */
@@ -42,7 +42,7 @@ public record AdminHomeBannerDetailResponse(
             banner.calculateStatus(now),
             banner.getTitle(),
             banner.getSubtitle(),
-            banner.getImageFileId(),
+            banner.getUploadedImageFileId(),
             imageUrl,
             banner.getExposureStartAt(),
             banner.getExposureEndAt(),

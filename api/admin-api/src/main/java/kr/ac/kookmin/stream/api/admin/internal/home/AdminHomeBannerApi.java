@@ -48,8 +48,8 @@ public interface AdminHomeBannerApi {
     );
 
     @Operation(summary = "배너 상세 조회",
-        description = "배너 한 건을 조회한다. 수정 화면의 초기값으로도 쓴다. imageFileId는 지금 배경으로 쓰는 "
-            + "파일이고, 프리셋 카테고리면 서버가 채운 프리셋 파일을 가리킨다. "
+        description = "배너 한 건을 조회한다. 수정 화면의 초기값으로도 쓴다. imageFileId는 운영진이 직접 올린 "
+            + "배경 파일이라 ETC일 때만 담기고, 프리셋 카테고리는 null이다 — 그 배경은 imageUrl로만 보인다. "
             + "연결된 공지·행사가 지워졌으면 연결 대상만 비워 내려준다. 아직 공개하지 않은 행사는 그대로 내려준다.")
     @ApiErrorCode(type = HomeErrorCode.class, codes = {"HOME_BANNER_NOT_FOUND"})
     ApiResponse<AdminHomeBannerDetailResponse> getBanner(AdminApiUser apiUser, Long bannerId);

@@ -116,6 +116,17 @@ public class HomeBanner {
     }
 
     /**
+     * 운영진이 직접 올린 배경 파일. 프리셋 카테고리는 서버가 채운 값이라 운영진이 고른 적이 없으므로
+     * {@code null}이다.
+     * <p>
+     * 수정 화면이 이 값을 그대로 되돌려 보내는 것을 전제로 한다. 프리셋 파일까지 내려주면 카테고리만
+     * {@code ETC}로 바꿔 저장할 때 그 프리셋이 따라와, 운영진이 고르지 않은 배경이 기타 배너에 붙는다.
+     */
+    public Long getUploadedImageFileId() {
+        return category == HomeBannerCategory.ETC ? imageFileId : null;
+    }
+
+    /**
      * 랜딩 타입과 값의 짝이 맞는지. 쓰기 API가 없는 동안 DB에 손으로 넣은 행이 어긋날 수 있어,
      * 어긋난 배너는 홈에서 빼고 나머지는 그대로 보여준다 — 한 건 때문에 홈 전체가 막히지 않게 한다.
      */
