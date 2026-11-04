@@ -46,6 +46,11 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
+    public long countByMemberId(Long memberId) {
+        return feedbackJpaRepository.countByCreatedByAndIsDeletedFalse(memberId);
+    }
+
+    @Override
     public List<Feedback> findAllByYearAndRound(int year, int round) {
         return feedbackJpaRepository.findAllByYearAndRound(year, round).stream()
             .map(FeedbackJpaEntity::toDomain)

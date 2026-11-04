@@ -17,6 +17,9 @@ public interface RentalHistoryRepository {
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
 
+    /** 회원의 대여 이력 중 주어진 상태들 중 하나인 것. */
+    List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses);
+
     /** 모든 회원의 대여 이력 중 주어진 상태들 중 하나인 것. 반납 알림 대상을 고를 때 쓴다. */
     List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses);
 

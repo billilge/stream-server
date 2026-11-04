@@ -65,6 +65,11 @@ class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
+    public long countByMemberId(Long memberId) {
+        return feedbackRepository.countByMemberId(memberId);
+    }
+
+    @Override
     public List<Integer> getAvailableYears() {
         return feedbackRoundRepository.findDistinctPublishedYears();
     }
