@@ -9,6 +9,7 @@ import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
+import kr.ac.kookmin.stream.welfare.domain.rental.service.AdminRentalHistoryService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class AdminRentalRecordCreateUseCase {
     private final MemberService memberService;
     private final ItemService itemService;
     private final RentalHistoryService rentalHistoryService;
+    private final AdminRentalHistoryService adminRentalHistoryService;
 
     public AdminRentalHistoryResponse create(AdminRentalRecordCreateRequest request) {
         return lockExecutor.executeOptimistic(() -> {
@@ -37,7 +39,10 @@ public class AdminRentalRecordCreateUseCase {
                 item, request.memberId(), request.workerId(), FIXED_COUNT,
                 LocalDateTime.now(), request.rentAt()
             );
-            return AdminRentalHistoryResponse.from(new RentalRecord(history, item), member);
+            RentalRecord record = request.itemCode() != null
+                ? adminRentalHistoryService.updateItemCode(history.getId(), request.itemCode())
+                : new RentalRecord(history, item);
+            return AdminRentalHistoryResponse.from(record, member);
         });
     }
 }

@@ -20,6 +20,9 @@ public record AdminRentalRecordCreateRequest(
 
     @Schema(description = "실제 수령(대여 시작) 시각", example = "2026-10-27T13:00:00")
     @NotNull(message = "대여 시작 시각을 입력해 주세요.")
-    LocalDateTime rentAt
+    LocalDateTime rentAt,
+
+    @Schema(description = "물품 코드. 없으면 null", example = "우산1")
+    String itemCode
 ) {
 }

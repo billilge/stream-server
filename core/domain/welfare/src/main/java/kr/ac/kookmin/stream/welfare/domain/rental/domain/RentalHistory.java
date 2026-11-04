@@ -48,6 +48,11 @@ public class RentalHistory {
         this.rentalStatus = RentalStatus.CANCEL;
     }
 
+    /** 물품 코드를 운영진이 직접 매긴다. null로 보내면 지운다. */
+    public void updateItemCode(String itemCode) {
+        this.itemCode = itemCode;
+    }
+
     /** 운영진이 상태를 직접 바꾼다. RENTAL로 바뀌면 지금을 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다. */
     public void changeStatusByAdmin(RentalStatus newStatus, LocalDateTime now) {
         if (newStatus == RentalStatus.RENTAL) {

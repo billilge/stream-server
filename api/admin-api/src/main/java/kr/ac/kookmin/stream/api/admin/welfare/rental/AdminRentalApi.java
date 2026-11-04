@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalStatusUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.rental.request.ItemCodeUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalStatusWorkerLogResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -41,7 +42,7 @@ public interface AdminRentalApi {
     @Operation(summary = "대여 기록 추가",
         description = "현장에서 수기로 처리한 대여를 관리자가 대신 등록한다. 등록 즉시 수령 완료로 보고 물품 재고를 "
             + "차감한다(소모품은 RETURNED, 대여품은 RENTAL로 시작). 근무자(workerId)는 호출한 관리자가 아니라 "
-            + "폼에서 고른 값이다.")
+            + "폼에서 고른 값이다. itemCode를 함께 보내면 등록과 동시에 물품 코드를 매긴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
@@ -70,4 +71,21 @@ public interface AdminRentalApi {
             + "없으면 빈 배열이다.")
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
     ApiResponse<AdminRentalStatusWorkerLogResponse> getWorkerLogs(AdminApiUser apiUser, Long rentalHistoryId);
+
+    /** 물품 코드 수정. 등록 뒤에 코드를 새로 매기거나 바꿀 때 쓴다. */
+    @Operation(summary = "대여 기록 물품 코드 수정",
+        description = "대여 기록 하나의 물품 코드를 바꾼다. itemCode를 null로 보내면 지운다.")
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
+    ApiResponse<AdminRentalHistoryResponse> updateItemCode(
+        AdminApiUser apiUser,
+        Long rentalHistoryId,
+        ItemCodeUpdateRequest request
+    );
+
+    /** 대여 기록 삭제. 잘못 등록한 기록을 지울 때 쓴다. */
+    @Operation(summary = "대여 기록 삭제",
+        description = "대여 기록을 하드 삭제한다. 삭제 전 상태가 진행 중(아직 반납완료·취소·반려가 아님)이었으면 "
+            + "그만큼 물품 재고를 복구한다. 상태 변경 처리자 로그도 함께 지운다.")
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
+    ApiResponse<Void> deleteRentalRecord(AdminApiUser apiUser, Long rentalHistoryId);
 }
