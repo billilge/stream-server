@@ -16,7 +16,6 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
@@ -408,7 +407,12 @@ class LockerServiceImplTest {
         }
 
         @Override
-        public LockerApplicationCounts countByPeriod(Long lockerPeriodId) {
+        public long countByPeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long countAppliedByPeriod(Long lockerPeriodId) {
             throw new UnsupportedOperationException();
         }
 

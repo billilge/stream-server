@@ -148,7 +148,9 @@ class AdminLockerServiceImpl implements AdminLockerService {
     // 회차가 있는지는 목록 조회가 이미 본다. 개수만 따로 부르는 화면이 없어 여기서 또 확인하지 않는다
     @Override
     public LockerApplicationCounts getApplicationCounts(Long lockerPeriodId) {
-        return lockerApplicationRepository.countByPeriod(lockerPeriodId);
+        return new LockerApplicationCounts(
+            lockerApplicationRepository.countByPeriod(lockerPeriodId),
+            lockerApplicationRepository.countAppliedByPeriod(lockerPeriodId));
     }
 
     @Override

@@ -8,7 +8,6 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 
 /**
  * 사물함 신청 저장소. 운영 회차·구역·사물함은 {@link LockerRepository}가 맡는다.
@@ -65,9 +64,14 @@ public interface LockerApplicationRepository {
         Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset);
 
     /**
-     * 회차의 전체 신청 수와 취소되지 않은 신청 수. 목록과 달리 검색어·상태 필터를 타지 않는다.
+     * 회차의 전체 신청 수. 취소된 신청도 센다. 목록과 달리 검색어·상태 필터를 타지 않는다.
      */
-    LockerApplicationCounts countByPeriod(Long lockerPeriodId);
+    long countByPeriod(Long lockerPeriodId);
+
+    /**
+     * 회차의 취소되지 않은 신청 수. 목록과 달리 검색어·상태 필터를 타지 않는다.
+     */
+    long countAppliedByPeriod(Long lockerPeriodId);
 
     /**
      * 신청을 저장한다. 같은 회차의 같은 사물함에 먼저 저장된 신청이 있으면

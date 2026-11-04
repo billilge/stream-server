@@ -10,7 +10,6 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.repository.LockerApplicationRepository;
 import lombok.RequiredArgsConstructor;
@@ -98,10 +97,13 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     }
 
     @Override
-    public LockerApplicationCounts countByPeriod(Long lockerPeriodId) {
-        return new LockerApplicationCounts(
-            lockerApplicationJpaRepository.countByLockerPeriodId(lockerPeriodId),
-            lockerApplicationJpaRepository.countByLockerPeriodIdAndIsCanceledFalse(lockerPeriodId));
+    public long countByPeriod(Long lockerPeriodId) {
+        return lockerApplicationJpaRepository.countByLockerPeriodId(lockerPeriodId);
+    }
+
+    @Override
+    public long countAppliedByPeriod(Long lockerPeriodId) {
+        return lockerApplicationJpaRepository.countByLockerPeriodIdAndIsCanceledFalse(lockerPeriodId);
     }
 
     @Override
