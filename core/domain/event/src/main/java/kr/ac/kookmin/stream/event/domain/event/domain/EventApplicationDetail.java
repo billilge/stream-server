@@ -48,6 +48,8 @@ public record EventApplicationDetail(
 
     /**
      * 질문 한 건과 그 신청에서 제출한 답변. 답하지 않은 선택 질문은 답변이 비어 있다.
+     *
+     * @param answerText 텍스트형 답변. 선택형이면 '기타'에 쓴 문구이고, '기타'를 고르지 않았으면 {@code null}
      */
     public record AnsweredQuestion(EventQuestion question, String answerText, List<Integer> selectedOptions) {
 

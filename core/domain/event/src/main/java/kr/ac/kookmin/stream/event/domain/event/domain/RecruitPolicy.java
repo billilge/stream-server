@@ -10,7 +10,8 @@ import kr.ac.kookmin.stream.common.BusinessException;
  * 때는 저장된 값을 그대로 표준 생성자로 만든다.
  *
  * @param capacity    선착순 모집의 정원. 상시 모집이면 의미 없는 값 0이다
- * @param feePaidOnly 학생회비 납부자만 신청할 수 있는지. 신청 시 검증은 아직 없다(후속 작업)
+ * @param feePaidOnly 학생회비 납부자만 신청할 수 있는지. 납부자 명부는 다른 도메인(welfare)이라 신청 시 확인은 학생 앱의
+ *                    UseCase가 한다
  */
 public record RecruitPolicy(RecruitType type, int capacity, boolean feePaidOnly) {
 
@@ -20,7 +21,7 @@ public record RecruitPolicy(RecruitType type, int capacity, boolean feePaidOnly)
     }
 
     /**
-     * 운영진 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
+     * 운영진·학생 화면에 보여줄 정원. 상시 모집은 인원 제한이 없어 {@code null}이다(저장값 0은 의미가 없다).
      */
     public Integer capacityLimit() {
         return type == RecruitType.FIRST_COME ? capacity : null;

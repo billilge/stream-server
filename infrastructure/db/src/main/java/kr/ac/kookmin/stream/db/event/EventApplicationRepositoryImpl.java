@@ -121,6 +121,17 @@ public class EventApplicationRepositoryImpl implements EventApplicationRepositor
     }
 
     @Override
+    public List<EventApplication> findAppliedByMemberIdAndEventIds(Long memberId, Collection<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return List.of();
+        }
+        return eventApplicationJpaRepository.findAllByMemberIdAndEventIdInAndStatus(
+                memberId, eventIds, EventApplicationStatus.APPLIED).stream()
+            .map(EventApplicationJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public Optional<EventApplication> findByIdAndMemberId(Long applicationId, Long memberId) {
         return eventApplicationJpaRepository.findByIdAndMemberId(applicationId, memberId)
             .map(EventApplicationJpaEntity::toDomain);
