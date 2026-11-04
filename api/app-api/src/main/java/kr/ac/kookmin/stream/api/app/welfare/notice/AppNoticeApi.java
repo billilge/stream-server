@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.notice;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ac.kookmin.stream.api.app.welfare.notice.request.NoticeListParams;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
@@ -9,6 +10,7 @@ import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeDetailResponse
 import kr.ac.kookmin.stream.api.app.welfare.notice.response.NoticeListItemResponse;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeErrorCode;
+import org.springdoc.core.annotations.ParameterObject;
 
 /**
  * 학생 앱 공지 API의 문서 명세. 구현은 {@link AppNoticeController}가 맡는다.
@@ -26,12 +28,7 @@ public interface AppNoticeApi {
             + "통합 검색의 공지 탭과 더보기도 이 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_INVALID_CURSOR"})
-    ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(
-        String category,
-        String keyword,
-        String cursor,
-        int size
-    );
+    ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(@ParameterObject NoticeListParams params);
 
     /** 공지 상세. 운영진 수정 화면도 이 응답으로 폼을 채운다. */
     @Operation(summary = "공지 상세 조회",

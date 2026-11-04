@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.event.archive.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 /**
  * @param year    조회할 활동 연도. 없으면 전체를 조회한다
@@ -13,6 +14,7 @@ public record ArchiveListParams(
     @Max(value = 2100, message = "연도는 2000 이상 2100 이하여야 합니다.")
     Integer year,
 
+    @Size(max = 50, message = "검색어는 50자 이하로 입력해 주세요.")
     String keyword
 ) {
 }
