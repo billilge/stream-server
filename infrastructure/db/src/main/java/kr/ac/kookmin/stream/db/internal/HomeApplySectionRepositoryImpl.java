@@ -64,10 +64,7 @@ public class HomeApplySectionRepositoryImpl implements HomeApplySectionRepositor
             // 제약 위반을 이 자리에서 잡으려면 커밋 시점까지 미루지 않고 바로 쓰기를 내보내야 한다
             return homeApplySectionJpaRepository.saveAndFlush(HomeApplySectionJpaEntity.from(section)).toDomain();
         } catch (DataIntegrityViolationException e) {
-            if (ConstraintViolationUtil.isViolated(e, TARGET_UNIQUE_CONSTRAINT)) {
-                throw new BusinessException(HomeErrorCode.HOME_APPLY_SECTION_CONFLICT);
-            }
-            throw e;
+            throw translateViolation(e);
         }
     }
 
@@ -78,10 +75,14 @@ public class HomeApplySectionRepositoryImpl implements HomeApplySectionRepositor
             homeApplySectionJpaRepository.saveAllAndFlush(
                 sections.stream().map(HomeApplySectionJpaEntity::from).toList());
         } catch (DataIntegrityViolationException e) {
-            if (ConstraintViolationUtil.isViolated(e, TARGET_UNIQUE_CONSTRAINT)) {
-                throw new BusinessException(HomeErrorCode.HOME_APPLY_SECTION_CONFLICT);
-            }
-            throw e;
+            throw translateViolation(e);
         }
+    }
+
+    private RuntimeException translateViolation(DataIntegrityViolationException e) {
+        if (ConstraintViolationUtil.isViolated(e, TARGET_UNIQUE_CONSTRAINT)) {
+            return new BusinessException(HomeErrorCode.HOME_APPLY_SECTION_CONFLICT);
+        }
+        return e;
     }
 }
