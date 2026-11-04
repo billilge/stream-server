@@ -23,6 +23,14 @@ public interface EventService {
      */
     List<Event> getApplicableEvents(Collection<Long> eventIds);
 
+    /**
+     * 게시되고 삭제되지 않은 행사 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     * <p>
+     * 다른 화면이 행사를 곁들여 보여줄 때(홈 배너의 연결 행사) 그 행사가 아직 학생에게 보이는지 한 번에
+     * 확인하는 데 쓴다. 한 건을 보려면 {@link #getByIdOrNull(Long)}를 쓰는데, 그쪽은 미게시도 돌려준다.
+     */
+    List<Event> getPublishedByIds(Collection<Long> eventIds);
+
     EventDetail getPublishedEvent(Long eventId);
 
     /**

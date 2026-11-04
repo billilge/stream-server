@@ -47,6 +47,11 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> getPublishedByIds(Collection<Long> eventIds) {
+        return eventRepository.findPublishedByIds(eventIds);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CursorSliceResult<EventSummary> getPublishedEvents(
         RecruitStatus recruitStatus,
