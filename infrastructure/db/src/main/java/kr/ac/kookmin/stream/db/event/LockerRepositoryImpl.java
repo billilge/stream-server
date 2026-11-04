@@ -98,7 +98,7 @@ public class LockerRepositoryImpl implements LockerRepository {
 
     @Override
     public List<LockerPeriod> findPublishedPeriodsApplyNotEndedAt(LocalDateTime at) {
-        return lockerPeriodJpaRepository.findPublishedApplyNotEndedAt(at).stream()
+        return lockerPeriodJpaRepository.findCurrentPublished(at, Pageable.unpaged()).stream()
             .map(LockerPeriodJpaEntity::toDomain)
             .toList();
     }
