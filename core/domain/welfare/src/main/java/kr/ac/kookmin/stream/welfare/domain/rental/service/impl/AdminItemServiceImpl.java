@@ -89,17 +89,19 @@ class AdminItemServiceImpl implements AdminItemService {
     public List<Item> updateReturnPolicyBulk(List<Long> itemIds, int maxRentalDays) {
         ReturnPolicy policy = ReturnPolicy.of(maxRentalDays);
         List<Item> items = itemRepository.findAllByIds(itemIds);
+        validateAllRentalItems(items);
         return items.stream()
-            .map(item -> {
-                if (item.getType() != ItemType.RENTAL) {
-                    throw new BusinessException(RentalErrorCode.RETURN_POLICY_NOT_APPLICABLE);
-                }
-                Item updated = Item.of(
-                    item.getId(), item.getName(), item.getCategory(), item.getType(), item.getCount(),
-                    item.getImageKey(), policy
-                );
-                return itemRepository.save(updated);
-            })
+            .map(item -> itemRepository.save(Item.of(
+                item.getId(), item.getName(), item.getCategory(), item.getType(), item.getCount(),
+                item.getImageKey(), policy
+            )))
             .toList();
+    }
+
+    // 반납 정책은 대여품(RENTAL)에만 적용된다.
+    private void validateAllRentalItems(List<Item> items) {
+        if (items.stream().anyMatch(item -> item.getType() != ItemType.RENTAL)) {
+            throw new BusinessException(RentalErrorCode.RETURN_POLICY_NOT_APPLICABLE);
+        }
     }
 }
