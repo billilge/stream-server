@@ -46,47 +46,78 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
     @Query(value = "UPDATE events SET updated_at = CURRENT_TIMESTAMP WHERE event_id = :eventId", nativeQuery = true)
     void touchUpdatedAt(@Param("eventId") Long eventId);
 
-    /**
-     * 게시된 행사를 (event_start_at, event_id) keyset 커서로 조회한다.
-     * <p>
-     * 모집 상태는 저장값이 아니라 신청 기간·잔여 정원으로 판정하므로, 필터가 주어지면
-     * {@code Event.calculateRecruitStatus}와 같은 규칙을 SQL로 옮겨 적용한다. 두 곳의 규칙이 어긋나면
-     * 필터로 거른 결과와 응답에 실린 모집 상태가 달라지므로, 한쪽을 고치면 다른 쪽도 함께 고쳐야 한다.
+    /*
+     * 게시된 행사를 모집 상태 구간 하나씩 (정렬 키, event_id) keyset 커서로 조회한다. 구간마다 정렬 키와 방향이 달라
+     * 쿼리를 나눈다.
+     *
+     * 모집 상태는 저장값이 아니라 신청 기간·잔여 정원으로 판정하므로 Event.calculateRecruitStatus와 같은 규칙을
+     * SQL로 옮겨 적용한다. 두 곳의 규칙이 어긋나면 거른 결과와 응답에 실린 모집 상태가 달라지고, 응답의 상태로
+     * 만든 다음 커서가 엉뚱한 구간을 가리키므로 한쪽을 고치면 다른 쪽도 함께 고쳐야 한다.
      */
+
+    /** 모집 중인 행사. 신청 마감 임박순(apply_end_at 오름차순). */
     @Query("""
         SELECT e FROM EventJpaEntity e
         WHERE e.isDeleted = false
         AND e.isPublished = true
-        AND (:cursorEventStartAt IS NULL
-            OR e.eventStartAt > :cursorEventStartAt
-            OR (e.eventStartAt = :cursorEventStartAt AND e.id > :cursorEventId))
-        AND (:filterAll = true
-            OR (:filterBeforeOpen = true
-                AND :now <= e.applyEndAt
-                AND :now < e.applyStartAt)
-            OR (:filterOpen = true
-                AND :now >= e.applyStartAt
-                AND :now <= e.applyEndAt
-                AND (e.recruitType <> :capacityLimitedType
-                    OR (SELECT COUNT(a) FROM EventApplicationJpaEntity a
-                        WHERE a.eventId = e.id AND a.status = :appliedStatus) < e.capacity))
-            OR (:filterClosed = true
-                AND (:now > e.applyEndAt
-                    OR (:now >= e.applyStartAt
-                        AND e.recruitType = :capacityLimitedType
-                        AND (SELECT COUNT(a) FROM EventApplicationJpaEntity a
-                            WHERE a.eventId = e.id AND a.status = :appliedStatus) >= e.capacity))))
-        ORDER BY e.eventStartAt ASC, e.id ASC
+        AND :now >= e.applyStartAt
+        AND :now <= e.applyEndAt
+        AND (e.recruitType <> :capacityLimitedType
+            OR (SELECT COUNT(a) FROM EventApplicationJpaEntity a
+                WHERE a.eventId = e.id AND a.status = :appliedStatus) < e.capacity)
+        AND (:cursorSortAt IS NULL
+            OR e.applyEndAt > :cursorSortAt
+            OR (e.applyEndAt = :cursorSortAt AND e.id > :cursorEventId))
+        ORDER BY e.applyEndAt ASC, e.id ASC
         """)
-    List<EventJpaEntity> findPublishedSlice(
-        @Param("filterAll") boolean filterAll,
-        @Param("filterBeforeOpen") boolean filterBeforeOpen,
-        @Param("filterOpen") boolean filterOpen,
-        @Param("filterClosed") boolean filterClosed,
+    List<EventJpaEntity> findOpenSlice(
         @Param("capacityLimitedType") RecruitType capacityLimitedType,
         @Param("appliedStatus") EventApplicationStatus appliedStatus,
         @Param("now") LocalDateTime now,
-        @Param("cursorEventStartAt") LocalDateTime cursorEventStartAt,
+        @Param("cursorSortAt") LocalDateTime cursorSortAt,
+        @Param("cursorEventId") Long cursorEventId,
+        Pageable pageable
+    );
+
+    /** 모집 예정인 행사. 신청 시작 임박순(apply_start_at 오름차순). */
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND :now <= e.applyEndAt
+        AND :now < e.applyStartAt
+        AND (:cursorSortAt IS NULL
+            OR e.applyStartAt > :cursorSortAt
+            OR (e.applyStartAt = :cursorSortAt AND e.id > :cursorEventId))
+        ORDER BY e.applyStartAt ASC, e.id ASC
+        """)
+    List<EventJpaEntity> findBeforeOpenSlice(
+        @Param("now") LocalDateTime now,
+        @Param("cursorSortAt") LocalDateTime cursorSortAt,
+        @Param("cursorEventId") Long cursorEventId,
+        Pageable pageable
+    );
+
+    /** 모집이 끝난 행사(신청 기간이 지났거나 선착순 정원이 참). 최근 행사순(event_start_at 내림차순). */
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND (:now > e.applyEndAt
+            OR (:now >= e.applyStartAt
+                AND e.recruitType = :capacityLimitedType
+                AND (SELECT COUNT(a) FROM EventApplicationJpaEntity a
+                    WHERE a.eventId = e.id AND a.status = :appliedStatus) >= e.capacity))
+        AND (:cursorSortAt IS NULL
+            OR e.eventStartAt < :cursorSortAt
+            OR (e.eventStartAt = :cursorSortAt AND e.id < :cursorEventId))
+        ORDER BY e.eventStartAt DESC, e.id DESC
+        """)
+    List<EventJpaEntity> findClosedSlice(
+        @Param("capacityLimitedType") RecruitType capacityLimitedType,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus,
+        @Param("now") LocalDateTime now,
+        @Param("cursorSortAt") LocalDateTime cursorSortAt,
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
     );

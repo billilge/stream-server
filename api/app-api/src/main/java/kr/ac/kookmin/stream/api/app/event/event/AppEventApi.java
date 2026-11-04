@@ -31,7 +31,9 @@ public interface AppEventApi {
 
     /** 게시된 행사 목록. 커서 기반 페이지네이션이며 모집 상태로 필터링한다. */
     @Operation(summary = "행사 목록 조회",
-        description = "게시된 행사를 커서 기반으로 조회한다. recruitStatus로 모집 상태를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
+        description = "게시된 행사를 커서 기반으로 조회한다. recruitStatus로 모집 상태를 필터링하고, cursor/size로 다음 페이지를 넘긴다. "
+            + "필터가 없으면 모집 중 → 모집 예정 → 모집 종료 순으로 보여준다. 같은 상태 안에서는 모집 중은 신청 마감 임박순, "
+            + "모집 예정은 신청 시작 임박순, 모집 종료는 최근 행사순이며 필터를 걸어도 같다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_RECRUIT_STATUS", "EVENT_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(@ParameterObject EventListParams params);
