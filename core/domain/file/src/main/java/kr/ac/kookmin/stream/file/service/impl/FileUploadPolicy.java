@@ -12,6 +12,8 @@ final class FileUploadPolicy {
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> ATTACHMENT_EXTENSIONS = Set.of("pdf", "doc", "docx", "hwp", "zip");
+    // 빌릴게 물품 아이콘은 SVG로만 받는다
+    private static final Set<String> ITEM_ICON_EXTENSIONS = Set.of("svg");
 
     private static final long IMAGE_MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final long ATTACHMENT_MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -22,7 +24,9 @@ final class FileUploadPolicy {
         FileCategory.NOTICE_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.EVENT_IMAGE, IMAGE_EXTENSIONS,
         FileCategory.ARCHIVE_IMAGE, IMAGE_EXTENSIONS,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS
+        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_EXTENSIONS,
+        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_EXTENSIONS,
+        FileCategory.ITEM_IMAGE, ITEM_ICON_EXTENSIONS
     );
 
     private static final Map<FileCategory, Long> MAX_FILE_SIZE = Map.of(
@@ -31,7 +35,9 @@ final class FileUploadPolicy {
         FileCategory.NOTICE_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.EVENT_IMAGE, IMAGE_MAX_FILE_SIZE,
         FileCategory.ARCHIVE_IMAGE, IMAGE_MAX_FILE_SIZE,
-        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE
+        FileCategory.LOCKER_SECTION_PHOTO, IMAGE_MAX_FILE_SIZE,
+        FileCategory.FEE_TRANSCRIPT_IMAGE, IMAGE_MAX_FILE_SIZE,
+        FileCategory.ITEM_IMAGE, IMAGE_MAX_FILE_SIZE
     );
 
     private FileUploadPolicy() {}

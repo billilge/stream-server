@@ -22,7 +22,7 @@ public record EventFormQuestionResponse(
             questionType,
             question.isRequired(),
             question.getDisplayOrder(),
-            question.getOptions() == null ? List.of() : question.getOptions(),
+            question.getOptions(),
             questionType.maxLength()
         );
     }

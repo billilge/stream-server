@@ -8,7 +8,10 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 
-/** 행사 신청과 그 이력. 행사 자체의 조회는 {@link EventService}가 맡는다. */
+/**
+ * 행사 신청과 그 이력. 행사 자체의 조회는 {@link EventService}가, 운영진 신청 현황은 {@link AdminEventApplicationService}가
+ * 맡는다.
+ */
 public interface EventApplicationService {
 
     EventApplicationForm getApplicationForm(Long eventId);

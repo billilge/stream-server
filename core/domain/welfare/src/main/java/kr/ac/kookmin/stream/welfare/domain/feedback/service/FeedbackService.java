@@ -6,10 +6,15 @@ import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
 
+/**
+ * 학생 앱의 열린피드백 질문 조회·작성. 운영진의 회차 관리와 답변 작성·공개는 {@link AdminFeedbackService}가 맡는다.
+ */
 public interface FeedbackService {
 
+    // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
     Feedback getById(Long id);
 
+    // 답변을 공개하지 않은 회차의 질문은 답변을 비워서 돌려준다
     PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset);
 
     // 회차는 현재 열려 있는 회차로 서버가 자동 배정한다

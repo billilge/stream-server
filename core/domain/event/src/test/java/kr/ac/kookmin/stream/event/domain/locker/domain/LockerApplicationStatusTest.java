@@ -12,6 +12,8 @@ class LockerApplicationStatusTest {
 
     private static final LockerPeriod PERIOD = LockerPeriod.of(
         1L,
+        2026,
+        2,
         "2026-2학기",
         LocalDateTime.of(2026, 8, 20, 10, 0),
         LocalDateTime.of(2026, 8, 25, 18, 0),

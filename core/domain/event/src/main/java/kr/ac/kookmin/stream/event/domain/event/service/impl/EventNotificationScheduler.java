@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.common.event.EventApplyClosingTomorrow;
 import kr.ac.kookmin.stream.common.event.EventStartingTomorrow;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 class EventNotificationScheduler {
 
     private final EventRepository eventRepository;
+    private final EventApplicationRepository eventApplicationRepository;
     private final OutboxWriter outboxWriter;
 
     @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
@@ -40,17 +42,17 @@ class EventNotificationScheduler {
     // 신청자가 없으면 받을 사람이 없어 기록하지 않는다
     private void recordStartingTomorrow(LocalDateTime from, LocalDateTime to) {
         for (Event event : eventRepository.findPublishedStartingBetween(from, to)) {
-            List<Long> applicantIds = eventRepository.findAppliedMemberIds(event.getId());
+            List<Long> applicantIds = eventApplicationRepository.findAppliedMemberIds(event.getId());
             if (!applicantIds.isEmpty()) {
                 outboxWriter.record(new EventStartingTomorrow(event.getId(), event.getTitle(), applicantIds));
             }
         }
     }
 
-    // 지금 신청할 수 있는 행사만 알린다. 강제 마감·정원 마감된 행사는 신청할 수 없어 뺀다
+    // 지금 신청할 수 있는 행사만 알린다. 정원 마감된 행사는 신청할 수 없어 뺀다
     private void recordApplyClosingTomorrow(LocalDateTime now, LocalDateTime from, LocalDateTime to) {
         for (Event event : eventRepository.findPublishedApplyEndingBetween(from, to)) {
-            List<Long> applicantIds = eventRepository.findAppliedMemberIds(event.getId());
+            List<Long> applicantIds = eventApplicationRepository.findAppliedMemberIds(event.getId());
             if (event.calculateRecruitStatus(now, applicantIds.size()) == RecruitStatus.OPEN) {
                 outboxWriter.record(new EventApplyClosingTomorrow(event.getId(), event.getTitle(), applicantIds));
             }

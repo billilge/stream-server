@@ -26,7 +26,8 @@ public interface AppFeedbackApi {
     /** 피드백 목록. year/round로 필터링하고 페이지 단위로 조회한다. */
     @Operation(summary = "피드백 목록 조회",
         description = "연도(year)·회차(round)로 필터링해 열린피드백 목록을 페이지 단위로 조회한다. "
-            + "year를 생략하면 전체 연도, round를 생략하면 그 안의 전체 회차를 대상으로 한다.")
+            + "year를 생략하면 전체 연도, round를 생략하면 그 안의 전체 회차를 대상으로 한다. "
+            + "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"INVALID_FEEDBACK_ROUND"})
     ApiResponse<PageResponse<FeedbackResponse>> getFeedbacks(
         AppApiUser apiUser,
@@ -36,7 +37,8 @@ public interface AppFeedbackApi {
     );
 
     /** 피드백 상세. */
-    @Operation(summary = "피드백 상세 조회")
+    @Operation(summary = "피드백 상세 조회",
+        description = "답변(answer·answeredAt)은 답변을 공개한 회차에서만 내려가고, 공개 전이면 null이다.")
     @ApiErrorCode(type = FeedbackErrorCode.class, codes = {"FEEDBACK_NOT_FOUND"})
     ApiResponse<FeedbackResponse> getFeedback(AppApiUser apiUser, Long feedbackId);
 

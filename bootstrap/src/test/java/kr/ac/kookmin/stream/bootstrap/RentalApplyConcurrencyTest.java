@@ -69,7 +69,7 @@ class RentalApplyConcurrencyTest extends MySqlIntegrationTest {
     }
 
     @Test
-    @DisplayName("같은 회원이 같은 대여품을 동시에 여러 번 신청해도 대여 중 이력은 하나만 생긴다")
+    @DisplayName("같은 회원이 같은 대여품을 동시에 여러 번 신청해도 승인 대기 이력은 하나만 생긴다")
     void concurrentDuplicateApplicationsCreateOneRental() throws InterruptedException {
         long memberId = registerPayer(1002L);
         long itemId = createItem("RENTAL", 10);
@@ -162,7 +162,7 @@ class RentalApplyConcurrencyTest extends MySqlIntegrationTest {
 
     private int activeRentalCountOf(long itemId, long memberId) {
         return jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM rental_histories WHERE item_id = ? AND member_id = ? AND rental_status = 'RENTAL'",
+            "SELECT COUNT(*) FROM rental_histories WHERE item_id = ? AND member_id = ? AND rental_status = 'PENDING'",
             Integer.class, itemId, memberId
         );
     }

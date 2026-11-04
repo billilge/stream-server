@@ -25,7 +25,7 @@ public class PayerJpaEntity extends BaseTimeEntity {
     @Column(name = "payer_id")
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
+    @Column(name = "member_id")
     private Long memberId;
 
     @Column(nullable = false)

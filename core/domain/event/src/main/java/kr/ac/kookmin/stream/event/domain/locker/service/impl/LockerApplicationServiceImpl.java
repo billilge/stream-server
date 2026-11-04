@@ -32,19 +32,21 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     @Override
     @Transactional
     public LockerApplicationResult apply(Long memberId, LockerApplyCommand command) {
+        LocalDateTime now = LocalDateTime.now();
         LockerPeriod period = getPublishedPeriod(command.lockerPeriodId());
+        validateApplyOpen(period, now);
         Locker locker = getSelectableLocker(period.getId(), command.lockerId());
 
         LockerApplication application = lockerApplicationRepository.save(
-            LockerApplication.create(period.getId(), memberId, locker.getId(), LocalDateTime.now())
+            LockerApplication.create(period.getId(), memberId, locker.getId(), now)
         );
         outboxWriter.record(new LockerAssigned(memberId, period.getId()));
         return new LockerApplicationResult(application, locker, period);
     }
 
     /**
-     * 트랜잭션을 걸지 않는다. 신청은 취소·변경이 없고, 조회 사이에 회차 게시·이름이 바뀌어도 각 건은 그 시점에 맞는
-     * 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
+     * 트랜잭션을 걸지 않는다. 조회 사이에 회차 게시·이름이 바뀌거나 운영진이 신청을 취소해도 각 건은 그 시점에
+     * 맞는 결과라 세 조회가 같은 시점을 볼 필요가 없다. 한 스냅샷이 필요한 조회가 추가되면 다시 판단한다.
      */
     @Override
     public List<LockerApplicationResult> getApplicationsByMemberId(Long memberId) {
@@ -94,6 +96,19 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
     private LockerPeriod getPublishedPeriod(Long lockerPeriodId) {
         return lockerRepository.findPublishedPeriodById(lockerPeriodId)
             .orElseThrow(() -> new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND));
+    }
+
+    /**
+     * 모집 기간 밖에는 신청을 받지 않는다. 게시 여부만 보면 운영진이 게시를 내리기 전까지 마감 뒤에도 신청이 들어오고,
+     * 사물함은 선착순 즉시 배정이라 그 신청이 남의 자리를 차지한다. 행사 신청({@code EventApplicationServiceImpl})도
+     * 같은 자리에서 모집 상태를 본다.
+     *
+     * @param now 신청 시각과 같은 값을 쓴다. 따로 잡으면 마감 판정을 통과한 신청이 마감 뒤 시각으로 기록될 수 있다
+     */
+    private void validateApplyOpen(LockerPeriod period, LocalDateTime now) {
+        if (!period.isApplyOpen(now)) {
+            throw new BusinessException(LockerErrorCode.LOCKER_APPLY_NOT_OPEN);
+        }
     }
 
     /**

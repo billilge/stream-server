@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.util.List;
+import java.util.Objects;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -18,7 +20,13 @@ public class EventQuestion {
     private boolean required;
     private int displayOrder;
     private List<String> options;
+    /** 선택형 질문에 '기타'(직접 입력) 선택지를 덧붙이는지. 학생 앱 노출·답변 저장은 아직 없다(후속 작업) */
+    private boolean otherOptionAllowed;
 
+    /**
+     * DB에 저장된 값으로 질문을 복원한다. 선택지 목록이 없으면 빈 목록으로 바꿔 둔다. 도메인 안에서는 목록이 항상 있다고 보고
+     * null을 확인하지 않는다.
+     */
     public static EventQuestion of(
         Long id,
         Long eventId,
@@ -26,8 +34,62 @@ public class EventQuestion {
         QuestionType questionType,
         boolean required,
         int displayOrder,
-        List<String> options
+        List<String> options,
+        boolean otherOptionAllowed
     ) {
-        return new EventQuestion(id, eventId, questionText, questionType, required, displayOrder, options);
+        return new EventQuestion(
+            id, eventId, questionText, questionType, required, displayOrder, options == null ? List.of() : options,
+            otherOptionAllowed
+        );
+    }
+
+    /**
+     * 새 질문을 만든다. 선택형 질문은 고를 선택지가 있어야 한다. 텍스트형 질문에 딸려 온 선택지·'기타' 여부는 의미가
+     * 없으므로 버린다.
+     *
+     * @param displayOrder 신청서에서 몇 번째로 보일지. 1부터 센다
+     */
+    public static EventQuestion create(Long eventId, int displayOrder, EventQuestionCommand command) {
+        validateOptions(command);
+        boolean choice = command.questionType().isChoice();
+        return new EventQuestion(
+            null,
+            eventId,
+            command.questionText(),
+            command.questionType(),
+            command.required(),
+            displayOrder,
+            choice ? List.copyOf(command.options()) : List.of(),
+            choice && command.otherOptionAllowed()
+        );
+    }
+
+    /**
+     * 신청서에 보이는 내용이 같은지. 식별자·소속 행사·노출 순서 값은 보지 않는다(순서는 호출부가 목록 위치로 비교한다).
+     * 행사 수정 때 질문이 실제로 바뀌었는지 판단한다.
+     */
+    public boolean hasSameContentAs(EventQuestion other) {
+        return questionType == other.questionType
+            && required == other.required
+            && otherOptionAllowed == other.otherOptionAllowed
+            && Objects.equals(questionText, other.questionText)
+            && Objects.equals(options, other.options);
+    }
+
+    /**
+     * 고른 선택지의 0부터 시작하는 순서 번호를 선택지 문구로 바꾼다. 선택지가 바뀌어 범위를 벗어난 번호는 건너뛴다. 신청이
+     * 있으면 질문을 못 바꾸지만 과거 데이터에 대비한다.
+     */
+    public List<String> resolveOptionTexts(List<Integer> selectedOptions) {
+        return selectedOptions.stream()
+            .filter(index -> index >= 0 && index < options.size())
+            .map(options::get)
+            .toList();
+    }
+
+    private static void validateOptions(EventQuestionCommand command) {
+        if (command.questionType().isChoice() && (command.options() == null || command.options().isEmpty())) {
+            throw new BusinessException(EventErrorCode.EVENT_INVALID_QUESTION);
+        }
     }
 }

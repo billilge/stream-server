@@ -10,7 +10,6 @@ import kr.ac.kookmin.stream.file.domain.File;
 public record EventListItemResponse(
     Long eventId,
     String title,
-    String target,
     LocalDateTime eventStartAt,
     String thumbnailUrl,
     LocalDateTime applyStartAt,
@@ -23,7 +22,6 @@ public record EventListItemResponse(
         return new EventListItemResponse(
             summary.eventId(),
             summary.title(),
-            summary.target(),
             summary.eventStartAt(),
             StorageUrlBuilder.build(summary.thumbnailFileId(), filesById),
             summary.applyStartAt(),

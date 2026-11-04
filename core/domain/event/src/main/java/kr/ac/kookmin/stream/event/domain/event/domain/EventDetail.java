@@ -10,7 +10,6 @@ public record EventDetail(
     Long eventId,
     String title,
     String description,
-    String target,
     String place,
     LocalDateTime eventStartAt,
     LocalDateTime eventEndAt,
@@ -28,13 +27,12 @@ public record EventDetail(
             event.getId(),
             event.getTitle(),
             event.getDescription(),
-            event.getTarget(),
             event.getPlace(),
             event.getEventStartAt(),
             event.getEventEndAt(),
             event.getApplyStartAt(),
             event.getApplyEndAt(),
-            event.getImageIds() == null ? List.of() : event.getImageIds(),
+            event.getImageIds(),
             recruitStatus,
             event.daysUntilDeadline(now, recruitStatus)
         );

@@ -64,12 +64,24 @@ class FileServiceImpl implements FileService {
     }
 
     @Override
+    public Optional<File> findByFileKey(String fileKey) {
+        return fileRepository.findByFileKey(fileKey);
+    }
+
+    @Override
     public Map<Long, File> findAllByIdIn(List<Long> fileIds) {
         if (fileIds.isEmpty()) {
             return Map.of();
         }
         return fileRepository.findAllByIdIn(fileIds).stream()
             .collect(Collectors.toMap(File::getId, Function.identity()));
+    }
+
+    @Override
+    public String resolveKey(Long fileId) {
+        return fileRepository.findById(fileId)
+            .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND))
+            .getFileKey();
     }
 
     private String generateFileKey(String originalName) {

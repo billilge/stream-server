@@ -26,8 +26,11 @@ public interface AppArchiveApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<ArchiveListResponse> getArchives(@ParameterObject ArchiveListParams params);
 
-    /** 아카이브 상세. */
-    @Operation(summary = "행사 아카이브 상세 조회")
+    /** 아카이브 상세. 연결된 행사가 있으면 눌러서 이동할 수 있게 함께 내려준다. */
+    @Operation(summary = "행사 아카이브 상세 조회",
+        description = "아카이브 한 건을 조회한다. 현장 사진은 저장된 순서가 곧 표시 순서이고, 삭제된 파일은 "
+            + "조용히 빠진다. relatedEvent는 연결한 행사이고 제목은 조회할 때마다 원본에서 가져와 항상 최신이다. "
+            + "연결하지 않았거나 행사가 삭제·미게시면 null이다.")
     @ApiErrorCode(type = ArchiveErrorCode.class, codes = {"ARCHIVE_NOT_FOUND"})
     ApiResponse<ArchiveDetailResponse> getArchive(Long archiveId);
 }

@@ -17,17 +17,17 @@ class EventTest {
     private static final LocalDateTime APPLY_END_AT = LocalDateTime.of(2026, 9, 10, 18, 0);
     private static final int CAPACITY = 30;
 
-    private static Event event(RecruitType recruitType, RecruitStatus recruitStatus) {
+    private static Event event(RecruitType recruitType) {
         return Event.of(
-            1L, "2026 소융대 개강 행사", "설명", "소융대 재학생", "101호",
+            1L, "2026 소융대 개강 행사", "설명", "101호",
             LocalDateTime.of(2026, 9, 15, 18, 0), LocalDateTime.of(2026, 9, 15, 20, 0),
             APPLY_START_AT, APPLY_END_AT,
-            recruitType, List.of(), CAPACITY, recruitStatus, true, 1L
+            recruitType, List.of(), CAPACITY, false, true, 1L, null
         );
     }
 
     private static Event firstComeEvent() {
-        return event(RecruitType.FIRST_COME, RecruitStatus.OPEN);
+        return event(RecruitType.FIRST_COME);
     }
 
     @Nested
@@ -69,16 +69,6 @@ class EventTest {
         }
 
         @Test
-        @DisplayName("운영진이 강제 마감했으면 기간 안이어도 CLOSED다")
-        void forceClosedBeatsPeriod() {
-            Event forceClosed = event(RecruitType.FIRST_COME, RecruitStatus.CLOSED);
-            assertEquals(
-                RecruitStatus.CLOSED,
-                forceClosed.calculateRecruitStatus(APPLY_START_AT.plusDays(1), 0)
-            );
-        }
-
-        @Test
         @DisplayName("선착순 모집은 정원이 차면 CLOSED다")
         void firstComeClosesWhenFull() {
             assertEquals(
@@ -90,7 +80,7 @@ class EventTest {
         @Test
         @DisplayName("상시 모집은 정원을 넘겨도 OPEN이다")
         void openRecruitIgnoresCapacity() {
-            Event openRecruit = event(RecruitType.OPEN, RecruitStatus.OPEN);
+            Event openRecruit = event(RecruitType.OPEN);
             assertEquals(
                 RecruitStatus.OPEN,
                 openRecruit.calculateRecruitStatus(APPLY_START_AT.plusDays(1), CAPACITY + 100)
@@ -156,7 +146,7 @@ class EventTest {
         @Test
         @DisplayName("상시 모집은 정원 제한이 없다")
         void openRecruitIsNeverFull() {
-            assertFalse(event(RecruitType.OPEN, RecruitStatus.OPEN).isCapacityFull(CAPACITY + 100));
+            assertFalse(event(RecruitType.OPEN).isCapacityFull(CAPACITY + 100));
         }
     }
 
@@ -177,16 +167,143 @@ class EventTest {
         }
 
         @Test
-        @DisplayName("강제 마감이면 정원이 차도 거짓이다")
-        void forceClosedTakesPrecedence() {
-            Event forceClosed = event(RecruitType.FIRST_COME, RecruitStatus.CLOSED);
-            assertFalse(forceClosed.isClosedByCapacityOnly(APPLY_START_AT.plusDays(1), CAPACITY));
-        }
-
-        @Test
         @DisplayName("정원이 남았으면 거짓이다")
         void notFull() {
             assertFalse(firstComeEvent().isClosedByCapacityOnly(APPLY_START_AT.plusDays(1), CAPACITY - 1));
+        }
+    }
+
+    @Nested
+    @DisplayName("운영진 등록")
+    class Create {
+
+        private EventCreateCommand command(RecruitType recruitType, Integer capacity) {
+            return new EventCreateCommand(
+                "체육대회", "학과 대항 체육대회", "종합운동장",
+                EventPeriod.of(LocalDateTime.of(2026, 11, 1, 10, 0), LocalDateTime.of(2026, 11, 1, 18, 0)),
+                EventPeriod.of(APPLY_START_AT, APPLY_END_AT), RecruitPolicy.of(recruitType, capacity, true),
+                List.of(31L, 32L), List.of()
+            );
+        }
+
+        @Test
+        @DisplayName("입력값을 그대로 담고 작성자를 기록한다")
+        void copiesCommand() {
+            Event event = Event.create(7L, command(RecruitType.FIRST_COME, 100));
+
+            assertNull(event.getId());
+            assertEquals("체육대회", event.getTitle());
+            assertEquals("학과 대항 체육대회", event.getDescription());
+            assertEquals("종합운동장", event.getPlace());
+            assertEquals(APPLY_START_AT, event.getApplyStartAt());
+            assertEquals(APPLY_END_AT, event.getApplyEndAt());
+            assertEquals(RecruitType.FIRST_COME, event.getRecruitType());
+            assertEquals(100, event.getCapacity());
+            assertTrue(event.isFeePaidOnly());
+            assertEquals(List.of(31L, 32L), event.getImageIds());
+            assertEquals(7L, event.getCreatedBy());
+        }
+
+        @Test
+        @DisplayName("학생에게 바로 보이지 않도록 비공개로 시작한다")
+        void startsUnpublished() {
+            assertFalse(Event.create(7L, command(RecruitType.FIRST_COME, 100)).isPublished());
+        }
+
+        @Test
+        @DisplayName("상시 모집은 입력한 정원과 상관없이 0으로 저장한다")
+        void openRecruitStoresZeroCapacity() {
+            assertEquals(0, Event.create(7L, command(RecruitType.OPEN, 50)).getCapacity());
+            assertEquals(0, Event.create(7L, command(RecruitType.OPEN, null)).getCapacity());
+        }
+    }
+
+    @Nested
+    @DisplayName("운영진 수정")
+    class Update {
+
+        private EventUpdateCommand command(RecruitType recruitType, Integer capacity) {
+            return new EventUpdateCommand(
+                "체육대회(변경)", "장소가 바뀌었습니다", "미래관 대강당",
+                EventPeriod.of(LocalDateTime.of(2026, 11, 2, 10, 0), LocalDateTime.of(2026, 11, 2, 18, 0)),
+                EventPeriod.of(APPLY_START_AT.plusDays(1), APPLY_END_AT.plusDays(1)),
+                RecruitPolicy.of(recruitType, capacity, true), List.of(40L), List.of(), LocalDateTime.now()
+            );
+        }
+
+        @Test
+        @DisplayName("내용을 통째로 바꾼다")
+        void replacesContent() {
+            Event event = firstComeEvent();
+
+            event.update(command(RecruitType.FIRST_COME, 50));
+
+            assertEquals("체육대회(변경)", event.getTitle());
+            assertEquals("장소가 바뀌었습니다", event.getDescription());
+            assertEquals("미래관 대강당", event.getPlace());
+            assertEquals(LocalDateTime.of(2026, 11, 2, 10, 0), event.getEventStartAt());
+            assertEquals(LocalDateTime.of(2026, 11, 2, 18, 0), event.getEventEndAt());
+            assertEquals(APPLY_START_AT.plusDays(1), event.getApplyStartAt());
+            assertEquals(APPLY_END_AT.plusDays(1), event.getApplyEndAt());
+            assertEquals(50, event.getCapacity());
+            assertTrue(event.isFeePaidOnly());
+            assertEquals(List.of(40L), event.getImageIds());
+        }
+
+        @Test
+        @DisplayName("공개 여부와 작성자는 그대로 둔다")
+        void keepsPublishedAndCreator() {
+            Event event = firstComeEvent();
+
+            event.update(command(RecruitType.FIRST_COME, 50));
+
+            assertTrue(event.isPublished());
+            assertEquals(1L, event.getCreatedBy());
+            assertEquals(1L, event.getId());
+        }
+
+        @Test
+        @DisplayName("상시 모집으로 바꾸면 정원을 0으로 둔다")
+        void switchToOpenRecruitClearsCapacity() {
+            Event event = firstComeEvent();
+
+            event.update(command(RecruitType.OPEN, 50));
+
+            assertEquals(RecruitType.OPEN, event.getRecruitType());
+            assertEquals(0, event.getCapacity());
+        }
+    }
+
+    @Nested
+    @DisplayName("운영진 화면의 정원")
+    class CapacityLimit {
+
+        @Test
+        @DisplayName("선착순이면 정원을 돌려준다")
+        void firstComeReturnsCapacity() {
+            assertEquals(CAPACITY, firstComeEvent().capacityLimit());
+        }
+
+        @Test
+        @DisplayName("상시 모집은 인원 제한이 없어 null이다")
+        void openRecruitReturnsNull() {
+            assertNull(event(RecruitType.OPEN).capacityLimit());
+        }
+    }
+
+    @Nested
+    @DisplayName("공개 여부 변경")
+    class ChangePublished {
+
+        @Test
+        @DisplayName("공개 여부만 바꾼다")
+        void changesOnlyPublished() {
+            Event event = firstComeEvent();
+
+            event.changePublished(false);
+
+            assertFalse(event.isPublished());
+            assertEquals("2026 소융대 개강 행사", event.getTitle());
         }
     }
 }

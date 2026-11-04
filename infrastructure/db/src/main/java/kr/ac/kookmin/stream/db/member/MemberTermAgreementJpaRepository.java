@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberTermAgreementJpaRepository extends JpaRepository<MemberTermAgreementJpaEntity, Long> {
     List<MemberTermAgreementJpaEntity> findAllByMemberId(Long memberId);
+    List<MemberTermAgreementJpaEntity> findAllByMemberIdIn(List<Long> memberIds);
 }

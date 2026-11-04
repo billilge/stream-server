@@ -5,10 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionDetail;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSectionSummary;
 
 public interface LockerService {
+
+    /**
+     * 지금 학생에게 보여줄 운영 회차. 진행 중인 회차가 있으면 그것이고, 없으면 다가오는 회차다.
+     */
+    Optional<LockerPeriod> getCurrentPeriod();
 
     /**
      * 운영 회차의 구역별 전체/선택 가능 사물함 수와 표시 상태를 조회한다.
@@ -38,7 +44,7 @@ public interface LockerService {
     Map<Long, List<Locker>> getLockerMapBySectionId();
 
     /**
-     * 해당 운영 회차에서 회원이 신청한 사물함. 회차당 한 건만 신청할 수 있고 취소가 없어 최대 하나다.
+     * 해당 운영 회차에서 회원이 쓰고 있는 사물함. 취소되지 않은 신청은 회차당 한 건까지라 최대 하나다.
      * <p>
      * 회차 게시 여부와 노출 범위는 확인하지 않는다. 호출하는 쪽이 판단한다.
      */

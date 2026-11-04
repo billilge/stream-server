@@ -56,7 +56,7 @@ public record EventApplicationDetailResponse(
                 question.getQuestionType(),
                 question.isRequired(),
                 question.getDisplayOrder(),
-                question.getOptions() == null ? List.of() : question.getOptions(),
+                question.getOptions(),
                 answeredQuestion.answerText(),
                 answeredQuestion.selectedOptions()
             );

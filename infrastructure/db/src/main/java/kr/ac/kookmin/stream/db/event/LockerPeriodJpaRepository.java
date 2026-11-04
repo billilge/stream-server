@@ -5,25 +5,41 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpaEntity, Long> {
 
-    boolean existsByIdAndIsPublishedTrue(Long id);
+    List<LockerPeriodJpaEntity> findAllByIsDeletedFalseOrderByApplyStartAtDesc();
 
-    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrue(Long id);
+    Optional<LockerPeriodJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrue(Collection<Long> ids);
+    boolean existsByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    Optional<LockerPeriodJpaEntity> findByIdAndIsPublishedTrueAndIsDeletedFalse(Long id);
+
+    List<LockerPeriodJpaEntity> findAllByIdInAndIsPublishedTrueAndIsDeletedFalse(Collection<Long> ids);
 
     @Query("""
         SELECT p FROM LockerPeriodJpaEntity p
         WHERE p.isPublished = true
+        AND p.isDeleted = false
         AND p.applyEndAt >= :from
         AND p.applyEndAt < :to
         """)
     List<LockerPeriodJpaEntity> findPublishedApplyEndingBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndUsageEndAt(LocalDate usageEndAt);
+    List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndIsDeletedFalseAndUsageEndAt(LocalDate usageEndAt);
+
+    /** 신청이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 호출부가 앞의 한 건만 쓴다. */
+    @Query("""
+        SELECT p FROM LockerPeriodJpaEntity p
+        WHERE p.isPublished = true
+        AND p.isDeleted = false
+        AND p.applyEndAt >= :at
+        ORDER BY p.applyStartAt ASC, p.id ASC
+        """)
+    List<LockerPeriodJpaEntity> findCurrentPublished(@Param("at") LocalDateTime at, Pageable pageable);
 }

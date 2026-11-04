@@ -26,6 +26,7 @@ public record MyLockerApplicationListResponse(List<Item> applications) {
         LocalDateTime appliedAt,
         LocalDate usageStartDate,
         LocalDate usageEndDate,
+        Long sectionId,
         String lockerLabel
     ) {
 
@@ -39,6 +40,7 @@ public record MyLockerApplicationListResponse(List<Item> applications) {
                 application.application().getAppliedAt(),
                 period.getUsageStartAt(),
                 period.getUsageEndAt(),
+                application.locker().getSectionId(),
                 application.locker().getLockerLabel()
             );
         }

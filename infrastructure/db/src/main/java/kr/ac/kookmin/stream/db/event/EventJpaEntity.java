@@ -13,13 +13,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
-import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+// 바뀐 컬럼만 UPDATE한다(@DynamicUpdate). 도메인 행사에는 삭제 여부가 없어 저장할 때마다 is_deleted가 false로 들어가므로,
+// 공개 전환·수정과 삭제가 겹쳤을 때 삭제 표시를 되써서 지운 행사가 되살아나는 일을 막는다.
 @Entity
 @Table(
     name = "events",
@@ -28,6 +30,7 @@ import org.hibernate.type.SqlTypes;
         columnList = "is_published, is_deleted, event_start_at"
     )
 )
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EventJpaEntity extends BaseSoftDeleteEntity {
 
@@ -41,9 +44,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
-
-    @Column(nullable = false)
-    private String target;
 
     private String place;
 
@@ -70,9 +70,8 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     @Column(nullable = false)
     private int capacity;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "recruit_status", nullable = false, length = 30)
-    private RecruitStatus recruitStatus;
+    @Column(name = "fee_paid_only", nullable = false)
+    private boolean feePaidOnly;
 
     @Column(name = "is_published", nullable = false)
     private boolean isPublished;
@@ -84,7 +83,6 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.id = event.getId();
         this.title = event.getTitle();
         this.description = event.getDescription();
-        this.target = event.getTarget();
         this.place = event.getPlace();
         this.eventStartAt = event.getEventStartAt();
         this.eventEndAt = event.getEventEndAt();
@@ -93,7 +91,7 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
         this.recruitType = event.getRecruitType();
         this.imageIds = event.getImageIds();
         this.capacity = event.getCapacity();
-        this.recruitStatus = event.getRecruitStatus();
+        this.feePaidOnly = event.isFeePaidOnly();
         this.isPublished = event.isPublished();
         this.createdBy = event.getCreatedBy();
     }
@@ -103,8 +101,8 @@ public class EventJpaEntity extends BaseSoftDeleteEntity {
     }
 
     public Event toDomain() {
-        return Event.of(id, title, description, target, place, eventStartAt, eventEndAt,
-            applyStartAt, applyEndAt, recruitType, imageIds, capacity, recruitStatus, isPublished,
-            createdBy);
+        return Event.of(id, title, description, place, eventStartAt, eventEndAt,
+            applyStartAt, applyEndAt, recruitType, imageIds, capacity, feePaidOnly,
+            isPublished, createdBy, getUpdatedAt());
     }
 }
