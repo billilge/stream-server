@@ -30,4 +30,9 @@ class FakePayerService implements PayerService {
             throw new BusinessException(FeeErrorCode.MEMBER_IS_NOT_PAYER);
         }
     }
+
+    @Override
+    public void linkMember(Long memberId, String studentId) {
+        throw new UnsupportedOperationException();
+    }
 }
