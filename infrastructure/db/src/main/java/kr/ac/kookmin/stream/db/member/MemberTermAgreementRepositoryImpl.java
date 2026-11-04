@@ -32,4 +32,9 @@ public class MemberTermAgreementRepositoryImpl implements MemberTermAgreementRep
             .map(MemberTermAgreementJpaEntity::from)
             .toList());
     }
+
+    @Override
+    public MemberTermAgreement save(MemberTermAgreement agreement) {
+        return memberTermAgreementJpaRepository.save(MemberTermAgreementJpaEntity.from(agreement)).toDomain();
+    }
 }

@@ -64,6 +64,22 @@ class MemberTermServiceImpl implements MemberTermService {
         memberTermAgreementRepository.saveAll(agreements);
     }
 
+    @Override
+    public boolean hasAgreed(Long memberId, TermType termType) {
+        return memberTermAgreementRepository.findAllByMemberId(memberId).stream()
+            .filter(MemberTermAgreement::isAgreed)
+            .anyMatch(agreement -> agreement.getTermType() == termType);
+    }
+
+    @Override
+    @Transactional
+    public void updateAgreement(Long memberId, TermType termType, boolean agreed) {
+        Map<TermType, MemberTermAgreement> existingAgreements = memberTermAgreementRepository.findAllByMemberId(memberId)
+            .stream()
+            .collect(Collectors.toMap(MemberTermAgreement::getTermType, Function.identity()));
+        memberTermAgreementRepository.save(toAgreement(memberId, termType, agreed, existingAgreements, LocalDateTime.now()));
+    }
+
     private boolean containsRequiredTerms(Set<TermType> agreedTermTypes) {
         return Arrays.stream(TermType.values())
             .filter(TermType::required)
