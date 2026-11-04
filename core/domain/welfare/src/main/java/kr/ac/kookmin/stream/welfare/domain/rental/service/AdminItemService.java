@@ -26,6 +26,8 @@ public interface AdminItemService {
     /**
      * 물품 정보를 통째로 수정한다. {@code command.imageKey()}가 null이면 기존 이미지를 유지한다.
      * 존재하지 않으면 {@code ITEM_NOT_FOUND}, 다른 물품과 이름이 겹치면 {@code ITEM_NAME_DUPLICATED}.
+     * 재고는 {@code count - baseCount}만큼만 지금 재고에 증감해 폼이 열려 있는 사이의 대여·반납을 덮어쓰지 않는다.
+     * 줄이는 양이 지금 재고보다 많으면 {@code ITEM_OUT_OF_STOCK}.
      */
     Item update(Long itemId, ItemUpdateCommand command);
 

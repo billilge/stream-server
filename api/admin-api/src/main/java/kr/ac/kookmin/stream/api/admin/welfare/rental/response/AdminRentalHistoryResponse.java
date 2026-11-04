@@ -19,9 +19,10 @@ public record AdminRentalHistoryResponse(
     ItemSummary item,
     @Schema(description = "대여 수량", example = "1")
     int rentedCount,
-    @Schema(description = "실제 수령 시각. 아직 수령 전이면 null")
+    @Schema(description = "수령 시각. PENDING·CONFIRMED는 신청할 때 학생이 고른 희망 시각이고, "
+        + "RENTAL로 바뀌면 그때부터 실제 수령 시각으로 덮어써진다")
     LocalDateTime rentAt,
-    @Schema(description = "반납 기한. 소모품이거나 반납 정책이 없거나 아직 수령 전이면 null")
+    @Schema(description = "반납 기한. 소모품이거나 반납 정책이 없으면 null")
     LocalDateTime dueAt,
     @Schema(description = "반납 완료 시각. 아직 반납 전이면 null")
     LocalDateTime returnedAt,

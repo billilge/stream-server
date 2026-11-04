@@ -3,10 +3,13 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -27,7 +30,7 @@ public class AdminRentalStatusUpdateUseCase {
 
     public AdminRentalHistoryResponse updateStatus(Long historyId, RentalStatus requestedStatus, Long workerId) {
         return lockExecutor.executeOptimistic(() -> {
-            memberService.getById(workerId);
+            validateIsAdmin(workerId);
 
             RentalRecord current = adminRentalHistoryService.getById(historyId);
             RentalStatus previousStatus = current.history().getRentalStatus();
@@ -39,8 +42,14 @@ public class AdminRentalStatusUpdateUseCase {
 
             RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, newStatus, workerId);
 
-            if (shouldRestock(previousStatus, newStatus, item)) {
+            // 전후 상태의 재고 차지 여부를 비교하므로 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다
+            ItemType itemType = item == null ? null : item.getType();
+            boolean heldBefore = previousStatus.holdsStock(itemType);
+            boolean heldAfter = newStatus.holdsStock(itemType);
+            if (heldBefore && !heldAfter) {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
+            } else if (!heldBefore && heldAfter) {
+                item = itemService.decreaseStock(history.getItemId(), history.getRentedCount());
             }
 
             Member renter = memberService.getMapByIds(List.of(history.getMemberId())).get(history.getMemberId());
@@ -48,13 +57,10 @@ public class AdminRentalStatusUpdateUseCase {
         });
     }
 
-    private boolean shouldRestock(RentalStatus previousStatus, RentalStatus newStatus, Item item) {
-        if (previousStatus.isFinished()) {
-            return false;
+    private void validateIsAdmin(Long workerId) {
+        Member worker = memberService.getById(workerId);
+        if (worker.getRole() != Role.ADMIN) {
+            throw new BusinessException(RentalErrorCode.WORKER_NOT_ADMIN);
         }
-        if (newStatus == RentalStatus.CANCEL || newStatus == RentalStatus.REJECTED) {
-            return true;
-        }
-        return newStatus == RentalStatus.RETURNED && item != null && item.getType() == ItemType.RENTAL;
     }
 }

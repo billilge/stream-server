@@ -3,10 +3,13 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.request.AdminRentalRecordCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
@@ -30,7 +33,7 @@ public class AdminRentalRecordCreateUseCase {
     public AdminRentalHistoryResponse create(AdminRentalRecordCreateRequest request) {
         return lockExecutor.executeOptimistic(() -> {
             Member member = memberService.getById(request.memberId());
-            memberService.getById(request.workerId());
+            validateIsAdmin(request.workerId());
 
             Item item = itemService.decreaseStock(request.itemId(), FIXED_COUNT);
             RentalHistory history = rentalHistoryService.create(
@@ -39,5 +42,12 @@ public class AdminRentalRecordCreateUseCase {
             );
             return AdminRentalHistoryResponse.from(new RentalRecord(history, item), member);
         });
+    }
+
+    private void validateIsAdmin(Long workerId) {
+        Member worker = memberService.getById(workerId);
+        if (worker.getRole() != Role.ADMIN) {
+            throw new BusinessException(RentalErrorCode.WORKER_NOT_ADMIN);
+        }
     }
 }

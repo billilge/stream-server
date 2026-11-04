@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.PreviewResult;
+import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
@@ -16,6 +17,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class ItemRepositoryImpl implements ItemRepository {
+
+    private static final String NAME_UNIQUE_CONSTRAINT = "uk_items_name";
 
     private final ItemJpaRepository itemJpaRepository;
 
@@ -68,7 +72,15 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item save(Item item) {
-        return itemJpaRepository.save(ItemJpaEntity.from(item)).toDomain();
+        try {
+            // 동시 등록으로 이름 중복 검사를 함께 통과한 경우 유니크 인덱스 위반을 이 자리에서 잡으려면 바로 반영해야 한다
+            return itemJpaRepository.saveAndFlush(ItemJpaEntity.from(item)).toDomain();
+        } catch (DataIntegrityViolationException e) {
+            if (ConstraintViolationUtil.isViolated(e, NAME_UNIQUE_CONSTRAINT)) {
+                throw new BusinessException(RentalErrorCode.ITEM_NAME_DUPLICATED);
+            }
+            throw e;
+        }
     }
 
     // 첫 페이지 내용과 전체 수가 곧 미리보기다

@@ -7,8 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalTime;
 import kr.ac.kookmin.stream.db.common.BaseTimeEntity;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -31,7 +31,7 @@ import org.hibernate.annotations.OptimisticLocking;
 @Entity
 @Table(
     name = "items",
-    indexes = @Index(name = "idx_items_name", columnList = "name")
+    uniqueConstraints = @UniqueConstraint(name = "uk_items_name", columnNames = "name")
 )
 @DynamicUpdate
 @OptimisticLocking(type = OptimisticLockType.DIRTY)
