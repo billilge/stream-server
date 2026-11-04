@@ -67,4 +67,9 @@ public class Notice {
         this.imageIds = command.imageIds();
         this.pinned = command.pinned();
     }
+
+    /** 등록된 이미지 중 첫 번째를 썸네일로 쓴다. 이미지가 없으면 null이다. */
+    public Long getThumbnailImageId() {
+        return imageIds.isEmpty() ? null : imageIds.get(0);
+    }
 }

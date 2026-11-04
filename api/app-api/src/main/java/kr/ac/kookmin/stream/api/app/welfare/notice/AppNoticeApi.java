@@ -21,9 +21,11 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "공지", description = "공지사항 조회 (학생 앱·운영진 공용)")
 public interface AppNoticeApi {
 
-    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링한다. */
+    /** 공지 목록. 커서 기반 페이지네이션이며 카테고리로 필터링하고 제목으로 검색한다. */
     @Operation(summary = "공지 목록 조회",
-        description = "커서 기반으로 공지 목록을 조회한다. category로 분류를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
+        description = "커서 기반으로 공지 목록을 조회한다. category로 분류를 필터링하고, cursor/size로 다음 페이지를 넘긴다. "
+            + "keyword를 주면 제목에 그 검색어가 들어 있는 공지만 조회한다(앞뒤 공백 무시, 공백뿐이면 전체). "
+            + "통합 검색의 공지 탭과 더보기도 이 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NoticeErrorCode.class, codes = {"NOTICE_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<NoticeListItemResponse>> getNotices(@ParameterObject NoticeListParams params);

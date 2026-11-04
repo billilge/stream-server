@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackCount;
@@ -11,6 +12,7 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.repository.FeedbackRepositor
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -28,12 +30,25 @@ public class FeedbackRepositoryImpl implements FeedbackRepository {
     }
 
     @Override
-    public PageResult<Feedback> searchPublished(Integer year, Integer round, PageOffset pageOffset) {
+    public PageResult<Feedback> searchPublished(Integer year, Integer round, String keyword, PageOffset pageOffset) {
         Page<FeedbackJpaEntity> result = feedbackJpaRepository.searchPublished(
-            year, round, PageRequest.of(pageOffset.page(), pageOffset.size())
+            year, round, LikePatterns.escape(keyword), PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return toPageResult(result);
+    }
+
+    // 학생 목록과 같은 페이지 쿼리를 연도·회차 없이 쓴다. 첫 페이지 내용과 전체 수가 곧 미리보기다
+    @Override
+    public PreviewResult<Feedback> findPublishedSearchPreview(String keyword, int limit) {
+        Page<FeedbackJpaEntity> result = feedbackJpaRepository.searchPublished(
+            null, null, LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(FeedbackJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

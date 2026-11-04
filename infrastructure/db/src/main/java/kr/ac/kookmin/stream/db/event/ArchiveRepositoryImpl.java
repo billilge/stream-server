@@ -5,12 +5,14 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -24,11 +26,26 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
      * 쓸 수 없어서인데, 어떻게 질의할지는 인프라의 몫이므로 변환을 여기서 한다.
      */
     @Override
-    public List<Archive> findAllByYearOrderByStartDateDesc(Integer year) {
+    public List<Archive> findAllByYearOrderByStartDateDesc(Integer year, String keyword) {
         return archiveJpaRepository
-            .findAllInPeriod(DateUtil.startOfYear(year), DateUtil.startOfNextYear(year)).stream()
+            .findAllInPeriod(
+                DateUtil.startOfYear(year), DateUtil.startOfNextYear(year), LikePatterns.escape(keyword)
+            ).stream()
             .map(ArchiveJpaEntity::toDomain)
             .toList();
+    }
+
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
+    @Override
+    public PreviewResult<Archive> findSearchPreview(String keyword, int limit) {
+        Page<ArchiveJpaEntity> result = archiveJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(ArchiveJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

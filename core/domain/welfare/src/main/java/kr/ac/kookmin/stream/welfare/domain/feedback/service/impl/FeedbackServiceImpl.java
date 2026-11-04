@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackPeriod;
@@ -36,8 +37,13 @@ class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public PageResult<Feedback> search(FeedbackPeriod period, PageOffset pageOffset) {
-        return feedbackRepository.searchPublished(period.year(), period.round(), pageOffset);
+    public PageResult<Feedback> search(FeedbackPeriod period, String keyword, PageOffset pageOffset) {
+        return feedbackRepository.searchPublished(period.year(), period.round(), keyword, pageOffset);
+    }
+
+    @Override
+    public PreviewResult<Feedback> searchPreview(String keyword, int limit) {
+        return feedbackRepository.findPublishedSearchPreview(keyword, limit);
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackCount;
 
@@ -12,8 +13,12 @@ public interface FeedbackRepository {
     Optional<Feedback> findById(Long id);
 
     // 답변을 공개한 회차의 답변 있는 질문만. year/round가 null이면 그 조건은 필터하지 않는다.
-    // 회차 답변 공개 시각 → 답변 시각 내림차순
-    PageResult<Feedback> searchPublished(Integer year, Integer round, PageOffset pageOffset);
+    // keyword는 질문 내용 부분 일치이고 null이거나 공백이면 거르지 않는다(앞뒤 공백은 지우고 %·_는 글자 그대로 검색).
+    // 작성자로는 찾지 않는다. 회차 답변 공개 시각 → 답변 시각 내림차순
+    PageResult<Feedback> searchPublished(Integer year, Integer round, String keyword, PageOffset pageOffset);
+
+    // searchPublished를 연도·회차 없이 같은 순서로 앞에서 limit건, 그리고 그 전체 수
+    PreviewResult<Feedback> findPublishedSearchPreview(String keyword, int limit);
 
     // 한 회원이 쓴 질문 전체(답변이 없는 질문도 포함). 질문 시각 내림차순
     PageResult<Feedback> findAllByCreatedBy(Long memberId, PageOffset pageOffset);

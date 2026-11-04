@@ -6,6 +6,7 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
@@ -21,6 +22,12 @@ public interface ItemRepository {
      * @param cursor   이전 페이지의 마지막 항목. null이면 첫 페이지
      */
     CursorSliceResult<Item> findSlice(ItemCategory category, String keyword, ItemCursor cursor, int size);
+
+    /**
+     * 이름에 {@code keyword}가 들어 있는 물품을 {@link #findSlice}와 같은 순서로 앞에서 {@code limit}건, 그리고 그 전체 수.
+     * 카테고리로는 거르지 않는다. 검색어 처리는 {@link #findSlice}와 같다.
+     */
+    PreviewResult<Item> findSearchPreview(String keyword, int limit);
 
     /**
      * 물품을 이름 오름차순(같으면 식별자 오름차순)으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.

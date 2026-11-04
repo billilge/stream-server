@@ -34,10 +34,10 @@ public class AppNoticeController implements AppNoticeApi {
             @Valid @ModelAttribute NoticeListParams params
     ) {
         CursorSliceResult<Notice> result = noticeService.getNotices(
-            params.toCategory(), params.toCursor(), params.sizeOrDefault());
+            params.toCategory(), params.keyword(), params.toCursor(), params.sizeOrDefault());
 
         List<Long> thumbnailIds = result.content().stream()
-                .map(AppNoticeController::firstImageId)
+                .map(Notice::getThumbnailImageId)
                 .filter(id -> id != null)
                 .toList();
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIds);
@@ -59,9 +59,5 @@ public class AppNoticeController implements AppNoticeApi {
         Map<Long, File> attachmentsById = fileService.findAllByIdIn(notice.getAttachmentIds());
 
         return ApiResponse.success(NoticeDetailResponse.from(notice, imagesById, attachmentsById));
-    }
-
-    private static Long firstImageId(Notice notice) {
-        return notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
     }
 }

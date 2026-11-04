@@ -61,7 +61,7 @@ public class AppEventController implements AppEventApi {
         @Valid @ModelAttribute EventListParams params
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
-            params.toRecruitStatus(), params.toCursor(), params.sizeOrDefault());
+            params.toRecruitStatus(), params.keyword(), params.toCursor(), params.sizeOrDefault());
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIdsOf(result.content(), EventSummary::thumbnailFileId));
 
         return ApiResponse.success(
