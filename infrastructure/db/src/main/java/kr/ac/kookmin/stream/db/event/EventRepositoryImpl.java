@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
@@ -95,24 +97,46 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return List.of();
+        }
+        return eventJpaRepository.findAllByIdInAndIsDeletedFalseAndIsPublishedTrue(eventIds).stream()
+            .map(EventJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,
         int limit,
         LocalDateTime now
     ) {
-        return eventJpaRepository.findPublishedSlice(
-            recruitStatus == null,
-            recruitStatus == RecruitStatus.BEFORE_OPEN,
-            recruitStatus == RecruitStatus.OPEN,
-            recruitStatus == RecruitStatus.CLOSED,
-            RecruitType.FIRST_COME,
-            EventApplicationStatus.APPLIED,
-            now,
-            cursor == null ? null : cursor.eventStartAt(),
-            cursor == null ? null : cursor.eventId(),
-            Pageable.ofSize(limit)
-        ).stream().map(EventJpaEntity::toDomain).toList();
+        LocalDateTime cursorSortAt = cursor == null ? null : cursor.sortAt();
+        Long cursorEventId = cursor == null ? null : cursor.eventId();
+        Pageable pageable = Pageable.ofSize(limit);
+
+        List<EventJpaEntity> entities = switch (recruitStatus) {
+            case OPEN -> eventJpaRepository.findOpenSlice(
+                RecruitType.FIRST_COME, EventApplicationStatus.APPLIED, now, cursorSortAt, cursorEventId, pageable);
+            case BEFORE_OPEN -> eventJpaRepository.findBeforeOpenSlice(now, cursorSortAt, cursorEventId, pageable);
+            case CLOSED -> eventJpaRepository.findClosedSlice(
+                RecruitType.FIRST_COME, EventApplicationStatus.APPLIED, now, cursorSortAt, cursorEventId, pageable);
+        };
+        return entities.stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
+        Page<EventJpaEntity> result = eventJpaRepository.findUpcomingAppliedEvents(
+            memberId, EventApplicationStatus.APPLIED, startOfToday, Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

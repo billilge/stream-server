@@ -27,11 +27,11 @@ public interface FeedbackRoundRepository {
     // 그 연도의 가장 큰 회차 번호. 회차가 없으면 비어 있다
     Optional<Integer> findMaxRoundOf(int year);
 
-    // 회차가 하나라도 존재했던 연도 목록(최신순) — 목록 화면 연도 드롭다운용
-    List<Integer> findDistinctYears();
+    // 답변을 공개한 회차가 있는 연도 목록(최신순) — 목록 화면 연도 드롭다운용
+    List<Integer> findDistinctPublishedYears();
 
-    // 해당 연도에 실제로 존재하는 회차 번호(오름차순) — 목록 화면 회차 칩용
-    List<Integer> findRoundsByYear(int year);
+    // 해당 연도에서 답변을 공개한 회차 번호(오름차순) — 목록 화면 회차 칩용
+    List<Integer> findPublishedRoundsByYear(int year);
 
     FeedbackRound save(FeedbackRound feedbackRound);
 }

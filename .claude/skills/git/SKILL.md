@@ -40,6 +40,7 @@ Read: docs/conventions/git-convention.md
 
 ### PR 생성
 
+- PR을 만들기 전에 `flyway-check` 스킬(`.claude/skills/flyway-check/SKILL.md`)을 먼저 실행해 Flyway 버전 번호를 맞춘다
 - 제목 형식: `[{Type}/#{이슈번호}] {설명}`
 - `.github/pull_request_template.md` 형식을 따른다
 - 연관 이슈를 반드시 연결한다

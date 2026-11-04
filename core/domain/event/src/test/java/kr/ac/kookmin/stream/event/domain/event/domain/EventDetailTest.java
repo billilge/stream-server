@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,10 +16,14 @@ class EventDetailTest {
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 9, 12, 10, 0);
 
     private static Event event(RecruitType recruitType, List<Long> imageIds) {
+        return event(recruitType, imageIds, false);
+    }
+
+    private static Event event(RecruitType recruitType, List<Long> imageIds, boolean feePaidOnly) {
         return Event.of(
             15L, "2026 소융대 개강 행사", "소융대 재학생을 위한 개강 행사입니다.", "101호",
             NOW.plusDays(10), NOW.plusDays(10).plusHours(2), NOW.minusDays(1), NOW.plusDays(3),
-            recruitType, imageIds, 30, false, true, 1L, null
+            recruitType, imageIds, 30, feePaidOnly, true, 1L, null
         );
     }
 
@@ -79,6 +84,39 @@ class EventDetailTest {
             Event full = event(RecruitType.FIRST_COME, List.of());
 
             assertNull(EventDetail.of(full, 30, NOW).daysUntilDeadline());
+        }
+    }
+
+    /**
+     * 정원 규칙 자체는 {@code RecruitPolicyTest}가 덮는다. 여기서는 학생 앱이 받을 값으로 옮겨지는지만 본다.
+     */
+    @Nested
+    @DisplayName("모집 조건")
+    class RecruitCondition {
+
+        @Test
+        @DisplayName("선착순 모집이면 모집 방식과 정원을 싣는다")
+        void firstComeHasCapacity() {
+            EventDetail detail = EventDetail.of(event(RecruitType.FIRST_COME, List.of()), 0, NOW);
+
+            assertEquals(RecruitType.FIRST_COME, detail.recruitType());
+            assertEquals(30, detail.capacity());
+        }
+
+        @Test
+        @DisplayName("상시 모집이면 저장된 정원 값과 상관없이 정원은 null이다")
+        void openHasNoCapacity() {
+            EventDetail detail = EventDetail.of(openEvent(), 0, NOW);
+
+            assertEquals(RecruitType.OPEN, detail.recruitType());
+            assertNull(detail.capacity());
+        }
+
+        @Test
+        @DisplayName("학생회비 납부자 전용 여부를 싣는다")
+        void copiesFeePaidOnly() {
+            assertTrue(EventDetail.of(event(RecruitType.OPEN, List.of(), true), 0, NOW).feePaidOnly());
+            assertFalse(EventDetail.of(openEvent(), 0, NOW).feePaidOnly());
         }
     }
 

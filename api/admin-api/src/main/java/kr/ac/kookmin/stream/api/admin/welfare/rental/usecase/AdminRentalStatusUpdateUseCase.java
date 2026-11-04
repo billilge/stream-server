@@ -51,16 +51,19 @@ public class AdminRentalStatusUpdateUseCase {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
             }
 
-            recordStatusChangeEvent(newStatus, history.getMemberId(), history.getId(), itemName);
+            if (previousStatus != newStatus) {
+                recordStatusChangeEvent(requestedStatus, history.getMemberId(), history.getId(), itemName);
+            }
 
             Member renter = memberService.getMapByIds(List.of(history.getMemberId())).get(history.getMemberId());
             return AdminRentalHistoryResponse.from(new RentalRecord(history, item), renter);
         });
     }
 
-    // 소모품은 승인 즉시 RETURNED로 가므로(위 isConsumable) "승인" 없이 "반납 완료"만 간다
-    private void recordStatusChangeEvent(RentalStatus newStatus, Long memberId, Long historyId, String itemName) {
-        DomainEvent event = switch (newStatus) {
+    // 소모품은 승인 즉시 RETURNED로 저장되지만(위 isConsumable), 학생에게는 "반납 완료"가 아니라
+    // "승인" 알림을 보낸다. 그래서 저장된 newStatus가 아니라 admin이 실제로 요청한 requestedStatus로 알림 종류를 정한다
+    private void recordStatusChangeEvent(RentalStatus requestedStatus, Long memberId, Long historyId, String itemName) {
+        DomainEvent event = switch (requestedStatus) {
             case CONFIRMED -> new RentalApproved(memberId, historyId, itemName);
             case REJECTED -> new RentalRejected(memberId, historyId, itemName);
             case RETURN_CONFIRMED -> new RentalReturnApproved(memberId, historyId, itemName);

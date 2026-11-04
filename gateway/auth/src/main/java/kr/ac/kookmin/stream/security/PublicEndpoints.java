@@ -25,6 +25,9 @@ public enum PublicEndpoints {
     )),
     AUTH(List.of(
         "/v1/auth/login/*"
+    )),
+    ADMIN_AUTH(List.of(
+        "/v1/admin/auth/login"
     ));
 
     private static final List<PathPattern> ALL_PATH_PATTERNS = Arrays.stream(values())

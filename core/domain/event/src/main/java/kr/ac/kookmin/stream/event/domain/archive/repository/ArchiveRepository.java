@@ -29,4 +29,19 @@ public interface ArchiveRepository {
     PageResult<Archive> search(String keyword, Boolean exposed, PageOffset pageOffset);
 
     Optional<Archive> findById(Long id);
+
+    /**
+     * 식별자 목록에 드는 아카이빙. 삭제된 것은 담지 않는다. 노출 여부 일괄 변경이 요청한 전부가 살아 있는지
+     * 확인하려고 쓰므로, 결과 수가 요청 수와 다르면 부르는 쪽이 끊는다.
+     */
+    List<Archive> findAllByIds(List<Long> archiveIds);
+
+    Archive save(Archive archive);
+
+    void saveAll(List<Archive> archives);
+
+    /**
+     * 소프트 삭제한다. 이미 없거나 지워진 아카이빙이면 {@code false}다.
+     */
+    boolean delete(Long id);
 }
