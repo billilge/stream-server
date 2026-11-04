@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.api.app.core.notification.request.MemberNotification
 import kr.ac.kookmin.stream.api.app.core.notification.request.NotificationListParams;
 import kr.ac.kookmin.stream.api.app.core.notification.response.MemberNotificationSettingResponse;
 import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationListItemResponse;
+import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationUnreadResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
@@ -47,6 +48,13 @@ public class AppNotificationController implements AppNotificationApi {
     public ApiResponse<Void> markRead(AppApiUser apiUser, @PathVariable Long notificationId) {
         notificationService.markRead(apiUser.userId(), notificationId);
         return ApiResponse.success();
+    }
+
+    @Override
+    @GetMapping("/unread")
+    public ApiResponse<NotificationUnreadResponse> getUnread(AppApiUser apiUser) {
+        boolean hasUnread = notificationService.hasUnread(apiUser.userId());
+        return ApiResponse.success(new NotificationUnreadResponse(hasUnread));
     }
 
     @Override

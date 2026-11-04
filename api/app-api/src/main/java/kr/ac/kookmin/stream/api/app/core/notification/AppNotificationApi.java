@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.api.app.core.notification.request.MemberNotification
 import kr.ac.kookmin.stream.api.app.core.notification.request.NotificationListParams;
 import kr.ac.kookmin.stream.api.app.core.notification.response.MemberNotificationSettingResponse;
 import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationListItemResponse;
+import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationUnreadResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
@@ -35,6 +36,11 @@ public interface AppNotificationApi {
         description = "알림 한 건을 읽음으로 바꾼다. 이미 읽은 알림이면 그대로 성공한다.")
     @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_NOT_FOUND"})
     ApiResponse<Void> markRead(AppApiUser apiUser, Long notificationId);
+
+    /** 안 읽은 알림 존재 여부. */
+    @Operation(summary = "안 읽은 알림 여부 조회",
+        description = "내 알림 중 안 읽은 알림이 하나라도 있으면 hasUnread가 true다. 알림 아이콘의 점 표시에 쓴다.")
+    ApiResponse<NotificationUnreadResponse> getUnread(AppApiUser apiUser);
 
     /** 알림 설정 조회. */
     @Operation(summary = "알림 설정 조회",
