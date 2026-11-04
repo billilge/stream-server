@@ -27,10 +27,13 @@ import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplySection;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTargetType;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
 import kr.ac.kookmin.stream.internal.domain.home.service.HomeService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import kr.ac.kookmin.stream.welfare.domain.feedback.service.FeedbackService;
+import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
+import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +60,7 @@ public class AppHomeUseCase {
     private final LockerApplicationService lockerApplicationService;
     private final RentalHistoryService rentalHistoryService;
     private final FeedbackService feedbackService;
+    private final NoticeService noticeService;
     private final StudentTransferStatusService studentTransferStatusService;
 
     public HomeResponse getHome(Long memberId) {
@@ -76,6 +80,10 @@ public class AppHomeUseCase {
         );
     }
 
+    /**
+     * 노출 기간 안의 배너 중 연결 대상이 지금 학생에게 보이는 것만 남긴다. 눌러도 공지·행사를 찾을 수 없는
+     * 배너는 홈에 띄우지 않는다 — 신청 섹션에서 마감된 대상을 빼는 것과 같은 이유다.
+     */
     private List<HomeResponse.Banner> toBanners() {
         List<HomeBanner> banners = homeService.getExposedBanners();
 
@@ -83,7 +91,18 @@ public class AppHomeUseCase {
         Map<Long, File> files = fileService.findAllByIdIn(
             banners.stream().map(HomeBanner::getImageFileId).toList());
 
+        // 연결 대상도 같은 이유로 랜딩 타입별로 모아 한 번에 읽는다. 둘 다 빈 목록이면 쿼리가 나가지 않는다
+        Set<Long> noticeIds = noticeService.getByIds(
+                landingTargetIdsOf(banners, HomeBannerLandingType.NOTICE)).stream()
+            .map(Notice::getId)
+            .collect(Collectors.toSet());
+        Set<Long> publishedEventIds = eventService.getPublishedByIds(
+                landingTargetIdsOf(banners, HomeBannerLandingType.EVENT)).stream()
+            .map(Event::getId)
+            .collect(Collectors.toSet());
+
         return banners.stream()
+            .filter(banner -> hasLandingTarget(banner, noticeIds, publishedEventIds))
             .map(banner -> new HomeResponse.Banner(
                 banner.getId(),
                 banner.getTitle(),
@@ -93,6 +112,29 @@ public class AppHomeUseCase {
                 banner.getTargetId(),
                 banner.getLinkUrl()
             ))
+            .toList();
+    }
+
+    /**
+     * 연결 대상이 아직 학생에게 보이는지. 타입과 값의 짝은 {@link HomeBanner#hasValidLanding()}이 도메인에서
+     * 보지만, 대상이 지워졌는지·아직 미게시인지는 홈 도메인이 공지·행사를 몰라서({@code internal}은
+     * {@code welfare}·{@code event}를 의존하지 않는다) 여기서 본다.
+     * <p>
+     * 랜딩 타입을 switch 식으로 모두 받는다. 값이 늘면 컴파일이 막으므로 새 타입이 확인 없이 지나가지 않는다.
+     */
+    private static boolean hasLandingTarget(HomeBanner banner, Set<Long> noticeIds, Set<Long> publishedEventIds) {
+        return switch (banner.getLandingType()) {
+            case NOTICE -> noticeIds.contains(banner.getTargetId());
+            case EVENT -> publishedEventIds.contains(banner.getTargetId());
+            // 앱 밖으로 나가는 주소라 확인할 대상이 없다
+            case EXTERNAL_LINK -> true;
+        };
+    }
+
+    private static List<Long> landingTargetIdsOf(List<HomeBanner> banners, HomeBannerLandingType landingType) {
+        return banners.stream()
+            .filter(banner -> banner.getLandingType() == landingType)
+            .map(HomeBanner::getTargetId)
             .toList();
     }
 
