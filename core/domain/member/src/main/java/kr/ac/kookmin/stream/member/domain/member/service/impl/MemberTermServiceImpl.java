@@ -25,11 +25,7 @@ class MemberTermServiceImpl implements MemberTermService {
 
     @Override
     public boolean hasAgreedRequiredTerms(Long memberId) {
-        Set<TermType> agreedTermTypes = memberTermAgreementRepository.findAllByMemberId(memberId).stream()
-            .filter(MemberTermAgreement::isAgreed)
-            .map(MemberTermAgreement::getTermType)
-            .collect(Collectors.toSet());
-        return containsRequiredTerms(agreedTermTypes);
+        return containsRequiredTerms(findAgreedTermTypes(memberId));
     }
 
     @Override
@@ -54,9 +50,7 @@ class MemberTermServiceImpl implements MemberTermService {
     public void agree(Long memberId, Map<TermType, Boolean> termAgreements) {
         validateRequiredTermsAgreed(termAgreements);
 
-        Map<TermType, MemberTermAgreement> existingAgreements = memberTermAgreementRepository.findAllByMemberId(memberId)
-            .stream()
-            .collect(Collectors.toMap(MemberTermAgreement::getTermType, Function.identity()));
+        Map<TermType, MemberTermAgreement> existingAgreements = findAgreementsByTermType(memberId);
         LocalDateTime now = LocalDateTime.now();
         List<MemberTermAgreement> agreements = termAgreements.entrySet().stream()
             .map(entry -> toAgreement(memberId, entry.getKey(), entry.getValue(), existingAgreements, now))
@@ -66,18 +60,26 @@ class MemberTermServiceImpl implements MemberTermService {
 
     @Override
     public boolean hasAgreed(Long memberId, TermType termType) {
-        return memberTermAgreementRepository.findAllByMemberId(memberId).stream()
-            .filter(MemberTermAgreement::isAgreed)
-            .anyMatch(agreement -> agreement.getTermType() == termType);
+        return findAgreedTermTypes(memberId).contains(termType);
     }
 
     @Override
     @Transactional
     public void updateAgreement(Long memberId, TermType termType, boolean agreed) {
-        Map<TermType, MemberTermAgreement> existingAgreements = memberTermAgreementRepository.findAllByMemberId(memberId)
-            .stream()
+        MemberTermAgreement agreement = toAgreement(memberId, termType, agreed, findAgreementsByTermType(memberId), LocalDateTime.now());
+        memberTermAgreementRepository.save(agreement);
+    }
+
+    private Map<TermType, MemberTermAgreement> findAgreementsByTermType(Long memberId) {
+        return memberTermAgreementRepository.findAllByMemberId(memberId).stream()
             .collect(Collectors.toMap(MemberTermAgreement::getTermType, Function.identity()));
-        memberTermAgreementRepository.save(toAgreement(memberId, termType, agreed, existingAgreements, LocalDateTime.now()));
+    }
+
+    private Set<TermType> findAgreedTermTypes(Long memberId) {
+        return memberTermAgreementRepository.findAllByMemberId(memberId).stream()
+            .filter(MemberTermAgreement::isAgreed)
+            .map(MemberTermAgreement::getTermType)
+            .collect(Collectors.toSet());
     }
 
     private boolean containsRequiredTerms(Set<TermType> agreedTermTypes) {
