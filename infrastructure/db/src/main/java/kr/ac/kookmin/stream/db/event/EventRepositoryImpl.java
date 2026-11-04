@@ -107,6 +107,13 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<Event> findPublishedApplyNotEndedAt(LocalDateTime at) {
+        return eventJpaRepository.findPublishedApplyNotEndedAt(at).stream()
+            .map(EventJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
         EventCursor cursor,

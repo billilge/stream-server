@@ -31,8 +31,16 @@ class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<Event> getApplicableEvents(Collection<Long> eventIds) {
-        List<Event> events = eventRepository.findPublishedByIds(eventIds);
+        return filterApplicable(eventRepository.findPublishedByIds(eventIds));
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Event> getAllApplicableEvents() {
+        return filterApplicable(eventRepository.findPublishedApplyNotEndedAt(LocalDateTime.now()));
+    }
+
+    private List<Event> filterApplicable(List<Event> events) {
         // 신청자 수는 한 번에 모아 읽는다. 행사마다 따로 세면 개수만큼 쿼리가 더 나간다
         Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
             events.stream().map(Event::getId).toList());

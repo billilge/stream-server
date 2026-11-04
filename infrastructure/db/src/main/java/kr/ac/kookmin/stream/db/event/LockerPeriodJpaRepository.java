@@ -26,6 +26,14 @@ public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpa
         SELECT p FROM LockerPeriodJpaEntity p
         WHERE p.isPublished = true
         AND p.isDeleted = false
+        AND p.applyEndAt >= :at
+        """)
+    List<LockerPeriodJpaEntity> findPublishedApplyNotEndedAt(@Param("at") LocalDateTime at);
+
+    @Query("""
+        SELECT p FROM LockerPeriodJpaEntity p
+        WHERE p.isPublished = true
+        AND p.isDeleted = false
         AND p.applyEndAt >= :from
         AND p.applyEndAt < :to
         """)

@@ -326,6 +326,11 @@ class LockerServiceImplTest {
         }
 
         @Override
+        public List<LockerPeriod> findPublishedPeriodsApplyNotEndedAt(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<LockerPeriod> findPublishedPeriodsApplyEndingBetween(LocalDateTime from, LocalDateTime to) {
             throw new UnsupportedOperationException();
         }

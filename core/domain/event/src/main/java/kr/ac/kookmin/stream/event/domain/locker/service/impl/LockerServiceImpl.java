@@ -37,9 +37,18 @@ class LockerServiceImpl implements LockerService {
 
     @Override
     public List<LockerPeriod> getApplicablePeriods(Collection<Long> lockerPeriodIds) {
+        return filterApplicable(lockerRepository.findPublishedPeriodsByIds(lockerPeriodIds));
+    }
+
+    @Override
+    public List<LockerPeriod> getAllApplicablePeriods() {
+        return filterApplicable(lockerRepository.findPublishedPeriodsApplyNotEndedAt(LocalDateTime.now()));
+    }
+
+    private List<LockerPeriod> filterApplicable(List<LockerPeriod> periods) {
         // 신청과 같은 기준을 써야 하므로 기간 판정은 LockerPeriod의 계산을 그대로 쓴다
         LocalDateTime now = LocalDateTime.now();
-        return lockerRepository.findPublishedPeriodsByIds(lockerPeriodIds).stream()
+        return periods.stream()
             .filter(period -> period.isApplyOpen(now))
             .sorted(Comparator.comparing(LockerPeriod::getApplyEndAt).thenComparing(LockerPeriod::getId))
             .toList();

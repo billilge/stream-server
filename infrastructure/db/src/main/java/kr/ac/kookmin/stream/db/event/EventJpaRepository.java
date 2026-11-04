@@ -21,6 +21,14 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
 
     List<EventJpaEntity> findAllByIdInAndIsDeletedFalseAndIsPublishedTrue(Collection<Long> ids);
 
+    @Query("""
+        SELECT e FROM EventJpaEntity e
+        WHERE e.isDeleted = false
+        AND e.isPublished = true
+        AND e.applyEndAt >= :at
+        """)
+    List<EventJpaEntity> findPublishedApplyNotEndedAt(@Param("at") LocalDateTime at);
+
     /**
      * 삭제되지 않은 행사를 공개 여부와 상관없이 최근 등록 순으로 페이지 조회한다. 운영진 목록용이다.
      * <p>
