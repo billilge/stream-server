@@ -69,7 +69,7 @@ public class AdminDisplayPosterWriteUseCase {
     // 이미 지워진 파일(FILE_NOT_FOUND)이나 저장소 오류는 요청을 실패시키지 않는다. 남은 파일을 찾을 수 있게 아이디를 남긴다
     private void deleteImageQuietly(Long imageFileId) {
         try {
-            fileService.delete(imageFileId);
+            fileService.deleteUnreferenced(imageFileId);
         } catch (RuntimeException e) {
             log.warn("디스플레이 포스터 이전 이미지 삭제 실패: imageFileId={}", imageFileId, e);
         }
