@@ -5,12 +5,14 @@ import java.util.Optional;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 import kr.ac.kookmin.stream.event.domain.archive.repository.ArchiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -31,6 +33,19 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
             ).stream()
             .map(ArchiveJpaEntity::toDomain)
             .toList();
+    }
+
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
+    @Override
+    public PreviewResult<Archive> findSearchPreview(String keyword, int limit) {
+        Page<ArchiveJpaEntity> result = archiveJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(ArchiveJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

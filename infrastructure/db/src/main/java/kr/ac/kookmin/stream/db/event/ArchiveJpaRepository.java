@@ -19,6 +19,7 @@ public interface ArchiveJpaRepository extends JpaRepository<ArchiveJpaEntity, Lo
      * 쿼리를 고치지 않아도 되도록 미리 범위 형태로 둔다.
      * <p>
      * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
+     * 조건·정렬을 바꾸면 통합 검색 미리보기({@link #findSearchPreview})도 함께 고친다.
      */
     @Query("""
         SELECT a FROM ArchiveJpaEntity a
@@ -33,6 +34,23 @@ public interface ArchiveJpaRepository extends JpaRepository<ArchiveJpaEntity, Lo
         @Param("endExclusive") LocalDate endExclusive,
         @Param("keyword") String keyword
     );
+
+    /**
+     * 학생 앱 통합 검색 미리보기. 미리보기 다음은 "더보기"로 학생 목록({@link #findAllInPeriod})을 이어 보므로,
+     * 그 쿼리를 기간 없이 쓴 것과 조건·정렬이 같아야 한다. keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다.
+     */
+    @Query(value = """
+        SELECT a FROM ArchiveJpaEntity a
+        WHERE a.isDeleted = false
+            AND (:keyword IS NULL OR a.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        ORDER BY a.startDate DESC, a.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(a) FROM ArchiveJpaEntity a
+        WHERE a.isDeleted = false
+            AND (:keyword IS NULL OR a.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    Page<ArchiveJpaEntity> findSearchPreview(@Param("keyword") String keyword, Pageable pageable);
 
     /** 연도 버튼은 목록과 별도로 조회하므로 삭제 필터를 여기에도 둔다. 빠뜨리면 지운 아카이빙의 연도가 남는다. */
     @Query("""

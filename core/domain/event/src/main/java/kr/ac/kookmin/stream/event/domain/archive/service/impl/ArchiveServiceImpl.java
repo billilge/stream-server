@@ -27,12 +27,11 @@ class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     public PreviewResult<ArchiveSummary> searchPreview(String keyword, int limit) {
-        // 아카이빙은 연간 수십 건이라 학생 목록도 전체를 한 번에 준다. 미리보기도 같은 조회로 전부 읽고 앞에서 자른다
-        List<Archive> archives = archiveRepository.findAllByYearOrderByStartDateDesc(null, keyword);
+        PreviewResult<Archive> preview = archiveRepository.findSearchPreview(keyword, limit);
 
         return new PreviewResult<>(
-            archives.stream().limit(limit).map(ArchiveSummary::from).toList(),
-            archives.size()
+            preview.content().stream().map(ArchiveSummary::from).toList(),
+            preview.totalCount()
         );
     }
 

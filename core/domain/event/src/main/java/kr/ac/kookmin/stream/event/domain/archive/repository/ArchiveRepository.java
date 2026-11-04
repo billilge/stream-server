@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.archive.domain.Archive;
 
 public interface ArchiveRepository {
@@ -16,6 +17,12 @@ public interface ArchiveRepository {
      *                글자 그대로 검색한다
      */
     List<Archive> findAllByYearOrderByStartDateDesc(Integer year, String keyword);
+
+    /**
+     * 제목에 {@code keyword}가 들어 있는 아카이빙을 {@link #findAllByYearOrderByStartDateDesc}와 같은 순서로 앞에서
+     * {@code limit}건, 그리고 그 전체 수. 연도로는 거르지 않는다. 검색어 처리는 {@link #findAllByYearOrderByStartDateDesc}와 같다.
+     */
+    PreviewResult<Archive> findSearchPreview(String keyword, int limit);
 
     /**
      * 아카이빙이 존재하는 연도를 중복 없이 최신순으로 조회한다.
