@@ -2,13 +2,13 @@ package kr.ac.kookmin.stream.welfare.domain.feedback.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
-import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.Feedback;
@@ -39,7 +39,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     @Transactional
     public FeedbackRoundSummary createRound(LocalDate opensOn, LocalDate closesOn) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        LocalDateTime now = LocalDateTime.now();
         int nextRound = feedbackRoundRepository.findMaxRoundOf(opensOn.getYear())
             .map(maxRound -> maxRound + 1)
             .orElse(FIRST_ROUND);
@@ -52,7 +52,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
 
     @Override
     public Optional<FeedbackRoundSummary> getCurrentRound() {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        LocalDateTime now = LocalDateTime.now();
         return findCurrentRound(now)
             .map(round -> FeedbackRoundSummary.of(round, getCountOf(round), now));
     }
@@ -66,7 +66,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     public PageResult<FeedbackRoundSummary> getRounds(
         Integer year, FeedbackRoundStatus status, PageOffset pageOffset
     ) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        LocalDateTime now = LocalDateTime.now();
         Map<FeedbackPeriod, FeedbackCount> counts = getCountMapOf(year);
 
         List<FeedbackRoundSummary> summaries = feedbackRoundRepository.findAllByYear(year).stream()
@@ -79,7 +79,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
 
     @Override
     public FeedbackRoundDetail getRoundDetail(Long roundId) {
-        return getDetailOf(getRoundById(roundId), LocalDateTime.now(DateUtil.KST));
+        return getDetailOf(getRoundById(roundId), LocalDateTime.now());
     }
 
     @Override
@@ -87,7 +87,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
         Long roundId, String keyword, List<Long> memberIds, PageOffset pageOffset
     ) {
         Optional<FeedbackRound> round = roundId == null
-            ? findCurrentRound(LocalDateTime.now(DateUtil.KST))
+            ? findCurrentRound(LocalDateTime.now())
             : Optional.of(getRoundById(roundId));
 
         // 진행 중 회차가 없는데 회차를 지정하지도 않았으면 보여줄 질문이 없다
@@ -100,7 +100,8 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     @Transactional
     public FeedbackRoundDetail saveAnswers(Long roundId, List<FeedbackAnswerCommand> commands, Long answeredBy) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        // 답변 시각 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊어, 저장 응답과 이후 조회 응답의 시각을 맞춘다
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         FeedbackRound round = getRoundById(roundId);
 
         Map<Long, Feedback> roundFeedbacks = feedbackRepository
@@ -119,7 +120,8 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
     @Override
     @Transactional
     public FeedbackRoundDetail publishAnswers(Long roundId) {
-        LocalDateTime now = LocalDateTime.now(DateUtil.KST);
+        // 공개 시각 컬럼(DATETIME)이 초까지만 저장하므로 초 단위로 끊어, 공개 응답과 이후 조회 응답의 시각을 맞춘다
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         FeedbackRound round = getRoundById(roundId);
         List<Feedback> feedbacks = feedbackRepository.findAllByYearAndRound(round.getYear(), round.getRound());
         validatePublishable(round, feedbacks, now);
