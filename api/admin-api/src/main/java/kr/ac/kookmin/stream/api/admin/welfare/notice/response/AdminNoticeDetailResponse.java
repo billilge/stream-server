@@ -28,18 +28,14 @@ public record AdminNoticeDetailResponse(
         Map<Long, File> imagesById,
         Map<Long, File> attachmentsById
     ) {
-        List<Image> images = notice.getImageIds() == null
-            ? List.of()
-            : notice.getImageIds().stream()
-                .filter(imagesById::containsKey)
-                .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
-                .toList();
-        List<Attachment> attachments = notice.getAttachmentIds() == null
-            ? List.of()
-            : notice.getAttachmentIds().stream()
-                .filter(attachmentsById::containsKey)
-                .map(fileId -> Attachment.of(fileId, attachmentsById.get(fileId)))
-                .toList();
+        List<Image> images = notice.getImageIds().stream()
+            .filter(imagesById::containsKey)
+            .map(fileId -> Image.of(fileId, imagesById.get(fileId)))
+            .toList();
+        List<Attachment> attachments = notice.getAttachmentIds().stream()
+            .filter(attachmentsById::containsKey)
+            .map(fileId -> Attachment.of(fileId, attachmentsById.get(fileId)))
+            .toList();
 
         return new AdminNoticeDetailResponse(
             notice.getId(),

@@ -1,7 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.notice;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeCreateRequest;
@@ -60,12 +59,8 @@ public class AdminNoticeController implements AdminNoticeApi {
     public ApiResponse<AdminNoticeDetailResponse> getNotice(AdminApiUser apiUser, @PathVariable Long noticeId) {
         Notice notice = noticeService.getById(noticeId);
 
-        Map<Long, File> imagesById = fileService.findAllByIdIn(
-            notice.getImageIds() == null ? List.of() : notice.getImageIds()
-        );
-        Map<Long, File> attachmentsById = fileService.findAllByIdIn(
-            notice.getAttachmentIds() == null ? List.of() : notice.getAttachmentIds()
-        );
+        Map<Long, File> imagesById = fileService.findAllByIdIn(notice.getImageIds());
+        Map<Long, File> attachmentsById = fileService.findAllByIdIn(notice.getAttachmentIds());
 
         return ApiResponse.success(AdminNoticeDetailResponse.from(notice, imagesById, attachmentsById));
     }

@@ -35,7 +35,12 @@ public class Notice {
         LocalDateTime createdAt,
         LocalDateTime updatedAt
     ) {
-        return new Notice(id, title, content, category, pinned, createdBy, attachmentIds, imageIds, createdAt, updatedAt);
+        return new Notice(
+            id, title, content, category, pinned, createdBy,
+            attachmentIds == null ? List.of() : attachmentIds,
+            imageIds == null ? List.of() : imageIds,
+            createdAt, updatedAt
+        );
     }
 
     // 생성·수정 시각은 DB가 채운다
