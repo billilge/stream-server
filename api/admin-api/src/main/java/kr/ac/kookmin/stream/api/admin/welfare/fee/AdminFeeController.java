@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.security.RequireDepartment;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeRequestExcel;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
@@ -15,11 +17,13 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.CouncilDepartment;
+import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -52,6 +56,20 @@ public class AdminFeeController implements AdminFeeApi {
             TransferStatus.from(status), keyword, pageParams.toOffset());
 
         return ApiResponse.success(PageResponse.from(result, AdminFeeSearchResponse::from));
+    }
+
+    @Override
+    @GetMapping("/requests/export")
+    @RequireDepartment(CouncilDepartment.GENERAL_AFFAIRS)
+    public ResponseEntity<byte[]> exportRequests(
+        AdminApiUser apiUser,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String keyword
+    ) {
+        return AdminFeeRequestExcel.of(
+            adminFeeSearchUseCase.searchAll(TransferStatus.from(status), keyword),
+            LocalDate.now(DateUtil.KST)
+        ).toResponseEntity();
     }
 
     @Override

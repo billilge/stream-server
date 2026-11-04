@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AdminFeeSearchUseCase {
 
+    // 엑셀 내보내기에서 목록을 한 번에 읽어 올 개수. 목록 화면의 페이지 크기 상한과 같다
+    private static final int EXPORT_PAGE_SIZE = 100;
+
     private final StudentTransferStatusService studentTransferStatusService;
     private final MemberService memberService;
 
@@ -52,5 +56,20 @@ public class AdminFeeSearchUseCase {
             membersById.get(transferStatus.getMemberId()),
             signedUpIds.contains(transferStatus.getMemberId())
         ));
+    }
+
+    /**
+     * 엑셀 내보내기. 목록과 같은 조건의 요청을 페이지 없이 모두 담는다. 목록 조회를 페이지마다 그대로 불러 목록과 내보내기의
+     * 검색·상태 기준이 어긋나지 않게 한다.
+     */
+    public List<MemberFeeStatus> searchAll(TransferStatus status, String keyword) {
+        List<MemberFeeStatus> requests = new ArrayList<>();
+        for (int page = 0; ; page++) {
+            PageResult<MemberFeeStatus> result = search(status, keyword, PageOffset.of(page, EXPORT_PAGE_SIZE));
+            requests.addAll(result.content());
+            if (page + 1 >= result.totalPage()) {
+                return requests;
+            }
+        }
     }
 }
