@@ -235,10 +235,11 @@ public class AppHomeUseCase {
     private PreviewResponse<HomeResponse.AppliedEvent> toAppliedEvents(Long memberId) {
         return PreviewResponse.from(
             eventApplicationService.getUpcomingAppliedEvents(memberId, PREVIEW_LIMIT),
-            event -> new HomeResponse.AppliedEvent(
-                event.getId(),
-                event.getTitle(),
-                event.getEventStartAt().toLocalDate()
+            applied -> new HomeResponse.AppliedEvent(
+                applied.application().getId(),
+                applied.event().getId(),
+                applied.event().getTitle(),
+                applied.event().getEventStartAt().toLocalDate()
             ));
     }
 

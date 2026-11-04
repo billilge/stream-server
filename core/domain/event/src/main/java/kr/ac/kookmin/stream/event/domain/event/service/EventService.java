@@ -17,6 +17,9 @@ import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 public interface EventService {
 
     /**
+     * 게시된 행사 목록. recruitStatus가 없으면 모집 중 → 모집 예정 → 모집 종료 순으로 이어 붙이고, 같은 상태
+     * 안에서는 {@link EventCursor}의 구간별 정렬 기준을 따른다. recruitStatus가 있으면 그 상태 구간만 준다.
+     *
      * @param keyword 제목 검색어. null이거나 공백뿐이면 검색하지 않는다
      */
     CursorSliceResult<EventSummary> getPublishedEvents(
@@ -54,8 +57,8 @@ public interface EventService {
      * 행사 한 건. 없거나 삭제됐으면 {@code null}이다. <b>아직 게시하지 않은 행사도 돌려준다</b> — 운영진 화면은
      * 미게시 행사도 보여야 하고, 학생에게 감추는 일은 부르는 쪽이 {@link Event#isPublished()}로 한다.
      * <p>
-     * 다른 화면이 행사를 곁들여 보여줄 때(아카이빙의 연결 행사) 쓴다. 행사가 사라졌다고 그 화면까지 404가 되면
-     * 안 되므로 {@link #getPublishedEvent(Long)}와 달리 던지지 않는다.
+     * 다른 화면이 행사를 곁들여 보여줄 때(아카이빙·홈 배너의 연결 행사) 쓴다. 행사가 사라졌다고 그 화면까지
+     * 404가 되면 안 되므로 {@link #getPublishedEvent(Long)}와 달리 던지지 않는다.
      */
     Event getByIdOrNull(Long eventId);
 }

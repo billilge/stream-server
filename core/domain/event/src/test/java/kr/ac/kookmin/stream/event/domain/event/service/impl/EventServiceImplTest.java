@@ -94,8 +94,10 @@ class EventServiceImplTest {
         List<EventSummary> content = new EventServiceImpl(repository, repository)
             .getPublishedEvents(null, null, null, 20).content();
 
-        assertEquals(RecruitStatus.CLOSED, content.get(0).recruitStatus());
-        assertEquals(RecruitStatus.OPEN, content.get(1).recruitStatus());
+        // 전체 목록은 모집 중 구간이 먼저라 정원이 남은 행사가 앞에 온다
+        assertEquals(List.of(2L, 1L), content.stream().map(EventSummary::eventId).toList());
+        assertEquals(RecruitStatus.OPEN, content.get(0).recruitStatus());
+        assertEquals(RecruitStatus.CLOSED, content.get(1).recruitStatus());
     }
 
     @Test
@@ -110,7 +112,8 @@ class EventServiceImplTest {
         assertEquals(3, repository.requestedLimit);
         assertEquals(List.of(1L, 2L), result.content().stream().map(EventSummary::eventId).toList());
         assertTrue(result.hasNext());
-        assertEquals(EventCursor.of(event(2L)).format(), result.nextCursor());
+        assertEquals(
+            new EventCursor(RecruitStatus.OPEN, event(2L).getApplyEndAt(), 2L).format(), result.nextCursor());
     }
 
     @Test
@@ -138,7 +141,10 @@ class EventServiceImplTest {
         assertEquals(List.of(), repository.requestedEventIds);
     }
 
-    /** 목록 조회에 쓰이는 두 메서드(행사 조회·신청자 수)만 답하고, 나머지는 이 테스트가 건드리지 않는다. */
+    /**
+     * 목록 조회에 쓰이는 두 메서드(행사 조회·신청자 수)만 답하고, 나머지는 이 테스트가 건드리지 않는다.
+     * 행사 조회는 주어진 모집 상태의 행사만 넣은 순서대로 돌려준다. 구간 안의 정렬은 이 테스트가 보지 않는다.
+     */
     private static final class FakeEventRepository implements EventRepository, EventApplicationRepository {
 
         private final List<Event> fetched;
@@ -155,7 +161,11 @@ class EventServiceImplTest {
         public List<Event> findPublishedSlice(
             RecruitStatus recruitStatus, String keyword, EventCursor cursor, int limit, LocalDateTime now) {
             this.requestedLimit = limit;
-            return fetched.stream().limit(limit).toList();
+            return fetched.stream()
+                .filter(event -> event.calculateRecruitStatus(
+                    now, applicantCounts.getOrDefault(event.getId(), 0L)) == recruitStatus)
+                .limit(limit)
+                .toList();
         }
 
         @Override
@@ -272,6 +282,12 @@ class EventServiceImplTest {
 
         @Override
         public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplication> findAppliedByMemberIdAndEventIds(
+            Long memberId, Collection<Long> eventIds) {
             throw new UnsupportedOperationException();
         }
 

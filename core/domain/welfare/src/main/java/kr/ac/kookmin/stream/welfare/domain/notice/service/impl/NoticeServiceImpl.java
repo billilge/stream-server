@@ -36,6 +36,11 @@ class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
+    public Notice getByIdOrNull(Long id) {
+        return noticeRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public Notice getById(Long id) {
         return noticeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND));

@@ -46,6 +46,12 @@ public interface EventApplicationRepository {
     Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds);
 
     /**
+     * 주어진 행사 중 회원이 낸 유효 신청. {@link #findAppliedEventIds}와 같은 조건이되 신청 자체가 필요할 때 쓴다 —
+     * 홈의 "신청한 행사"가 신청 식별자로 신청 내역 상세를 연다.
+     */
+    List<EventApplication> findAppliedByMemberIdAndEventIds(Long memberId, Collection<Long> eventIds);
+
+    /**
      * 행사의 유효 신청(취소하지 않은 신청)을 낸 회원 식별자.
      */
     List<Long> findAppliedMemberIds(Long eventId);

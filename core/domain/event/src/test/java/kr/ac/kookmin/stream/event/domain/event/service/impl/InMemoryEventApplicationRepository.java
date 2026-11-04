@@ -121,6 +121,11 @@ class InMemoryEventApplicationRepository implements EventApplicationRepository {
     }
 
     @Override
+    public List<EventApplication> findAppliedByMemberIdAndEventIds(Long memberId, Collection<Long> eventIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Optional<EventApplication> findByIdAndMemberId(Long applicationId, Long memberId) {
         throw new UnsupportedOperationException();
     }

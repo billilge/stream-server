@@ -65,13 +65,16 @@ public interface EventRepository {
     Optional<Event> findPublishedById(Long id);
 
     /**
-     * 게시되고 삭제되지 않은 행사를 행사 시작 일시 오름차순(동일 시각은 eventId 오름차순)으로 {@code limit}건까지 조회한다.
-     * recruitStatus가 주어지면 {@code now} 기준으로 계산한 모집 상태가 일치하는 행사만 남긴다.
+     * 게시되고 삭제되지 않은 행사 중 {@code now} 기준으로 계산한 모집 상태가 recruitStatus인 것을 그 상태의 정렬
+     * 기준으로 {@code limit}건까지 조회한다. 정렬 기준은 {@link EventCursor}를 따른다 — 모집 중은 신청 마감 임박순,
+     * 모집 예정은 신청 시작 임박순, 모집 종료는 최근 행사순.
      * <p>
-     * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
+     * 페이지를 어디서 끊을지, 여러 상태를 어떤 순서로 이어 붙일지는 호출부가 정한다. 여기서는 한 상태의 행사를
+     * 요청한 개수만큼 돌려줄 뿐이다.
      *
      * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
      *                그대로 검색한다
+     * @param cursor  같은 모집 상태 구간의 커서. 구간의 처음부터 읽으려면 {@code null}
      */
     List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,

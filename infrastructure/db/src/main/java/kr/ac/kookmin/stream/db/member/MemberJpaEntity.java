@@ -20,8 +20,8 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 // 가입·FCM 토큰 갱신 등이 동시에 저장될 때 서로 바꾼 컬럼을 옛 값으로 덮어쓰지 않도록 바뀐 컬럼만 UPDATE한다
 @DynamicUpdate
-// uk_members_active_student_id(V1)·uk_members_active_phone_number(V16)는 generated column
-// active_student_id·active_phone_number에 걸려 있다. Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
+// uk_members_active_student_id(V1)·uk_members_active_phone_number(V16)·uk_members_active_email(V25)는 generated column
+// active_student_id·active_phone_number·active_email에 걸려 있다. Entity에 매핑된 컬럼이 아니라 여기서는 선언하지 않는다.
 @Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberJpaEntity extends BaseSoftDeleteEntity {

@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.api.app.core.member.request;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,11 @@ public record MemberSignUpRequest(
     @NotBlank(message = "전화번호를 입력해 주세요.")
     @Pattern(regexp = "^010-?\\d{4}-?\\d{4}$", message = "전화번호 형식이 올바르지 않습니다.")
     String phoneNumber,
+
+    @NotBlank(message = "이메일을 입력해 주세요.")
+    @Email(message = "이메일 형식이 올바르지 않습니다.")
+    @Size(max = 255, message = "이메일은 255자 이하로 입력해 주세요.")
+    String email,
 
     // 필수 약관 여부는 TermType이 정하므로 여기서는 동의 값을 강제하지 않는다
     @NotEmpty(message = "약관 동의 여부를 입력해 주세요.")
@@ -27,7 +34,7 @@ public record MemberSignUpRequest(
 
         Map<TermType, Boolean> agreements = new EnumMap<>(TermType.class);
         termAgreements.forEach(agreement -> agreements.put(agreement.termType(), agreement.agreed()));
-        return new MemberSignUpCommand(phoneNumber, agreements);
+        return new MemberSignUpCommand(phoneNumber, email, agreements);
     }
 
     // 같은 약관이 두 번 오면 IllegalArgumentException → GlobalExceptionHandler가 INVALID_INPUT(400)으로 응답한다
