@@ -9,7 +9,9 @@ import kr.ac.kookmin.stream.file.domain.FileUploadUrlIssueResult;
 
 public interface FileService {
     FileUploadUrlIssueResult issuePresignedUrl(FileUploadUrlIssueCommand command);
-    void delete(Long fileId);
+
+    /** 올린 본인만 지울 수 있다. 관리자도 예외 없이, 남의 파일이면 FILE_DELETE_FORBIDDEN. */
+    void delete(Long memberId, Long fileId);
     Optional<File> findById(Long fileId);
 
     /** 업로드 URL 발급 때 돌려준 키로 찾는다. 제출받은 키가 실재하는지, 누가 올렸는지 확인할 때 쓴다. */
