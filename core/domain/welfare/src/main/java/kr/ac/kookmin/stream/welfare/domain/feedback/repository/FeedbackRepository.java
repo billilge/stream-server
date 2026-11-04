@@ -11,8 +11,12 @@ public interface FeedbackRepository {
 
     Optional<Feedback> findById(Long id);
 
-    // year/round가 null이면 그 조건은 필터하지 않는다
-    PageResult<Feedback> search(Integer year, Integer round, PageOffset pageOffset);
+    // 답변을 공개한 회차의 답변 있는 질문만. year/round가 null이면 그 조건은 필터하지 않는다.
+    // 회차 답변 공개 시각 → 답변 시각 내림차순
+    PageResult<Feedback> searchPublished(Integer year, Integer round, PageOffset pageOffset);
+
+    // 한 회원이 쓴 질문 전체(답변이 없는 질문도 포함). 질문 시각 내림차순
+    PageResult<Feedback> findAllByCreatedBy(Long memberId, PageOffset pageOffset);
 
     // 한 회차의 질문 전체(답변이 없는 질문도 포함). 질문 시각 오름차순
     List<Feedback> findAllByYearAndRound(int year, int round);
@@ -27,6 +31,9 @@ public interface FeedbackRepository {
      */
     PageResult<Feedback> searchByKeyword(
         int year, int round, String keyword, List<Long> memberIds, PageOffset pageOffset);
+
+    // 한 회원이 작성한 질문 수(연도·회차 무관)
+    long countByMemberId(Long memberId);
 
     // 회차별 질문 수·답변 수 집계. year가 null이면 전체 연도. 질문이 없는 회차는 결과에 포함되지 않는다
     List<FeedbackCount> findCountsByYear(Integer year);
