@@ -38,4 +38,5 @@ CREATE TABLE home_apply_sections (
 );
 
 -- 같은 대상을 두 번 설정할 수 없다. 삭제가 없는 테이블이라 활성 행 구분 없이 그대로 건다.
-CREATE UNIQUE INDEX uk_home_apply_sections_target ON home_apply_sections (target_type, target_id);
+CREATE UNIQUE INDEX uk_home_apply_sections_target_type_target_id
+    ON home_apply_sections (target_type, target_id);
