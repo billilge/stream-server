@@ -13,13 +13,15 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
 
     Optional<FeedbackJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
-    // 회차는 연도·회차 번호로만 이어져 있어(연관관계 없음) 두 값으로 조인한다
+    // 회차는 연도·회차 번호로만 이어져 있어(연관관계 없음) 두 값으로 조인한다.
+    // keyword는 LikePatterns.escape로 이스케이프한 질문 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
         SELECT f FROM FeedbackJpaEntity f
         JOIN FeedbackRoundJpaEntity r ON r.year = f.year AND r.round = f.round
         WHERE f.isDeleted = false AND f.answer IS NOT NULL AND r.answersPublishedAt IS NOT NULL
         AND (:year IS NULL OR f.year = :year)
         AND (:round IS NULL OR f.round = :round)
+        AND (:keyword IS NULL OR f.question LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         ORDER BY r.answersPublishedAt DESC, f.answeredAt DESC, f.id DESC
         """,
         countQuery = """
@@ -28,9 +30,14 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
         WHERE f.isDeleted = false AND f.answer IS NOT NULL AND r.answersPublishedAt IS NOT NULL
         AND (:year IS NULL OR f.year = :year)
         AND (:round IS NULL OR f.round = :round)
+        AND (:keyword IS NULL OR f.question LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         """)
     Page<FeedbackJpaEntity> searchPublished(
-        @Param("year") Integer year, @Param("round") Integer round, Pageable pageable);
+        @Param("year") Integer year,
+        @Param("round") Integer round,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
 
     @Query(value = """
         SELECT f FROM FeedbackJpaEntity f

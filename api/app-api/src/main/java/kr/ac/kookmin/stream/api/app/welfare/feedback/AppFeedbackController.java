@@ -44,10 +44,11 @@ public class AppFeedbackController implements AppFeedbackApi {
         AppApiUser apiUser,
         @RequestParam(required = false) Integer year,
         @RequestParam(required = false) Integer round,
+        @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
         FeedbackPeriod period = FeedbackPeriod.of(year, round);
-        PageResult<Feedback> result = feedbackService.search(period, pageParams.toOffset());
+        PageResult<Feedback> result = feedbackService.search(period, keyword, pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
     }
 
