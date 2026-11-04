@@ -70,6 +70,7 @@ public class GlobalExceptionHandler {
         log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
+            .contentType(MediaType.APPLICATION_JSON)
             .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), "요청 본문 형식이 올바르지 않습니다."));
     }
 
