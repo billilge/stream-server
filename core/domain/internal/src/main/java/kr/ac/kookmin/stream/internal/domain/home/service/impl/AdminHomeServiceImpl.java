@@ -3,20 +3,25 @@ package kr.ac.kookmin.stream.internal.domain.home.service.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplySection;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTarget;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerStatus;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerUpdateCommand;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeErrorCode;
+import kr.ac.kookmin.stream.internal.domain.home.repository.HomeApplySectionRepository;
 import kr.ac.kookmin.stream.internal.domain.home.repository.HomeBannerRepository;
 import kr.ac.kookmin.stream.internal.domain.home.service.AdminHomeService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 class AdminHomeServiceImpl implements AdminHomeService {
 
     private final HomeBannerRepository homeBannerRepository;
+    private final HomeApplySectionRepository homeApplySectionRepository;
 
     @Override
     public List<HomeBanner> getCurrentBanners(
@@ -118,5 +124,72 @@ class AdminHomeServiceImpl implements AdminHomeService {
         if (targetIds.size() != currentIds.size() || !Set.copyOf(targetIds).equals(currentIds)) {
             throw new BusinessException(HomeErrorCode.HOME_BANNER_ORDER_MISMATCH);
         }
+    }
+
+    // 행사와 사물함 설정을 따로 읽어 표시 순서로 함께 정렬하므로 한 스냅샷으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public List<HomeApplySection> getApplySections(List<HomeApplyTarget> candidates, Boolean exposed) {
+        Map<HomeApplyTarget, HomeApplySection> sectionsByTarget = loadByTargets(candidates);
+
+        // 설정된 것은 저장된 순서대로, 아직 없는 후보는 그 뒤에 후보 순서(신청 마감 임박순)대로 붙인다
+        Stream<HomeApplySection> configured = sectionsByTarget.values().stream()
+            .sorted(Comparator.comparingInt(HomeApplySection::getDisplayOrder)
+                .thenComparing(HomeApplySection::getId));
+        Stream<HomeApplySection> notConfigured = candidates.stream()
+            .filter(target -> !sectionsByTarget.containsKey(target))
+            .map(HomeApplySection::notConfigured);
+
+        return Stream.concat(configured, notConfigured)
+            .filter(section -> exposed == null || section.isExposed() == exposed)
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public void updateApplySectionExposure(HomeApplyTarget target, boolean exposed) {
+        HomeApplySection section = homeApplySectionRepository.findByTarget(target)
+            .orElseGet(() -> HomeApplySection.create(target, nextApplyDisplayOrder(), false));
+
+        section.changeExposure(exposed);
+        homeApplySectionRepository.save(section);
+    }
+
+    @Override
+    @Transactional
+    public void updateApplySectionOrders(List<HomeApplyTarget> orderedTargets) {
+        Map<HomeApplyTarget, HomeApplySection> sectionsByTarget = loadByTargets(orderedTargets);
+
+        List<HomeApplySection> reordered = new ArrayList<>(orderedTargets.size());
+        for (int displayOrder = 0; displayOrder < orderedTargets.size(); displayOrder++) {
+            HomeApplyTarget target = orderedTargets.get(displayOrder);
+            HomeApplySection section = sectionsByTarget.get(target);
+
+            if (section == null) {
+                reordered.add(HomeApplySection.create(target, displayOrder, false));
+            } else {
+                section.changeDisplayOrder(displayOrder);
+                reordered.add(section);
+            }
+        }
+        homeApplySectionRepository.saveAll(reordered);
+    }
+
+    private int nextApplyDisplayOrder() {
+        return homeApplySectionRepository.findMaxDisplayOrder()
+            .map(maxOrder -> maxOrder + 1)
+            .orElse(0);
+    }
+
+    // 대상 종류별로 나눠 조회한다. (target_type, target_id) 짝 목록을 그대로 IN에 넘기는 문법은 JPQL이 받지 않는다
+    private Map<HomeApplyTarget, HomeApplySection> loadByTargets(Collection<HomeApplyTarget> targets) {
+        return targets.stream()
+            .collect(Collectors.groupingBy(
+                HomeApplyTarget::targetType,
+                Collectors.mapping(HomeApplyTarget::targetId, Collectors.toUnmodifiableList())))
+            .entrySet().stream()
+            .flatMap(entry -> homeApplySectionRepository
+                .findByTargetTypeAndTargetIds(entry.getKey(), entry.getValue()).stream())
+            .collect(Collectors.toMap(HomeApplySection::target, Function.identity()));
     }
 }

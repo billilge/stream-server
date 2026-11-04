@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplySection;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeApplyTarget;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCreateCommand;
@@ -70,4 +72,26 @@ public interface AdminHomeService {
      * @param orderedBannerIds 바뀐 순서대로의 배너 식별자 전체
      */
     void updateBannerOrders(List<Long> orderedBannerIds);
+
+    /**
+     * 후보의 설정을 표시 순서대로 조회한다. 설정이 아직 없는 후보는 미노출로 채워 설정된 것들 뒤에
+     * 후보 순서대로 붙인다 — 조회는 저장하지 않는다. 후보가 아닌 설정 행은 돌려주지 않는다.
+     *
+     * @param exposed null이면 노출 여부로 거르지 않는다
+     */
+    List<HomeApplySection> getApplySections(List<HomeApplyTarget> candidates, Boolean exposed);
+
+    /**
+     * 대상의 노출 여부를 바꾼다. 설정이 아직 없던 대상이면 이때 만든다.
+     */
+    void updateApplySectionExposure(HomeApplyTarget target, boolean exposed);
+
+    /**
+     * 받은 대상에 0부터 표시 순서를 다시 매긴다. 설정이 아직 없던 대상은 이때 미노출로 만든다.
+     * <p>
+     * 배너와 달리 후보 전체가 들어 있는지 보지 않는다. 후보는 신청 기간 경과와 선착순 정원 충족으로도
+     * 바뀌므로 "목록이 달라졌다"가 다른 운영진이 건드렸다는 신호가 되지 못한다. 목록에 없던 후보는
+     * 설정이 없는 채로 남아 뒤에 붙고, 그사이 마감된 대상은 순서만 받고 후보에서 빠진다.
+     */
+    void updateApplySectionOrders(List<HomeApplyTarget> orderedTargets);
 }
