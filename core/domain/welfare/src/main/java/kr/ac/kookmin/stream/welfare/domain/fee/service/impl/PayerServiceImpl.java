@@ -50,9 +50,13 @@ class PayerServiceImpl implements PayerService {
     @Override
     @Transactional
     public void linkMember(Long memberId, String studentId) {
-        payerRepository.findByStudentIdAndMemberIdIsNull(studentId).ifPresent(payer -> {
-            payer.linkMember(memberId);
-            payerRepository.save(payer);
-        });
+        // 이미 자기 명부 행이 있는 회원은 연결할 필요가 없다(validatePayer는 그 행으로 통과한다).
+        // 건너뛰지 않으면 uk_payers_member_id 위반으로 로그인이 500이 된다
+        payerRepository.findByStudentIdAndMemberIdIsNull(studentId)
+            .filter(payer -> payerRepository.findByMemberId(memberId).isEmpty())
+            .ifPresent(payer -> {
+                payer.linkMember(memberId);
+                payerRepository.save(payer);
+            });
     }
 }
