@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.internal.home.usecase;
 
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.ErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.FileErrorCode;
@@ -22,8 +23,8 @@ import org.springframework.stereotype.Component;
  * 공지(welfare)·행사(event)를 모르므로 도메인끼리 직접 의존하지 않고 이 UseCase가 조합한다
  * ({@code architecture.md} 6-1절).
  * <p>
- * 확인과 저장을 한 트랜잭션으로 묶지 않는다. 확인 직후 대상이 지워져도 홈은 짝이 깨진 배너를 빼고,
- * 상세는 연결 대상만 비워 내려주므로 원자성이 필요하지 않다.
+ * 확인과 저장을 한 트랜잭션으로 묶지 않는다. 대상은 등록한 뒤에도 언제든 지워질 수 있어 묶어도 같은
+ * 상태가 생기고, 그때 상세는 연결 대상만 비워 내려준다.
  * <p>
  * 아직 공개하지 않은 행사도 연결할 수 있다. 운영진이 공개 예정 행사의 배너를 미리 만들어 두기 때문이다.
  */
@@ -76,27 +77,22 @@ public class AdminHomeBannerWriteUseCase {
     }
 
     /**
-     * 카테고리의 프리셋 배경. 설정이 없거나, 숫자가 아니거나, 가리키는 파일이 사라졌으면 모두 설정이
-     * 잘못된 것이라 같은 에러로 묶는다 — 운영진이 입력으로 풀 수 있는 문제가 아니다.
+     * 카테고리의 프리셋 배경. 설정이 없거나 가리키는 파일이 사라졌으면 모두 설정이 잘못된 것이라 같은
+     * 에러로 묶는다 — 운영진이 입력으로 풀 수 있는 문제가 아니다.
+     * <p>
+     * 값이 숫자가 아니면 파싱에서 그대로 터진다. 배포할 때 손으로 넣는 값이라 회비 금액
+     * ({@code FeeAccountProvider})·대여 차단 기간과 같은 선택이다.
      */
     private Long presetImageFileId(HomeBannerCategory category) {
         Long presetFileId = adminConfigValueService.getValue(PRESET_IMAGE_KEY_PREFIX + category.name())
-            .map(AdminHomeBannerWriteUseCase::parseFileIdOrNull)
+            .map(String::trim)
+            .map(Long::parseLong)
             .orElseThrow(() -> new BusinessException(HomeErrorCode.HOME_BANNER_PRESET_NOT_CONFIGURED));
 
-        if (presetFileId == null || fileService.findById(presetFileId).isEmpty()) {
+        if (fileService.findById(presetFileId).isEmpty()) {
             throw new BusinessException(HomeErrorCode.HOME_BANNER_PRESET_NOT_CONFIGURED);
         }
         return presetFileId;
-    }
-
-    // 설정값은 문자열이라 숫자가 아닐 수 있다. 던지지 않고 null로 돌려 호출부가 한 자리에서 처리한다
-    private static Long parseFileIdOrNull(String configValue) {
-        try {
-            return Long.valueOf(configValue.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     private void validateImageExists(Long imageFileId) {
@@ -105,27 +101,23 @@ public class AdminHomeBannerWriteUseCase {
         }
     }
 
-    // 랜딩 타입을 switch로 모두 받는다. 값이 늘면 컴파일이 막으므로 새 타입의 존재 확인이 조용히 빠지지 않는다
+    // 랜딩 타입을 switch 식으로 받는다. 값을 돌려주는 식이라 타입이 늘면 컴파일이 막는다 — switch 문은
+    // 화살표를 써도 빠진 case를 잡지 않아 새 타입의 존재 확인이 조용히 빠진다
     private void validateLandingTargetExists(HomeBannerLandingType landingType, Long targetId) {
         // 식별자가 비어 있는 건 랜딩 짝이 어긋난 것이라 도메인이 가린다. 여기서 null로 조회하지 않는다
         if (targetId == null) {
             return;
         }
 
-        switch (landingType) {
-            case NOTICE -> {
-                if (noticeService.getByIdOrNull(targetId) == null) {
-                    throw new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND);
-                }
-            }
-            case EVENT -> {
-                if (eventService.getByIdOrNull(targetId) == null) {
-                    throw new BusinessException(EventErrorCode.EVENT_NOT_FOUND);
-                }
-            }
-            case EXTERNAL_LINK -> {
-                // 앱 밖으로 나가는 주소라 확인할 대상이 없다
-            }
+        ErrorCode notFound = switch (landingType) {
+            case NOTICE -> noticeService.getByIdOrNull(targetId) == null ? NoticeErrorCode.NOTICE_NOT_FOUND : null;
+            case EVENT -> eventService.getByIdOrNull(targetId) == null ? EventErrorCode.EVENT_NOT_FOUND : null;
+            // 앱 밖으로 나가는 주소라 확인할 대상이 없다
+            case EXTERNAL_LINK -> null;
+        };
+
+        if (notFound != null) {
+            throw new BusinessException(notFound);
         }
     }
 }

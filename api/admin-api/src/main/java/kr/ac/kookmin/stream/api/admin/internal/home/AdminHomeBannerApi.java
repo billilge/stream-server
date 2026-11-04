@@ -26,7 +26,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * <p>
  * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다.
  */
-@Tag(name = "홈 배너 (운영진)", description = "홈 화면 배너 조회·등록·수정·삭제·순서 변경")
+@Tag(name = "홈 배너 관리", description = "운영진 홈 배너 목록·상세 조회·등록·수정·삭제·순서 변경")
 public interface AdminHomeBannerApi {
 
     @Operation(summary = "노출 중 배너 목록 조회",

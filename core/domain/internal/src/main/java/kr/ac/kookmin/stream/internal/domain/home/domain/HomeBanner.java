@@ -71,8 +71,8 @@ public class HomeBanner {
             command.category(),
             command.imageFileId(),
             command.landingType(),
-            targetIdOf(command.landingType(), command.targetId()),
-            linkUrlOf(command.landingType(), command.linkUrl()),
+            normalizeTargetId(command.landingType(), command.targetId()),
+            normalizeLinkUrl(command.landingType(), command.linkUrl()),
             displayOrder,
             command.exposureStartAt(),
             command.exposureEndAt(),
@@ -92,8 +92,8 @@ public class HomeBanner {
         this.category = command.category();
         this.imageFileId = command.imageFileId();
         this.landingType = command.landingType();
-        this.targetId = targetIdOf(command.landingType(), command.targetId());
-        this.linkUrl = linkUrlOf(command.landingType(), command.linkUrl());
+        this.targetId = normalizeTargetId(command.landingType(), command.targetId());
+        this.linkUrl = normalizeLinkUrl(command.landingType(), command.linkUrl());
         this.exposureStartAt = command.exposureStartAt();
         this.exposureEndAt = command.exposureEndAt();
     }
@@ -146,11 +146,20 @@ public class HomeBanner {
 
     // 랜딩 타입이 읽지 않는 쪽은 비워 저장한다. 외부 링크였던 배너를 공지로 바꿀 때 예전 주소를 남겨두면
     // 수정 화면이 쓰지도 않는 값을 다시 채워 보여준다.
-    private static Long targetIdOf(HomeBannerLandingType landingType, Long targetId) {
-        return landingType == HomeBannerLandingType.EXTERNAL_LINK ? null : targetId;
+    //
+    // isValidLanding과 같은 이유로 switch 식으로 받는다. 랜딩 타입이 늘면 컴파일이 막으므로 새 타입이
+    // 어느 쪽을 쓰는지 정하지 않은 채로 지나가지 않는다
+    private static Long normalizeTargetId(HomeBannerLandingType landingType, Long targetId) {
+        return switch (landingType) {
+            case NOTICE, EVENT -> targetId;
+            case EXTERNAL_LINK -> null;
+        };
     }
 
-    private static String linkUrlOf(HomeBannerLandingType landingType, String linkUrl) {
-        return landingType == HomeBannerLandingType.EXTERNAL_LINK ? linkUrl : null;
+    private static String normalizeLinkUrl(HomeBannerLandingType landingType, String linkUrl) {
+        return switch (landingType) {
+            case NOTICE, EVENT -> null;
+            case EXTERNAL_LINK -> linkUrl;
+        };
     }
 }
