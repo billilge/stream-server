@@ -8,8 +8,8 @@ import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerOrder
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerSearchParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerWriteRequest;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerDetailResponse;
+import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListItemResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListResponse;
-import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerSummaryResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -41,7 +41,7 @@ public interface AdminHomeBannerApi {
     @Operation(summary = "지난 배너 목록 조회",
         description = "노출이 끝난 배너를 종료 일시 최신순으로 페이지 조회한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    ApiResponse<PageResponse<AdminHomeBannerSummaryResponse>> getPastBanners(
+    ApiResponse<PageResponse<AdminHomeBannerListItemResponse>> getPastBanners(
         AdminApiUser apiUser,
         @ParameterObject AdminHomeBannerCategoryParams params,
         @ParameterObject PageParams pageParams

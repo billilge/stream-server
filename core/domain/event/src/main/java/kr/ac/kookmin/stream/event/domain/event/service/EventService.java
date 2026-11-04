@@ -23,6 +23,8 @@ public interface EventService {
      */
     List<Event> getApplicableEvents(Collection<Long> eventIds);
 
+    EventDetail getPublishedEvent(Long eventId);
+
     /**
      * 행사 한 건. 없거나 삭제됐으면 {@code null}이다. <b>아직 게시하지 않은 행사도 돌려준다</b> — 운영진 화면은
      * 미게시 행사도 보여야 하고, 학생에게 감추는 일은 부르는 쪽이 {@link Event#isPublished()}로 한다.
@@ -31,6 +33,4 @@ public interface EventService {
      * 404가 되면 안 되므로 {@link #getPublishedEvent(Long)}와 달리 던지지 않는다.
      */
     Event getByIdOrNull(Long eventId);
-
-    EventDetail getPublishedEvent(Long eventId);
 }
