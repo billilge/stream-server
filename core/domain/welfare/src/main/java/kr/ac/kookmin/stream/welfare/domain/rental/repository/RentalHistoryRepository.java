@@ -35,6 +35,9 @@ public interface RentalHistoryRepository {
 
     RentalHistory save(RentalHistory history);
 
+    /** 하드 삭제. 존재하지 않으면 아무 일도 하지 않는다(존재 확인은 호출부가 먼저 한다). */
+    void deleteById(Long id);
+
     /** 같은 회원이 같은 물품에 아직 끝나지 않은(진행 중인) 이력이 있는지 확인한다. 승인 대기 중인 중복 신청도 막는다. */
     boolean existsActiveRental(Long itemId, Long memberId);
 

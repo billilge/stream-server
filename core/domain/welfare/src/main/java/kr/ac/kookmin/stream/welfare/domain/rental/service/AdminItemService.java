@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -36,4 +37,10 @@ public interface AdminItemService {
      * {@code ITEM_HAS_ACTIVE_RENTAL}.
      */
     void delete(Long itemId);
+
+    /**
+     * 여러 물품의 반납 정책(최대 대여 일수)을 한 번에 같은 값으로 바꾼다. 재고는 건드리지 않는다.
+     * 대상 중 소모품(CONSUMABLE)이 있으면 {@code RETURN_POLICY_NOT_APPLICABLE}.
+     */
+    List<Item> updateReturnPolicyBulk(List<Long> itemIds, int maxRentalDays);
 }

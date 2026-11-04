@@ -27,4 +27,10 @@ public interface AdminRentalHistoryService {
 
     /** 대여 이력 하나의 상태 변경 처리자 로그를 변경 시각 내림차순으로 조회한다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. */
     List<RentalStatusWorkerLog> getWorkerLogs(Long historyId);
+
+    /** 물품 코드를 운영진이 직접 매긴다. null로 보내면 지운다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. */
+    RentalRecord updateItemCode(Long historyId, String itemCode);
+
+    /** 대여 이력과 그 처리자 로그를 함께 지운다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. 재고 복구는 호출부가 맡는다. */
+    void delete(Long historyId);
 }

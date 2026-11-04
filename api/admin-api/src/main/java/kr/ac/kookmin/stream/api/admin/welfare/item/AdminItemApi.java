@@ -3,7 +3,9 @@ package kr.ac.kookmin.stream.api.admin.welfare.item;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemReturnPolicyBulkUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.response.AdminItemDetailResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -64,4 +66,15 @@ public interface AdminItemApi {
             + "있으면 삭제할 수 없다.")
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_HAS_ACTIVE_RENTAL"})
     ApiResponse<Void> deleteItem(AdminApiUser apiUser, Long itemId);
+
+    /** 반납 정책 일괄 변경. 여러 물품의 최대 대여 일수를 한 번에 같은 값으로 바꾼다. */
+    @Operation(summary = "반납 정책 일괄 변경",
+        description = "itemIds로 고른 물품들의 최대 대여 일수를 maxRentalDays로 한 번에 바꾼다. 반납 마감 시각은 "
+            + "그대로 17:00이다. 재고는 건드리지 않는다. 대상에 소모품(CONSUMABLE)이 있으면 처리하지 않는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RETURN_POLICY_NOT_APPLICABLE"})
+    ApiResponse<List<AdminItemDetailResponse>> updateReturnPolicyBulk(
+        AdminApiUser apiUser,
+        ItemReturnPolicyBulkUpdateRequest request
+    );
 }

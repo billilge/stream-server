@@ -23,4 +23,9 @@ public class RentalStatusWorkerLogRepositoryImpl implements RentalStatusWorkerLo
             .map(RentalStatusWorkerLogJpaEntity::toDomain)
             .toList();
     }
+
+    @Override
+    public void deleteAllByRentalHistoryId(Long rentalHistoryId) {
+        rentalStatusWorkerLogJpaRepository.deleteAllByRentalHistoryId(rentalHistoryId);
+    }
 }
