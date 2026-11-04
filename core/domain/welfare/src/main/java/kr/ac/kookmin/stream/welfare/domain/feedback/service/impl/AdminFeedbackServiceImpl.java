@@ -163,7 +163,7 @@ class AdminFeedbackServiceImpl implements AdminFeedbackService {
 
     // 저장 경로와 같은 기준으로, 경로의 회차에 접수된 질문이 아니면 막는다
     private void validateInRound(FeedbackRound round, Feedback feedback) {
-        if (feedback.getYear() != round.getYear() || feedback.getRound() != round.getRound()) {
+        if (!feedback.belongsTo(round)) {
             throw new BusinessException(FeedbackErrorCode.FEEDBACK_NOT_IN_ROUND);
         }
     }

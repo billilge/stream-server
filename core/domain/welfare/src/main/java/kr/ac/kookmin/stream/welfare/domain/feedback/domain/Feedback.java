@@ -49,6 +49,11 @@ public class Feedback {
         return answer != null;
     }
 
+    // 회차와는 연관관계 없이 연도·회차 번호로만 이어져 있어 두 값으로 소속을 본다
+    public boolean belongsTo(FeedbackRound feedbackRound) {
+        return year == feedbackRound.getYear() && round == feedbackRound.getRound();
+    }
+
     // 답변을 작성한다. 이미 답변이 있으면 덮어쓴다 — 답변 수정이 같은 경로로 들어오기 때문이다
     public void writeAnswer(String answer, Long answeredBy, LocalDateTime answeredAt) {
         this.answer = answer;
