@@ -85,7 +85,9 @@ public interface AdminRentalApi {
     /** 대여 기록 삭제. 잘못 등록한 기록을 지울 때 쓴다. */
     @Operation(summary = "대여 기록 삭제",
         description = "대여 기록을 하드 삭제한다. 삭제 전 상태가 진행 중(아직 반납완료·취소·반려가 아님)이었으면 "
-            + "그만큼 물품 재고를 복구한다. 상태 변경 처리자 로그도 함께 지운다.")
+            + "그만큼 물품 재고를 복구한다. 상태 변경 처리자 로그도 함께 지운다. 재고가 학생 신청 등으로 동시에 바뀌면 "
+            + "서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
     ApiResponse<Void> deleteRentalRecord(AdminApiUser apiUser, Long rentalHistoryId);
 }
