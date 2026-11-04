@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
@@ -15,6 +16,14 @@ public interface ItemService {
      * @param cursor   이전 페이지의 마지막 항목. null이면 첫 페이지
      */
     CursorSliceResult<Item> getItems(ItemCategory category, String keyword, ItemCursor cursor, int size);
+
+    /**
+     * 통합 검색의 빌릴게 섹션. 이름에 검색어가 들어 있는 물품을 목록({@link #getItems})과 같은 순서로 앞에서
+     * {@code limit}건, 그리고 그 전체 수를 돌려준다. 카테고리로는 거르지 않는다.
+     *
+     * @param keyword 이름 검색어. null이거나 공백이면 검색하지 않는다
+     */
+    PreviewResult<Item> searchPreview(String keyword, int limit);
 
     /**
      * 재고를 차감한다.
