@@ -7,8 +7,8 @@ import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerCategoryParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.request.AdminHomeBannerSearchParams;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerDetailResponse;
+import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListItemResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerListResponse;
-import kr.ac.kookmin.stream.api.admin.internal.home.response.AdminHomeBannerSummaryResponse;
 import kr.ac.kookmin.stream.api.admin.internal.home.usecase.AdminHomeBannerDetailUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
@@ -46,7 +46,7 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
 
     @Override
     @GetMapping("/past")
-    public ApiResponse<PageResponse<AdminHomeBannerSummaryResponse>> getPastBanners(
+    public ApiResponse<PageResponse<AdminHomeBannerListItemResponse>> getPastBanners(
         AdminApiUser apiUser,
         @Valid @ModelAttribute AdminHomeBannerCategoryParams params,
         @Valid @ModelAttribute PageParams pageParams
@@ -55,7 +55,7 @@ public class AdminHomeBannerController implements AdminHomeBannerApi {
         PageResult<HomeBanner> result =
             adminHomeService.getPastBanners(now, params.categoriesOrEmpty(), pageParams.toOffset());
         return ApiResponse.success(
-            PageResponse.from(result, banner -> AdminHomeBannerSummaryResponse.of(banner, now)));
+            PageResponse.from(result, banner -> AdminHomeBannerListItemResponse.of(banner, now)));
     }
 
     @Override
