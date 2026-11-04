@@ -56,6 +56,11 @@ class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public List<Member> findAllCouncilMembers() {
+        return memberRepository.findAllCouncilMembers();
+    }
+
+    @Override
     @Transactional
     public Member updateProfile(Long id, MemberProfileCommand command) {
         return applyProfile(getById(id), command);

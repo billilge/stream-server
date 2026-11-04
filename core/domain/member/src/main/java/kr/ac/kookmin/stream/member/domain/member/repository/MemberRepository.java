@@ -11,6 +11,8 @@ public interface MemberRepository {
     boolean existsByEmail(String email);
     List<Member> findAllByIds(List<Long> ids);
     List<Long> searchIdsByKeyword(String keyword);
+    // 학생회 구성원(학생회 부서가 있는 운영진). 이름, 같은 이름이면 학번 오름차순
+    List<Member> findAllCouncilMembers();
     Member save(Member member);
     void clearFcmTokenOfOthers(Long memberId, String fcmToken);
 }
