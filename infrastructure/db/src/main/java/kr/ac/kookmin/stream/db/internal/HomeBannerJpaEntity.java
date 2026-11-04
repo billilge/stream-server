@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.db.common.BaseSoftDeleteEntity;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBanner;
+import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerCategory;
 import kr.ac.kookmin.stream.internal.domain.home.domain.HomeBannerLandingType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,10 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
 
     @Column(length = 100)
     private String subtitle;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false, length = 20)
+    private HomeBannerCategory category;
 
     @Column(name = "image_file_id", nullable = false)
     private Long imageFileId;
@@ -55,8 +60,8 @@ public class HomeBannerJpaEntity extends BaseSoftDeleteEntity {
 
     public HomeBanner toDomain() {
         return HomeBanner.of(
-            id, title, subtitle, imageFileId, landingType, targetId, linkUrl,
-            displayOrder, exposureStartAt, exposureEndAt
+            id, title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
+            displayOrder, exposureStartAt, exposureEndAt, getCreatedAt()
         );
     }
 }

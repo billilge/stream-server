@@ -20,6 +20,7 @@ public class HomeBanner {
     private Long id;
     private String title;
     private String subtitle;
+    private HomeBannerCategory category;
     private Long imageFileId;
     private HomeBannerLandingType landingType;
     private Long targetId;
@@ -27,23 +28,40 @@ public class HomeBanner {
     private int displayOrder;
     private LocalDateTime exposureStartAt;
     private LocalDateTime exposureEndAt;
+    /** 등록 일시. 운영진 상세가 보여준다 */
+    private LocalDateTime createdAt;
 
     public static HomeBanner of(
         Long id,
         String title,
         String subtitle,
+        HomeBannerCategory category,
         Long imageFileId,
         HomeBannerLandingType landingType,
         Long targetId,
         String linkUrl,
         int displayOrder,
         LocalDateTime exposureStartAt,
-        LocalDateTime exposureEndAt
+        LocalDateTime exposureEndAt,
+        LocalDateTime createdAt
     ) {
         return new HomeBanner(
-            id, title, subtitle, imageFileId, landingType, targetId, linkUrl,
-            displayOrder, exposureStartAt, exposureEndAt
+            id, title, subtitle, category, imageFileId, landingType, targetId, linkUrl,
+            displayOrder, exposureStartAt, exposureEndAt, createdAt
         );
+    }
+
+    /**
+     * 노출 상태. 저장값이 아니라 노출 기간과 {@code now}로 판정한다.
+     */
+    public HomeBannerStatus calculateStatus(LocalDateTime now) {
+        if (now.isBefore(exposureStartAt)) {
+            return HomeBannerStatus.SCHEDULED;
+        }
+        if (now.isAfter(exposureEndAt)) {
+            return HomeBannerStatus.ENDED;
+        }
+        return HomeBannerStatus.EXPOSED;
     }
 
     /**
