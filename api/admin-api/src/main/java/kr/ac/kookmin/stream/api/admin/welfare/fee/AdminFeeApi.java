@@ -26,10 +26,12 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "학생회비 관리", description = "운영진 학생회비 납부 확인·설정")
 public interface AdminFeeApi {
 
-    /** 납부 요청 목록. 납부를 요청한 회원만 나온다. */
+    /** 납부 요청 목록. 납부를 요청한 회원만 나오고, 상태를 지정하지 않으면 납부 완료는 빠진다. */
     @Operation(summary = "학생회비 납부자 목록 조회",
         description = "이름·학번 검색과 납부 상태 필터로 납부를 요청한 회원을 조회한다. "
-            + "한 번도 요청하지 않은 회원은 나오지 않는다. 금액은 요청 시점에 학생에게 안내한 값이다.")
+            + "한 번도 요청하지 않은 회원은 나오지 않는다. 금액은 요청 시점에 학생에게 안내한 값이다. "
+            + "상태를 지정하지 않으면 처리할 요청(PENDING·REJECTED)만 나오고 납부 완료(PAID)는 빠진다. "
+            + "납부 완료한 회원은 납부자 명부 조회에서 보고, 잘못 처리한 납부 완료를 되돌릴 때는 status=PAID로 찾는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_TRANSFER_STATUS"})
     ApiResponse<PageResponse<AdminFeeSearchResponse>> getRequests(
