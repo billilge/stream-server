@@ -75,6 +75,7 @@ public interface AdminRentalApi {
     /** 물품 코드 수정. 등록 뒤에 코드를 새로 매기거나 바꿀 때 쓴다. */
     @Operation(summary = "대여 기록 물품 코드 수정",
         description = "대여 기록 하나의 물품 코드를 바꾼다. itemCode를 null로 보내면 지운다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND"})
     ApiResponse<AdminRentalHistoryResponse> updateItemCode(
         AdminApiUser apiUser,

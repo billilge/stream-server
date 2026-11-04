@@ -94,7 +94,7 @@ public class AdminRentalController implements AdminRentalApi {
     public ApiResponse<AdminRentalHistoryResponse> updateItemCode(
         AdminApiUser apiUser,
         @PathVariable Long rentalHistoryId,
-        @RequestBody ItemCodeUpdateRequest request
+        @Valid @RequestBody ItemCodeUpdateRequest request
     ) {
         AdminRentalHistoryResponse response = adminRentalItemCodeUpdateUseCase.updateItemCode(
             rentalHistoryId, request.itemCode()
