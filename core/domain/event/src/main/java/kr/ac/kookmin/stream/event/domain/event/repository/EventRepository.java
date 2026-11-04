@@ -69,13 +69,23 @@ public interface EventRepository {
      * recruitStatus가 주어지면 {@code now} 기준으로 계산한 모집 상태가 일치하는 행사만 남긴다.
      * <p>
      * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
+     *
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
+     *                그대로 검색한다
      */
     List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
+        String keyword,
         EventCursor cursor,
         int limit,
         LocalDateTime now
     );
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 제목에 {@code keyword}가 들어 있는 것을 {@link #findPublishedSlice}와 같은 순서로
+     * 앞에서 {@code limit}건, 그리고 그 전체 수. 모집 상태로는 거르지 않는다. 검색어 처리는 {@link #findPublishedSlice}와 같다.
+     */
+    PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit);
 
     /**
      * 회원이 신청한 행사 중 아직 끝나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.

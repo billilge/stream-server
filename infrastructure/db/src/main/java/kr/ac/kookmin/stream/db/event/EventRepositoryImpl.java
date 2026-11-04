@@ -109,6 +109,7 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
+        String keyword,
         EventCursor cursor,
         int limit,
         LocalDateTime now
@@ -121,10 +122,23 @@ public class EventRepositoryImpl implements EventRepository {
             RecruitType.FIRST_COME,
             EventApplicationStatus.APPLIED,
             now,
+            LikePatterns.escape(keyword),
             cursor == null ? null : cursor.eventStartAt(),
             cursor == null ? null : cursor.eventId(),
             Pageable.ofSize(limit)
         ).stream().map(EventJpaEntity::toDomain).toList();
+    }
+
+    @Override
+    public PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit) {
+        Page<EventJpaEntity> result = eventJpaRepository.searchPublished(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        );
+
+        return new PreviewResult<>(
+            result.getContent().stream().map(EventJpaEntity::toDomain).toList(),
+            result.getTotalElements()
+        );
     }
 
     @Override

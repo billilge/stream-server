@@ -105,7 +105,13 @@ class InMemoryEventRepository implements EventRepository {
     }
 
     @Override
-    public List<Event> findPublishedSlice(RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
+    public List<Event> findPublishedSlice(
+        RecruitStatus recruitStatus, String keyword, EventCursor cursor, int limit, LocalDateTime now) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit) {
         throw new UnsupportedOperationException();
     }
 

@@ -28,9 +28,11 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "행사", description = "학생 앱 행사 조회·신청")
 public interface AppEventApi {
 
-    /** 게시된 행사 목록. 커서 기반 페이지네이션이며 모집 상태로 필터링한다. */
+    /** 게시된 행사 목록. 커서 기반 페이지네이션이며 모집 상태로 필터링하고 제목으로 검색한다. */
     @Operation(summary = "행사 목록 조회",
-        description = "게시된 행사를 커서 기반으로 조회한다. recruitStatus로 모집 상태를 필터링하고, cursor/size로 다음 페이지를 넘긴다.")
+        description = "게시된 행사를 커서 기반으로 조회한다. recruitStatus로 모집 상태를 필터링하고, cursor/size로 다음 페이지를 넘긴다. "
+            + "keyword를 주면 제목에 그 검색어가 들어 있는 행사만 조회한다(앞뒤 공백 무시, 공백뿐이면 전체). "
+            + "통합 검색의 행사 탭과 더보기도 이 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_RECRUIT_STATUS", "EVENT_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(@ParameterObject EventListParams params);

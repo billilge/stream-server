@@ -53,7 +53,7 @@ class EventServiceImplTest {
             Map.of(1L, 3L, 2L, 7L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
         // 정원 100명이라 신청자 수가 모집 상태를 바꾸지 않는다. 짝이 맞는지는 D-Day가 아니라 아래에서 직접 본다
         assertEquals(List.of(1L, 2L), content.stream().map(EventSummary::eventId).toList());
@@ -69,7 +69,7 @@ class EventServiceImplTest {
             Map.of(1L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
         assertEquals(2, content.size());
         assertEquals(List.of(1L, 2L), content.stream().map(EventSummary::eventId).toList());
@@ -92,7 +92,7 @@ class EventServiceImplTest {
             Map.of(1L, 3L, 2L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
         assertEquals(RecruitStatus.CLOSED, content.get(0).recruitStatus());
         assertEquals(RecruitStatus.OPEN, content.get(1).recruitStatus());
@@ -105,7 +105,7 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L), event(3L)), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 2);
+            .getPublishedEvents(null, null, null, 2);
 
         assertEquals(3, repository.requestedLimit);
         assertEquals(List.of(1L, 2L), result.content().stream().map(EventSummary::eventId).toList());
@@ -119,7 +119,7 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(List.of(event(1L), event(2L)), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 2);
+            .getPublishedEvents(null, null, null, 2);
 
         assertFalse(result.hasNext());
         assertNull(result.nextCursor());
@@ -132,7 +132,7 @@ class EventServiceImplTest {
             List.of(), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20);
+            .getPublishedEvents(null, null, null, 20);
 
         assertTrue(result.content().isEmpty());
         assertEquals(List.of(), repository.requestedEventIds);
@@ -153,9 +153,14 @@ class EventServiceImplTest {
 
         @Override
         public List<Event> findPublishedSlice(
-            RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
+            RecruitStatus recruitStatus, String keyword, EventCursor cursor, int limit, LocalDateTime now) {
             this.requestedLimit = limit;
             return fetched.stream().limit(limit).toList();
+        }
+
+        @Override
+        public PreviewResult<Event> findPublishedSearchPreview(String keyword, int limit) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

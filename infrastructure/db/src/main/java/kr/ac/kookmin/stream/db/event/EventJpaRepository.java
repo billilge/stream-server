@@ -52,11 +52,14 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
      * 모집 상태는 저장값이 아니라 신청 기간·잔여 정원으로 판정하므로, 필터가 주어지면
      * {@code Event.calculateRecruitStatus}와 같은 규칙을 SQL로 옮겨 적용한다. 두 곳의 규칙이 어긋나면
      * 필터로 거른 결과와 응답에 실린 모집 상태가 달라지므로, 한쪽을 고치면 다른 쪽도 함께 고쳐야 한다.
+     * <p>
+     * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
      */
     @Query("""
         SELECT e FROM EventJpaEntity e
         WHERE e.isDeleted = false
         AND e.isPublished = true
+        AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND (:cursorEventStartAt IS NULL
             OR e.eventStartAt > :cursorEventStartAt
             OR (e.eventStartAt = :cursorEventStartAt AND e.id > :cursorEventId))
@@ -86,10 +89,34 @@ public interface EventJpaRepository extends JpaRepository<EventJpaEntity, Long> 
         @Param("capacityLimitedType") RecruitType capacityLimitedType,
         @Param("appliedStatus") EventApplicationStatus appliedStatus,
         @Param("now") LocalDateTime now,
+        @Param("keyword") String keyword,
         @Param("cursorEventStartAt") LocalDateTime cursorEventStartAt,
         @Param("cursorEventId") Long cursorEventId,
         Pageable pageable
     );
+
+    /**
+     * 게시된 행사 중 제목에 검색어가 들어 있는 것을 학생 목록({@link #findPublishedSlice})과 같은 순서로 페이지 조회한다.
+     * 통합 검색 미리보기용이라 모집 상태로는 거르지 않는다.
+     * <p>
+     * keyword는 LikePatterns.escape로 이스케이프한 제목 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다.
+     */
+    @Query(
+        value = """
+            SELECT e FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND e.isPublished = true
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+            ORDER BY e.eventStartAt ASC, e.id ASC
+            """,
+        countQuery = """
+            SELECT COUNT(e) FROM EventJpaEntity e
+            WHERE e.isDeleted = false
+            AND e.isPublished = true
+            AND (:keyword IS NULL OR e.title LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+            """
+    )
+    Page<EventJpaEntity> searchPublished(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("""
         SELECT e FROM EventJpaEntity e

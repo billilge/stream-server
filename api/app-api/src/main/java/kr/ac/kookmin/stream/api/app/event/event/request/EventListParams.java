@@ -13,7 +13,9 @@ public record EventListParams(
     @Max(value = 100, message = "조회 개수는 1 이상 100 이하여야 합니다.")
     Integer size,
 
-    String recruitStatus
+    String recruitStatus,
+
+    String keyword
 ) {
 
     private static final int DEFAULT_SIZE = 20;
