@@ -42,4 +42,8 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationJpa
         @Param("cursorId") Long cursorId,
         Pageable pageable
     );
+
+    boolean existsByMemberIdAndReadFalse(Long memberId);
+
+    boolean existsByMemberIdIsNullAndReadFalse();
 }

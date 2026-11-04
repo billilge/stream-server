@@ -34,4 +34,9 @@ class NotificationServiceImpl implements NotificationService {
         notification.markRead();
         notificationRepository.save(notification);
     }
+
+    @Override
+    public boolean hasUnread(Long memberId) {
+        return notificationRepository.existsUnreadByMemberId(memberId);
+    }
 }
