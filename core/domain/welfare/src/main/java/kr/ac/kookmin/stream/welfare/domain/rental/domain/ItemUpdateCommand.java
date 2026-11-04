@@ -7,7 +7,6 @@ public record ItemUpdateCommand(
     String name,
     ItemCategory category,
     ItemType type,
-    int count,
     String imageKey,
     ReturnPolicy returnPolicy
 ) {

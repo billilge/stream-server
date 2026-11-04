@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemStockAdjustRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.response.AdminItemDetailResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -46,15 +47,25 @@ public interface AdminItemApi {
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<AdminItemDetailResponse> createItem(AdminApiUser apiUser, ItemCreateRequest request);
 
-    /** 물품 수정. imageFileId를 생략하거나 null로 보내면 기존 이미지를 유지한다. */
+    /** 물품 수정. imageFileId를 생략하거나 null로 보내면 기존 이미지를 유지한다. 재고는 여기서 바꾸지 않는다. */
     @Operation(summary = "물품 수정",
-        description = "물품 정보(이름·카테고리·구분·재고·이미지·반납 정책)를 통째로 수정한다. imageFileId가 null이면 "
-            + "기존 이미지를 유지한다. 대여품(RENTAL)은 반납 정책이 필수다. 재고(count)가 학생 신청 등으로 동시에 "
-            + "바뀌면 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
-    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
+        description = "물품 정보(이름·카테고리·구분·이미지·반납 정책)를 통째로 수정한다. imageFileId가 null이면 "
+            + "기존 이미지를 유지한다. 대여품(RENTAL)은 반납 정책이 필수다. 재고는 이 API로 바꾸지 않는다 — "
+            + "재고 증감 API(PATCH .../stock)를 쓴다. 수정 폼이 열려 있는 사이 학생 신청 등으로 재고가 바뀌어도 "
+            + "덮어쓰지 않기 위함이다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_NAME_DUPLICATED", "RETURN_POLICY_REQUIRED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<AdminItemDetailResponse> updateItem(AdminApiUser apiUser, Long itemId, ItemUpdateRequest request);
+
+    /** 재고 증감. 폼이 읽은 시점과 무관하게 지금 재고에서 증감량만큼 바꾼다. */
+    @Operation(summary = "물품 재고 증감",
+        description = "재고를 delta만큼 증감한다. 양수면 늘리고 음수면 줄인다. 목표 수량이 아니라 증감량이라, "
+            + "그 사이 학생 신청·반납으로 재고가 바뀌어도 그 변화를 덮어쓰지 않는다. 재고가 줄이려는 양보다 "
+            + "적으면 409를 반환한다. 동시 변경은 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
+    ApiResponse<AdminItemDetailResponse> adjustStock(AdminApiUser apiUser, Long itemId, ItemStockAdjustRequest request);
 
     /** 물품 삭제. 하드 삭제이며 진행 중인 대여 기록이 있으면 막는다. */
     @Operation(summary = "물품 삭제",

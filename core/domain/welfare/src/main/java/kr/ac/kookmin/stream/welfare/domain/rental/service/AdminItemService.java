@@ -26,8 +26,15 @@ public interface AdminItemService {
     /**
      * 물품 정보를 통째로 수정한다. {@code command.imageKey()}가 null이면 기존 이미지를 유지한다.
      * 존재하지 않으면 {@code ITEM_NOT_FOUND}, 다른 물품과 이름이 겹치면 {@code ITEM_NAME_DUPLICATED}.
+     * 재고는 수정 대상이 아니다({@link #adjustStock} 참고) — 수정 폼이 열려 있는 사이의 대여·반납을 덮어쓰지 않기 위함이다.
      */
     Item update(Long itemId, ItemUpdateCommand command);
+
+    /**
+     * 재고를 증감한다. {@code delta}가 양수면 늘리고 음수면 줄인다. 존재하지 않으면 {@code ITEM_NOT_FOUND},
+     * 줄이는 양이 지금 재고보다 많으면 {@code ITEM_OUT_OF_STOCK}.
+     */
+    Item adjustStock(Long itemId, int delta);
 
     /**
      * 물품을 하드 삭제한다. 존재하지 않으면 {@code ITEM_NOT_FOUND}, 진행 중인 대여 기록이 있으면

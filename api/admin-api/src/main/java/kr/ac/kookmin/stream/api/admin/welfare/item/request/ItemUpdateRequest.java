@@ -24,11 +24,6 @@ public record ItemUpdateRequest(
     @NotNull(message = "물품 구분을 입력해 주세요.")
     ItemType type,
 
-    @Schema(description = "재고 수량", example = "12")
-    @NotNull(message = "재고 수량을 입력해 주세요.")
-    @Min(value = 0, message = "재고 수량은 0 이상이어야 합니다.")
-    Integer count,
-
     @Schema(description = "사전 업로드한 이미지 파일 ID. null이면 기존 이미지를 유지한다", example = "105")
     Long imageFileId,
 
@@ -38,6 +33,6 @@ public record ItemUpdateRequest(
 ) {
 
     public ItemUpdateCommand toCommand(String imageKey) {
-        return new ItemUpdateCommand(name, category, type, count, imageKey, maxRentalDays == null ? null : ReturnPolicy.of(maxRentalDays));
+        return new ItemUpdateCommand(name, category, type, imageKey, maxRentalDays == null ? null : ReturnPolicy.of(maxRentalDays));
     }
 }
