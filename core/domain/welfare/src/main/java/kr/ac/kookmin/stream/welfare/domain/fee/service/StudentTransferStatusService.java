@@ -30,4 +30,7 @@ public interface StudentTransferStatusService {
      * 회원의 최신 요청만 바꿀 수 있고, 지난 요청이면 {@code FEE_REQUEST_NOT_LATEST}다.
      */
     StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason);
+
+    /** Payer 명부에 연결될 때 한 번만 쓴다. 요청 이력이 없는 회원에게 이미 납부완료인 요청 행을 만들어 둔다. */
+    void createPaidForLinkedPayer(Long memberId);
 }

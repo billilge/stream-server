@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 class PayerServiceImpl implements PayerService {
 
     private final PayerRepository payerRepository;
+    private final StudentTransferStatusService studentTransferStatusService;
 
     @Override
     @Transactional
@@ -57,6 +59,7 @@ class PayerServiceImpl implements PayerService {
             .ifPresent(payer -> {
                 payer.linkMember(memberId);
                 payerRepository.save(payer);
+                studentTransferStatusService.createPaidForLinkedPayer(memberId);
             });
     }
 }

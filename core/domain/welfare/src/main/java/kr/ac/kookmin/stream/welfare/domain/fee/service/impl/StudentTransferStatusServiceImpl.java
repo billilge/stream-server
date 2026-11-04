@@ -60,6 +60,13 @@ class StudentTransferStatusServiceImpl implements StudentTransferStatusService {
         return studentTransferStatusRepository.save(transferStatus);
     }
 
+    @Override
+    @Transactional
+    public void createPaidForLinkedPayer(Long memberId) {
+        studentTransferStatusRepository.save(
+            StudentTransferStatus.createPaidForLinkedPayer(memberId, LocalDateTime.now()));
+    }
+
     // 지난 요청은 이력이라 바꾸지 않는다. 회원의 지금 상태는 최신 요청 하나뿐이고, 지난 요청을 되살리면
     // 회원당 진행 중 요청이 둘이 될 수 있다
     private void validateLatest(StudentTransferStatus transferStatus) {
