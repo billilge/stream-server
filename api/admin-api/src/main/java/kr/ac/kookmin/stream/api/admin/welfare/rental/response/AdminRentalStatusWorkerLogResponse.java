@@ -22,17 +22,20 @@ public record AdminRentalStatusWorkerLogResponse(List<WorkerLogEntry> logs) {
         Long workerId,
         @Schema(description = "처리자 이름. 탈퇴한 회원이면 placeholder", example = "홍길동")
         String workerName,
+        @Schema(description = "처리자 학번. 탈퇴한 회원이면 null", example = "20201111")
+        String workerStudentId,
         @Schema(description = "그 처리로 바뀐 상태")
         RentalStatus rentalStatus,
         @Schema(description = "처리 시각")
         LocalDateTime changedAt
     ) {
 
-        // worker가 null이면 탈퇴(소프트 삭제)한 회원의 과거 처리 기록이다 — 이름 대신 쓰는 표시용 placeholder.
+        // worker가 null이면 탈퇴(소프트 삭제)한 회원의 과거 처리 기록이다 — 이름 대신 쓰는 표시용 placeholder, 학번은 알 수 없어 null.
         public static WorkerLogEntry from(RentalStatusWorkerLog log, Member worker) {
             return new WorkerLogEntry(
                 log.getWorkerId(),
                 worker != null ? worker.getName() : ApiConstants.WITHDRAWN_MEMBER_LABEL,
+                worker != null ? worker.getStudentId() : null,
                 log.getRentalStatus(),
                 log.getCreatedAt()
             );
