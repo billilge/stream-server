@@ -23,4 +23,9 @@ public class OAuthAccountRepositoryImpl implements OAuthAccountRepository {
     public OAuthAccount save(OAuthAccount oauthAccount) {
         return oauthAccountJpaRepository.save(OAuthAccountJpaEntity.from(oauthAccount)).toDomain();
     }
+
+    @Override
+    public void deleteAllByMemberId(Long memberId) {
+        oauthAccountJpaRepository.deleteAllByMemberId(memberId);
+    }
 }
