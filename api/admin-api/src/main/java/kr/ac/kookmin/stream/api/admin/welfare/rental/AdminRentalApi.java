@@ -52,9 +52,9 @@ public interface AdminRentalApi {
         description = "대여 기록의 상태를 직접 바꾼다. 전이 규칙은 없어 어떤 값으로도 바꿀 수 있다. RENTAL로 바뀌면 "
             + "그 시각을 실제 수령 시각으로, RETURNED로 바뀌면 그 시각을 반납 완료 시각으로 기록한다(신청 시점에 "
             + "학생이 고른 희망 시각과는 다르다). 소모품은 CONFIRMED로 요청해도 RENTAL을 거치지 않고 바로 RETURNED로 "
-            + "전이한다(신청 시점에 이미 내준 걸 승인하는 것이라 수령 단계가 없다). RETURNED/CANCEL/REJECTED로 새로 "
-            + "바뀔 때(소모품의 RETURNED 전이는 제외)만 물품 재고를 복구하고, 그 반대로 복구했던 상태에서 진행 중인 "
-            + "상태로 되돌리면 복구했던 만큼 재고를 다시 뺀다(중복 복구 방지). 처리자(workerId)는 호출한 관리자로 "
+            + "전이한다(신청 시점에 이미 내준 걸 승인하는 것이라 수령 단계가 없다). 재고는 상태가 재고를 "
+            + "차지하는지(진행 중인 상태, 그리고 이미 내준 소모품의 RETURNED)를 바꾸기 전후로 비교해, 차지하다 놓으면 "
+            + "복구하고 놓았다 다시 차지하면 차감한다. 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다. 처리자(workerId)는 호출한 관리자로 "
             + "자동 기록되며 운영진(ADMIN role)이어야 하고, 직전과 같은 상태로의 요청은 아무 효과가 없다(로그도 안 쌓인다).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "WORKER_NOT_ADMIN", "ITEM_OUT_OF_STOCK"})

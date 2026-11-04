@@ -42,9 +42,11 @@ public class AdminRentalStatusUpdateUseCase {
 
             RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, newStatus, workerId);
 
-            if (shouldRestock(previousStatus, newStatus, item)) {
+            boolean heldBefore = holdsStock(previousStatus, item);
+            boolean heldAfter = holdsStock(newStatus, item);
+            if (heldBefore && !heldAfter) {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
-            } else if (shouldUnrestock(previousStatus, newStatus, item)) {
+            } else if (!heldBefore && heldAfter) {
                 item = itemService.decreaseStock(history.getItemId(), history.getRentedCount());
             }
 
@@ -60,24 +62,12 @@ public class AdminRentalStatusUpdateUseCase {
         }
     }
 
-    private boolean shouldRestock(RentalStatus previousStatus, RentalStatus newStatus, Item item) {
-        if (previousStatus.isFinished()) {
-            return false;
-        }
-        if (newStatus == RentalStatus.CANCEL || newStatus == RentalStatus.REJECTED) {
+    // 진행 중이면 재고를 차지하고, 끝난 상태 중에는 이미 내준 소모품의 RETURNED만 차지한다.
+    // 전후 상태의 차지 여부를 비교해 재고를 복구·차감하므로 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다.
+    private boolean holdsStock(RentalStatus status, Item item) {
+        if (!status.isFinished()) {
             return true;
         }
-        return newStatus == RentalStatus.RETURNED && item != null && item.getType() == ItemType.RENTAL;
-    }
-
-    // 종료 상태에서 진행 상태로 되돌리면, shouldRestock이 그때 늘렸던 재고를 다시 뺀다(대칭)
-    private boolean shouldUnrestock(RentalStatus previousStatus, RentalStatus newStatus, Item item) {
-        if (!previousStatus.isFinished() || newStatus.isFinished()) {
-            return false;
-        }
-        if (previousStatus == RentalStatus.CANCEL || previousStatus == RentalStatus.REJECTED) {
-            return true;
-        }
-        return previousStatus == RentalStatus.RETURNED && item != null && item.getType() == ItemType.RENTAL;
+        return status == RentalStatus.RETURNED && item != null && item.getType() == ItemType.CONSUMABLE;
     }
 }
