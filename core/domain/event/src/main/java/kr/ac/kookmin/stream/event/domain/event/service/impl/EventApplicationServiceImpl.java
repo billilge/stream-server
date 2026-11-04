@@ -1,13 +1,19 @@
 package kr.ac.kookmin.stream.event.domain.event.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
 import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
@@ -22,6 +28,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
+import kr.ac.kookmin.stream.event.domain.event.domain.UpcomingAppliedEvent;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
@@ -88,6 +95,11 @@ class EventApplicationServiceImpl implements EventApplicationService {
             application -> EventApplicationSummary.of(application, events.get(application.getEventId())),
             summary -> EventApplicationCursor.of(summary).format()
         );
+    }
+
+    @Override
+    public Set<Long> getAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+        return eventApplicationRepository.findAppliedEventIds(memberId, eventIds);
     }
 
     @Override
@@ -168,5 +180,32 @@ class EventApplicationServiceImpl implements EventApplicationService {
                 answer.selectedOptions() == null ? List.of() : answer.selectedOptions()
             ))
             .toList();
+    }
+
+    @Override
+    public PreviewResult<UpcomingAppliedEvent> getUpcomingAppliedEvents(Long memberId, int limit) {
+        // 오늘 끝나는 행사는 이미 지났어도 "오늘"로 보여줘야 하므로 시각이 아니라 날짜로 거른다
+        PreviewResult<Event> events = eventRepository.findUpcomingAppliedEvents(
+            memberId, LocalDate.now().atStartOfDay(), limit);
+
+        // 신청은 행사 식별자를 모아 한 번에 읽는다. 같은 행사에 유효 신청이 둘이면 나중 것을 쓴다 — 중복 확인과
+        // 저장 사이의 경합을 DB가 막지 않으므로 둘일 수 있다
+        Map<Long, EventApplication> applications = eventApplicationRepository.findAppliedByMemberIdAndEventIds(
+                memberId, events.content().stream().map(Event::getId).toList())
+            .stream()
+            .collect(Collectors.toMap(
+                EventApplication::getEventId,
+                Function.identity(),
+                BinaryOperator.maxBy(Comparator.comparing(EventApplication::getId))
+            ));
+
+        // 두 조회 사이에 취소된 신청은 상세를 열 수 없으므로 뺀다
+        return new PreviewResult<>(
+            events.content().stream()
+                .filter(event -> applications.containsKey(event.getId()))
+                .map(event -> new UpcomingAppliedEvent(applications.get(event.getId()), event))
+                .toList(),
+            events.totalCount()
+        );
     }
 }

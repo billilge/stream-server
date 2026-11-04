@@ -1,5 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.notice.service.impl;
 
+import java.util.Collection;
+import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
@@ -31,5 +33,10 @@ class NoticeServiceImpl implements NoticeService {
     public Notice getById(Long id) {
         return noticeRepository.findById(id)
             .orElseThrow(() -> new BusinessException(NoticeErrorCode.NOTICE_NOT_FOUND));
+    }
+
+    @Override
+    public List<Notice> getByIds(Collection<Long> ids) {
+        return noticeRepository.findAllByIds(ids);
     }
 }

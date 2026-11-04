@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.db.event;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
@@ -17,6 +18,12 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
     boolean existsByEventId(Long eventId);
 
     long countByEventId(Long eventId);
+
+    List<EventApplicationJpaEntity> findAllByMemberIdAndEventIdInAndStatus(
+        Long memberId,
+        Collection<Long> eventIds,
+        EventApplicationStatus status
+    );
 
     @Query(
         value = """
@@ -73,6 +80,18 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
         @Param("cursorAppliedAt") LocalDateTime cursorAppliedAt,
         @Param("cursorApplicationId") Long cursorApplicationId,
         Pageable pageable
+    );
+
+    @Query("""
+        SELECT a.eventId FROM EventApplicationJpaEntity a
+        WHERE a.memberId = :memberId
+        AND a.eventId IN :eventIds
+        AND a.status = :appliedStatus
+        """)
+    List<Long> findAppliedEventIds(
+        @Param("memberId") Long memberId,
+        @Param("eventIds") Collection<Long> eventIds,
+        @Param("appliedStatus") EventApplicationStatus appliedStatus
     );
 
     @Query("""

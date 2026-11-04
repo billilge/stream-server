@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.ErrorCode;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationDetail;
@@ -19,6 +22,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplyCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitType;
+import kr.ac.kookmin.stream.event.domain.event.domain.UpcomingAppliedEvent;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -121,6 +125,16 @@ class EventApplyUseCaseTest {
         @Override
         public CursorSliceResult<EventApplicationSummary> getApplicationsByMemberId(
             Long memberId, EventApplicationCursor cursor, int size) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreviewResult<UpcomingAppliedEvent> getUpcomingAppliedEvents(Long memberId, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Set<Long> getAppliedEventIds(Long memberId, Collection<Long> eventIds) {
             throw new UnsupportedOperationException();
         }
 

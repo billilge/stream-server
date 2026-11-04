@@ -1,7 +1,9 @@
 package kr.ac.kookmin.stream.api.app.event.event.usecase;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
@@ -22,6 +24,16 @@ class FakeEventService implements EventService {
 
     @Override
     public CursorSliceResult<EventSummary> getPublishedEvents(RecruitStatus recruitStatus, EventCursor cursor, int size) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Event> getApplicableEvents(Collection<Long> eventIds) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Event> getPublishedByIds(Collection<Long> eventIds) {
         throw new UnsupportedOperationException();
     }
 
