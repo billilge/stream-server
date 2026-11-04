@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCancelStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.service.AdminLockerService;
@@ -27,7 +27,7 @@ public class AdminLockerApplicationSearchUseCase {
      * @param status  {@code null}이면 상태로 거르지 않는다
      */
     public LockerApplicantPage search(
-        Long lockerPeriodId, String keyword, AdminLockerApplicationStatus status, PageOffset pageOffset
+        Long lockerPeriodId, String keyword, LockerApplicationCancelStatus status, PageOffset pageOffset
     ) {
         LockerApplicationCounts counts = adminLockerService.getApplicationCounts(lockerPeriodId);
         List<Long> memberIds = null;

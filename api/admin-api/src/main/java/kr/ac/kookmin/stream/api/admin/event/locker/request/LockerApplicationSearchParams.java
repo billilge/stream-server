@@ -2,7 +2,7 @@ package kr.ac.kookmin.stream.api.admin.event.locker.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCancelStatus;
 
 /**
  * 신청 현황 조회 조건. 회차 식별자를 {@link LockerPeriodParams}와 나눠 받는다 — 그쪽은 구역 조회와 함께 쓰는
@@ -30,7 +30,7 @@ public record LockerApplicationSearchParams(
         return keyword == null || keyword.isBlank() ? null : keyword.strip();
     }
 
-    public AdminLockerApplicationStatus toStatus() {
-        return AdminLockerApplicationStatus.from(status);
+    public LockerApplicationCancelStatus toStatus() {
+        return LockerApplicationCancelStatus.from(status);
     }
 }

@@ -3,7 +3,7 @@ package kr.ac.kookmin.stream.event.domain.locker.service;
 import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
-import kr.ac.kookmin.stream.event.domain.locker.domain.AdminLockerApplicationStatus;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCancelStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
@@ -77,7 +77,7 @@ public interface AdminLockerService {
      * @param status    상태로 좁힐 때만 넘긴다. {@code null}이면 취소 여부를 가리지 않는다
      */
     PageResult<LockerApplicationResult> getApplications(
-        Long lockerPeriodId, List<Long> memberIds, AdminLockerApplicationStatus status, PageOffset pageOffset);
+        Long lockerPeriodId, List<Long> memberIds, LockerApplicationCancelStatus status, PageOffset pageOffset);
 
     /**
      * 신청 현황 상단에 띄울 개수. 목록과 달리 검색어·상태 필터를 타지 않고 회차 전체를 센다. 없는 회차면
