@@ -64,11 +64,11 @@ public class ItemRepositoryImpl implements ItemRepository {
         return itemJpaRepository.save(ItemJpaEntity.from(item)).toDomain();
     }
 
-    // 학생 앱 목록과 조건·정렬이 같은 페이지 쿼리를 카테고리·구분 없이 쓴다. 첫 페이지 내용과 전체 수가 곧 미리보기다
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
     @Override
     public PreviewResult<Item> findSearchPreview(String keyword, int limit) {
-        Page<ItemJpaEntity> result = itemJpaRepository.search(
-            null, null, LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        Page<ItemJpaEntity> result = itemJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
         );
 
         return new PreviewResult<>(

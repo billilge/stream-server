@@ -55,11 +55,11 @@ public class NoticeRepositoryImpl implements NoticeRepository {
         );
     }
 
-    // 학생 앱 목록과 조건·정렬이 같은 페이지 쿼리를 그대로 쓴다. 첫 페이지 내용과 전체 수가 곧 미리보기다
+    // 첫 페이지 내용과 전체 수가 곧 미리보기다
     @Override
     public PreviewResult<Notice> findSearchPreview(String keyword, int limit) {
-        Page<NoticeJpaEntity> result = noticeJpaRepository.search(
-            null, LikePatterns.escape(keyword), Pageable.ofSize(limit)
+        Page<NoticeJpaEntity> result = noticeJpaRepository.findSearchPreview(
+            LikePatterns.escape(keyword), Pageable.ofSize(limit)
         );
 
         return new PreviewResult<>(
