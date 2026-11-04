@@ -59,4 +59,29 @@ public class HomeBannerRepositoryImpl implements HomeBannerRepository {
     public Optional<HomeBanner> findById(Long bannerId) {
         return homeBannerJpaRepository.findByIdAndIsDeletedFalse(bannerId).map(HomeBannerJpaEntity::toDomain);
     }
+
+    @Override
+    public Optional<Integer> findMaxDisplayOrder() {
+        return Optional.ofNullable(homeBannerJpaRepository.findMaxDisplayOrder());
+    }
+
+    @Override
+    public HomeBanner save(HomeBanner banner) {
+        return homeBannerJpaRepository.save(HomeBannerJpaEntity.from(banner)).toDomain();
+    }
+
+    @Override
+    public void saveAll(List<HomeBanner> banners) {
+        homeBannerJpaRepository.saveAll(banners.stream().map(HomeBannerJpaEntity::from).toList());
+    }
+
+    @Override
+    public boolean delete(Long bannerId) {
+        return homeBannerJpaRepository.findByIdAndIsDeletedFalse(bannerId)
+            .map(entity -> {
+                entity.delete();
+                return true;
+            })
+            .orElse(false);
+    }
 }

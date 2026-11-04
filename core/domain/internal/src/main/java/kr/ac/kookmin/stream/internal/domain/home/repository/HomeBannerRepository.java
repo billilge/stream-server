@@ -38,4 +38,25 @@ public interface HomeBannerRepository {
      * 배너 한 건. 삭제한 배너는 없는 것으로 본다.
      */
     Optional<HomeBanner> findById(Long bannerId);
+
+    /**
+     * 삭제하지 않은 배너의 표시 순서 중 가장 큰 값. 배너가 없으면 비어 있다.
+     * <p>
+     * 노출이 끝난 배너까지 함께 본다. 새 배너를 맨 뒤에 붙이는 데에만 쓰므로 지난 배너의 큰 값이
+     * 섞여도 결과는 같다.
+     */
+    Optional<Integer> findMaxDisplayOrder();
+
+    HomeBanner save(HomeBanner banner);
+
+    /**
+     * 여러 배너를 한꺼번에 저장한다. 순서 일괄 변경에 쓴다.
+     */
+    void saveAll(List<HomeBanner> banners);
+
+    /**
+     * 배너를 소프트 삭제한다. 이미 삭제됐거나 없는 배너면 false를 돌려준다.
+     * 변경은 호출한 쪽 트랜잭션이 커밋될 때 반영된다.
+     */
+    boolean delete(Long bannerId);
 }
