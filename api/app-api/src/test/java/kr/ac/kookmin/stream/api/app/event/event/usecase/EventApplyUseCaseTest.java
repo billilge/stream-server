@@ -119,13 +119,13 @@ class EventApplyUseCaseTest {
         }
 
         @Override
-        public CursorSliceResult<EventApplicationSummary> getMyApplications(
+        public CursorSliceResult<EventApplicationSummary> getApplicationsByMemberId(
             Long memberId, EventApplicationCursor cursor, int size) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public EventApplicationDetail getMyApplication(Long applicationId, Long memberId) {
+        public EventApplicationDetail getApplicationByIdAndMemberId(Long applicationId, Long memberId) {
             throw new UnsupportedOperationException();
         }
 

@@ -74,7 +74,7 @@ public class AppEventController implements AppEventApi {
         AppApiUser apiUser,
         @Valid @ModelAttribute EventApplicationListParams params
     ) {
-        CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getMyApplications(
+        CursorSliceResult<EventApplicationSummary> result = eventApplicationService.getApplicationsByMemberId(
             apiUser.userId(), params.toCursor(), params.sizeOrDefault());
         Map<Long, File> filesById = fileService.findAllByIdIn(
             thumbnailIdsOf(result.content(), EventApplicationSummary::thumbnailFileId));
@@ -90,7 +90,7 @@ public class AppEventController implements AppEventApi {
         @PathVariable Long applicationId
     ) {
         return ApiResponse.success(EventApplicationDetailResponse.from(
-            eventApplicationService.getMyApplication(applicationId, apiUser.userId())));
+            eventApplicationService.getApplicationByIdAndMemberId(applicationId, apiUser.userId())));
     }
 
     @Override

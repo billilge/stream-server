@@ -18,13 +18,13 @@ public interface EventApplicationService {
 
     EventApplicationResult apply(Long eventId, Long memberId, EventApplyCommand command);
 
-    CursorSliceResult<EventApplicationSummary> getMyApplications(
+    CursorSliceResult<EventApplicationSummary> getApplicationsByMemberId(
         Long memberId,
         EventApplicationCursor cursor,
         int size
     );
 
-    EventApplicationDetail getMyApplication(Long applicationId, Long memberId);
+    EventApplicationDetail getApplicationByIdAndMemberId(Long applicationId, Long memberId);
 
     void cancelApplication(Long applicationId, Long memberId);
 }

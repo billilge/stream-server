@@ -68,7 +68,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public CursorSliceResult<EventApplicationSummary> getMyApplications(
+    public CursorSliceResult<EventApplicationSummary> getApplicationsByMemberId(
         Long memberId,
         EventApplicationCursor cursor,
         int size
@@ -92,8 +92,8 @@ class EventApplicationServiceImpl implements EventApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventApplicationDetail getMyApplication(Long applicationId, Long memberId) {
-        EventApplication application = getMyApplicationOrThrow(applicationId, memberId);
+    public EventApplicationDetail getApplicationByIdAndMemberId(Long applicationId, Long memberId) {
+        EventApplication application = getApplicationOrThrow(applicationId, memberId);
         Event event = getEventOrThrow(application.getEventId());
 
         // 질문은 행사 것을 쓰고 답변만 이 신청 것을 붙인다. 취소 후 재신청이면 신청마다 답변이 따로 있다
@@ -108,7 +108,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
     @Override
     @Transactional
     public void cancelApplication(Long applicationId, Long memberId) {
-        EventApplication application = getMyApplicationOrThrow(applicationId, memberId);
+        EventApplication application = getApplicationOrThrow(applicationId, memberId);
         if (application.isCanceled()) {
             throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
         }
@@ -133,7 +133,7 @@ class EventApplicationServiceImpl implements EventApplicationService {
     }
 
     /** 남의 신청은 없는 것으로 보여야 하므로 조회 단계에서 회원 식별자로 함께 거른다. */
-    private EventApplication getMyApplicationOrThrow(Long applicationId, Long memberId) {
+    private EventApplication getApplicationOrThrow(Long applicationId, Long memberId) {
         return eventApplicationRepository.findByIdAndMemberId(applicationId, memberId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.APPLICATION_NOT_FOUND));
     }
