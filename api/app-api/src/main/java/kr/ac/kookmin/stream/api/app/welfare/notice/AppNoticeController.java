@@ -43,7 +43,7 @@ public class AppNoticeController implements AppNoticeApi {
         );
 
         List<Long> thumbnailIds = result.content().stream()
-                .map(AppNoticeController::firstImageId)
+                .map(Notice::getThumbnailImageId)
                 .filter(id -> id != null)
                 .toList();
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIds);
@@ -69,9 +69,5 @@ public class AppNoticeController implements AppNoticeApi {
         );
 
         return ApiResponse.success(NoticeDetailResponse.from(notice, imagesById, attachmentsById));
-    }
-
-    private static Long firstImageId(Notice notice) {
-        return notice.getImageIds() == null || notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
     }
 }

@@ -71,15 +71,10 @@ public class AppSearchUseCase {
     ) {
         return Stream.of(
                 events.content().stream().map(EventSummary::thumbnailFileId),
-                notices.content().stream().map(AppSearchUseCase::firstImageId),
+                notices.content().stream().map(Notice::getThumbnailImageId),
                 archives.content().stream().map(ArchiveSummary::thumbnailFileId))
             .flatMap(Function.identity())
             .filter(Objects::nonNull)
             .toList();
-    }
-
-    // 공지 목록과 같은 기준이다. 등록된 이미지 중 첫 번째가 썸네일이다
-    private static Long firstImageId(Notice notice) {
-        return notice.getImageIds() == null || notice.getImageIds().isEmpty() ? null : notice.getImageIds().get(0);
     }
 }
