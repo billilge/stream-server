@@ -12,5 +12,6 @@ public final class ErrorStatus {
     public static final int BAD_REQUEST = 400;
     public static final int CONFLICT = 409;
     public static final int FORBIDDEN = 403;
+    public static final int TOO_MANY_REQUESTS = 429;
     public static final int BAD_GATEWAY = 502;
 }

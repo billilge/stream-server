@@ -87,6 +87,7 @@ root
 - **DTO는 `{도메인}` 아래 `request`/`response` 하위 패키지로, 교차 도메인 `UseCase`는 `{도메인}` 아래 `usecase` 하위 패키지로 분리**한다. 컨트롤러는 `{도메인}` 패키지 바로 아래 둔다.
 - **클라이언트 전역 공통물**(예: `AppApiUser`)은 클라이언트 베이스 패키지에, 그 부속 인프라(ArgumentResolver 등)는 `resolver` 같은 용도별 하위 패키지에 둔다.
 - 한 팀이 여러 도메인을 묶을 수 있고(예: core = auth·member), admin·app 양쪽에 컨트롤러를 둘 수 있다. 팀별 파일이 서로 겹치지 않게 한다.
+- **예외 — 여러 팀의 도메인을 한 화면에서 묶는 클라이언트 기능**(예: 학생 앱 통합 검색 — welfare의 공지·물품·열린피드백과 event의 행사·아카이빙)은 어느 한 팀의 도메인으로 볼 수 없으므로 `{팀}.{도메인}` 대신 **`{basePackage}.api.{client}.{기능}`**(예: `api.app.search`)에 둔다. 그 아래 구성(`request`/`response`/`usecase`, 컨트롤러 위치)은 도메인 패키지와 같다. 각 팀의 공개 `{Domain}Service`만 조합하고(6-1절), 카드 응답처럼 팀 패키지의 Response DTO는 가져다 쓸 수 있다.
 - 여러 팀이 같은 파일을 편집하는 지점은 **라우팅·공통 응답/예외**뿐이며 `common-api`로 한정한다. 보안 설정(`SecurityConfig`의 role→URL 인가)은 `gateway:auth`가 소유한다.
 - admin 별도 배포가 필요해지면 `admin-api` + 필요한 도메인을 조립하는 bootstrap을 추가한다(현재는 단일 bootstrap).
 
