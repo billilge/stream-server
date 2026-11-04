@@ -3,14 +3,19 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.db.common.LikePatterns;
+import kr.ac.kookmin.stream.member.domain.member.domain.Department;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -62,6 +67,20 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findAllCouncilMembers(Role.ADMIN).stream()
             .map(MemberJpaEntity::toDomain)
             .toList();
+    }
+
+    @Override
+    public PageResult<Member> search(String keyword, Department department, Role role, PageOffset pageOffset) {
+        Page<MemberJpaEntity> result = memberJpaRepository.search(
+            LikePatterns.escape(keyword), department, role, PageRequest.of(pageOffset.page(), pageOffset.size())
+        );
+
+        return PageResult.of(
+            result.getContent().stream().map(MemberJpaEntity::toDomain).toList(),
+            result.getNumber(),
+            result.getSize(),
+            result.getTotalElements()
+        );
     }
 
     @Override
