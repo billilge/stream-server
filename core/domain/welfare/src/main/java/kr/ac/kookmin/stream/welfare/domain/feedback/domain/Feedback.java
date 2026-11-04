@@ -49,6 +49,10 @@ public class Feedback {
         return answer != null;
     }
 
+    public boolean isWrittenBy(Long memberId) {
+        return createdBy.equals(memberId);
+    }
+
     // 답변(내용·시각·작성자)을 비운 사본. 원본은 바꾸지 않는다
     public Feedback withoutAnswer() {
         return new Feedback(id, year, round, question, questionedAt, null, null, createdBy, null);

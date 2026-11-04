@@ -37,9 +37,17 @@ public interface FeedbackRoundJpaRepository extends JpaRepository<FeedbackRoundJ
     @Query("SELECT MAX(r.round) FROM FeedbackRoundJpaEntity r WHERE r.year = :year")
     Integer findMaxRoundOf(@Param("year") int year);
 
-    @Query("SELECT DISTINCT r.year FROM FeedbackRoundJpaEntity r ORDER BY r.year DESC")
-    List<Integer> findDistinctYears();
+    @Query("""
+        SELECT DISTINCT r.year FROM FeedbackRoundJpaEntity r
+        WHERE r.answersPublishedAt IS NOT NULL
+        ORDER BY r.year DESC
+        """)
+    List<Integer> findDistinctPublishedYears();
 
-    @Query("SELECT r.round FROM FeedbackRoundJpaEntity r WHERE r.year = :year ORDER BY r.round ASC")
-    List<Integer> findRoundsByYear(@Param("year") int year);
+    @Query("""
+        SELECT r.round FROM FeedbackRoundJpaEntity r
+        WHERE r.year = :year AND r.answersPublishedAt IS NOT NULL
+        ORDER BY r.round ASC
+        """)
+    List<Integer> findPublishedRoundsByYear(@Param("year") int year);
 }
