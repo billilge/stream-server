@@ -36,6 +36,17 @@ public enum RentalStatus {
         return FINISHED_STATUSES.contains(this);
     }
 
+    /**
+     * 이 상태의 대여 기록이 물품 재고를 차지하고 있는지. 진행 중이면 차지하고, 끝난 상태 중에는 이미 내준 소모품의
+     * RETURNED만 차지한다. 상태 변경·기록 삭제 때 재고를 복구할지 차감할지 이 값으로 판단한다.
+     */
+    public boolean holdsStock(ItemType itemType) {
+        if (!isFinished()) {
+            return true;
+        }
+        return this == RETURNED && itemType == ItemType.CONSUMABLE;
+    }
+
     public static Set<RentalStatus> finishedStatuses() {
         return FINISHED_STATUSES;
     }

@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /** 관리자가 현장 기록을 대신 등록할 때 쓰는 요청. 상태·수량 선택 필드는 없다(등록 즉시 수령 완료, 항상 1건). */
@@ -20,6 +21,10 @@ public record AdminRentalRecordCreateRequest(
 
     @Schema(description = "실제 수령(대여 시작) 시각", example = "2026-10-27T13:00:00")
     @NotNull(message = "대여 시작 시각을 입력해 주세요.")
-    LocalDateTime rentAt
+    LocalDateTime rentAt,
+
+    @Schema(description = "물품 코드. 없으면 null", example = "우산1")
+    @Size(max = 255, message = "물품 코드는 255자 이하로 입력해 주세요.")
+    String itemCode
 ) {
 }

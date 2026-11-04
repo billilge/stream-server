@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.member.domain.member.domain;
 
 import java.util.Arrays;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.CommonErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -31,5 +32,17 @@ public enum Department {
             .filter(department -> major.contains(department.majorName))
             .findFirst()
             .orElseThrow(() -> new BusinessException(MemberErrorCode.DEPARTMENT_NOT_ALLOWED));
+    }
+
+    /** 검색·필터 등 쿼리 파라미터의 학부 값(AI/SW)을 그대로 enum 이름으로 받는다. */
+    public static Department from(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Department.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(CommonErrorCode.INVALID_INPUT);
+        }
     }
 }

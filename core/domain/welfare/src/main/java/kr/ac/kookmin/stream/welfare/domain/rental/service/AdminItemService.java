@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
+import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
@@ -26,6 +27,8 @@ public interface AdminItemService {
     /**
      * 물품 정보를 통째로 수정한다. {@code command.imageKey()}가 null이면 기존 이미지를 유지한다.
      * 존재하지 않으면 {@code ITEM_NOT_FOUND}, 다른 물품과 이름이 겹치면 {@code ITEM_NAME_DUPLICATED}.
+     * 재고는 {@code count - baseCount}만큼만 지금 재고에 증감해 폼이 열려 있는 사이의 대여·반납을 덮어쓰지 않는다.
+     * 줄이는 양이 지금 재고보다 많으면 {@code ITEM_OUT_OF_STOCK}.
      */
     Item update(Long itemId, ItemUpdateCommand command);
 
@@ -34,4 +37,10 @@ public interface AdminItemService {
      * {@code ITEM_HAS_ACTIVE_RENTAL}.
      */
     void delete(Long itemId);
+
+    /**
+     * 여러 물품의 반납 정책(최대 대여 일수)을 한 번에 같은 값으로 바꾼다. 재고는 건드리지 않는다.
+     * 대상 중 소모품(CONSUMABLE)이 있으면 {@code RETURN_POLICY_NOT_APPLICABLE}.
+     */
+    List<Item> updateReturnPolicyBulk(List<Long> itemIds, int maxRentalDays);
 }
