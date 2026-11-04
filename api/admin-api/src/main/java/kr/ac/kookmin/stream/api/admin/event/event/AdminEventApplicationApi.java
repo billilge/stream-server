@@ -25,7 +25,7 @@ public interface AdminEventApplicationApi {
     @Operation(summary = "행사 신청 현황 조회",
         description = "행사의 신청을 신청 순으로 페이지 단위 조회한다. 취소된 신청도 함께 내려가며, keyword로 이름·학번을, "
             + "status로 신청 상태를 거른다. 답변은 질문 순서대로 담기고, 선택형은 고른 선택지 문구를 쉼표로 잇는다. "
-            + "탈퇴한 회원의 신청은 이름·학번이 비어 있다.")
+            + "전화번호는 하이픈 없는 숫자이고, 등록하지 않은 회원이면 비어 있다. 탈퇴한 회원의 신청은 이름·학번·전화번호가 비어 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND", "EVENT_INVALID_APPLICATION_STATUS"})
     ApiResponse<AdminEventApplicationListResponse> getApplications(
@@ -38,7 +38,7 @@ public interface AdminEventApplicationApi {
     /** 신청자 상세. 표에서 잘린 답변을 질문 전체와 함께 확인한다. */
     @Operation(summary = "행사 신청자 상세 조회",
         description = "신청 한 건의 신청자 정보와, 행사 질문 전체에 이 신청의 답변을 붙여 조회한다. 답하지 않은 질문도 "
-            + "빈 답변으로 함께 내려간다. 다른 행사의 신청이면 찾을 수 없다.")
+            + "빈 답변으로 함께 내려간다. 신청자 정보의 빈 값 규칙은 신청 현황과 같다. 다른 행사의 신청이면 찾을 수 없다.")
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND", "APPLICATION_NOT_FOUND"})
     ApiResponse<AdminEventApplicationDetailResponse> getApplication(AdminApiUser apiUser, Long eventId, Long applicationId);
 }

@@ -18,4 +18,8 @@ public record EventApplicantDetail(EventApplication application, Member member, 
     public String memberStudentId() {
         return member == null ? null : member.getStudentId();
     }
+
+    public String memberPhoneNumber() {
+        return member == null ? null : member.getPhoneNumber();
+    }
 }

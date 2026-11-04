@@ -12,12 +12,14 @@ import kr.ac.kookmin.stream.event.domain.event.domain.QuestionType;
  * 신청자 상세(폼 조회). 신청 현황 표에서 잘린 답변을 질문 전체와 함께 보여준다.
  *
  * @param name      탈퇴한 회원의 신청이면 {@code null}
- * @param studentId 탈퇴한 회원의 신청이면 {@code null}
+ * @param studentId   탈퇴한 회원의 신청이면 {@code null}
+ * @param phoneNumber 하이픈 없는 숫자. 탈퇴했거나 전화번호를 등록하지 않은 회원이면 {@code null}
  */
 public record AdminEventApplicationDetailResponse(
     Long applicationId,
     String name,
     String studentId,
+    String phoneNumber,
     LocalDateTime appliedAt,
     EventApplicationStatus status,
     LocalDateTime canceledAt,
@@ -30,6 +32,7 @@ public record AdminEventApplicationDetailResponse(
             applicant.application().getId(),
             applicant.memberName(),
             applicant.memberStudentId(),
+            applicant.memberPhoneNumber(),
             detail.appliedAt(),
             detail.applicationStatus(),
             detail.canceledAt(),
