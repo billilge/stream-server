@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.core.member.usecase;
 
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
+import kr.ac.kookmin.stream.member.domain.member.domain.TermType;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.member.domain.notification.service.MemberNotificationSettingService;
 import kr.ac.kookmin.stream.member.domain.verification.domain.EmailVerificationErrorCode;
@@ -27,7 +28,8 @@ public class MemberSignUpUseCase {
     public void signUp(Long memberId, MemberSignUpCommand command) {
         validateEmailVerified(memberId, command.email());
         memberService.signUp(memberId, command);
-        memberNotificationSettingService.createDefaultIfAbsent(memberId);
+        boolean notificationConsentAgreed = command.hasAgreed(TermType.NOTIFICATION_CONSENT);
+        memberNotificationSettingService.createDefaultIfAbsent(memberId, notificationConsentAgreed);
     }
 
     private void validateEmailVerified(Long memberId, String email) {

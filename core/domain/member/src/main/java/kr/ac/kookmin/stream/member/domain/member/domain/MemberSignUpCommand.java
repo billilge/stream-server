@@ -16,4 +16,9 @@ public record MemberSignUpCommand(
         phoneNumber = phoneNumber.replace("-", "");
         email = email.toLowerCase(Locale.ROOT);
     }
+
+    // 요청에 없는 약관은 동의하지 않은 것으로 본다
+    public boolean hasAgreed(TermType termType) {
+        return Boolean.TRUE.equals(termAgreements.get(termType));
+    }
 }
