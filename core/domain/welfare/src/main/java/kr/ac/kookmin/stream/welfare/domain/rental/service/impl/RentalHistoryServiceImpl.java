@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.PreviewResult;
+import kr.ac.kookmin.stream.common.event.RentalReturnApplied;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -26,6 +28,7 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
 
     private final RentalHistoryRepository rentalHistoryRepository;
     private final ItemRepository itemRepository;
+    private final OutboxWriter outboxWriter;
 
     // 회원의 대여 이력을 물품과 짝지어 반환한다.
     @Override
@@ -69,7 +72,12 @@ class RentalHistoryServiceImpl implements RentalHistoryService {
     public RentalHistory requestReturn(Long memberId, Long historyId) {
         RentalHistory history = getOwnedByStatus(historyId, memberId, RentalStatus.RENTAL);
         history.requestReturn();
-        return rentalHistoryRepository.save(history);
+        RentalHistory saved = rentalHistoryRepository.save(history);
+
+        Item item = itemRepository.getById(saved.getItemId());
+        outboxWriter.record(new RentalReturnApplied(memberId, saved.getId(), item.getName()));
+
+        return saved;
     }
 
     @Override

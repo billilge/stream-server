@@ -103,6 +103,16 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
         """)
     List<PushTargetProjection> findAllPushTargets();
 
+    @Query("""
+        SELECT new kr.ac.kookmin.stream.db.member.PushTargetProjection(m.id, m.fcmToken, s)
+        FROM MemberJpaEntity m
+        JOIN MemberNotificationSettingJpaEntity s ON s.memberId = m.id
+        WHERE m.isDeleted = false
+        AND m.fcmToken IS NOT NULL
+        AND m.role = kr.ac.kookmin.stream.common.Role.ADMIN
+        """)
+    List<PushTargetProjection> findAllAdminPushTargets();
+
     // 탈퇴 회원에게는 어차피 보내지 않으므로 is_deleted와 관계없이 지운다
     @Modifying(clearAutomatically = true)
     @Query("""

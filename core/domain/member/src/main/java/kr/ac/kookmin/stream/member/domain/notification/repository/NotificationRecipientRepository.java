@@ -12,5 +12,7 @@ public interface NotificationRecipientRepository {
     List<Long> findAllActiveMemberIds();
     List<PushTarget> findPushTargets(Collection<Long> memberIds);
     List<PushTarget> findAllPushTargets();
+    /** 운영진(Role.ADMIN) 전체의 푸시 대상. 관리자 공용 알림을 보낼 때 쓴다. */
+    List<PushTarget> findAllAdminPushTargets();
     int clearFcmTokens(Collection<String> fcmTokens);
 }
