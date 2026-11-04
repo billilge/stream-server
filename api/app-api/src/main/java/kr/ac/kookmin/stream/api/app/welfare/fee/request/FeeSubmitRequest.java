@@ -15,7 +15,7 @@ public record FeeSubmitRequest(
     @NotNull(message = "남은 학기 수를 입력해 주세요.")
     Integer remainingSemesters,
 
-    @Schema(description = "업로드 URL 발급 때 받은 이미지 키", example = "files/3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f.png")
+    @Schema(description = "업로드 URL 발급 때 받은 이미지 키", example = "prod/files/3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f.png")
     @NotBlank(message = "학점이수현황 캡처를 첨부해 주세요.")
     @Size(max = 255, message = "이미지 키는 255자 이하여야 합니다.")
     String proofImageKey

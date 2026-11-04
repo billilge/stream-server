@@ -37,6 +37,15 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
     @Query("SELECT m.id FROM MemberJpaEntity m WHERE m.isDeleted = false")
     List<Long> findAllActiveIds();
 
+    @Query("""
+        SELECT m FROM MemberJpaEntity m
+        WHERE m.isDeleted = false
+        AND m.role = :role
+        AND m.councilDepartment IS NOT NULL
+        ORDER BY m.name, m.studentId
+        """)
+    List<MemberJpaEntity> findAllCouncilMembers(@Param("role") Role role);
+
     // 운영진 콘솔 회원 목록. keyword는 LikePatterns.escape로 이스케이프한 검색어다.
     // 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """

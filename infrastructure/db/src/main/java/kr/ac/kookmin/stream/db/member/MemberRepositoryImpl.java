@@ -63,6 +63,13 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public List<Member> findAllCouncilMembers() {
+        return memberJpaRepository.findAllCouncilMembers(Role.ADMIN).stream()
+            .map(MemberJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public PageResult<Member> search(String keyword, Department department, Role role, PageOffset pageOffset) {
         Page<MemberJpaEntity> result = memberJpaRepository.search(
             LikePatterns.escape(keyword), department, role, PageRequest.of(pageOffset.page(), pageOffset.size())
