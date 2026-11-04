@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
         log.warn("[requestId={}, userId={}] (INVALID_INPUT) {}",
             MDC.get(REQUEST_ID), MDC.get(USER_ID), e.getMessage());
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.status())
-            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT.name(), CommonErrorCode.INVALID_INPUT.message()));
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT));
     }
 
     // JSON 문법 오류, enum에 없는 값 등 요청 본문을 읽지 못한 경우. 파서 메시지는 내부 타입 이름을 담고 있어 응답에는 넣지 않는다
