@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 학번과 운영진 공용 비밀번호로 로그인한다. role이 ADMIN이고 학생회 부서가 있는 회원만 로그인할 수 있다.
+ * 학번과 운영진 공용 비밀번호로 로그인한다. role이 ADMIN인 회원만 로그인할 수 있고, 학생회 부서가 없어도 된다.
  * <p>
  * 실패 이유(회원 없음·운영진 아님·비밀번호 불일치)는 모두 같은 에러로 응답한다.
  * 비밀번호를 회원 조회보다 먼저 확인한다. 회원이 없을 때 BCrypt 비교를 건너뛰면 응답 시간 차이로 운영진 여부가 드러나기 때문이다.
@@ -48,7 +48,7 @@ public class AdminLoginUseCase {
     }
 
     private void validateAdmin(Member member) {
-        if (member.getRole() != Role.ADMIN || member.getCouncilDepartment() == null) {
+        if (member.getRole() != Role.ADMIN) {
             throw new BusinessException(AdminAuthErrorCode.INVALID_ADMIN_CREDENTIALS);
         }
     }
