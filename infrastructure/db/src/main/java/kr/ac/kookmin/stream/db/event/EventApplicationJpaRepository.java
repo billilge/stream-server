@@ -19,6 +19,12 @@ public interface EventApplicationJpaRepository extends JpaRepository<EventApplic
 
     long countByEventId(Long eventId);
 
+    List<EventApplicationJpaEntity> findAllByMemberIdAndEventIdInAndStatus(
+        Long memberId,
+        Collection<Long> eventIds,
+        EventApplicationStatus status
+    );
+
     @Query(
         value = """
             SELECT a FROM EventApplicationJpaEntity a

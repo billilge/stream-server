@@ -56,4 +56,38 @@ public class ArchiveRepositoryImpl implements ArchiveRepository {
     public Optional<Archive> findById(Long id) {
         return archiveJpaRepository.findByIdAndIsDeletedFalse(id).map(ArchiveJpaEntity::toDomain);
     }
+
+    @Override
+    public List<Archive> findAllByIds(List<Long> archiveIds) {
+        if (archiveIds.isEmpty()) {
+            return List.of();
+        }
+        return archiveJpaRepository.findAllByIdInAndIsDeletedFalse(archiveIds).stream()
+            .map(ArchiveJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
+    public Archive save(Archive archive) {
+        return archiveJpaRepository.save(ArchiveJpaEntity.from(archive)).toDomain();
+    }
+
+    @Override
+    public void saveAll(List<Archive> archives) {
+        archiveJpaRepository.saveAll(archives.stream().map(ArchiveJpaEntity::from).toList());
+    }
+
+    /**
+     * 관리 상태 엔티티를 읽어 표시만 바꾼다. 더티 체킹이 is_deleted 한 컬럼만 UPDATE하므로, 도메인이 들고 있지 않은
+     * 삭제 표시를 쓰기 경로로 되돌릴 일이 없다 (NoticeRepositoryImpl.delete와 같은 방식).
+     */
+    @Override
+    public boolean delete(Long id) {
+        return archiveJpaRepository.findByIdAndIsDeletedFalse(id)
+            .map(entity -> {
+                entity.delete();
+                return true;
+            })
+            .orElse(false);
+    }
 }

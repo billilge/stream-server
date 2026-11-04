@@ -17,6 +17,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
 
     boolean existsByPhoneNumberAndIsDeletedFalse(String phoneNumber);
 
+    boolean existsByEmailAndIsDeletedFalse(String email);
+
     List<MemberJpaEntity> findAllByIdInAndIsDeletedFalse(List<Long> ids);
 
     // keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다

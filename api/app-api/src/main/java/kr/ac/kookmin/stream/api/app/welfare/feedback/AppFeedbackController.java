@@ -34,7 +34,7 @@ public class AppFeedbackController implements AppFeedbackApi {
     @Override
     @GetMapping("/{feedbackId}")
     public ApiResponse<FeedbackResponse> getFeedback(AppApiUser apiUser, @PathVariable Long feedbackId) {
-        Feedback feedback = feedbackService.getById(feedbackId);
+        Feedback feedback = feedbackService.getById(feedbackId, apiUser.userId());
         return ApiResponse.success(FeedbackResponse.from(feedback));
     }
 
@@ -48,6 +48,16 @@ public class AppFeedbackController implements AppFeedbackApi {
     ) {
         FeedbackPeriod period = FeedbackPeriod.of(year, round);
         PageResult<Feedback> result = feedbackService.search(period, pageParams.toOffset());
+        return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
+    }
+
+    @Override
+    @GetMapping("/mine")
+    public ApiResponse<PageResponse<FeedbackResponse>> getMyFeedbacks(
+        AppApiUser apiUser,
+        @Valid @ModelAttribute PageParams pageParams
+    ) {
+        PageResult<Feedback> result = feedbackService.getMyFeedbacks(apiUser.userId(), pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, FeedbackResponse::from));
     }
 

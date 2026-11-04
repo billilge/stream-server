@@ -12,6 +12,8 @@ final class FileUploadPolicy {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> ATTACHMENT_EXTENSIONS = Set.of("pdf", "doc", "docx", "hwp", "zip");
     private static final Set<String> ALL_EXTENSIONS = union(IMAGE_EXTENSIONS, ATTACHMENT_EXTENSIONS);
+    // 빌릴게 물품 아이콘은 SVG로만 받는다
+    private static final Set<String> ITEM_ICON_EXTENSIONS = Set.of("svg");
 
     private static final long IMAGE_MAX_FILE_SIZE = 10 * 1024 * 1024;
     private static final long ATTACHMENT_MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -35,7 +37,8 @@ final class FileUploadPolicy {
             case TEMP -> ALL_EXTENSIONS;
             case NOTICE_ATTACHMENT -> ATTACHMENT_EXTENSIONS;
             case NOTICE_IMAGE, EVENT_IMAGE, ARCHIVE_IMAGE, LOCKER_SECTION_PHOTO,
-                FEE_TRANSCRIPT_IMAGE, ITEM_IMAGE, HOME_BANNER_IMAGE -> IMAGE_EXTENSIONS;
+                FEE_TRANSCRIPT_IMAGE, HOME_BANNER_IMAGE -> IMAGE_EXTENSIONS;
+            case ITEM_IMAGE -> ITEM_ICON_EXTENSIONS;
         };
     }
 
