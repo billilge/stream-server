@@ -19,7 +19,6 @@ import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +27,7 @@ class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
 
-    // 행사 목록과 신청자 수를 따로 읽어 정원 판정에 함께 쓰므로 한 스냅샷으로 묶는다
     @Override
-    @Transactional(readOnly = true)
     public List<Event> getApplicableEvents(Collection<Long> eventIds) {
         List<Event> events = eventRepository.findPublishedByIds(eventIds);
 
@@ -53,7 +50,6 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CursorSliceResult<EventSummary> getPublishedEvents(
         RecruitStatus recruitStatus,
         String keyword,
@@ -77,9 +73,7 @@ class EventServiceImpl implements EventService {
         );
     }
 
-    // 미리보기·전체 수·신청자 수를 따로 읽어 모집 상태 판정에 함께 쓰므로 한 스냅샷으로 묶는다
     @Override
-    @Transactional(readOnly = true)
     public PreviewResult<EventSummary> searchPreview(String keyword, int limit) {
         PreviewResult<Event> preview = eventRepository.findPublishedSearchPreview(keyword, limit);
 
@@ -95,7 +89,6 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public EventDetail getPublishedEvent(Long eventId) {
         Event event = eventRepository.findPublishedById(eventId)
             .orElseThrow(() -> new BusinessException(EventErrorCode.EVENT_NOT_FOUND));

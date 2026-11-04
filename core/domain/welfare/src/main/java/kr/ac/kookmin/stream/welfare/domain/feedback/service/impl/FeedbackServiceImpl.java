@@ -41,10 +41,7 @@ class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.searchPublished(period.year(), period.round(), keyword, pageOffset);
     }
 
-    // 미리보기와 전체 수를 두 문장으로 조회한다. 저장소의 @Query 메서드에는 트랜잭션이 붙지 않으므로, 두 조회가 같은
-    // 스냅샷을 보도록 읽기 트랜잭션으로 묶는다
     @Override
-    @Transactional(readOnly = true)
     public PreviewResult<Feedback> searchPreview(String keyword, int limit) {
         return feedbackRepository.findPublishedSearchPreview(keyword, limit);
     }
