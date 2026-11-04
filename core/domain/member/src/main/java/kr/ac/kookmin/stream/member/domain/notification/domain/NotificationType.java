@@ -19,6 +19,8 @@ public enum NotificationType {
     // 값: 행사명
     EVENT_APPLIED(NotificationCategory.EVENT, "'%s'을(를) 신청했어요.", "신청 내역에서 자세한 내용을 확인할 수 있어요."),
     EVENT_APPLICATION_CANCELED(NotificationCategory.EVENT, "'%s' 참여 신청을 취소했어요.", null),
+    EVENT_APPLICATION_CANCELED_BY_ADMIN(NotificationCategory.EVENT,
+        "'%s' 참여 신청이 취소됐어요.", "자세한 내용은 학생회에 문의해 주세요."),
     EVENT_STARTING_TOMORROW(NotificationCategory.EVENT, "'%s'이(가) 내일 열려요.", "행사 일정과 장소를 확인해 주세요."),
     EVENT_APPLY_CLOSING(NotificationCategory.EVENT, "'%s' 신청이 곧 마감돼요.", "참여하려면 기간 내에 신청해 주세요."),
 
