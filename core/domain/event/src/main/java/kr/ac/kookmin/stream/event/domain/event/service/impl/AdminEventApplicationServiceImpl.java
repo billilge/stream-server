@@ -72,9 +72,6 @@ class AdminEventApplicationServiceImpl implements AdminEventApplicationService {
     public void cancelApplication(Long eventId, Long applicationId) {
         Event event = getEventOrThrow(eventId);
         EventApplication application = getApplicationOrThrow(eventId, applicationId);
-        if (application.isCanceled()) {
-            throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
-        }
 
         // 종료 판정과 취소 시각이 같은 시각을 봐야 종료 직전 취소가 종료 이후로 기록되지 않는다
         LocalDateTime now = LocalDateTime.now();
