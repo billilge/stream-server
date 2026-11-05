@@ -18,7 +18,7 @@ import kr.ac.kookmin.stream.api.app.event.event.response.EventFormResponse;
 import kr.ac.kookmin.stream.api.app.event.event.response.EventListItemResponse;
 import kr.ac.kookmin.stream.api.app.event.event.usecase.EventApplyUseCase;
 import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailUseCase;
-import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailWithFeeEligibility;
+import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailForMember;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
@@ -111,10 +111,11 @@ public class AppEventController implements AppEventApi {
     @Override
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailResponse> getEvent(AppApiUser apiUser, @PathVariable Long eventId) {
-        EventDetailWithFeeEligibility event = eventDetailUseCase.getEvent(eventId, apiUser.userId());
+        EventDetailForMember event = eventDetailUseCase.getEvent(eventId, apiUser.userId());
         Map<Long, File> imagesById = fileService.findAllByIdIn(event.detail().imageIds());
 
-        return ApiResponse.success(EventDetailResponse.of(event.detail(), event.feeEligible(), imagesById));
+        return ApiResponse.success(
+            EventDetailResponse.of(event.detail(), event.feeEligible(), event.applicationId(), imagesById));
     }
 
     @Override

@@ -45,11 +45,13 @@ public interface AppEventApi {
         @ParameterObject EventListParams params
     );
 
-    /** 행사 상세. 모집 조건과 요청한 학생의 학생회비 신청 자격을 함께 내려준다. */
+    /** 행사 상세. 모집 조건과 요청한 학생의 학생회비 신청 자격·신청 ID를 함께 내려준다. */
     @Operation(summary = "행사 상세 조회",
         description = "게시된 행사의 상세를 조회한다. recruitType·capacity·feePaidOnly로 모집 조건을 내려주며, 상시 모집이면 "
             + "capacity는 null이다. isFeeEligible은 요청한 학생이 학생회비 조건으로 신청할 수 있는지로, 납부자 전용이 "
-            + "아니면 항상 true이고 납부자 전용이면 납부자 명부에 있을 때만 true다. 모집 기간·정원은 recruitStatus로 본다.")
+            + "아니면 항상 true이고 납부자 전용이면 납부자 명부에 있을 때만 true다. 모집 기간·정원은 recruitStatus로 본다. "
+            + "applicationId는 요청한 학생이 이 행사에 낸 유효 신청의 ID로, 신청하지 않았거나 취소한 신청만 있으면 null이다. "
+            + "모집 상태와 관계없이 내려준다.")
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND"})
     ApiResponse<EventDetailResponse> getEvent(AppApiUser apiUser, Long eventId);
 
