@@ -19,6 +19,7 @@ public enum MemberErrorCode implements ErrorCode {
     EMAIL_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
     COUNCIL_DEPARTMENT_REQUIRED(ErrorStatus.BAD_REQUEST, "학생회 부서를 선택해 주세요."),
     ALREADY_COUNCIL_MEMBER(ErrorStatus.CONFLICT, "이미 관리자로 등록된 회원입니다."),
+    NOT_COUNCIL_MEMBER(ErrorStatus.BAD_REQUEST, "관리자로 등록되지 않은 회원입니다."),
     LAST_PRESIDENCY_ADMIN_REQUIRED(ErrorStatus.CONFLICT, "회장단 관리자가 최소 한 명은 있어야 합니다.");
 
     private final int status;

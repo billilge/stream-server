@@ -34,12 +34,9 @@ class AdminMemberServiceImpl implements AdminMemberService {
     @Transactional
     public void assignCouncil(CouncilAssignCommand command) {
         List<Member> members = getAllByIds(command.memberIds());
-        members.stream()
-            .filter(Member::isCouncilRegistered)
-            .findAny()
-            .ifPresent(member -> {
-                throw new BusinessException(MemberErrorCode.ALREADY_COUNCIL_MEMBER);
-            });
+        if (members.stream().anyMatch(Member::isCouncilRegistered)) {
+            throw new BusinessException(MemberErrorCode.ALREADY_COUNCIL_MEMBER);
+        }
 
         apply(members, member -> member.assignCouncil(command.councilDepartment()));
     }
@@ -47,9 +44,13 @@ class AdminMemberServiceImpl implements AdminMemberService {
     @Override
     @Transactional
     public void updateCouncil(CouncilUpdateCommand command) {
-        apply(
-            getAllByIds(command.memberIds()),
-            member -> member.changeCouncil(command.role(), command.councilDepartment()));
+        List<Member> members = getAllByIds(command.memberIds());
+        // 명단에 없는 회원을 이 길로 운영진으로 만들 수 없게 막는다. 지정은 납부자인지 확인하는 assignCouncil만 한다
+        if (!members.stream().allMatch(Member::isCouncilRegistered)) {
+            throw new BusinessException(MemberErrorCode.NOT_COUNCIL_MEMBER);
+        }
+
+        apply(members, member -> member.changeCouncil(command.role(), command.councilDepartment()));
     }
 
     @Override

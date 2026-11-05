@@ -41,10 +41,12 @@ public interface AdminCouncilApi {
             + "보내지 않으면 각자의 지금 부서를 그대로 둔다 — 권한만 일괄로 바꾸는 화면이 부서를 보내지 않는다. "
             + "학생으로 내려도 부서가 남아 있으면 관리자 관리 명단에 그대로 보인다. 학생회 인원이지만 권한만 잠시 "
             + "내려두는 경우를 위한 것이다. "
-            + "ADMIN으로 두면서 부서가 비어 있으면 거부한다. 이 API로는 부서를 비울 수 없고, 비우는 것은 해제가 맡는다.")
+            + "ADMIN으로 두면서 부서가 비어 있으면 거부한다. 이 API로는 부서를 비울 수 없고, 비우는 것은 해제가 맡는다. "
+            + "이미 명단에 있는 회원만 바꿀 수 있다 — 명단에 없는 회원이 섞여 있으면 아무도 바꾸지 않는다. "
+            + "명단에 없는 회원을 운영진으로 만드는 것은 납부자인지 확인하는 관리자 지정만 할 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "FORBIDDEN"})
-    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "COUNCIL_DEPARTMENT_REQUIRED",
-        "LAST_PRESIDENCY_ADMIN_REQUIRED"})
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "NOT_COUNCIL_MEMBER",
+        "COUNCIL_DEPARTMENT_REQUIRED", "LAST_PRESIDENCY_ADMIN_REQUIRED"})
     ApiResponse<Void> updateCouncil(AdminApiUser apiUser, CouncilUpdateRequest request);
 
     /** 명단에서 뺀다. */
