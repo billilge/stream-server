@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.core.notification;
 
 import jakarta.validation.Valid;
+import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.core.notification.request.AdminNotificationListParams;
 import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationListItemResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -26,6 +27,7 @@ public class AdminNotificationController implements AdminNotificationApi {
     @Override
     @GetMapping
     public ApiResponse<CursorSliceResponse<AdminNotificationListItemResponse>> getNotifications(
+        AdminApiUser apiUser,
         @Valid @ModelAttribute AdminNotificationListParams params
     ) {
         CursorSliceResult<Notification> result = adminNotificationService.getNotifications(
@@ -35,7 +37,7 @@ public class AdminNotificationController implements AdminNotificationApi {
 
     @Override
     @PatchMapping("/{notificationId}/read")
-    public ApiResponse<Void> markRead(@PathVariable Long notificationId) {
+    public ApiResponse<Void> markRead(AdminApiUser apiUser, @PathVariable Long notificationId) {
         adminNotificationService.markRead(notificationId);
         return ApiResponse.success();
     }
