@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.admin.event.event.response;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.EventApplicant;
 import kr.ac.kookmin.stream.api.admin.event.event.usecase.EventApplicantPage;
@@ -47,13 +48,15 @@ public record AdminEventApplicationListResponse(
 
     /**
      * @param name      탈퇴한 회원의 신청이면 {@code null}
-     * @param studentId 탈퇴한 회원의 신청이면 {@code null}
-     * @param answers   {@code questions}와 같은 순서
+     * @param studentId   탈퇴한 회원의 신청이면 {@code null}
+     * @param phoneNumber 하이픈 없는 숫자. 탈퇴했거나 전화번호를 등록하지 않은 회원이면 {@code null}
+     * @param answers     {@code questions}와 같은 순서
      */
     public record Application(
         Long applicationId,
         String name,
         String studentId,
+        String phoneNumber,
         LocalDateTime appliedAt,
         EventApplicationStatus status,
         List<Answer> answers
@@ -64,6 +67,7 @@ public record AdminEventApplicationListResponse(
                 applicant.application().getId(),
                 applicant.memberName(),
                 applicant.memberStudentId(),
+                applicant.memberPhoneNumber(),
                 applicant.application().getAppliedAt(),
                 applicant.application().getStatus(),
                 applicant.answeredQuestions().stream().map(Answer::from).toList()
@@ -77,15 +81,18 @@ public record AdminEventApplicationListResponse(
     public record Answer(Long questionId, String displayText) {
 
         /**
-         * 텍스트형은 입력한 답을, 선택형은 고른 선택지 문구를 쉼표로 이어 보여준다.
+         * 텍스트형은 입력한 답을, 선택형은 고른 선택지 문구와 '기타' 문구를 쉼표로 이어 보여준다(예: {@code 축구, 기타(배드민턴)}).
          */
         public static Answer from(EventApplicationDetail.AnsweredQuestion answeredQuestion) {
             EventQuestion question = answeredQuestion.question();
             if (!question.getQuestionType().isChoice()) {
                 return new Answer(question.getId(), answeredQuestion.answerText());
             }
-            String text = String.join(", ", question.resolveOptionTexts(answeredQuestion.selectedOptions()));
-            return new Answer(question.getId(), text.isEmpty() ? null : text);
+            List<String> texts = new ArrayList<>(question.resolveOptionTexts(answeredQuestion.selectedOptions()));
+            if (answeredQuestion.answerText() != null) {
+                texts.add("기타(" + answeredQuestion.answerText() + ")");
+            }
+            return new Answer(question.getId(), texts.isEmpty() ? null : String.join(", ", texts));
         }
     }
 }

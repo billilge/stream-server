@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
@@ -36,12 +37,12 @@ public class StudentTransferStatusRepositoryImpl implements StudentTransferStatu
     }
 
     @Override
-    public PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset) {
+    public PageResult<StudentTransferStatus> search(Set<TransferStatus> statuses, List<Long> memberIds, PageOffset pageOffset) {
         boolean filterByMember = memberIds != null;
         List<Long> ids = filterByMember ? memberIds : List.of();
 
         Page<StudentTransferStatusJpaEntity> result = studentTransferStatusJpaRepository.search(
-            status, filterByMember, ids, PageRequest.of(pageOffset.page(), pageOffset.size())
+            statuses, filterByMember, ids, PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(

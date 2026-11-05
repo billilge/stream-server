@@ -3,16 +3,16 @@ package kr.ac.kookmin.stream.api.app.core.notification;
 import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.core.notification.request.MemberNotificationSettingUpdateRequest;
+import kr.ac.kookmin.stream.api.app.core.notification.request.NotificationConsentUpdateRequest;
 import kr.ac.kookmin.stream.api.app.core.notification.request.NotificationListParams;
 import kr.ac.kookmin.stream.api.app.core.notification.response.MemberNotificationSettingResponse;
 import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationListItemResponse;
 import kr.ac.kookmin.stream.api.app.core.notification.response.NotificationUnreadResponse;
+import kr.ac.kookmin.stream.api.app.core.notification.usecase.NotificationSettingUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
-import kr.ac.kookmin.stream.member.domain.notification.domain.MemberNotificationSetting;
 import kr.ac.kookmin.stream.member.domain.notification.domain.Notification;
-import kr.ac.kookmin.stream.member.domain.notification.service.MemberNotificationSettingService;
 import kr.ac.kookmin.stream.member.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppNotificationController implements AppNotificationApi {
 
     private final NotificationService notificationService;
-    private final MemberNotificationSettingService memberNotificationSettingService;
+    private final NotificationSettingUseCase notificationSettingUseCase;
 
     @Override
     @GetMapping
@@ -60,8 +60,8 @@ public class AppNotificationController implements AppNotificationApi {
     @Override
     @GetMapping("/settings")
     public ApiResponse<MemberNotificationSettingResponse> getSetting(AppApiUser apiUser) {
-        MemberNotificationSetting setting = memberNotificationSettingService.getByMemberId(apiUser.userId());
-        return ApiResponse.success(MemberNotificationSettingResponse.from(setting));
+        return ApiResponse.success(MemberNotificationSettingResponse.from(
+            notificationSettingUseCase.getSetting(apiUser.userId())));
     }
 
     @Override
@@ -70,7 +70,17 @@ public class AppNotificationController implements AppNotificationApi {
         AppApiUser apiUser,
         @Valid @RequestBody MemberNotificationSettingUpdateRequest request
     ) {
-        MemberNotificationSetting setting = memberNotificationSettingService.update(apiUser.userId(), request.toCommand());
-        return ApiResponse.success(MemberNotificationSettingResponse.from(setting));
+        return ApiResponse.success(MemberNotificationSettingResponse.from(
+            notificationSettingUseCase.updateSetting(apiUser.userId(), request.toCommand())));
+    }
+
+    @Override
+    @PutMapping("/consent")
+    public ApiResponse<MemberNotificationSettingResponse> updateConsent(
+        AppApiUser apiUser,
+        @Valid @RequestBody NotificationConsentUpdateRequest request
+    ) {
+        return ApiResponse.success(MemberNotificationSettingResponse.from(
+            notificationSettingUseCase.updateConsent(apiUser.userId(), request.agreed())));
     }
 }

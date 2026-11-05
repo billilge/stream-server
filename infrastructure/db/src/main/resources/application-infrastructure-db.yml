@@ -3,6 +3,10 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      # DB 세션 시간대를 JVM(TimezoneConfig)과 같은 한국 시간으로 맞춘다. created_at·updated_at은 DB 기본값
+      # (CURRENT_TIMESTAMP)으로 채우는데, 세션 시간대가 서버 기본값(UTC)이면 UTC 시각이 저장되어 9시간 어긋난다
+      connection-init-sql: "SET time_zone = '+09:00'"
   jpa:
     hibernate:
       ddl-auto: validate

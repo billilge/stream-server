@@ -10,7 +10,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationManageDeta
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationStatus;
 
 /**
- * 운영진용 행사 신청 서비스. 신청 현황과 신청자 상세 조회를 맡는다. 학생의 신청·취소·내 신청 조회는
+ * 운영진용 행사 신청 서비스. 신청 현황과 신청자 상세 조회, 운영진 취소를 맡는다. 학생의 신청·취소·내 신청 조회는
  * {@link EventApplicationService}가 맡는다.
  */
 public interface AdminEventApplicationService {
@@ -39,4 +39,10 @@ public interface AdminEventApplicationService {
      * 운영진 신청자 상세. 그 행사에 속한 신청만 조회하며, 행사의 질문 전체에 이 신청의 답변을 짝지어 돌려준다.
      */
     EventApplicationManageDetail getApplicationDetail(Long eventId, Long applicationId);
+
+    /**
+     * 운영진이 신청을 취소하고, 취소된 회원에게 알림을 보낸다. 학생 본인 취소와 달리 신청 마감 뒤에도 행사가 끝나기 전까지
+     * 취소할 수 있다. 그 행사에 속한 신청만 취소한다.
+     */
+    void cancelApplication(Long eventId, Long applicationId);
 }

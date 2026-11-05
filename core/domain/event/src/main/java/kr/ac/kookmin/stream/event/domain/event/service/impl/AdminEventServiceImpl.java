@@ -16,6 +16,7 @@ import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestionCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventUpdateCommand;
 import kr.ac.kookmin.stream.event.domain.event.domain.RecruitPolicy;
+import kr.ac.kookmin.stream.event.domain.event.domain.RecruitStatus;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventApplicationRepository;
 import kr.ac.kookmin.stream.event.domain.event.repository.EventRepository;
 import kr.ac.kookmin.stream.event.domain.event.service.AdminEventService;
@@ -47,6 +48,21 @@ class AdminEventServiceImpl implements AdminEventService {
     @Override
     public Map<Long, Long> getApplicantCounts(List<Long> eventIds) {
         return eventApplicationRepository.countAppliedByEventIds(eventIds);
+    }
+
+    // 행사 목록과 신청자 수를 따로 읽어 정원 판정에 함께 쓰므로 한 스냅샷으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public List<Event> getAllApplicableEvents() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Event> events = eventRepository.findPublishedApplyNotEndedAt(now);
+        Map<Long, Long> applicantCounts = eventApplicationRepository.countAppliedByEventIds(
+            events.stream().map(Event::getId).toList());
+
+        return events.stream()
+            .filter(event -> event.calculateRecruitStatus(
+                now, applicantCounts.getOrDefault(event.getId(), 0L)) == RecruitStatus.OPEN)
+            .toList();
     }
 
     @Override
@@ -82,9 +98,6 @@ class AdminEventServiceImpl implements AdminEventService {
     @Transactional
     public Event changePublished(Long eventId, boolean published) {
         Event event = getEventOrThrow(eventId);
-        if (published) {
-            validatePublishable(event);
-        }
         event.changePublished(published);
         return eventRepository.save(event);
     }
@@ -114,15 +127,6 @@ class AdminEventServiceImpl implements AdminEventService {
     private void validateCapacityNotBelowApplicants(Long eventId, RecruitPolicy recruitPolicy) {
         if (recruitPolicy.isCapacityBelow(eventApplicationRepository.countAppliedByEventId(eventId))) {
             throw new BusinessException(EventErrorCode.EVENT_CAPACITY_BELOW_APPLICANTS);
-        }
-    }
-
-    // 학생 앱이 아직 납부자 전용 신청 제한과 기타 입력칸을 지원하지 않아, 공개하면 운영진 설정대로 동작하지 않는다.
-    // 학생 쪽이 지원되면 이 검사를 지운다. 비공개로 돌리는 건 언제든 된다
-    private void validatePublishable(Event event) {
-        if (event.isFeePaidOnly() || eventRepository.findQuestionsByEventId(event.getId()).stream()
-            .anyMatch(EventQuestion::isOtherOptionAllowed)) {
-            throw new BusinessException(EventErrorCode.EVENT_UNSUPPORTED_OPTION);
         }
     }
 

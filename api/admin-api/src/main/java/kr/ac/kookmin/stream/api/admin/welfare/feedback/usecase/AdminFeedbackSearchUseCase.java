@@ -12,9 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 관리자 질문 목록. 검색어가 질문 내용과 작성자 이름 양쪽에 걸리는데 이름은 member 도메인에 있어
+ * 관리자 질문 목록. 검색어가 질문 내용과 작성자 이름·학번 양쪽에 걸리는데 이름·학번은 member 도메인에 있어
  * welfare가 조인할 수 없다. 그래서 ID를 징검다리로 쓴다 —
- * member에서 이름으로 회원 ID를 먼저 찾아 welfare에 넘기고(`created_by IN (...)`),
+ * member에서 이름·학번으로 회원 ID를 먼저 찾아 welfare에 넘기고(`created_by IN (...)`),
  * 페이지에 뜬 질문의 작성자만 다시 이름으로 바꾼다. member 모듈은 건드리지 않는다.
  */
 @Component

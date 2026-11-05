@@ -167,7 +167,7 @@ public class Event {
     }
 
     /**
-     * 운영진 화면에 보여줄 정원. 규칙은 {@link RecruitPolicy#capacityLimit()}를 따른다.
+     * 운영진·학생 화면에 보여줄 정원. 규칙은 {@link RecruitPolicy#capacityLimit()}를 따른다.
      */
     public Integer capacityLimit() {
         return recruitPolicy.capacityLimit();
@@ -199,5 +199,13 @@ public class Event {
      */
     public boolean isAfterApplyPeriod(LocalDateTime now) {
         return now.isAfter(applyPeriod.endAt());
+    }
+
+    /**
+     * 행사가 끝났는지. 운영진 신청 취소 가능 여부 판정에 쓰인다. 종료 일시가 없는 기존 행사는 시작 일시를 종료로 본다.
+     */
+    public boolean isEnded(LocalDateTime now) {
+        LocalDateTime endAt = eventPeriod.endAt() == null ? eventPeriod.startAt() : eventPeriod.endAt();
+        return now.isAfter(endAt);
     }
 }

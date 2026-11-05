@@ -12,12 +12,14 @@ import kr.ac.kookmin.stream.event.domain.event.domain.QuestionType;
  * 신청자 상세(폼 조회). 신청 현황 표에서 잘린 답변을 질문 전체와 함께 보여준다.
  *
  * @param name      탈퇴한 회원의 신청이면 {@code null}
- * @param studentId 탈퇴한 회원의 신청이면 {@code null}
+ * @param studentId   탈퇴한 회원의 신청이면 {@code null}
+ * @param phoneNumber 하이픈 없는 숫자. 탈퇴했거나 전화번호를 등록하지 않은 회원이면 {@code null}
  */
 public record AdminEventApplicationDetailResponse(
     Long applicationId,
     String name,
     String studentId,
+    String phoneNumber,
     LocalDateTime appliedAt,
     EventApplicationStatus status,
     LocalDateTime canceledAt,
@@ -30,6 +32,7 @@ public record AdminEventApplicationDetailResponse(
             applicant.application().getId(),
             applicant.memberName(),
             applicant.memberStudentId(),
+            applicant.memberPhoneNumber(),
             detail.appliedAt(),
             detail.applicationStatus(),
             detail.canceledAt(),
@@ -40,7 +43,9 @@ public record AdminEventApplicationDetailResponse(
     /**
      * 질문 한 건과 이 신청의 답변. 학생 앱 내 신청 상세와 같은 모양이다.
      *
-     * @param answerText      텍스트형 답변. 선택형이거나 답하지 않았으면 {@code null}
+     * @param hasOtherOption  선택형 질문에 '기타'(직접 입력) 선택지를 덧붙였는지
+     * @param answerText      텍스트형 답변. 선택형이면 '기타'에 쓴 문구이고, '기타'를 고르지 않았거나 답하지 않았으면
+     *                        {@code null}
      * @param selectedOptions 고른 선택지의 0부터 시작하는 순서 번호. 텍스트형이거나 답하지 않았으면 빈 배열
      */
     public record AnsweredQuestion(
@@ -50,6 +55,7 @@ public record AdminEventApplicationDetailResponse(
         boolean isRequired,
         int displayOrder,
         List<String> options,
+        boolean hasOtherOption,
         String answerText,
         List<Integer> selectedOptions
     ) {
@@ -63,6 +69,7 @@ public record AdminEventApplicationDetailResponse(
                 question.isRequired(),
                 question.getDisplayOrder(),
                 question.getOptions(),
+                question.isOtherOptionAllowed(),
                 answeredQuestion.answerText(),
                 answeredQuestion.selectedOptions()
             );

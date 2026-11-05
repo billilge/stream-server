@@ -1,9 +1,11 @@
 package kr.ac.kookmin.stream.api.admin.welfare.notice;
 
 import jakarta.validation.Valid;
+import java.util.Map;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeCreateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.request.NoticeUpdateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.notice.response.AdminNoticeDetailResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.AdminNoticeListItemResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.NoticeCreateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.notice.response.NoticeUpdateResponse;
@@ -12,9 +14,12 @@ import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.file.domain.File;
+import kr.ac.kookmin.stream.file.service.FileService;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.Notice;
 import kr.ac.kookmin.stream.welfare.domain.notice.domain.NoticeCategory;
 import kr.ac.kookmin.stream.welfare.domain.notice.service.AdminNoticeService;
+import kr.ac.kookmin.stream.welfare.domain.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +39,8 @@ public class AdminNoticeController implements AdminNoticeApi {
 
     private final AdminNoticeService adminNoticeService;
     private final AdminNoticeWriteUseCase adminNoticeWriteUseCase;
+    private final NoticeService noticeService;
+    private final FileService fileService;
 
     @Override
     @GetMapping
@@ -45,6 +52,17 @@ public class AdminNoticeController implements AdminNoticeApi {
     ) {
         PageResult<Notice> result = adminNoticeService.search(NoticeCategory.from(category), keyword, pageParams.toOffset());
         return ApiResponse.success(PageResponse.from(result, AdminNoticeListItemResponse::from));
+    }
+
+    @Override
+    @GetMapping("/{noticeId}")
+    public ApiResponse<AdminNoticeDetailResponse> getNotice(AdminApiUser apiUser, @PathVariable Long noticeId) {
+        Notice notice = noticeService.getById(noticeId);
+
+        Map<Long, File> imagesById = fileService.findAllByIdIn(notice.getImageIds());
+        Map<Long, File> attachmentsById = fileService.findAllByIdIn(notice.getAttachmentIds());
+
+        return ApiResponse.success(AdminNoticeDetailResponse.from(notice, imagesById, attachmentsById));
     }
 
     @Override

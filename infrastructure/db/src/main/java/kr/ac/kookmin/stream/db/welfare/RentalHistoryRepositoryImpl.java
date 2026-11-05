@@ -27,6 +27,13 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses) {
+        return rentalHistoryJpaRepository.findAllByMemberIdAndRentalStatusIn(memberId, statuses).stream()
+            .map(RentalHistoryJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses) {
         return rentalHistoryJpaRepository.findAllByRentalStatusIn(statuses).stream()
             .map(RentalHistoryJpaEntity::toDomain)
@@ -39,8 +46,23 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public List<RentalHistory> findAllByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return rentalHistoryJpaRepository.findAllById(ids).stream()
+            .map(RentalHistoryJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public RentalHistory save(RentalHistory history) {
         return rentalHistoryJpaRepository.save(RentalHistoryJpaEntity.from(history)).toDomain();
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        rentalHistoryJpaRepository.deleteById(id);
     }
 
     @Override

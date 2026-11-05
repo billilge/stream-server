@@ -3,7 +3,9 @@ package kr.ac.kookmin.stream.api.admin.welfare.item;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemReturnPolicyBulkUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.response.AdminItemDetailResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -39,8 +41,8 @@ public interface AdminItemApi {
 
     /** 물품 등록. 이미지는 presigned URL로 먼저 업로드한 파일 ID로 받는다. */
     @Operation(summary = "물품 등록",
-        description = "물품을 등록한다. 이미지는 POST /v1/files/presigned-url(category: ITEM_IMAGE)로 먼저 업로드한 "
-            + "파일 ID(imageFileId)로 받는다. 이름이 이미 있으면 등록하지 않는다. 대여품(RENTAL)은 반납 정책이 필수다.")
+        description = "물품을 등록한다. 이미지는 SVG 파일만 받으며, POST /v1/files/presigned-url(category: ITEM_IMAGE)로 "
+            + "먼저 업로드한 파일 ID(imageFileId)로 받는다. 이름이 이미 있으면 등록하지 않는다. 대여품(RENTAL)은 반납 정책이 필수다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NAME_DUPLICATED", "RETURN_POLICY_REQUIRED"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
@@ -49,10 +51,12 @@ public interface AdminItemApi {
     /** 물품 수정. imageFileId를 생략하거나 null로 보내면 기존 이미지를 유지한다. */
     @Operation(summary = "물품 수정",
         description = "물품 정보(이름·카테고리·구분·재고·이미지·반납 정책)를 통째로 수정한다. imageFileId가 null이면 "
-            + "기존 이미지를 유지한다. 대여품(RENTAL)은 반납 정책이 필수다. 재고(count)가 학생 신청 등으로 동시에 "
-            + "바뀌면 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
+            + "기존 이미지를 유지한다. 대여품(RENTAL)은 반납 정책이 필수다. 재고는 폼을 열 때 조회한 값(baseCount)과 "
+            + "count의 차이만큼만 지금 재고에 증감한다 — 폼이 열려 있는 사이 학생 신청·반납으로 재고가 바뀌어도 "
+            + "덮어쓰지 않는다. 재고를 바꾸지 않으려면 count와 baseCount를 같게 보낸다. 줄이는 양이 지금 재고보다 "
+            + "많으면 400을 반환한다. 동시 변경은 서버가 몇 번 다시 시도하고, 그래도 충돌하면 409를 반환한다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
-    @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_NAME_DUPLICATED", "RETURN_POLICY_REQUIRED"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_NAME_DUPLICATED", "RETURN_POLICY_REQUIRED", "ITEM_OUT_OF_STOCK"})
     @ApiErrorCode(type = FileErrorCode.class, codes = {"FILE_NOT_FOUND"})
     ApiResponse<AdminItemDetailResponse> updateItem(AdminApiUser apiUser, Long itemId, ItemUpdateRequest request);
 
@@ -62,4 +66,15 @@ public interface AdminItemApi {
             + "있으면 삭제할 수 없다.")
     @ApiErrorCode(type = RentalErrorCode.class, codes = {"ITEM_NOT_FOUND", "ITEM_HAS_ACTIVE_RENTAL"})
     ApiResponse<Void> deleteItem(AdminApiUser apiUser, Long itemId);
+
+    /** 반납 정책 일괄 변경. 여러 물품의 최대 대여 일수를 한 번에 같은 값으로 바꾼다. */
+    @Operation(summary = "반납 정책 일괄 변경",
+        description = "itemIds로 고른 물품들의 최대 대여 일수를 maxRentalDays로 한 번에 바꾼다. 반납 마감 시각은 "
+            + "그대로 17:00이다. 재고는 건드리지 않는다. 대상에 소모품(CONSUMABLE)이 있으면 처리하지 않는다.")
+    @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RETURN_POLICY_NOT_APPLICABLE"})
+    ApiResponse<List<AdminItemDetailResponse>> updateReturnPolicyBulk(
+        AdminApiUser apiUser,
+        ItemReturnPolicyBulkUpdateRequest request
+    );
 }

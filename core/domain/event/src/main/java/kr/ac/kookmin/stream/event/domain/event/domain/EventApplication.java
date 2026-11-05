@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.event.domain.event.domain;
 
 import java.time.LocalDateTime;
+import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -43,6 +44,9 @@ public class EventApplication {
      * @param canceledAt 취소 시각. 클라이언트가 보내지 않고 서버 시각으로 기록한다
      */
     public void cancel(LocalDateTime canceledAt) {
+        if (isCanceled()) {
+            throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
+        }
         this.status = EventApplicationStatus.CANCELED;
         this.canceledAt = canceledAt;
     }

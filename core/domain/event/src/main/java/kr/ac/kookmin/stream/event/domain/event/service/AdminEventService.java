@@ -33,6 +33,12 @@ public interface AdminEventService {
      */
     Map<Long, Long> getApplicantCounts(List<Long> eventIds);
 
+    /**
+     * 지금 신청할 수 있는 행사 전부. 홈 관리의 노출 후보용이고, 거르는 기준은 학생 홈과 같다
+     * ({@link Event#calculateRecruitStatus}). 순서는 정하지 않는다.
+     */
+    List<Event> getAllApplicableEvents();
+
     /** 운영진 행사 상세. 비공개 행사도 조회한다. */
     EventManageDetail getEvent(Long eventId);
 
@@ -44,8 +50,7 @@ public interface AdminEventService {
     Event update(Long eventId, EventUpdateCommand command);
 
     /**
-     * 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다. 학생회비 납부자 전용이거나 기타 선택지를 허용한 질문이
-     * 있는 행사는 학생 앱이 아직 지원하지 않아 {@code EVENT_UNSUPPORTED_OPTION}으로 공개를 거부한다.
+     * 학생 앱 노출 여부를 바꾼다. 이미 그 상태여도 성공으로 본다.
      */
     Event changePublished(Long eventId, boolean published);
 
