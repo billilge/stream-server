@@ -16,6 +16,7 @@ import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCancelStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerSection;
@@ -404,7 +405,19 @@ class LockerServiceImplTest {
         }
 
         @Override
-        public PageResult<LockerApplication> search(Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset) {
+        public PageResult<LockerApplication> search(
+            Long lockerPeriodId, List<Long> memberIds, LockerApplicationCancelStatus status, PageOffset pageOffset
+        ) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long countByPeriod(Long lockerPeriodId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long countAppliedByPeriod(Long lockerPeriodId) {
             throw new UnsupportedOperationException();
         }
 

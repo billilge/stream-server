@@ -15,6 +15,8 @@ import kr.ac.kookmin.stream.common.event.LockerAssignedByAdmin;
 import kr.ac.kookmin.stream.common.event.LockerAssignmentCanceled;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCancelStatus;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationCounts;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationStatus;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerErrorCode;
@@ -131,11 +133,11 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
     @Override
     public PageResult<LockerApplicationResult> getApplications(
-        Long lockerPeriodId, List<Long> memberIds, PageOffset pageOffset
+        Long lockerPeriodId, List<Long> memberIds, LockerApplicationCancelStatus status, PageOffset pageOffset
     ) {
         LockerPeriod period = getPeriod(lockerPeriodId);
         PageResult<LockerApplication> applications =
-            lockerApplicationRepository.search(lockerPeriodId, memberIds, pageOffset);
+            lockerApplicationRepository.search(lockerPeriodId, memberIds, status, pageOffset);
 
         List<Long> lockerIds = applications.content().stream()
             .map(LockerApplication::getLockerId)
@@ -149,6 +151,14 @@ class AdminLockerServiceImpl implements AdminLockerService {
 
         return applications.map(
             application -> new LockerApplicationResult(application, lockers.get(application.getLockerId()), period));
+    }
+
+    @Override
+    public LockerApplicationCounts getApplicationCounts(Long lockerPeriodId) {
+        validatePeriodExists(lockerPeriodId);
+        return new LockerApplicationCounts(
+            lockerApplicationRepository.countByPeriod(lockerPeriodId),
+            lockerApplicationRepository.countAppliedByPeriod(lockerPeriodId));
     }
 
     @Override
@@ -234,6 +244,16 @@ class AdminLockerServiceImpl implements AdminLockerService {
     private void validateSectionExists(Long sectionId) {
         if (lockerRepository.findSectionById(sectionId).isEmpty()) {
             throw new BusinessException(LockerErrorCode.LOCKER_SECTION_NOT_FOUND);
+        }
+    }
+
+    /**
+     * 신청 현황은 개수를 먼저 세고, 검색어에 맞는 회원이 없으면 목록 조회를 건너뛴다. 없는 회차가 검색어 유무로
+     * 404와 200으로 갈리지 않게 개수를 셀 때 회차를 확인한다.
+     */
+    private void validatePeriodExists(Long lockerPeriodId) {
+        if (lockerRepository.findPeriodById(lockerPeriodId).isEmpty()) {
+            throw new BusinessException(LockerErrorCode.LOCKER_PERIOD_NOT_FOUND);
         }
     }
 

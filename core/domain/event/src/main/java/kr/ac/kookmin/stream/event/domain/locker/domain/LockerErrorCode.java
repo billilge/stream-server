@@ -26,7 +26,8 @@ public enum LockerErrorCode implements ErrorCode {
     LOCKER_ALREADY_ASSIGNED(ErrorStatus.CONFLICT, "다른 사용자가 먼저 신청한 사물함입니다."),
     MEMBER_ALREADY_HAS_LOCKER(ErrorStatus.CONFLICT, "이미 이 회차에 사물함을 배정받은 학생입니다."),
     LOCKER_APPLICATION_NOT_FOUND(ErrorStatus.NOT_FOUND, "사물함 신청을 찾을 수 없습니다."),
-    LOCKER_APPLICATION_ALREADY_CANCELED(ErrorStatus.CONFLICT, "이미 취소된 신청입니다.");
+    LOCKER_APPLICATION_ALREADY_CANCELED(ErrorStatus.CONFLICT, "이미 취소된 신청입니다."),
+    LOCKER_INVALID_APPLICATION_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 신청 상태입니다.");
 
     private final int status;
     private final String message;
