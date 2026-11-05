@@ -58,8 +58,7 @@ public interface AdminRentalApi {
             + "복구하고 놓았다 다시 차지하면 차감한다. 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다. 처리자(workerId)는 호출한 관리자로 "
             + "자동 기록되며 운영진(ADMIN role)이어야 하고, 직전과 같은 상태로의 요청은 아무 효과가 없다(로그도 안 쌓인다).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
-    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "WORKER_NOT_ADMIN", "ITEM_OUT_OF_STOCK"})
-    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
     ApiResponse<AdminRentalHistoryResponse> updateStatus(
         AdminApiUser apiUser,
         Long rentalHistoryId,
