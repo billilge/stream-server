@@ -16,7 +16,10 @@ public enum MemberErrorCode implements ErrorCode {
     REQUIRED_TERMS_NOT_AGREED(ErrorStatus.BAD_REQUEST, "필수 약관에 모두 동의해 주세요."),
     ALREADY_SIGNED_UP(ErrorStatus.CONFLICT, "이미 회원가입을 마쳤습니다."),
     PHONE_NUMBER_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
-    EMAIL_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 이메일입니다.");
+    EMAIL_ALREADY_EXISTS(ErrorStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
+    COUNCIL_DEPARTMENT_REQUIRED(ErrorStatus.BAD_REQUEST, "학생회 부서를 선택해 주세요."),
+    ALREADY_COUNCIL_MEMBER(ErrorStatus.CONFLICT, "이미 관리자로 등록된 회원입니다."),
+    LAST_PRESIDENCY_ADMIN_REQUIRED(ErrorStatus.CONFLICT, "회장단 관리자가 최소 한 명은 있어야 합니다.");
 
     private final int status;
     private final String message;
