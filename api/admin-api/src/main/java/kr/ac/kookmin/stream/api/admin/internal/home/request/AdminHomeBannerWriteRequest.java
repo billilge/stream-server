@@ -37,7 +37,8 @@ public record AdminHomeBannerWriteRequest(
     HomeBannerCategory category,
 
     @Schema(description = "직접 올린 배경 이미지의 파일 ID. ETC일 때만 보낸다 — 나머지 카테고리는 서버가 "
-        + "프리셋으로 채우므로 보내도 무시한다", example = "101")
+        + "프리셋으로 채우므로 보내도 무시한다. 수정에서 ETC인 배너에 이 값을 빼면 올려둔 이미지를 그대로 둔다",
+        example = "101")
     Long imageFileId,
 
     @Schema(description = "배너를 눌렀을 때 가는 곳")
