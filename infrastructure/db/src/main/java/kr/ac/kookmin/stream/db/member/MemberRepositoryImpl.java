@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.common.Role;
@@ -70,9 +71,12 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public PageResult<Member> search(String keyword, Department department, Role role, PageOffset pageOffset) {
+    public PageResult<Member> search(
+        String keyword, Department department, Role role, boolean councilOnly, PageOffset pageOffset
+    ) {
         Page<MemberJpaEntity> result = memberJpaRepository.search(
-            LikePatterns.escape(keyword), department, role, PageRequest.of(pageOffset.page(), pageOffset.size())
+            LikePatterns.escape(keyword), department, role, councilOnly,
+            PageRequest.of(pageOffset.page(), pageOffset.size())
         );
 
         return PageResult.of(
@@ -81,6 +85,12 @@ public class MemberRepositoryImpl implements MemberRepository {
             result.getSize(),
             result.getTotalElements()
         );
+    }
+
+    @Override
+    public long countPresidencyAdmins() {
+        return memberJpaRepository.countByRoleAndCouncilDepartmentAndIsDeletedFalse(
+            Role.ADMIN, CouncilDepartment.PRESIDENCY);
     }
 
     @Override
