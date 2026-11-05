@@ -60,6 +60,12 @@ public interface EventRepository {
     List<Event> findPublishedByIds(Collection<Long> eventIds);
 
     /**
+     * 게시되고 삭제되지 않은 행사 중 신청 마감이 {@code at} 이후인 것. 순서는 보장하지 않는다.
+     * 신청이 끝난 행사는 다시 열리지 않으므로 여기서 자르고, 실제로 신청을 받는지는 도메인이 판정한다.
+     */
+    List<Event> findPublishedApplyNotEndedAt(LocalDateTime at);
+
+    /**
      * 게시되고 삭제되지 않은 행사 한 건을 조회한다. 아직 공개하지 않은 행사는 학생에게 없는 것으로 보여야 한다.
      */
     Optional<Event> findPublishedById(Long id);

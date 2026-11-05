@@ -95,6 +95,11 @@ class InMemoryEventRepository implements EventRepository {
     }
 
     @Override
+    public List<Event> findPublishedApplyNotEndedAt(LocalDateTime at) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit) {
         throw new UnsupportedOperationException();
     }

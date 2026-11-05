@@ -37,6 +37,18 @@ public class HomeApplySectionJpaEntity extends BaseTimeEntity {
     @Column(name = "is_exposed", nullable = false)
     private boolean isExposed;
 
+    private HomeApplySectionJpaEntity(HomeApplySection section) {
+        this.id = section.getId();
+        this.targetType = section.getTargetType();
+        this.targetId = section.getTargetId();
+        this.displayOrder = section.getDisplayOrder();
+        this.isExposed = section.isExposed();
+    }
+
+    public static HomeApplySectionJpaEntity from(HomeApplySection section) {
+        return new HomeApplySectionJpaEntity(section);
+    }
+
     public HomeApplySection toDomain() {
         return HomeApplySection.of(id, targetType, targetId, displayOrder, isExposed);
     }

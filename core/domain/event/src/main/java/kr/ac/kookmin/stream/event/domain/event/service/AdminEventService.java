@@ -33,6 +33,12 @@ public interface AdminEventService {
      */
     Map<Long, Long> getApplicantCounts(List<Long> eventIds);
 
+    /**
+     * 지금 신청할 수 있는 행사 전부. 홈 관리의 노출 후보용이고, 거르는 기준은 학생 홈과 같다
+     * ({@link Event#calculateRecruitStatus}). 순서는 정하지 않는다.
+     */
+    List<Event> getAllApplicableEvents();
+
     /** 운영진 행사 상세. 비공개 행사도 조회한다. */
     EventManageDetail getEvent(Long eventId);
 

@@ -33,7 +33,10 @@ public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpa
 
     List<LockerPeriodJpaEntity> findAllByIsPublishedTrueAndIsDeletedFalseAndUsageEndAt(LocalDate usageEndAt);
 
-    /** 신청이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 호출부가 앞의 한 건만 쓴다. */
+    /**
+     * 신청이 끝나지 않은 게시 회차를 신청 시작 이른 순으로. 지금 보여줄 회차 한 건을 고르는 쪽은
+     * {@code Pageable.ofSize(1)}로, 홈 신청 섹션 후보처럼 전부 보는 쪽은 {@code Pageable.unpaged()}로 부른다.
+     */
     @Query("""
         SELECT p FROM LockerPeriodJpaEntity p
         WHERE p.isPublished = true

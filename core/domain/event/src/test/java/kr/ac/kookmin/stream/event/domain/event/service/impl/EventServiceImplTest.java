@@ -225,6 +225,11 @@ class EventServiceImplTest {
         }
 
         @Override
+        public List<Event> findPublishedApplyNotEndedAt(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public Optional<Event> findPublishedById(Long id) {
             throw new UnsupportedOperationException();
         }

@@ -4,6 +4,7 @@ import java.util.List;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
+import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodCreateCommand;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodSummary;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriodUpdateCommand;
@@ -18,6 +19,12 @@ public interface AdminLockerService {
      * 운영 회차 전체를 신청 시작 일시 최신순으로 조회한다. 아직 게시하지 않은 회차도 포함한다.
      */
     List<LockerPeriodSummary> getAllPeriods();
+
+    /**
+     * 지금 신청할 수 있는 운영 회차 전부. 홈 관리의 노출 후보용이고, 거르는 기준은 학생 홈과 같다
+     * ({@link LockerPeriod#isApplyOpen}). 순서는 정하지 않는다.
+     */
+    List<LockerPeriod> getAllApplicablePeriods();
 
     /**
      * 운영 회차 한 건. 아직 게시하지 않은 회차도 포함한다.
