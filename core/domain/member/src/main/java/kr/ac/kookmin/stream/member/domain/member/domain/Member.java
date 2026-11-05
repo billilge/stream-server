@@ -84,17 +84,14 @@ public class Member {
     }
 
     /**
-     * 운영진 콘솔의 관리자 관리 명단에 올라 있는지. 권한만 잠시 학생으로 내려둔 학생회 인원이 명단에서 사라지지
-     * 않도록, 부서가 남아 있으면 운영진이 아니어도 명단으로 본다. 권한·부서를 모두 비워야 명단에서 빠진다.
+     * 관리자 관리 명단에 올라 있는지. 권한만 잠시 학생으로 내려둔 학생회 인원이 사라지지 않도록, 부서가 남아
+     * 있으면 운영진이 아니어도 명단으로 본다.
      */
     public boolean isCouncilRegistered() {
         return role == Role.ADMIN || councilDepartment != null;
     }
 
-    /**
-     * 운영진으로 지정한다. 학생회 부서는 반드시 받는다 — 부서가 없는 운영진은 모든 부서 권한을 가진 것으로
-     * 간주되므로({@code RequireDepartmentAspect}) 지정 경로에서 빈 부서를 허용하지 않는다.
-     */
+    // 운영진으로 지정한다. 부서가 없는 운영진은 모든 부서 권한을 가진 것으로 간주되므로 부서를 반드시 받는다
     public void assignCouncil(CouncilDepartment councilDepartment) {
         validateCouncilDepartmentPresent(Role.ADMIN, councilDepartment);
         this.role = Role.ADMIN;
@@ -103,9 +100,7 @@ public class Member {
 
     /**
      * 권한을 바꾸고, 부서를 받았으면 부서도 바꾼다. 부서가 {@code null}이면 지금 부서를 그대로 둔다 — 권한만
-     * 일괄로 바꾸는 경로는 부서를 보내지 않는다.
-     * <p>
-     * 이 길로는 부서를 비울 수 없다. 비우면 명단에서 빠지는데, 그건 {@link #releaseCouncil()}이 맡는다.
+     * 일괄로 바꾸는 경로는 부서를 보내지 않는다. 부서를 비우는 것은 {@link #releaseCouncil()}이 맡는다.
      */
     public void changeCouncil(Role role, CouncilDepartment councilDepartment) {
         CouncilDepartment target = councilDepartment == null ? this.councilDepartment : councilDepartment;

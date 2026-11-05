@@ -22,14 +22,13 @@ public interface AdminMemberService {
         String keyword, Department department, Role role, boolean councilOnly, PageOffset pageOffset);
 
     /**
-     * 회원들을 같은 학생회 부서의 운영진으로 지정한다. 이미 명단에 있는 회원이 섞여 있으면
-     * {@code ALREADY_COUNCIL_MEMBER}로 아무도 바꾸지 않는다 — 부서를 조용히 덮어쓰지 않기 위함이다.
+     * 회원들을 같은 학생회 부서의 운영진으로 지정한다. 이미 명단에 있는 회원이 섞여 있으면 부서를 조용히
+     * 덮어쓰지 않도록 {@code ALREADY_COUNCIL_MEMBER}로 아무도 바꾸지 않는다.
      */
     void assignCouncil(CouncilAssignCommand command);
 
     /**
      * 회원들의 권한을 바꾸고, 부서를 받았으면 부서도 바꾼다. 부서를 보내지 않으면 각자의 지금 부서를 그대로 둔다.
-     * 운영진으로 두면서 부서가 비면 {@code COUNCIL_DEPARTMENT_REQUIRED}로 거부한다.
      */
     void updateCouncil(CouncilUpdateCommand command);
 

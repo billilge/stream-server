@@ -60,10 +60,8 @@ class AdminMemberServiceImpl implements AdminMemberService {
 
     /**
      * 바꾸고 저장한다. 바꾼 결과 회장단 운영진이 한 명도 남지 않으면 거부한다 — 회장단만 부를 수 있는 API라
-     * 아무도 관리자를 바꿀 수 없는 상태가 되기 때문이다.
-     * <p>
-     * 세고 나서 바꾸는 구조라 두 요청이 겹치면 둘 다 통과할 수 있다. 회장단 규모와 사용 빈도를 보면 겹칠 일이
-     * 없다고 보고 락을 걸지 않는다.
+     * 아무도 관리자를 바꿀 수 없게 된다. 세고 나서 바꾸는 구조라 두 요청이 겹치면 둘 다 통과할 수 있는데,
+     * 회장단 규모와 사용 빈도를 보면 겹칠 일이 없다고 보고 락을 걸지 않는다.
      */
     private void apply(List<Member> members, Consumer<Member> change) {
         long presidencyBefore = members.stream().filter(Member::isPresidencyAdmin).count();
