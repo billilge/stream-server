@@ -50,9 +50,10 @@ public interface AdminRentalApi {
 
     /** 대여 상태 변경. 전이 규칙 없이 어떤 값이든 허용하며, expectedStatus를 보내면 지금 상태가 같을 때만 바꾼다. 처리자는 호출한 관리자로 자동 기록된다. */
     @Operation(summary = "대여 상태 변경",
-        description = "대여 기록의 상태를 직접 바꾼다. 전이 규칙은 없어 어떤 값으로도 바꿀 수 있다. RENTAL로 바뀌면 "
-            + "그 시각을 실제 수령 시각으로, RETURNED로 바뀌면 그 시각을 반납 완료 시각으로 기록한다(신청 시점에 "
-            + "학생이 고른 희망 시각과는 다르다). 소모품은 CONFIRMED로 요청해도 RENTAL을 거치지 않고 바로 RETURNED로 "
+        description = "대여 기록의 상태를 직접 바꾼다. 전이 규칙은 없어 어떤 값으로도 바꿀 수 있다. 받아 가기 전 "
+            + "상태(PENDING·CONFIRMED 등)에서 RENTAL로 바뀌면 그 시각을 실제 수령 시각으로, RETURNED로 바뀌면 그 시각을 "
+            + "반납 완료 시각으로 기록한다(신청 시점에 학생이 고른 희망 시각과는 다르다). 반납 신청 반려처럼 받아 간 뒤의 "
+            + "상태(RENTAL·RETURN_PENDING·RETURN_CONFIRMED·RETURNED)에서 RENTAL로 되돌릴 때는 수령 시각을 그대로 둔다. 소모품은 CONFIRMED로 요청해도 RENTAL을 거치지 않고 바로 RETURNED로 "
             + "전이한다(신청 시점에 이미 내준 걸 승인하는 것이라 수령 단계가 없다). 재고는 상태가 재고를 "
             + "차지하는지(진행 중인 상태, 그리고 이미 내준 소모품의 RETURNED)를 바꾸기 전후로 비교해, 차지하다 놓으면 "
             + "복구하고 놓았다 다시 차지하면 차감한다. 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다. 처리자(workerId)는 호출한 관리자로 "

@@ -48,14 +48,23 @@ public class RentalHistory {
         this.rentalStatus = RentalStatus.CANCEL;
     }
 
+    // 물품을 받아 간 뒤의 상태인지. RENTAL부터는 rentAt이 희망 시각이 아니라 실제 수령 시각이다
+    private boolean isPickedUp() {
+        return RentalStatus.awaitingReturnStatuses().contains(rentalStatus) || rentalStatus == RentalStatus.RETURNED;
+    }
+
     /** 물품 코드를 운영진이 직접 매긴다. null로 보내면 지운다. */
     public void updateItemCode(String itemCode) {
         this.itemCode = itemCode;
     }
 
-    /** 운영진이 상태를 직접 바꾼다. RENTAL로 바뀌면 지금을 수령 시각으로, RETURNED로 바뀌면 지금을 반납 완료 시각으로 기록한다. */
+    /**
+     * 운영진이 상태를 직접 바꾼다. 아직 물품을 받아 가기 전 상태에서 RENTAL로 바뀌면 지금을 수령 시각으로, RETURNED로 바뀌면
+     * 지금을 반납 완료 시각으로 기록한다. 이미 받아 간 뒤의 상태(반납 신청 반려 등)에서 RENTAL로 되돌릴 때는 수령 시각을
+     * 그대로 둔다. 덮어쓰면 반납 기한이 그날부터 다시 계산된다.
+     */
     public void changeStatusByAdmin(RentalStatus newStatus, LocalDateTime now) {
-        if (newStatus == RentalStatus.RENTAL) {
+        if (newStatus == RentalStatus.RENTAL && !isPickedUp()) {
             this.rentAt = now;
         }
         if (newStatus == RentalStatus.RETURNED) {
