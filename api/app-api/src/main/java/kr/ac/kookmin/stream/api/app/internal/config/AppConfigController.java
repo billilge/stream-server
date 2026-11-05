@@ -21,7 +21,8 @@ public class AppConfigController implements AppConfigApi {
     public ApiResponse<ServiceLinkResponse> getServiceLinks() {
         return ApiResponse.success(new ServiceLinkResponse(
             adminConfigValueService.getValue(ServiceLinkConfigKeys.FEEDBACK_FORM_URL).orElse(null),
-            adminConfigValueService.getValue(ServiceLinkConfigKeys.PRIVACY_POLICY_URL).orElse(null)
+            adminConfigValueService.getValue(ServiceLinkConfigKeys.PRIVACY_POLICY_URL).orElse(null),
+            adminConfigValueService.getValue(ServiceLinkConfigKeys.K_SMART_MENTOR_URL).orElse(null)
         ));
     }
 }
