@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.admin.event.event.usecase;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -63,15 +62,8 @@ public class AdminEventApplicationQueryUseCase {
     public EventApplicantList getAllApplicants(Long eventId, String keyword, EventApplicationStatus status) {
         EventManageDetail event = adminEventService.getEvent(eventId);
 
-        List<EventApplication> applications = new ArrayList<>();
-        for (int page = 0; ; page++) {
-            PageResult<EventApplication> result =
-                searchApplications(eventId, keyword, status, PageOffset.of(page, EXPORT_PAGE_SIZE));
-            applications.addAll(result.content());
-            if (page + 1 >= result.totalPage()) {
-                break;
-            }
-        }
+        List<EventApplication> applications = PageResult.fetchAll(
+            EXPORT_PAGE_SIZE, pageOffset -> searchApplications(eventId, keyword, status, pageOffset));
 
         return new EventApplicantList(event, applications.stream().map(toApplicant(event, applications)).toList());
     }

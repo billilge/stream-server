@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee.usecase;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,13 +62,6 @@ public class AdminFeeSearchUseCase {
      * 검색·상태 기준이 어긋나지 않게 한다.
      */
     public List<MemberFeeStatus> searchAll(TransferStatus status, String keyword) {
-        List<MemberFeeStatus> requests = new ArrayList<>();
-        for (int page = 0; ; page++) {
-            PageResult<MemberFeeStatus> result = search(status, keyword, PageOffset.of(page, EXPORT_PAGE_SIZE));
-            requests.addAll(result.content());
-            if (page + 1 >= result.totalPage()) {
-                return requests;
-            }
-        }
+        return PageResult.fetchAll(EXPORT_PAGE_SIZE, pageOffset -> search(status, keyword, pageOffset));
     }
 }
