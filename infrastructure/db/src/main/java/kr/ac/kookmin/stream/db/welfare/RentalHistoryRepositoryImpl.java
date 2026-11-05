@@ -46,6 +46,16 @@ public class RentalHistoryRepositoryImpl implements RentalHistoryRepository {
     }
 
     @Override
+    public List<RentalHistory> findAllByIds(Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return rentalHistoryJpaRepository.findAllById(ids).stream()
+            .map(RentalHistoryJpaEntity::toDomain)
+            .toList();
+    }
+
+    @Override
     public RentalHistory save(RentalHistory history) {
         return rentalHistoryJpaRepository.save(RentalHistoryJpaEntity.from(history)).toDomain();
     }

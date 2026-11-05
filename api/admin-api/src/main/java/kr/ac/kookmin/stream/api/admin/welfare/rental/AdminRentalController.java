@@ -75,7 +75,7 @@ public class AdminRentalController implements AdminRentalApi {
         @Valid @RequestBody AdminRentalStatusUpdateRequest request
     ) {
         AdminRentalHistoryResponse response = adminRentalStatusUpdateUseCase.updateStatus(
-            rentalHistoryId, request.rentalStatus(), apiUser.userId()
+            rentalHistoryId, request.rentalStatus(), request.expectedStatus(), apiUser.userId()
         );
         return ApiResponse.success(response);
     }
