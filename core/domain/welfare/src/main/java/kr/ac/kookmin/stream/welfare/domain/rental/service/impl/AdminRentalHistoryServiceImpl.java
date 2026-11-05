@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -44,6 +45,12 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
             .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
         Item item = itemRepository.findById(history.getItemId()).orElse(null);
         return new RentalRecord(history, item);
+    }
+
+    @Override
+    public Map<Long, RentalStatus> getStatusMapByIds(Collection<Long> historyIds) {
+        return rentalHistoryRepository.findAllByIds(historyIds).stream()
+            .collect(Collectors.toMap(RentalHistory::getId, RentalHistory::getRentalStatus));
     }
 
     @Override

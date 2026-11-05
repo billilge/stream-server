@@ -25,6 +25,9 @@ public interface RentalHistoryRepository {
 
     Optional<RentalHistory> findById(Long id);
 
+    /** 주어진 ID의 대여 이력. 없는 ID는 빠지고 순서는 보장하지 않는다. */
+    List<RentalHistory> findAllByIds(Collection<Long> ids);
+
     /**
      * 모든 회원의 대여 이력을 신청 시각 내림차순(같으면 식별자 내림차순)으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
      *
