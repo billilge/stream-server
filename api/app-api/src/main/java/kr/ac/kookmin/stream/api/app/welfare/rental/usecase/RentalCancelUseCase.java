@@ -1,6 +1,9 @@
 package kr.ac.kookmin.stream.api.app.welfare.rental.usecase;
 
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.RentalApplicationCanceled;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
@@ -15,11 +18,14 @@ public class RentalCancelUseCase {
     private final LockExecutor lockExecutor;
     private final RentalHistoryService rentalHistoryService;
     private final ItemService itemService;
+    private final OutboxWriter outboxWriter;
 
     public void cancel(Long memberId, Long historyId) {
         lockExecutor.executeOptimistic(() -> {
             RentalHistory history = rentalHistoryService.cancel(memberId, historyId);
-            itemService.increaseStock(history.getItemId(), history.getRentedCount());
+            Item item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
+
+            outboxWriter.record(new RentalApplicationCanceled(memberId, history.getId(), item.getName()));
         });
     }
 }

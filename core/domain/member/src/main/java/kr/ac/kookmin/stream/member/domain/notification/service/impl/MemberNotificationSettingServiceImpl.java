@@ -25,11 +25,11 @@ class MemberNotificationSettingServiceImpl implements MemberNotificationSettingS
     // 필수 약관이 늘어 다시 가입하는 회원은 이미 설정이 있으므로 바꾼 값을 그대로 둔다
     @Override
     @Transactional
-    public void createDefaultIfAbsent(Long memberId) {
+    public void createDefaultIfAbsent(Long memberId, boolean notificationConsentAgreed) {
         if (memberNotificationSettingRepository.existsByMemberId(memberId)) {
             return;
         }
-        memberNotificationSettingRepository.save(MemberNotificationSetting.createDefault(memberId));
+        memberNotificationSettingRepository.save(MemberNotificationSetting.createDefault(memberId, notificationConsentAgreed));
     }
 
     @Override

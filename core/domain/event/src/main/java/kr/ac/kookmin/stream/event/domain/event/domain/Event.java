@@ -167,7 +167,7 @@ public class Event {
     }
 
     /**
-     * 운영진 화면에 보여줄 정원. 규칙은 {@link RecruitPolicy#capacityLimit()}를 따른다.
+     * 운영진·학생 화면에 보여줄 정원. 규칙은 {@link RecruitPolicy#capacityLimit()}를 따른다.
      */
     public Integer capacityLimit() {
         return recruitPolicy.capacityLimit();

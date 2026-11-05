@@ -1,10 +1,12 @@
 package kr.ac.kookmin.stream.event.domain.event.repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventCursor;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventQuestion;
@@ -53,22 +55,59 @@ public interface EventRepository {
     List<Event> findAllByIds(List<Long> eventIds);
 
     /**
+     * 게시되고 삭제되지 않은 행사 중 식별자에 해당하는 것. 순서는 보장하지 않는다.
+     */
+    List<Event> findPublishedByIds(Collection<Long> eventIds);
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 신청 마감이 {@code at} 이후인 것. 순서는 보장하지 않는다.
+     * 신청이 끝난 행사는 다시 열리지 않으므로 여기서 자르고, 실제로 신청을 받는지는 도메인이 판정한다.
+     */
+    List<Event> findPublishedApplyNotEndedAt(LocalDateTime at);
+
+    /**
      * 게시되고 삭제되지 않은 행사 한 건을 조회한다. 아직 공개하지 않은 행사는 학생에게 없는 것으로 보여야 한다.
      */
     Optional<Event> findPublishedById(Long id);
 
     /**
-     * 게시되고 삭제되지 않은 행사를 행사 시작 일시 오름차순(동일 시각은 eventId 오름차순)으로 {@code limit}건까지 조회한다.
-     * recruitStatus가 주어지면 {@code now} 기준으로 계산한 모집 상태가 일치하는 행사만 남긴다.
+     * 게시되고 삭제되지 않은 행사 중 {@code now} 기준으로 계산한 모집 상태가 recruitStatus인 것을 그 상태의 정렬
+     * 기준으로 {@code limit}건까지 조회한다. 정렬 기준은 {@link EventCursor}를 따른다 — 모집 중은 신청 마감 임박순,
+     * 모집 예정은 신청 시작 임박순, 모집 종료는 최근 행사순.
      * <p>
-     * 페이지를 어디서 끊을지는 호출부가 정한다. 여기서는 요청한 개수만큼 돌려줄 뿐이다.
+     * 페이지를 어디서 끊을지, 여러 상태를 어떤 순서로 이어 붙일지는 호출부가 정한다. 여기서는 한 상태의 행사를
+     * 요청한 개수만큼 돌려줄 뿐이다.
+     *
+     * @param keyword 제목 부분 일치 검색어. null이거나 공백이면 거르지 않는다. 앞뒤 공백은 지우고 {@code %}·{@code _}는 글자
+     *                그대로 검색한다
+     * @param cursor  같은 모집 상태 구간의 커서. 구간의 처음부터 읽으려면 {@code null}
      */
     List<Event> findPublishedSlice(
         RecruitStatus recruitStatus,
+        String keyword,
         EventCursor cursor,
         int limit,
         LocalDateTime now
     );
+
+    /**
+     * 게시되고 삭제되지 않은 행사 중 제목에 {@code keyword}가 들어 있는 것의 수. 모집 상태로는 거르지 않는다.
+     * 검색어 처리는 {@link #findPublishedSlice}와 같다.
+     */
+    long countPublished(String keyword);
+
+    /**
+     * 회원이 신청한 행사 중 아직 끝나지 않은 것을 행사 시작이 임박한 순으로 {@code limit}건까지 조회한다.
+     * 취소한 신청과 삭제된 행사는 뺀다. 여러 날에 걸친 행사는 마지막 날까지 남는다.
+     * <p>
+     * 거르는 조건에 회원과 신청 상태가 들어가지만 돌려주는 것은 행사다. 신청 조건으로 행사를 좁히는 조회는
+     * {@link #findPublishedSlice}의 정원 판정처럼 이 저장소가 맡는다.
+     *
+     * 홈이 "N건 더보기"를 그려야 해서 앞의 {@code limit}건과 함께 전체 수를 준다.
+     *
+     * @param startOfToday 오늘 0시. 종료 일시를 시각이 아니라 날짜로 견준다 — 오늘 끝나는 행사도 보여줘야 한다
+     */
+    PreviewResult<Event> findUpcomingAppliedEvents(Long memberId, LocalDateTime startOfToday, int limit);
 
     /**
      * 게시되고 삭제되지 않은 행사 중 시작 일시가 {@code [from, to)}인 행사. 행사 전날 알림 대상을 고를 때 쓴다.

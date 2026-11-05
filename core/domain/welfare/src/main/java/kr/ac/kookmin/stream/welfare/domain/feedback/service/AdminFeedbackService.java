@@ -12,7 +12,7 @@ import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundStatus;
 import kr.ac.kookmin.stream.welfare.domain.feedback.domain.FeedbackRoundSummary;
 
 /**
- * 운영진용 열린피드백 서비스. 회차 등록·조회, 질문 검색, 답변 임시저장·공개를 맡는다.
+ * 운영진용 열린피드백 서비스. 회차 등록·조회, 질문 검색, 답변 임시저장·삭제·공개를 맡는다.
  * 학생 앱의 질문 조회·작성은 {@link FeedbackService}가 맡는다.
  */
 public interface AdminFeedbackService {
@@ -35,6 +35,9 @@ public interface AdminFeedbackService {
 
     // 답변 임시저장. 보낸 것만 반영하고 기존 답변은 덮어쓴다. 여기서 저장한 답변은 아직 학생에게 보이지 않는다
     FeedbackRoundDetail saveAnswers(Long roundId, List<FeedbackAnswerCommand> commands, Long answeredBy);
+
+    // 질문 하나의 답변을 지운다. 답변이 없는 질문이면 그대로 둔다. 공개한 회차에서도 지울 수 있다
+    void deleteAnswer(Long roundId, Long feedbackId);
 
     // 그 회차에 작성된 답변을 학생에게 공개한다. 이미 공개한 회차면 공개 시각을 바꾸지 않는다
     FeedbackRoundDetail publishAnswers(Long roundId);

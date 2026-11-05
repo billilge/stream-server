@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 납부자 목록. {@code welfare}와 {@code member} 두 도메인을 조합한다.
+ * 납부 확인 요청 목록. {@code welfare}와 {@code member} 두 도메인을 조합한다.
  * <p>
  * 페이징과 상태 필터는 <b>회비 쪽에서</b> 한다. 납부를 요청한 회원만 행이 있으므로 목록도 요청한 회원만 나온다
  * (한 번도 요청하지 않은 미납부 회원은 관리자 화면에서 다루지 않는다).

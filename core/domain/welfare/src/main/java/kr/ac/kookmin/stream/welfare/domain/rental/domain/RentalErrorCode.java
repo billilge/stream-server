@@ -20,9 +20,12 @@ public enum RentalErrorCode implements ErrorCode {
     INVALID_RENTAL_TIME_PAST(ErrorStatus.BAD_REQUEST, "대여 시작 시간은 최소 5분 뒤부터 선택할 수 있어요"),
     INVALID_RENTAL_TIME_BLOCKED(ErrorStatus.BAD_REQUEST, "지금은 대여가 불가능합니다. (%s)"),
     RENTAL_NOT_FOUND(ErrorStatus.NOT_FOUND, "존재하지 않는 대여 이력입니다."),
+    RENTAL_STATUS_CHANGED(ErrorStatus.CONFLICT, "대여 상태가 이미 바뀌었습니다. 새로고침 후 다시 확인해 주세요."),
     ITEM_NAME_DUPLICATED(ErrorStatus.BAD_REQUEST, "이미 존재하는 물품 이름입니다."),
     RETURN_POLICY_REQUIRED(ErrorStatus.BAD_REQUEST, "대여품(RENTAL)은 반납 정책이 필요합니다."),
-    ITEM_HAS_ACTIVE_RENTAL(ErrorStatus.BAD_REQUEST, "진행 중인 대여 기록이 있어 삭제할 수 없습니다.");
+    ITEM_HAS_ACTIVE_RENTAL(ErrorStatus.BAD_REQUEST, "진행 중인 대여 기록이 있어 삭제할 수 없습니다."),
+    WORKER_NOT_ADMIN(ErrorStatus.BAD_REQUEST, "운영진만 처리자로 지정할 수 있습니다."),
+    RETURN_POLICY_NOT_APPLICABLE(ErrorStatus.BAD_REQUEST, "소모품에는 반납 정책을 적용할 수 없습니다.");
 
     private final int status;
     private final String message;

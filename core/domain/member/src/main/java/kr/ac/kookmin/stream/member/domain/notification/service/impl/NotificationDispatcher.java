@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 알림 한 건을 수신자에게 보낸다. 알림함에는 수신자 전원에게 저장하고, 푸시는 그 카테고리를 켜 두고 토큰이 있는 회원에게만 보낸다.
+ * 운영진 업무 알림({@link #dispatchToAdmins})은 예외로, 개인 알림 설정과 무관하게 전원에게 보낸다.
  * <p>
  * 아웃박스 릴레이가 부르는 리스너에서 트랜잭션 없이 호출된다. 알림함 저장은 {@code saveAll}의 트랜잭션으로 한꺼번에 반영하고,
  * 저장이 끝난 뒤 트랜잭션 밖에서 푸시를 보낸다. 알림함 저장이 실패하면 예외가 리스너까지 올라가 아웃박스가 다시 발행한다.
@@ -54,6 +55,22 @@ class NotificationDispatcher {
         send(type, formatValues, targetId, recipients, pushTargets);
     }
 
+    /**
+     * 특정 회원이 아니라 운영진 전체가 공동으로 보는 알림 한 건을 만든다.
+     * 운영진 수만큼 행을 만들지 않고 {@code memberId}가 없는 행 하나만 저장하므로, 읽음 여부도 운영진 전체가 공유한다.
+     */
+    void dispatchToAdmins(NotificationType type, List<String> formatValues, long targetId) {
+        notificationRepository.saveAll(List.of(Notification.create(null, type, formatValues, targetId)));
+        // 운영진 업무 알림(신청/취소/반납신청 등)은 개인 알림 설정과 무관하게 전원에게 보낸다
+        sendPush(type, formatValues, targetId, notificationRecipientRepository.findAllAdminPushTargets(), 1);
+    }
+
+    /** 지정한 회원에게 알림함에만 저장한다(푸시 없음). 급하게 확인할 내용이 아닌 알림에 쓴다. */
+    void dispatchWithoutPush(NotificationType type, List<String> formatValues, long targetId, Collection<Long> memberIds) {
+        List<Long> recipients = List.copyOf(new LinkedHashSet<>(memberIds));
+        saveNotifications(type, formatValues, targetId, recipients);
+    }
+
     private void send(
         NotificationType type,
         List<String> formatValues,
@@ -64,13 +81,22 @@ class NotificationDispatcher {
         if (recipients.isEmpty()) {
             return;
         }
-        notificationRepository.saveAll(recipients.stream()
-            .map(memberId -> Notification.create(memberId, type, formatValues, targetId))
-            .toList());
-
-        // 한 기기의 토큰이 여러 회원 행에 남아 있을 수 있어 토큰 단위로 중복을 지운다. 그대로 보내면 같은 기기에 여러 번 간다
-        List<String> tokens = pushTargets.stream()
+        saveNotifications(type, formatValues, targetId, recipients);
+        List<PushTarget> accepting = pushTargets.stream()
             .filter(target -> target.accepts(type.getCategory()))
+            .toList();
+        sendPush(type, formatValues, targetId, accepting, recipients.size());
+    }
+
+    // 한 기기의 토큰이 여러 회원 행에 남아 있을 수 있어 토큰 단위로 중복을 지운다. 그대로 보내면 같은 기기에 여러 번 간다
+    private void sendPush(
+        NotificationType type,
+        List<String> formatValues,
+        long targetId,
+        List<PushTarget> pushTargets,
+        int recipientCount
+    ) {
+        List<String> tokens = pushTargets.stream()
             .map(PushTarget::fcmToken)
             .distinct()
             .toList();
@@ -80,7 +106,16 @@ class NotificationDispatcher {
             invalidTokenCount = clearInvalidTokens(result.tokensWith(PushSendStatus.INVALID_TOKEN));
         }
         log.info("알림 발송: type={}, targetId={}, recipientCount={}, pushTokenCount={}, invalidTokenCount={}",
-            type, targetId, recipients.size(), tokens.size(), invalidTokenCount);
+            type, targetId, recipientCount, tokens.size(), invalidTokenCount);
+    }
+
+    private void saveNotifications(NotificationType type, List<String> formatValues, long targetId, List<Long> recipients) {
+        if (recipients.isEmpty()) {
+            return;
+        }
+        notificationRepository.saveAll(recipients.stream()
+            .map(memberId -> Notification.create(memberId, type, formatValues, targetId))
+            .toList());
     }
 
     private PushMessage toPushMessage(NotificationType type, List<String> formatValues, long targetId) {

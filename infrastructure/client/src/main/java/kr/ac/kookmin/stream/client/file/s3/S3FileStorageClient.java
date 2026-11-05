@@ -51,4 +51,9 @@ public class S3FileStorageClient implements FileStorageClient {
             .key(fileKey)
             .build());
     }
+
+    @Override
+    public String getEnvironmentDirectory() {
+        return properties.environmentDirectory();
+    }
 }

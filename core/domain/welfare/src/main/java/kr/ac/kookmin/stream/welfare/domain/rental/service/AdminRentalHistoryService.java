@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
@@ -22,9 +24,18 @@ public interface AdminRentalHistoryService {
     /** 대여 이력 하나를 물품과 함께 조회한다. 없으면 {@code RENTAL_NOT_FOUND}. 관리자 상태 변경에 쓴다. */
     RentalRecord getById(Long historyId);
 
+    /** 대여 이력 여러 건을 물품과 함께 이력 ID별로 돌려준다. 없는(지워진) 이력은 맵에서 빠진다. */
+    Map<Long, RentalRecord> getRecordMapByIds(Collection<Long> historyIds);
+
     /** 운영진이 대여 이력 상태를 직접 바꾼다. 전이 규칙은 없다. 호출한 관리자(workerId)를 처리자 로그로 남긴다. */
     RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId);
 
     /** 대여 이력 하나의 상태 변경 처리자 로그를 변경 시각 내림차순으로 조회한다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. */
     List<RentalStatusWorkerLog> getWorkerLogs(Long historyId);
+
+    /** 물품 코드를 운영진이 직접 매긴다. null로 보내면 지운다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. */
+    RentalRecord updateItemCode(Long historyId, String itemCode);
+
+    /** 대여 이력과 그 처리자 로그를 함께 지운다. 이력이 없으면 {@code RENTAL_NOT_FOUND}. 재고 복구는 호출부가 맡는다. */
+    void delete(Long historyId);
 }

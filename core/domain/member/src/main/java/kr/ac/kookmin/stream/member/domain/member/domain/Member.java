@@ -19,6 +19,7 @@ public class Member {
     private Department department;
     // 로그인 provider가 주는 학적 상태 원문(재학·휴학·졸업 등). 로그인 전 이관 회원은 null이다
     private String academicStatus;
+    // 회원가입 때 인증한 이메일(소문자). 이관 회원은 이전 시스템의 값 그대로다
     private String email;
     // 회원가입 때 받는 휴대전화 번호(숫자만). 가입 전 회원과 이관 회원은 null이다
     private String phoneNumber;
@@ -66,6 +67,19 @@ public class Member {
 
     public boolean hasPhoneNumber() {
         return phoneNumber != null;
+    }
+
+    public void registerEmail(String email) {
+        this.email = email;
+    }
+
+    public boolean hasEmail() {
+        return email != null;
+    }
+
+    // 학생회 부서가 있는 운영진. 학생회 부서는 ADMIN에게만 의미가 있어, 운영진에서 내려가 부서 값만 남은 회원은 아니다
+    public boolean isCouncilMember() {
+        return role == Role.ADMIN && councilDepartment != null;
     }
 
     // 회원이 바꾼 전화번호로 갱신한다. 바뀐 값이 있으면 true를 돌려준다

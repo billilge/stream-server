@@ -49,6 +49,15 @@ public class Feedback {
         return answer != null;
     }
 
+    public boolean isWrittenBy(Long memberId) {
+        return createdBy.equals(memberId);
+    }
+
+    // 회차와는 연관관계 없이 연도·회차 번호로만 이어져 있어 두 값으로 소속을 본다
+    public boolean belongsTo(FeedbackRound feedbackRound) {
+        return year == feedbackRound.getYear() && round == feedbackRound.getRound();
+    }
+
     // 답변(내용·시각·작성자)을 비운 사본. 원본은 바꾸지 않는다
     public Feedback withoutAnswer() {
         return new Feedback(id, year, round, question, questionedAt, null, null, createdBy, null);
@@ -59,5 +68,12 @@ public class Feedback {
         this.answer = answer;
         this.answeredBy = answeredBy;
         this.answeredAt = answeredAt;
+    }
+
+    // 답변을 지워 미답변으로 되돌린다. 답변 여부와 회차 답변 수가 answer 기준이라 답변자·답변 시각도 같이 비운다
+    public void deleteAnswer() {
+        this.answer = null;
+        this.answeredBy = null;
+        this.answeredAt = null;
     }
 }

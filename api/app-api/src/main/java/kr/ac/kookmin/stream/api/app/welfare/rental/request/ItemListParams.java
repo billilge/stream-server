@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.welfare.rental.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import kr.ac.kookmin.stream.api.common.CursorCodec;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCategory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
@@ -9,6 +10,7 @@ import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemCursor;
 public record ItemListParams(
     String category,
 
+    @Size(max = 50, message = "검색어는 50자 이하로 입력해 주세요.")
     String keyword,
 
     String cursor,

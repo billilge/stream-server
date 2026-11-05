@@ -4,11 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.RentalApplied;
 import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalBlockPeriodConfigKeys;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.ItemService;
 import kr.ac.kookmin.stream.welfare.domain.rental.service.RentalHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class RentalApplyUseCase {
     private final ItemService itemService;
     private final RentalHistoryService rentalHistoryService;
     private final AdminConfigValueService adminConfigValueService;
+    private final OutboxWriter outboxWriter;
 
     public void apply(Long memberId, Long itemId, int count, int rentAtHour, int rentAtMinute, boolean ignoreDuplicate) {
         validateNotBlocked();
@@ -39,7 +43,10 @@ public class RentalApplyUseCase {
 
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime rentAt = LocalDate.now().atTime(rentAtHour, rentAtMinute);
-            rentalHistoryService.create(item, memberId, null, count, now, rentAt);
+            RentalHistory history = rentalHistoryService.create(item, memberId, null, count, now, rentAt);
+
+            outboxWriter.record(new RentalApplied(
+                memberId, history.getId(), item.getName(), "%02d:%02d".formatted(rentAtHour, rentAtMinute)));
         });
     }
 
