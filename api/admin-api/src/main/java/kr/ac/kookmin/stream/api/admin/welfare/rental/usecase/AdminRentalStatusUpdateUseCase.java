@@ -3,10 +3,18 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.OutboxWriter;
+import kr.ac.kookmin.stream.common.event.DomainEvent;
+import kr.ac.kookmin.stream.common.event.RentalApproved;
+import kr.ac.kookmin.stream.common.event.RentalRejected;
+import kr.ac.kookmin.stream.common.event.RentalReturnApproved;
+import kr.ac.kookmin.stream.common.event.RentalReturnCompleted;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -24,14 +32,23 @@ public class AdminRentalStatusUpdateUseCase {
     private final MemberService memberService;
     private final ItemService itemService;
     private final AdminRentalHistoryService adminRentalHistoryService;
+    private final OutboxWriter outboxWriter;
 
-    public AdminRentalHistoryResponse updateStatus(Long historyId, RentalStatus requestedStatus, Long workerId) {
+    /**
+     * @param expectedStatus 요청자가 본 지금 상태. null이 아니면 실제 지금 상태와 같을 때만 바꾼다. 옛 알림이나 다른 운영진이
+     *                       먼저 처리한 화면에서 누른 요청이 이미 바뀐 기록을 다시 바꾸지 않게 한다. null이면 확인하지 않는다
+     */
+    public AdminRentalHistoryResponse updateStatus(
+        Long historyId, RentalStatus requestedStatus, RentalStatus expectedStatus, Long workerId
+    ) {
         return lockExecutor.executeOptimistic(() -> {
-            memberService.getById(workerId);
-
             RentalRecord current = adminRentalHistoryService.getById(historyId);
             RentalStatus previousStatus = current.history().getRentalStatus();
+            if (expectedStatus != null && expectedStatus != previousStatus) {
+                throw new BusinessException(RentalErrorCode.RENTAL_STATUS_CHANGED);
+            }
             Item item = current.item();
+            String itemName = item != null ? item.getName() : null;
 
             boolean isConsumable = requestedStatus == RentalStatus.CONFIRMED
                 && item != null && item.getType() == ItemType.CONSUMABLE;
@@ -39,8 +56,18 @@ public class AdminRentalStatusUpdateUseCase {
 
             RentalHistory history = adminRentalHistoryService.changeStatusByAdmin(historyId, newStatus, workerId);
 
-            if (shouldRestock(previousStatus, newStatus, item)) {
+            // 전후 상태의 재고 차지 여부를 비교하므로 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다
+            ItemType itemType = item == null ? null : item.getType();
+            boolean heldBefore = previousStatus.holdsStock(itemType);
+            boolean heldAfter = newStatus.holdsStock(itemType);
+            if (heldBefore && !heldAfter) {
                 item = itemService.increaseStock(history.getItemId(), history.getRentedCount());
+            } else if (!heldBefore && heldAfter) {
+                item = itemService.decreaseStock(history.getItemId(), history.getRentedCount());
+            }
+
+            if (previousStatus != newStatus) {
+                recordStatusChangeEvent(requestedStatus, history.getMemberId(), history.getId(), itemName);
             }
 
             Member renter = memberService.getMapByIds(List.of(history.getMemberId())).get(history.getMemberId());
@@ -48,13 +75,18 @@ public class AdminRentalStatusUpdateUseCase {
         });
     }
 
-    private boolean shouldRestock(RentalStatus previousStatus, RentalStatus newStatus, Item item) {
-        if (previousStatus.isFinished()) {
-            return false;
+    // 소모품은 승인 즉시 RETURNED로 저장되지만(위 isConsumable), 학생에게는 "반납 완료"가 아니라
+    // "승인" 알림을 보낸다. 그래서 저장된 newStatus가 아니라 admin이 실제로 요청한 requestedStatus로 알림 종류를 정한다
+    private void recordStatusChangeEvent(RentalStatus requestedStatus, Long memberId, Long historyId, String itemName) {
+        DomainEvent event = switch (requestedStatus) {
+            case CONFIRMED -> new RentalApproved(memberId, historyId, itemName);
+            case REJECTED -> new RentalRejected(memberId, historyId, itemName);
+            case RETURN_CONFIRMED -> new RentalReturnApproved(memberId, historyId, itemName);
+            case RETURNED -> new RentalReturnCompleted(memberId, historyId, itemName);
+            default -> null;
+        };
+        if (event != null) {
+            outboxWriter.record(event);
         }
-        if (newStatus == RentalStatus.CANCEL || newStatus == RentalStatus.REJECTED) {
-            return true;
-        }
-        return newStatus == RentalStatus.RETURNED && item != null && item.getType() == ItemType.RENTAL;
     }
 }

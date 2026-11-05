@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
 import kr.ac.kookmin.stream.common.PageOffset;
 import kr.ac.kookmin.stream.common.PageResult;
+import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationAnswer;
@@ -50,7 +53,7 @@ class EventServiceImplTest {
             Map.of(1L, 3L, 2L, 7L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
         // 정원 100명이라 신청자 수가 모집 상태를 바꾸지 않는다. 짝이 맞는지는 D-Day가 아니라 아래에서 직접 본다
         assertEquals(List.of(1L, 2L), content.stream().map(EventSummary::eventId).toList());
@@ -66,7 +69,7 @@ class EventServiceImplTest {
             Map.of(1L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
         assertEquals(2, content.size());
         assertEquals(List.of(1L, 2L), content.stream().map(EventSummary::eventId).toList());
@@ -89,10 +92,12 @@ class EventServiceImplTest {
             Map.of(1L, 3L, 2L, 3L));
 
         List<EventSummary> content = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20).content();
+            .getPublishedEvents(null, null, null, 20).content();
 
-        assertEquals(RecruitStatus.CLOSED, content.get(0).recruitStatus());
-        assertEquals(RecruitStatus.OPEN, content.get(1).recruitStatus());
+        // 전체 목록은 모집 중 구간이 먼저라 정원이 남은 행사가 앞에 온다
+        assertEquals(List.of(2L, 1L), content.stream().map(EventSummary::eventId).toList());
+        assertEquals(RecruitStatus.OPEN, content.get(0).recruitStatus());
+        assertEquals(RecruitStatus.CLOSED, content.get(1).recruitStatus());
     }
 
     @Test
@@ -102,12 +107,13 @@ class EventServiceImplTest {
             List.of(event(1L), event(2L), event(3L)), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 2);
+            .getPublishedEvents(null, null, null, 2);
 
         assertEquals(3, repository.requestedLimit);
         assertEquals(List.of(1L, 2L), result.content().stream().map(EventSummary::eventId).toList());
         assertTrue(result.hasNext());
-        assertEquals(EventCursor.of(event(2L)).format(), result.nextCursor());
+        assertEquals(
+            new EventCursor(RecruitStatus.OPEN, event(2L).getApplyEndAt(), 2L).format(), result.nextCursor());
     }
 
     @Test
@@ -116,7 +122,7 @@ class EventServiceImplTest {
         FakeEventRepository repository = new FakeEventRepository(List.of(event(1L), event(2L)), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 2);
+            .getPublishedEvents(null, null, null, 2);
 
         assertFalse(result.hasNext());
         assertNull(result.nextCursor());
@@ -129,13 +135,16 @@ class EventServiceImplTest {
             List.of(), Map.of());
 
         CursorSliceResult<EventSummary> result = new EventServiceImpl(repository, repository)
-            .getPublishedEvents(null, null, 20);
+            .getPublishedEvents(null, null, null, 20);
 
         assertTrue(result.content().isEmpty());
         assertEquals(List.of(), repository.requestedEventIds);
     }
 
-    /** 목록 조회에 쓰이는 두 메서드(행사 조회·신청자 수)만 답하고, 나머지는 이 테스트가 건드리지 않는다. */
+    /**
+     * 목록 조회에 쓰이는 두 메서드(행사 조회·신청자 수)만 답하고, 나머지는 이 테스트가 건드리지 않는다.
+     * 행사 조회는 주어진 모집 상태의 행사만 넣은 순서대로 돌려준다. 구간 안의 정렬은 이 테스트가 보지 않는다.
+     */
     private static final class FakeEventRepository implements EventRepository, EventApplicationRepository {
 
         private final List<Event> fetched;
@@ -150,9 +159,18 @@ class EventServiceImplTest {
 
         @Override
         public List<Event> findPublishedSlice(
-            RecruitStatus recruitStatus, EventCursor cursor, int limit, LocalDateTime now) {
+            RecruitStatus recruitStatus, String keyword, EventCursor cursor, int limit, LocalDateTime now) {
             this.requestedLimit = limit;
-            return fetched.stream().limit(limit).toList();
+            return fetched.stream()
+                .filter(event -> event.calculateRecruitStatus(
+                    now, applicantCounts.getOrDefault(event.getId(), 0L)) == recruitStatus)
+                .limit(limit)
+                .toList();
+        }
+
+        @Override
+        public long countPublished(String keyword) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -198,6 +216,16 @@ class EventServiceImplTest {
 
         @Override
         public void touchUpdatedAt(Long eventId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Event> findPublishedByIds(Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Event> findPublishedApplyNotEndedAt(LocalDateTime at) {
             throw new UnsupportedOperationException();
         }
 
@@ -254,6 +282,23 @@ class EventServiceImplTest {
         @Override
         public List<EventApplication> findSliceByMemberId(
             Long memberId, EventApplicationCursor cursor, int limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Set<Long> findAppliedEventIds(Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<EventApplication> findAppliedByMemberIdAndEventIds(
+            Long memberId, Collection<Long> eventIds) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public PreviewResult<Event> findUpcomingAppliedEvents(
+            Long memberId, LocalDateTime startOfToday, int limit) {
             throw new UnsupportedOperationException();
         }
 

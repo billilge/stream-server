@@ -17,10 +17,16 @@ public interface RentalHistoryRepository {
      */
     List<RentalHistory> findAllByMemberId(Long memberId, RentalStatus status);
 
+    /** 회원의 대여 이력 중 주어진 상태들 중 하나인 것. */
+    List<RentalHistory> findAllByMemberIdAndStatusIn(Long memberId, Collection<RentalStatus> statuses);
+
     /** 모든 회원의 대여 이력 중 주어진 상태들 중 하나인 것. 반납 알림 대상을 고를 때 쓴다. */
     List<RentalHistory> findAllByStatusIn(Collection<RentalStatus> statuses);
 
     Optional<RentalHistory> findById(Long id);
+
+    /** 주어진 ID의 대여 이력. 없는 ID는 빠지고 순서는 보장하지 않는다. */
+    List<RentalHistory> findAllByIds(Collection<Long> ids);
 
     /**
      * 모든 회원의 대여 이력을 신청 시각 내림차순(같으면 식별자 내림차순)으로 페이지 번호 단위로 조회한다. 관리자 콘솔용.
@@ -31,6 +37,9 @@ public interface RentalHistoryRepository {
     PageResult<RentalHistory> search(RentalStatus status, List<Long> memberIds, PageOffset pageOffset);
 
     RentalHistory save(RentalHistory history);
+
+    /** 하드 삭제. 존재하지 않으면 아무 일도 하지 않는다(존재 확인은 호출부가 먼저 한다). */
+    void deleteById(Long id);
 
     /** 같은 회원이 같은 물품에 아직 끝나지 않은(진행 중인) 이력이 있는지 확인한다. 승인 대기 중인 중복 신청도 막는다. */
     boolean existsActiveRental(Long itemId, Long memberId);

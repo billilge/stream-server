@@ -1,11 +1,14 @@
 package kr.ac.kookmin.stream.welfare.domain.fee.service.impl;
 
 import kr.ac.kookmin.stream.common.BusinessException;
+import kr.ac.kookmin.stream.common.PageOffset;
+import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.repository.PayerRepository;
 import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.StudentTransferStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 class PayerServiceImpl implements PayerService {
 
     private final PayerRepository payerRepository;
+    private final StudentTransferStatusService studentTransferStatusService;
 
     @Override
     @Transactional
@@ -39,11 +43,39 @@ class PayerServiceImpl implements PayerService {
         return studentId.substring(0, 4);
     }
 
+    // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(validatePayer와 같은 이유).
+    @Override
+    public boolean isPayer(Long memberId) {
+        return payerRepository.findByMemberId(memberId).isPresent();
+    }
+
     // 조회 쿼리가 1개라 트랜잭션을 걸지 않는다(PR#67/#69 원칙 — 조회니까 붙이는 게 아니라 실제 이득이 있을 때만 붙인다).
+    // 행사 상세의 신청 자격(isPayer)과 신청 거절이 어긋나지 않도록 명부 판정은 isPayer 한 곳에 둔다.
     @Override
     public void validatePayer(Long memberId) {
-        if (payerRepository.findByMemberId(memberId).isEmpty()) {
+        if (!isPayer(memberId)) {
             throw new BusinessException(FeeErrorCode.MEMBER_IS_NOT_PAYER);
         }
+    }
+
+    // 페이지 조회는 목록과 전체 개수를 두 번에 나눠 읽으므로, 그 사이 들어온 쓰기 때문에 둘이 어긋나지 않게 한 트랜잭션으로 묶는다
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<Payer> search(String keyword, PageOffset pageOffset) {
+        return payerRepository.search(keyword, pageOffset);
+    }
+
+    @Override
+    @Transactional
+    public void linkMember(Long memberId, String studentId) {
+        // 이미 자기 명부 행이 있는 회원은 연결할 필요가 없다(validatePayer는 그 행으로 통과한다).
+        // 건너뛰지 않으면 uk_payers_member_id 위반으로 로그인이 500이 된다
+        payerRepository.findByStudentIdAndMemberIdIsNull(studentId)
+            .filter(payer -> payerRepository.findByMemberId(memberId).isEmpty())
+            .ifPresent(payer -> {
+                payer.linkMember(memberId);
+                payerRepository.save(payer);
+                studentTransferStatusService.createPaidForLinkedPayer(memberId);
+            });
     }
 }

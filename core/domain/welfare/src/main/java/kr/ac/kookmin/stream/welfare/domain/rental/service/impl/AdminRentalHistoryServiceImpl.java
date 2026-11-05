@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.welfare.domain.rental.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -47,6 +48,17 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     }
 
     @Override
+    public Map<Long, RentalRecord> getRecordMapByIds(Collection<Long> historyIds) {
+        List<RentalHistory> histories = rentalHistoryRepository.findAllByIds(historyIds);
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(histories);
+        return histories.stream()
+            .collect(Collectors.toMap(
+                RentalHistory::getId,
+                history -> new RentalRecord(history, itemsByItemId.get(history.getItemId()))
+            ));
+    }
+
+    @Override
     @Transactional
     public RentalHistory changeStatusByAdmin(Long historyId, RentalStatus newStatus, Long workerId) {
         RentalHistory history = rentalHistoryRepository.findById(historyId)
@@ -69,6 +81,27 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
             throw new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND);
         }
         return rentalStatusWorkerLogRepository.findAllByRentalHistoryId(historyId);
+    }
+
+    @Override
+    @Transactional
+    public RentalRecord updateItemCode(Long historyId, String itemCode) {
+        RentalHistory history = rentalHistoryRepository.findById(historyId)
+            .orElseThrow(() -> new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND));
+        history.updateItemCode(itemCode);
+        RentalHistory saved = rentalHistoryRepository.save(history);
+        Item item = itemRepository.findById(saved.getItemId()).orElse(null);
+        return new RentalRecord(saved, item);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long historyId) {
+        if (rentalHistoryRepository.findById(historyId).isEmpty()) {
+            throw new BusinessException(RentalErrorCode.RENTAL_NOT_FOUND);
+        }
+        rentalStatusWorkerLogRepository.deleteAllByRentalHistoryId(historyId);
+        rentalHistoryRepository.deleteById(historyId);
     }
 
     private Map<Long, Item> findItemMapByHistories(List<RentalHistory> histories) {

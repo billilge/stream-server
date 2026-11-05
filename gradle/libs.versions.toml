@@ -28,6 +28,7 @@ springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-star
 springBootStarterFlyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 springBootStarterJackson = { module = "org.springframework.boot:spring-boot-starter-jackson" }
 springBootStarterLogging = { module = "org.springframework.boot:spring-boot-starter-logging" }
+springBootStarterMail = { module = "org.springframework.boot:spring-boot-starter-mail" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 springBootStarterSecurityTest = { module = "org.springframework.boot:spring-boot-starter-security-test" }
 springBootStarterDataJpaTest = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
@@ -62,6 +63,9 @@ awsS3 = { module = "software.amazon.awssdk:s3" }
 poiOoxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poiVersion" }
 
 firebaseAdmin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdminVersion" }
+
+# Thymeleaf — 메일 본문 HTML 템플릿용 (버전은 springBootDependenciesBom이 관리)
+thymeleaf = { module = "org.thymeleaf:thymeleaf" }
 
 jjwtApi = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwtVersion" }
 jjwtImpl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwtVersion" }

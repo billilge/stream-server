@@ -13,20 +13,42 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
 
     Optional<FeedbackJpaEntity> findByIdAndIsDeletedFalse(Long id);
 
+    // 회차는 연도·회차 번호로만 이어져 있어(연관관계 없음) 두 값으로 조인한다.
+    // keyword는 LikePatterns.escape로 이스케이프한 질문 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
         SELECT f FROM FeedbackJpaEntity f
-        WHERE f.isDeleted = false
+        JOIN FeedbackRoundJpaEntity r ON r.year = f.year AND r.round = f.round
+        WHERE f.isDeleted = false AND f.answer IS NOT NULL AND r.answersPublishedAt IS NOT NULL
         AND (:year IS NULL OR f.year = :year)
         AND (:round IS NULL OR f.round = :round)
+        AND (:keyword IS NULL OR f.question LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        ORDER BY r.answersPublishedAt DESC, f.answeredAt DESC, f.id DESC
+        """,
+        countQuery = """
+        SELECT COUNT(f) FROM FeedbackJpaEntity f
+        JOIN FeedbackRoundJpaEntity r ON r.year = f.year AND r.round = f.round
+        WHERE f.isDeleted = false AND f.answer IS NOT NULL AND r.answersPublishedAt IS NOT NULL
+        AND (:year IS NULL OR f.year = :year)
+        AND (:round IS NULL OR f.round = :round)
+        AND (:keyword IS NULL OR f.question LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
+        """)
+    Page<FeedbackJpaEntity> searchPublished(
+        @Param("year") Integer year,
+        @Param("round") Integer round,
+        @Param("keyword") String keyword,
+        Pageable pageable
+    );
+
+    @Query(value = """
+        SELECT f FROM FeedbackJpaEntity f
+        WHERE f.isDeleted = false AND f.createdBy = :memberId
         ORDER BY f.questionedAt DESC, f.id DESC
         """,
         countQuery = """
         SELECT COUNT(f) FROM FeedbackJpaEntity f
-        WHERE f.isDeleted = false
-        AND (:year IS NULL OR f.year = :year)
-        AND (:round IS NULL OR f.round = :round)
+        WHERE f.isDeleted = false AND f.createdBy = :memberId
         """)
-    Page<FeedbackJpaEntity> search(@Param("year") Integer year, @Param("round") Integer round, Pageable pageable);
+    Page<FeedbackJpaEntity> findAllByCreatedBy(@Param("memberId") Long memberId, Pageable pageable);
 
     @Query("""
         SELECT f FROM FeedbackJpaEntity f
@@ -36,7 +58,7 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
     List<FeedbackJpaEntity> findAllByYearAndRound(@Param("year") int year, @Param("round") int round);
 
     // createdBy는 welfare 자기 테이블의 숫자 컬럼이라 member 테이블과 조인하지 않는다.
-    // 이름으로 찾은 회원 ID를 호출부가 넘겨주고 여기서는 IN으로만 비교한다.
+    // 이름·학번으로 찾은 회원 ID를 호출부가 넘겨주고 여기서는 IN으로만 비교한다.
     // keyword는 LikePatterns.escape로 이스케이프한 검색어다. 쿼리의 ESCAPE 문자는 LikePatterns.ESCAPE와 같아야 한다
     @Query(value = """
         SELECT f FROM FeedbackJpaEntity f
@@ -60,6 +82,8 @@ public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, 
         @Param("memberIds") Collection<Long> memberIds,
         Pageable pageable
     );
+
+    long countByCreatedByAndIsDeletedFalse(Long createdBy);
 
     // COUNT(f.answer)는 answer가 NULL인 행을 세지 않으므로 그대로 "답변이 작성된 수"가 된다.
     // 생성자 인자는 이름이 아니라 순서로 들어가므로 질문 수·답변 수 순서를 FeedbackCountProjection과 맞춘다

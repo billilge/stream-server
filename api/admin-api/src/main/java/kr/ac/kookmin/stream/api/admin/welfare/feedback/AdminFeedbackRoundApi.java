@@ -21,7 +21,7 @@ import org.springdoc.core.annotations.ParameterObject;
  * 스웨거 문서용 어노테이션만 이쪽에 두고 컨트롤러에는 라우팅과 본문만 남긴다. 경로 매핑과
  * 파라미터 바인딩(@{@code RequestParam}, @{@code PathVariable}, @{@code RequestBody} 등)은 구현체에 둔다.
  */
-@Tag(name = "열린피드백 회차 관리", description = "운영진 열린피드백 회차 등록·조회와 답변 작성·공개")
+@Tag(name = "열린피드백 회차 관리", description = "운영진 열린피드백 회차 등록·조회와 답변 작성·삭제·공개")
 public interface AdminFeedbackRoundApi {
 
     /** 관리 화면 상단 요약. 답변을 아직 공개하지 않은 회차 중 지금 진행 중인 회차를 내려준다. */
@@ -66,7 +66,8 @@ public interface AdminFeedbackRoundApi {
     @Operation(summary = "피드백 답변 일괄 등록·수정",
         description = "회차 단위로 답변을 저장한다. 보낸 것만 반영하고 이미 답변이 있는 질문은 덮어쓴다. "
             + "한 요청에 같은 질문(feedbackId)을 두 번 보내면 400(INVALID_INPUT)이다. "
-            + "여기서 저장한 답변은 관리자에게만 보이고, 답변 공개 API를 불러야 학생 앱에 나타난다.")
+            + "여기서 저장한 답변은 관리자에게만 보이고, 답변 공개 API를 불러야 학생 앱에 나타난다. "
+            + "빈 값으로는 답변을 지울 수 없으니 답변 삭제 API를 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(
         type = FeedbackErrorCode.class,
@@ -74,6 +75,17 @@ public interface AdminFeedbackRoundApi {
     )
     ApiResponse<FeedbackRoundDetailResponse> saveAnswers(
         AdminApiUser apiUser, Long roundId, FeedbackAnswerSaveRequest request);
+
+    /** 답변 삭제. 잘못 쓴 답변을 지워 미답변으로 되돌린다. */
+    @Operation(summary = "피드백 답변 삭제",
+        description = "질문 하나의 답변을 지워 미답변으로 되돌린다. 답변이 없는 질문이면 바꾸는 것 없이 성공으로 응답한다. "
+            + "답변을 공개한 회차에서도 지울 수 있고, 지우면 학생 앱에서도 바로 사라진다. "
+            + "답변을 모두 지워도 회차는 공개 상태(회차종료)로 남는다.")
+    @ApiErrorCode(
+        type = FeedbackErrorCode.class,
+        codes = {"FEEDBACK_NOT_IN_ROUND", "FEEDBACK_ROUND_NOT_FOUND", "FEEDBACK_NOT_FOUND"}
+    )
+    ApiResponse<Void> deleteAnswer(AdminApiUser apiUser, Long roundId, Long feedbackId);
 
     /** 답변 공개. 그 회차의 답변을 학생 앱에 한꺼번에 띄운다. */
     @Operation(summary = "피드백 답변 공개",

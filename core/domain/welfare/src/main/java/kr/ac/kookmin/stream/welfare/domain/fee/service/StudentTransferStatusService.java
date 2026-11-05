@@ -21,7 +21,7 @@ public interface StudentTransferStatusService {
      */
     StudentTransferStatus submit(Long memberId, FeeSubmitCommand command, long amount);
 
-    // status가 null이면 전체 상태, memberIds가 null이면 회원 필터 없음
+    // status가 null이면 납부 완료를 뺀 처리 대상(납부확인중·확인필요)만, memberIds가 null이면 회원 필터 없음
     PageResult<StudentTransferStatus> search(TransferStatus status, List<Long> memberIds, PageOffset pageOffset);
 
     /**
@@ -30,4 +30,7 @@ public interface StudentTransferStatusService {
      * 회원의 최신 요청만 바꿀 수 있고, 지난 요청이면 {@code FEE_REQUEST_NOT_LATEST}다.
      */
     StudentTransferStatus review(Long transferStatusId, TransferStatus status, String rejectReason);
+
+    /** Payer 명부에 연결될 때 한 번만 쓴다. 요청 이력이 없는 회원에게 이미 납부완료인 요청 행을 만들어 둔다. */
+    void createPaidForLinkedPayer(Long memberId);
 }

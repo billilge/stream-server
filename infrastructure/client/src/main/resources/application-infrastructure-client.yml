@@ -7,6 +7,8 @@ file:
       access-key: ${R2_ACCESS_KEY:}
       secret-key: ${R2_SECRET_KEY:}
       upload-url-expiry-seconds: ${S3_UPLOAD_URL_EXPIRY_SECONDS:600}
+      # dev·prod가 한 버킷을 같이 쓰므로 파일 키를 {프로파일}/files/... 로 나눈다. 프로파일이 없으면 dev 폴더를 쓴다
+      environment-directory: ${spring.profiles.active:dev}
 # KConnect 측 요청으로 API 명세(주소·경로·응답 필드)는 환경 변수로만 주입하고 저장소에 남기지 않는다
 oauth:
   kconnect:
@@ -30,6 +32,29 @@ push:
   fcm:
     credentials-base64: ${FIREBASE_CREDENTIALS_BASE64:}
 
+email:
+  type: ${EMAIL_TYPE:log}
+  smtp:
+    from: ${EMAIL_FROM:${spring.mail.username:}}
+    from-name: ${EMAIL_FROM_NAME:소프트웨어융합대학 학생회}
+
+spring:
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.connectiontimeout]": 3000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
+
+management:
+  health:
+    mail:
+      enabled: false
 # AI 서버(stream-ai). 내부 토큰은 저장소에 남기지 않는다
 # read-timeout은 전체 답변 시간이 아니라 조각 사이 간격 기준으로 잡는다
 chat:

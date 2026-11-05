@@ -1,8 +1,10 @@
 package kr.ac.kookmin.stream.api.admin.welfare.item;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemCreateRequest;
+import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemReturnPolicyBulkUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.request.ItemUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.item.response.AdminItemDetailResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.item.usecase.AdminItemUseCase;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -75,5 +78,15 @@ public class AdminItemController implements AdminItemApi {
     public ApiResponse<Void> deleteItem(AdminApiUser apiUser, @PathVariable Long itemId) {
         adminItemService.delete(itemId);
         return ApiResponse.success();
+    }
+
+    @Override
+    @PatchMapping("/return-policy")
+    public ApiResponse<List<AdminItemDetailResponse>> updateReturnPolicyBulk(
+        AdminApiUser apiUser,
+        @Valid @RequestBody ItemReturnPolicyBulkUpdateRequest request
+    ) {
+        List<Item> items = adminItemService.updateReturnPolicyBulk(request.itemIds(), request.maxRentalDays());
+        return ApiResponse.success(items.stream().map(AdminItemDetailResponse::from).toList());
     }
 }

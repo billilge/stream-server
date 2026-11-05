@@ -8,6 +8,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateReques
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeRequestExcel;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminPayerSearchResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeReviewUseCase;
@@ -20,8 +21,10 @@ import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
+import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
+import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +45,7 @@ public class AdminFeeController implements AdminFeeApi {
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
     private final AdminFeeAccountProvider adminFeeAccountProvider;
+    private final PayerService payerService;
 
     @Override
     @GetMapping("/requests")
@@ -84,6 +88,18 @@ public class AdminFeeController implements AdminFeeApi {
             studentTransferStatusId, request.status(), request.rejectReason());
 
         return ApiResponse.success(FeeStatusUpdateResponse.from(reviewed));
+    }
+
+    @Override
+    @GetMapping("/payers")
+    public ApiResponse<PageResponse<AdminPayerSearchResponse>> getPayers(
+        AdminApiUser apiUser,
+        @RequestParam(required = false) String keyword,
+        @Valid @ModelAttribute PageParams pageParams
+    ) {
+        PageResult<Payer> result = payerService.search(keyword, pageParams.toOffset());
+
+        return ApiResponse.success(PageResponse.from(result, AdminPayerSearchResponse::from));
     }
 
     @Override

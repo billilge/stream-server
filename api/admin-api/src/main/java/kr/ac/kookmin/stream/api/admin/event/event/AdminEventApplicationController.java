@@ -11,10 +11,12 @@ import kr.ac.kookmin.stream.api.admin.event.event.usecase.AdminEventApplicationQ
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.common.DateUtil;
+import kr.ac.kookmin.stream.event.domain.event.service.AdminEventApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminEventApplicationController implements AdminEventApplicationApi {
 
     private final AdminEventApplicationQueryUseCase adminEventApplicationQueryUseCase;
+    private final AdminEventApplicationService adminEventApplicationService;
 
     @Override
     @GetMapping
@@ -60,5 +63,16 @@ public class AdminEventApplicationController implements AdminEventApplicationApi
     ) {
         return ApiResponse.success(AdminEventApplicationDetailResponse.from(
             adminEventApplicationQueryUseCase.getApplicant(eventId, applicationId)));
+    }
+
+    @Override
+    @PatchMapping("/{applicationId}/cancel")
+    public ApiResponse<Void> cancelApplication(
+        AdminApiUser apiUser,
+        @PathVariable Long eventId,
+        @PathVariable Long applicationId
+    ) {
+        adminEventApplicationService.cancelApplication(eventId, applicationId);
+        return ApiResponse.success();
     }
 }

@@ -18,6 +18,7 @@ public enum EventErrorCode implements ErrorCode {
     APPLICATION_NOT_FOUND(ErrorStatus.NOT_FOUND, "행사 신청을 찾을 수 없습니다."),
     ALREADY_CANCELED(ErrorStatus.CONFLICT, "이미 취소된 신청입니다."),
     CANCEL_DEADLINE_PASSED(ErrorStatus.CONFLICT, "신청이 마감되어 취소할 수 없습니다."),
+    EVENT_ALREADY_ENDED(ErrorStatus.CONFLICT, "끝난 행사의 신청은 취소할 수 없습니다."),
     INVALID_ANSWER(ErrorStatus.BAD_REQUEST, "신청서 답변 형식이 올바르지 않습니다."),
     EVENT_INVALID_CURSOR(ErrorStatus.BAD_REQUEST, "유효하지 않은 커서입니다."),
     EVENT_INVALID_RECRUIT_STATUS(ErrorStatus.BAD_REQUEST, "유효하지 않은 모집 상태입니다."),
@@ -27,7 +28,6 @@ public enum EventErrorCode implements ErrorCode {
     EVENT_INVALID_QUESTION(ErrorStatus.BAD_REQUEST, "선택형 질문에는 선택지를 1개 이상 입력해야 합니다."),
     EVENT_QUESTIONS_LOCKED(ErrorStatus.CONFLICT, "신청 내역이 있는 행사는 신청서 질문을 수정할 수 없습니다."),
     EVENT_CAPACITY_BELOW_APPLICANTS(ErrorStatus.CONFLICT, "정원을 현재 신청자 수보다 적게 줄일 수 없습니다."),
-    EVENT_UNSUPPORTED_OPTION(ErrorStatus.CONFLICT, "학생회비 납부자 전용이나 기타 선택지를 쓰는 행사는 아직 공개할 수 없습니다."),
     EVENT_UPDATE_CONFLICT(ErrorStatus.CONFLICT, "다른 관리자가 먼저 행사를 수정했습니다. 새로고침한 뒤 다시 수정해 주세요.");
 
     private final int status;

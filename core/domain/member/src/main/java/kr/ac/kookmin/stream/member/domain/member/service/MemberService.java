@@ -11,6 +11,8 @@ import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 
 public interface MemberService {
     Member getById(Long id);
+    /** ID로 회원을 찾는다. 없거나 탈퇴한 회원이면 빈 값이다. */
+    Optional<Member> findById(Long id);
     /** 학번으로 회원을 찾는다. 탈퇴한 회원은 찾지 않는다. */
     Optional<Member> findByStudentId(String studentId);
     List<Member> findAllByIds(List<Long> ids);
@@ -20,15 +22,23 @@ public interface MemberService {
      * 검색할지 말지는 호출하는 쪽이 정하므로, 검색어가 null이거나 공백뿐이면 일치하는 회원이 없어 빈 목록이다.
      */
     List<Long> searchIdsByKeyword(String keyword);
+    // 학생회 구성원(학생회 부서가 있는 운영진). 이름, 같은 이름이면 학번 오름차순
+    List<Member> findAllCouncilMembers();
     Member updateProfile(Long id, MemberProfileCommand command);
     Member registerOrUpdateByStudentId(MemberProfileCommand command);
     Member signUp(Long memberId, MemberSignUpCommand command);
     boolean isSignedUp(Long memberId);
     /**
-     * 주어진 회원 중 가입(전화번호 등록 + 필수 약관 동의)을 마친 회원 ID. 기준은 {@link #isSignedUp}과 같고 탈퇴한 회원은 빠진다.
+     * 주어진 회원 중 가입(전화번호·이메일 등록 + 필수 약관 동의)을 마친 회원 ID. 기준은 {@link #isSignedUp}과 같고 탈퇴한 회원은 빠진다.
      * 목록에서 회원마다 isSignedUp을 부르지 않도록 한 번에 조회한다.
      */
     Set<Long> findSignedUpIds(List<Long> memberIds);
     void updateFcmToken(Long memberId, String fcmToken);
     void updatePhoneNumber(Long memberId, MemberPhoneNumberUpdateCommand command);
+    boolean isEmailUsedByOthers(Long memberId, String email);
+    /**
+     * 회원을 탈퇴(소프트 삭제)시키고 FCM 토큰을 비운다. 탈퇴한 회원은 이후 모든 조회에서 빠지며,
+     * 같은 학번·이메일·전화번호로 다시 가입할 수 있다. 없거나 이미 탈퇴한 회원이면 {@code MEMBER_NOT_FOUND}.
+     */
+    void withdraw(Long memberId);
 }

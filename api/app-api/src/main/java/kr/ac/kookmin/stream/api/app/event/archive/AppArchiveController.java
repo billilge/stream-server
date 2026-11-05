@@ -35,7 +35,7 @@ public class AppArchiveController implements AppArchiveApi {
     @Override
     @GetMapping
     public ApiResponse<ArchiveListResponse> getArchives(@Valid @ModelAttribute ArchiveListParams params) {
-        List<ArchiveSummary> archives = archiveService.getArchives(params.year());
+        List<ArchiveSummary> archives = archiveService.getArchives(params.year(), params.keyword());
         List<Long> thumbnailIds = archives.stream()
             .map(ArchiveSummary::thumbnailFileId)
             .filter(id -> id != null)

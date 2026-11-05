@@ -19,6 +19,8 @@ public enum NotificationType {
     // 값: 행사명
     EVENT_APPLIED(NotificationCategory.EVENT, "'%s'을(를) 신청했어요.", "신청 내역에서 자세한 내용을 확인할 수 있어요."),
     EVENT_APPLICATION_CANCELED(NotificationCategory.EVENT, "'%s' 참여 신청을 취소했어요.", null),
+    EVENT_APPLICATION_CANCELED_BY_ADMIN(NotificationCategory.EVENT,
+        "'%s' 참여 신청이 취소됐어요.", "자세한 내용은 학생회에 문의해 주세요."),
     EVENT_STARTING_TOMORROW(NotificationCategory.EVENT, "'%s'이(가) 내일 열려요.", "행사 일정과 장소를 확인해 주세요."),
     EVENT_APPLY_CLOSING(NotificationCategory.EVENT, "'%s' 신청이 곧 마감돼요.", "참여하려면 기간 내에 신청해 주세요."),
 
@@ -35,12 +37,40 @@ public enum NotificationType {
     RENTAL_DUE_SOON(NotificationCategory.BILLILGE, "반납까지 1시간 남았어요.", "늦지 않게 %s을(를) 반납해 주세요."),
     RENTAL_OVERDUE(NotificationCategory.BILLILGE, "반납 기한이 지났어요.", "학생회실에 방문해 %s을(를) 반납해 주세요."),
 
+    // 운영진 공용 알림. 값: 이름, 학번, (APPLY만)대여 시각, 물품명
+    ADMIN_RENTAL_APPLY(NotificationCategory.BILLILGE, "%s(%s) 님이 %s에 %s 대여를 신청했어요.", null),
+    ADMIN_RENTAL_CANCEL(NotificationCategory.BILLILGE, "%s(%s) 님이 %s 대여 신청을 취소했어요.", null),
+    ADMIN_RETURN_APPLY(NotificationCategory.BILLILGE, "%s(%s) 님이 %s 반납을 신청했어요.", null),
+
+    // 값: 물품명
+    RENTAL_APPLY(NotificationCategory.BILLILGE, "%s 대여를 신청했어요!", "관리자가 처리할 때까지 잠시만 기다려 주세요."),
+    RENTAL_APPROVED(NotificationCategory.BILLILGE, "관리자가 %s 대여 신청을 승인했어요!", "대여 시각에 과방으로 오시면 물품을 빌릴 수 있어요."),
+    RENTAL_REJECTED(NotificationCategory.BILLILGE, "%s 대여 신청이 반려되었어요.", "자세한 사항은 소프트웨어융합대학 카카오톡에 문의해 주세요."),
+    RETURN_APPLY(NotificationCategory.BILLILGE, "%s 반납을 신청했어요!", "관리자가 처리할 때까지 잠시만 기다려 주세요."),
+    RETURN_APPROVED(NotificationCategory.BILLILGE, "관리자가 %s 반납 신청을 승인했어요!", "과방으로 오시면 물품을 반납할 수 있어요."),
+    RETURN_COMPLETED(NotificationCategory.BILLILGE, "%s 반납을 완료했어요.", null),
+
     // 값: 없음
     NOTICE_CREATED(NotificationCategory.NOTICE, "새로운 공지사항이 올라왔어요.", "자세한 내용을 확인해 주세요.");
+
+    // 문구에서 값이 들어가는 자리. JosaUtil.format과 같은 표기다
+    private static final String FORMAT_PLACEHOLDER = "%s";
 
     private final NotificationCategory category;
     private final String title;
     private final String body;
+
+    // 문구에 들어가는 값 개수. 제목과 본문은 같은 값 목록을 앞에서부터 쓴다
+    public int formatValueCount() {
+        return Math.max(countPlaceholders(title), countPlaceholders(body));
+    }
+
+    private static int countPlaceholders(String template) {
+        if (template == null) {
+            return 0;
+        }
+        return template.split(FORMAT_PLACEHOLDER, -1).length - 1;
+    }
 
     public String formatTitle(List<String> formatValues) {
         return JosaUtil.format(title, formatValues);
