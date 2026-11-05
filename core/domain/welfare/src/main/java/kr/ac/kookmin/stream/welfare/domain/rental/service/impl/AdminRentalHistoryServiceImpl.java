@@ -48,9 +48,14 @@ class AdminRentalHistoryServiceImpl implements AdminRentalHistoryService {
     }
 
     @Override
-    public Map<Long, RentalStatus> getStatusMapByIds(Collection<Long> historyIds) {
-        return rentalHistoryRepository.findAllByIds(historyIds).stream()
-            .collect(Collectors.toMap(RentalHistory::getId, RentalHistory::getRentalStatus));
+    public Map<Long, RentalRecord> getRecordMapByIds(Collection<Long> historyIds) {
+        List<RentalHistory> histories = rentalHistoryRepository.findAllByIds(historyIds);
+        Map<Long, Item> itemsByItemId = findItemMapByHistories(histories);
+        return histories.stream()
+            .collect(Collectors.toMap(
+                RentalHistory::getId,
+                history -> new RentalRecord(history, itemsByItemId.get(history.getItemId()))
+            ));
     }
 
     @Override
