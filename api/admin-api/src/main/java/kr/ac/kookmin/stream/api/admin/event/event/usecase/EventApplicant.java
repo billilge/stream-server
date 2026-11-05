@@ -26,4 +26,8 @@ public record EventApplicant(
     public String memberStudentId() {
         return member == null ? null : member.getStudentId();
     }
+
+    public String memberPhoneNumber() {
+        return member == null ? null : member.getPhoneNumber();
+    }
 }

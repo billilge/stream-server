@@ -48,13 +48,15 @@ public record AdminEventApplicationListResponse(
 
     /**
      * @param name      탈퇴한 회원의 신청이면 {@code null}
-     * @param studentId 탈퇴한 회원의 신청이면 {@code null}
-     * @param answers   {@code questions}와 같은 순서
+     * @param studentId   탈퇴한 회원의 신청이면 {@code null}
+     * @param phoneNumber 하이픈 없는 숫자. 탈퇴했거나 전화번호를 등록하지 않은 회원이면 {@code null}
+     * @param answers     {@code questions}와 같은 순서
      */
     public record Application(
         Long applicationId,
         String name,
         String studentId,
+        String phoneNumber,
         LocalDateTime appliedAt,
         EventApplicationStatus status,
         List<Answer> answers
@@ -65,6 +67,7 @@ public record AdminEventApplicationListResponse(
                 applicant.application().getId(),
                 applicant.memberName(),
                 applicant.memberStudentId(),
+                applicant.memberPhoneNumber(),
                 applicant.application().getAppliedAt(),
                 applicant.application().getStatus(),
                 applicant.answeredQuestions().stream().map(Answer::from).toList()
