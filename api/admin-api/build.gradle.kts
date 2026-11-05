@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.springBootStarterAspectj)
     implementation(libs.springTx)
     implementation(libs.springdocStarterWebmvcUi)
+    implementation(libs.poiOoxml)
 
     testImplementation(platform(libs.springBootDependenciesBom))
     testImplementation(libs.springBootStarterTest)

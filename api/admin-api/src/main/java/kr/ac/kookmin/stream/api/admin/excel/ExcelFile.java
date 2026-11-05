@@ -1,4 +1,4 @@
-package kr.ac.kookmin.stream.api.common.excel;
+package kr.ac.kookmin.stream.api.admin.excel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
