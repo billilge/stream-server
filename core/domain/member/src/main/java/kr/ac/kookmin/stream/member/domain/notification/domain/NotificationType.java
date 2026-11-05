@@ -53,9 +53,24 @@ public enum NotificationType {
     // 값: 없음
     NOTICE_CREATED(NotificationCategory.NOTICE, "새로운 공지사항이 올라왔어요.", "자세한 내용을 확인해 주세요.");
 
+    // 문구에서 값이 들어가는 자리. JosaUtil.format과 같은 표기다
+    private static final String FORMAT_PLACEHOLDER = "%s";
+
     private final NotificationCategory category;
     private final String title;
     private final String body;
+
+    // 문구에 들어가는 값 개수. 제목과 본문은 같은 값 목록을 앞에서부터 쓴다
+    public int formatValueCount() {
+        return Math.max(countPlaceholders(title), countPlaceholders(body));
+    }
+
+    private static int countPlaceholders(String template) {
+        if (template == null) {
+            return 0;
+        }
+        return template.split(FORMAT_PLACEHOLDER, -1).length - 1;
+    }
 
     public String formatTitle(List<String> formatValues) {
         return JosaUtil.format(title, formatValues);
