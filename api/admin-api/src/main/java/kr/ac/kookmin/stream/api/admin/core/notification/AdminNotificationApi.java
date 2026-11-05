@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.admin.core.notification;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.core.notification.request.AdminNotificationListParams;
 import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationListItemResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -24,6 +25,7 @@ public interface AdminNotificationApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_INVALID_CURSOR"})
     ApiResponse<CursorSliceResponse<AdminNotificationListItemResponse>> getNotifications(
+        AdminApiUser apiUser,
         @ParameterObject AdminNotificationListParams params
     );
 
@@ -31,5 +33,5 @@ public interface AdminNotificationApi {
     @Operation(summary = "운영진 공용 알림 읽음 처리",
         description = "알림 한 건을 읽음으로 바꾼다. 운영진 전체가 공유하는 행이라 누가 처리해도 전체가 읽음으로 본다.")
     @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_NOT_FOUND"})
-    ApiResponse<Void> markRead(Long notificationId);
+    ApiResponse<Void> markRead(AdminApiUser apiUser, Long notificationId);
 }

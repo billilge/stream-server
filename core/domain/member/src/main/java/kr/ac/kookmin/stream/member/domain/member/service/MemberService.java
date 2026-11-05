@@ -11,6 +11,8 @@ import kr.ac.kookmin.stream.member.domain.member.domain.MemberSignUpCommand;
 
 public interface MemberService {
     Member getById(Long id);
+    /** ID로 회원을 찾는다. 없거나 탈퇴한 회원이면 빈 값이다. */
+    Optional<Member> findById(Long id);
     /** 학번으로 회원을 찾는다. 탈퇴한 회원은 찾지 않는다. */
     Optional<Member> findByStudentId(String studentId);
     List<Member> findAllByIds(List<Long> ids);
