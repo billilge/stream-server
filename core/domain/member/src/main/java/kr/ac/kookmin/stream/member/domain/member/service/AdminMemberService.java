@@ -23,13 +23,13 @@ public interface AdminMemberService {
 
     /**
      * 회원들을 같은 학생회 부서의 운영진으로 지정한다. 이미 명단에 있는 회원이 섞여 있으면 부서를 조용히
-     * 덮어쓰지 않도록 {@code ALREADY_COUNCIL_MEMBER}로 아무도 바꾸지 않는다.
+     * 덮어쓰지 않도록 {@code ALREADY_COUNCIL_REGISTERED}로 아무도 바꾸지 않는다.
      */
     void assignCouncil(CouncilAssignCommand command);
 
     /**
      * 이미 명단에 있는 회원들의 권한을 바꾸고, 부서를 받았으면 부서도 바꾼다. 부서를 보내지 않으면 각자의 지금
-     * 부서를 그대로 둔다. 명단에 없는 회원이 섞여 있으면 {@code NOT_COUNCIL_MEMBER}로 아무도 바꾸지 않는다 —
+     * 부서를 그대로 둔다. 명단에 없는 회원이 섞여 있으면 {@code NOT_COUNCIL_REGISTERED}로 아무도 바꾸지 않는다 —
      * 납부자 확인을 거치지 않는 이 길로 일반 학생을 운영진으로 만들 수 없게 한다.
      */
     void updateCouncil(CouncilUpdateCommand command);

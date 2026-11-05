@@ -31,8 +31,8 @@ public interface AdminCouncilApi {
             + "이미 등록된 회원의 부서를 바꾸려면 권한·부서 변경을 쓴다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "FORBIDDEN"})
     @ApiErrorCode(type = FeeErrorCode.class, codes = {"MEMBER_IS_NOT_PAYER"})
-    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "ALREADY_COUNCIL_MEMBER",
-        "COUNCIL_DEPARTMENT_REQUIRED", "LAST_PRESIDENCY_ADMIN_REQUIRED"})
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "ALREADY_COUNCIL_REGISTERED",
+        "LAST_PRESIDENCY_ADMIN_REQUIRED"})
     ApiResponse<Void> assignCouncil(AdminApiUser apiUser, CouncilAssignRequest request);
 
     /** 권한을 바꾸고, 부서를 보냈으면 부서도 바꾼다. */
@@ -45,14 +45,14 @@ public interface AdminCouncilApi {
             + "이미 명단에 있는 회원만 바꿀 수 있다 — 명단에 없는 회원이 섞여 있으면 아무도 바꾸지 않는다. "
             + "명단에 없는 회원을 운영진으로 만드는 것은 납부자인지 확인하는 관리자 지정만 할 수 있다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "FORBIDDEN"})
-    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "NOT_COUNCIL_MEMBER",
+    @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "NOT_COUNCIL_REGISTERED",
         "COUNCIL_DEPARTMENT_REQUIRED", "LAST_PRESIDENCY_ADMIN_REQUIRED"})
     ApiResponse<Void> updateCouncil(AdminApiUser apiUser, CouncilUpdateRequest request);
 
     /** 명단에서 뺀다. */
     @Operation(summary = "관리자 해제",
         description = "선택한 회원들의 권한을 STUDENT로 되돌리고 학생회 부서를 비운다. 둘 다 비워지므로 관리자 관리 "
-            + "명단에서 빠진다. 회원을 탈퇴시키는 것이 아니다.")
+            + "명단에서 빠진다. 회원 행을 지우는 것이 아니라 권한·부서를 비우는 상태 변경이라 DELETE가 아니다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "FORBIDDEN"})
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND", "LAST_PRESIDENCY_ADMIN_REQUIRED"})
     ApiResponse<Void> releaseCouncil(AdminApiUser apiUser, CouncilReleaseRequest request);

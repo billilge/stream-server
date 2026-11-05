@@ -34,9 +34,7 @@ class AdminMemberServiceImpl implements AdminMemberService {
     @Transactional
     public void assignCouncil(CouncilAssignCommand command) {
         List<Member> members = getAllByIds(command.memberIds());
-        if (members.stream().anyMatch(Member::isCouncilRegistered)) {
-            throw new BusinessException(MemberErrorCode.ALREADY_COUNCIL_MEMBER);
-        }
+        validateNotCouncilRegistered(members);
 
         apply(members, member -> member.assignCouncil(command.councilDepartment()));
     }
@@ -45,10 +43,7 @@ class AdminMemberServiceImpl implements AdminMemberService {
     @Transactional
     public void updateCouncil(CouncilUpdateCommand command) {
         List<Member> members = getAllByIds(command.memberIds());
-        // 명단에 없는 회원을 이 길로 운영진으로 만들 수 없게 막는다. 지정은 납부자인지 확인하는 assignCouncil만 한다
-        if (!members.stream().allMatch(Member::isCouncilRegistered)) {
-            throw new BusinessException(MemberErrorCode.NOT_COUNCIL_MEMBER);
-        }
+        validateAllCouncilRegistered(members);
 
         apply(members, member -> member.changeCouncil(command.role(), command.councilDepartment()));
     }
@@ -59,20 +54,38 @@ class AdminMemberServiceImpl implements AdminMemberService {
         apply(getAllByIds(memberIds), Member::releaseCouncil);
     }
 
-    /**
-     * 바꾸고 저장한다. 바꾼 결과 회장단 운영진이 한 명도 남지 않으면 거부한다 — 회장단만 부를 수 있는 API라
-     * 아무도 관리자를 바꿀 수 없게 된다. 세고 나서 바꾸는 구조라 두 요청이 겹치면 둘 다 통과할 수 있는데,
-     * 회장단 규모와 사용 빈도를 보면 겹칠 일이 없다고 보고 락을 걸지 않는다.
-     */
+    // 바꾸고 저장한다. 저장 전에 회장단이 남는지 확인하므로 거부되면 아무도 바뀌지 않는다
     private void apply(List<Member> members, Consumer<Member> change) {
         long presidencyBefore = members.stream().filter(Member::isPresidencyAdmin).count();
         members.forEach(change);
         long presidencyAfter = members.stream().filter(Member::isPresidencyAdmin).count();
 
+        validatePresidencyRemains(presidencyBefore, presidencyAfter);
+        members.forEach(memberRepository::save);
+    }
+
+    private void validateNotCouncilRegistered(List<Member> members) {
+        if (members.stream().anyMatch(Member::isCouncilRegistered)) {
+            throw new BusinessException(MemberErrorCode.ALREADY_COUNCIL_REGISTERED);
+        }
+    }
+
+    // 명단에 없는 회원을 이 길로 운영진으로 만들 수 없게 막는다. 지정은 납부자인지 확인하는 assignCouncil만 한다
+    private void validateAllCouncilRegistered(List<Member> members) {
+        if (!members.stream().allMatch(Member::isCouncilRegistered)) {
+            throw new BusinessException(MemberErrorCode.NOT_COUNCIL_REGISTERED);
+        }
+    }
+
+    /**
+     * 바꾼 결과 회장단 운영진이 한 명도 남지 않으면 거부한다 — 회장단만 부를 수 있는 API라 아무도 관리자를 바꿀
+     * 수 없게 된다. 세고 나서 바꾸는 구조라 두 요청이 겹치면 둘 다 통과할 수 있는데, 회장단 규모와 사용 빈도를
+     * 보면 겹칠 일이 없다고 보고 락을 걸지 않는다.
+     */
+    private void validatePresidencyRemains(long presidencyBefore, long presidencyAfter) {
         if (memberRepository.countPresidencyAdmins() - presidencyBefore + presidencyAfter <= 0) {
             throw new BusinessException(MemberErrorCode.LAST_PRESIDENCY_ADMIN_REQUIRED);
         }
-        members.forEach(memberRepository::save);
     }
 
     // 없는 회원이 하나라도 섞여 있으면 아무도 바꾸지 않는다. memberIds는 중복이 걷힌 목록이다
