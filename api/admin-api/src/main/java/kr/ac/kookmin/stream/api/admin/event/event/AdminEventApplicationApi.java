@@ -1,24 +1,28 @@
 package kr.ac.kookmin.stream.api.admin.event.event;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.event.event.request.EventApplicationSearchParams;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationDetailResponse;
 import kr.ac.kookmin.stream.api.admin.event.event.response.AdminEventApplicationListResponse;
+import kr.ac.kookmin.stream.api.admin.excel.ExcelFile;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
 
 /**
- * 운영진 행사 신청 현황·취소 API의 문서 명세. 구현은 {@link AdminEventApplicationController}가 맡는다.
+ * 운영진 행사 신청 현황·취소·엑셀 내보내기 API의 문서 명세. 구현은 {@link AdminEventApplicationController}가 맡는다.
  * <p>
  * 접근은 {@code ADMIN} role이면 된다. 부서 제한은 두지 않았다.
  */
-@Tag(name = "행사 신청 현황", description = "운영진 행사 신청자 목록·상세 조회와 신청 취소")
+@Tag(name = "행사 신청 현황", description = "운영진 행사 신청자 목록·상세 조회, 신청 취소와 엑셀 내보내기")
 public interface AdminEventApplicationApi {
 
     /** 신청 현황. 한 줄에 신청자 정보와 질문별 답변을 함께 내려준다. */
@@ -33,6 +37,21 @@ public interface AdminEventApplicationApi {
         Long eventId,
         @ParameterObject EventApplicationSearchParams params,
         @ParameterObject PageParams pageParams
+    );
+
+    /** 신청 현황 엑셀 내보내기. 신청 현황과 같은 조건의 신청을 모두 담는다. */
+    @Operation(summary = "행사 신청 현황 엑셀 내보내기",
+        description = "신청 현황과 같은 검색어·상태 조건의 신청을 페이지 없이 모두 xlsx 파일로 내려준다. 열은 이름·학번·전화번호·"
+            + "신청일시·상태이고, 질문별 답이 질문 순서대로 뒤에 붙는다. 답은 신청 현황 표와 같은 문구다. 값이 없으면 빈 칸이고, "
+            + "탈퇴한 회원은 이름이 '(탈퇴한 회원)'이다. 파일 이름은 Content-Disposition 헤더의 filename*(UTF-8)로 내려간다. "
+            + "에러는 다른 API처럼 JSON으로 내려간다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "xlsx 파일",
+        content = @Content(mediaType = ExcelFile.MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")))
+    @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_NOT_FOUND", "EVENT_INVALID_APPLICATION_STATUS"})
+    ResponseEntity<byte[]> exportApplications(
+        AdminApiUser apiUser,
+        Long eventId,
+        @ParameterObject EventApplicationSearchParams params
     );
 
     /** 신청자 상세. 표에서 잘린 답변을 질문 전체와 함께 확인한다. */

@@ -1,8 +1,11 @@
 package kr.ac.kookmin.stream.api.admin.welfare.fee;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
+import kr.ac.kookmin.stream.api.admin.excel.ExcelFile;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeAccountUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.request.FeeStatusUpdateRequest;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.AdminFeeSearchResponse;
@@ -17,6 +20,7 @@ import kr.ac.kookmin.stream.common.CommonErrorCode;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeErrorCode;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
 
 /**
  * 운영진 학생회비 API의 문서 명세. 구현은 {@link AdminFeeController}가 맡는다.
@@ -40,6 +44,17 @@ public interface AdminFeeApi {
         String keyword,
         @ParameterObject PageParams pageParams
     );
+
+    /** 납부 요청 목록 엑셀 내보내기. 목록과 같은 조건의 요청을 모두 담는다. */
+    @Operation(summary = "학생회비 납부 확인 요청 엑셀 내보내기",
+        description = "납부 요청 목록과 같은 이름·학번 검색과 납부 상태 필터로 요청을 페이지 없이 모두 xlsx 파일로 내려준다. "
+            + "열은 이름·학번·학과·요청일시·남은 학기·요청 금액·납부일·납부 상태·관리자 안내다. 값이 없으면 빈 칸이고, "
+            + "납부일은 납부 완료한 요청에만 있다. 파일 이름은 Content-Disposition 헤더의 filename*(UTF-8)로 내려간다. "
+            + "에러는 다른 API처럼 JSON으로 내려간다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "xlsx 파일",
+        content = @Content(mediaType = ExcelFile.MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")))
+    @ApiErrorCode(type = FeeErrorCode.class, codes = {"INVALID_TRANSFER_STATUS"})
+    ResponseEntity<byte[]> exportRequests(AdminApiUser apiUser, String status, String keyword);
 
     /** 납부 상태 처리. 이미 처리한 요청도 다시 바꿀 수 있다. */
     @Operation(summary = "학생회비 납부 상태 수정",
