@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.api.app.search;
 
 import jakarta.validation.Valid;
+import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.search.request.SearchParams;
 import kr.ac.kookmin.stream.api.app.search.response.SearchResponse;
 import kr.ac.kookmin.stream.api.app.search.usecase.AppSearchUseCase;
@@ -20,7 +21,7 @@ public class AppSearchController implements AppSearchApi {
 
     @Override
     @GetMapping
-    public ApiResponse<SearchResponse> search(@Valid @ModelAttribute SearchParams params) {
-        return ApiResponse.success(appSearchUseCase.search(params.keyword()));
+    public ApiResponse<SearchResponse> search(AppApiUser apiUser, @Valid @ModelAttribute SearchParams params) {
+        return ApiResponse.success(appSearchUseCase.search(params.keyword(), apiUser.userId()));
     }
 }

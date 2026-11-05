@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.search;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.search.request.SearchParams;
 import kr.ac.kookmin.stream.api.app.search.response.SearchResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -22,7 +23,8 @@ public interface AppSearchApi {
             + "행사·공지·아카이빙은 제목, 물품은 이름, 열린피드백은 질문 내용에서 부분 일치로 찾는다(앞뒤 공백 무시). "
             + "섹션마다 각 목록과 같은 노출 조건·순서로 앞의 2건과 전체 수를 주고, totalCount는 다섯 섹션 전체 수의 합이다. "
             + "더보기와 탭 목록은 각 목록 API(GET /v1/app/events, /v1/app/notices, /v1/app/feedbacks, "
-            + "/v1/app/billilge/items, /v1/app/archives)에 같은 keyword를 넘겨 조회한다.")
+            + "/v1/app/billilge/items, /v1/app/archives)에 같은 keyword를 넘겨 조회한다. "
+            + "행사 카드의 applicationId는 행사 목록과 같이 요청한 학생이 그 행사에 낸 유효 신청의 ID이며, 없으면 null이다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
-    ApiResponse<SearchResponse> search(@ParameterObject SearchParams params);
+    ApiResponse<SearchResponse> search(AppApiUser apiUser, @ParameterObject SearchParams params);
 }

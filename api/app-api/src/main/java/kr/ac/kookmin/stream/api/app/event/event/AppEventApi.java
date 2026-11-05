@@ -35,10 +35,15 @@ public interface AppEventApi {
             + "필터가 없으면 모집 중 → 모집 예정 → 모집 종료 순으로 보여준다. 같은 상태 안에서는 모집 중은 신청 마감 임박순, "
             + "모집 예정은 신청 시작 임박순, 모집 종료는 최근 행사순이며 필터를 걸어도 같다. "
             + "keyword를 주면 제목에 그 검색어가 들어 있는 행사만 조회한다(앞뒤 공백 무시, 공백뿐이면 전체). "
-            + "통합 검색의 행사 탭과 더보기도 이 API를 쓴다.")
+            + "통합 검색의 행사 탭과 더보기도 이 API를 쓴다. "
+            + "applicationId는 요청한 학생이 그 행사에 낸 유효 신청의 ID로, 신청하지 않았거나 취소한 신청만 있으면 null이다. "
+            + "모집 상태와 관계없이 내려준다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     @ApiErrorCode(type = EventErrorCode.class, codes = {"EVENT_INVALID_RECRUIT_STATUS", "EVENT_INVALID_CURSOR"})
-    ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(@ParameterObject EventListParams params);
+    ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
+        AppApiUser apiUser,
+        @ParameterObject EventListParams params
+    );
 
     /** 행사 상세. 모집 조건과 요청한 학생의 학생회비 신청 자격을 함께 내려준다. */
     @Operation(summary = "행사 상세 조회",

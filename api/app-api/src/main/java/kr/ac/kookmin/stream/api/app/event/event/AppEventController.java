@@ -20,6 +20,7 @@ import kr.ac.kookmin.stream.api.app.event.event.usecase.EventApplyUseCase;
 import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailUseCase;
 import kr.ac.kookmin.stream.api.app.event.event.usecase.EventDetailWithFeeEligibility;
 import kr.ac.kookmin.stream.common.CursorSliceResult;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventApplicationSummary;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
@@ -58,14 +59,18 @@ public class AppEventController implements AppEventApi {
     @Override
     @GetMapping
     public ApiResponse<CursorSliceResponse<EventListItemResponse>> getEvents(
+        AppApiUser apiUser,
         @Valid @ModelAttribute EventListParams params
     ) {
         CursorSliceResult<EventSummary> result = eventService.getPublishedEvents(
             params.toRecruitStatus(), params.keyword(), params.toCursor(), params.sizeOrDefault());
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIdsOf(result.content(), EventSummary::thumbnailFileId));
+        // 신청은 페이지의 행사 식별자를 모아 한 번에 읽는다. 행사마다 따로 읽으면 페이지 크기만큼 쿼리가 더 나간다
+        Map<Long, EventApplication> applicationsByEventId = eventApplicationService.getAppliedApplications(
+            apiUser.userId(), result.content().stream().map(EventSummary::eventId).toList());
 
-        return ApiResponse.success(
-            CursorSliceResponse.from(result, summary -> EventListItemResponse.from(summary, filesById)));
+        return ApiResponse.success(CursorSliceResponse.from(
+            result, summary -> EventListItemResponse.of(summary, filesById, applicationsByEventId)));
     }
 
     @Override
