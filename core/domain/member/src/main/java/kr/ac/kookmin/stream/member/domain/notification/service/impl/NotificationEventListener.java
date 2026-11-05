@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.member.domain.notification.service.impl;
 
 import java.util.List;
 import kr.ac.kookmin.stream.common.event.EventApplicationCanceled;
+import kr.ac.kookmin.stream.common.event.EventApplicationCanceledByAdmin;
 import kr.ac.kookmin.stream.common.event.EventApplied;
 import kr.ac.kookmin.stream.common.event.EventApplyClosingTomorrow;
 import kr.ac.kookmin.stream.common.event.EventStartingTomorrow;
@@ -49,6 +50,13 @@ class NotificationEventListener {
     public void on(EventApplicationCanceled event) {
         notificationDispatcher.dispatch(
             NotificationType.EVENT_APPLICATION_CANCELED, List.of(event.eventTitle()), event.applicationId(), List.of(event.memberId()));
+    }
+
+    // 본인이 하지 않은 취소라 알림으로 알린다. 본인 취소처럼 누르면 신청 내역 상세로 가도록 신청 ID를 대상으로 준다
+    @EventListener
+    public void on(EventApplicationCanceledByAdmin event) {
+        notificationDispatcher.dispatch(
+            NotificationType.EVENT_APPLICATION_CANCELED_BY_ADMIN, List.of(event.eventTitle()), event.applicationId(), List.of(event.memberId()));
     }
 
     @EventListener

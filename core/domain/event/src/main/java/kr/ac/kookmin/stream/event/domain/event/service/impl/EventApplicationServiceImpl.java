@@ -121,10 +121,6 @@ class EventApplicationServiceImpl implements EventApplicationService {
     @Transactional
     public void cancelApplication(Long applicationId, Long memberId) {
         EventApplication application = getApplicationOrThrow(applicationId, memberId);
-        if (application.isCanceled()) {
-            throw new BusinessException(EventErrorCode.ALREADY_CANCELED);
-        }
-
         Event event = getEventOrThrow(application.getEventId());
 
         // 마감 판정과 취소 시각이 같은 시각을 봐야 마감 직전 취소가 마감 이후로 기록되지 않는다
