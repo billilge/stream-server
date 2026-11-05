@@ -8,4 +8,6 @@ public interface NotificationService {
     CursorSliceResult<Notification> getNotifications(Long memberId, NotificationCursor cursor, int size);
 
     void markRead(Long memberId, Long notificationId);
+
+    boolean hasUnread(Long memberId);
 }

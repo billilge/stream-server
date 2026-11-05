@@ -35,4 +35,9 @@ class AdminNotificationServiceImpl implements AdminNotificationService {
         notification.markRead();
         notificationRepository.save(notification);
     }
+
+    @Override
+    public boolean hasUnread() {
+        return notificationRepository.existsAdminUnread();
+    }
 }

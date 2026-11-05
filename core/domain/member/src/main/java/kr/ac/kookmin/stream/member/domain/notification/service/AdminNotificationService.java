@@ -9,4 +9,6 @@ public interface AdminNotificationService {
     CursorSliceResult<Notification> getNotifications(NotificationCursor cursor, int size);
 
     void markRead(Long notificationId);
+
+    boolean hasUnread();
 }

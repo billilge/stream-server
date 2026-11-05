@@ -49,6 +49,16 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public boolean existsUnreadByMemberId(Long memberId) {
+        return notificationJpaRepository.existsByMemberIdAndReadFalse(memberId);
+    }
+
+    @Override
+    public boolean existsAdminUnread() {
+        return notificationJpaRepository.existsByMemberIdIsNullAndReadFalse();
+    }
+
+    @Override
     public Optional<Notification> findById(Long id) {
         return notificationJpaRepository.findById(id).map(NotificationJpaEntity::toDomain);
     }

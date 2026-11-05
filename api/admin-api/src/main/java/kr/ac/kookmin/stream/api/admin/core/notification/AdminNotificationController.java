@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.core.notification.request.AdminNotificationListParams;
 import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationListItemResponse;
+import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationUnreadResponse;
 import kr.ac.kookmin.stream.api.admin.core.notification.usecase.AdminNotificationListUseCase;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
@@ -39,5 +40,12 @@ public class AdminNotificationController implements AdminNotificationApi {
     public ApiResponse<Void> markRead(AdminApiUser apiUser, @PathVariable Long notificationId) {
         adminNotificationService.markRead(notificationId);
         return ApiResponse.success();
+    }
+
+    @Override
+    @GetMapping("/unread")
+    public ApiResponse<AdminNotificationUnreadResponse> getUnread(AdminApiUser apiUser) {
+        boolean hasUnread = adminNotificationService.hasUnread();
+        return ApiResponse.success(new AdminNotificationUnreadResponse(hasUnread));
     }
 }

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ac.kookmin.stream.api.admin.AdminApiUser;
 import kr.ac.kookmin.stream.api.admin.core.notification.request.AdminNotificationListParams;
 import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationListItemResponse;
+import kr.ac.kookmin.stream.api.admin.core.notification.response.AdminNotificationUnreadResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.CursorSliceResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
@@ -38,4 +39,9 @@ public interface AdminNotificationApi {
         description = "알림 한 건을 읽음으로 바꾼다. 운영진 전체가 공유하는 행이라 누가 처리해도 전체가 읽음으로 본다.")
     @ApiErrorCode(type = NotificationErrorCode.class, codes = {"NOTIFICATION_NOT_FOUND"})
     ApiResponse<Void> markRead(AdminApiUser apiUser, Long notificationId);
+
+    /** 운영진 공용 알림 중 안 읽은 알림 존재 여부. */
+    @Operation(summary = "운영진 공용 안 읽은 알림 여부 조회",
+        description = "운영진 공용 알림 중 안 읽은 알림이 하나라도 있으면 hasUnread가 true다. 읽음 여부는 운영진 전체가 공유한다.")
+    ApiResponse<AdminNotificationUnreadResponse> getUnread(AdminApiUser apiUser);
 }
