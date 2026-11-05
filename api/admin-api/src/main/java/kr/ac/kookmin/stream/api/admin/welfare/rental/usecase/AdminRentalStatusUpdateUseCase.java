@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.api.admin.welfare.rental.usecase;
 import java.util.List;
 import kr.ac.kookmin.stream.api.admin.welfare.rental.response.AdminRentalHistoryResponse;
 import kr.ac.kookmin.stream.common.LockExecutor;
+import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.event.DomainEvent;
 import kr.ac.kookmin.stream.common.event.RentalApproved;
@@ -13,6 +14,7 @@ import kr.ac.kookmin.stream.member.domain.member.domain.Member;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.Item;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.ItemType;
+import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalHistory;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalRecord;
 import kr.ac.kookmin.stream.welfare.domain.rental.domain.RentalStatus;
@@ -32,10 +34,19 @@ public class AdminRentalStatusUpdateUseCase {
     private final AdminRentalHistoryService adminRentalHistoryService;
     private final OutboxWriter outboxWriter;
 
-    public AdminRentalHistoryResponse updateStatus(Long historyId, RentalStatus requestedStatus, Long workerId) {
+    /**
+     * @param expectedStatus 요청자가 본 지금 상태. null이 아니면 실제 지금 상태와 같을 때만 바꾼다. 옛 알림이나 다른 운영진이
+     *                       먼저 처리한 화면에서 누른 요청이 이미 바뀐 기록을 다시 바꾸지 않게 한다. null이면 확인하지 않는다
+     */
+    public AdminRentalHistoryResponse updateStatus(
+        Long historyId, RentalStatus requestedStatus, RentalStatus expectedStatus, Long workerId
+    ) {
         return lockExecutor.executeOptimistic(() -> {
             RentalRecord current = adminRentalHistoryService.getById(historyId);
             RentalStatus previousStatus = current.history().getRentalStatus();
+            if (expectedStatus != null && expectedStatus != previousStatus) {
+                throw new BusinessException(RentalErrorCode.RENTAL_STATUS_CHANGED);
+            }
             Item item = current.item();
             String itemName = item != null ? item.getName() : null;
 

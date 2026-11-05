@@ -48,7 +48,7 @@ public interface AdminRentalApi {
     @ApiErrorCode(type = MemberErrorCode.class, codes = {"MEMBER_NOT_FOUND"})
     ApiResponse<AdminRentalHistoryResponse> createRentalRecord(AdminApiUser apiUser, AdminRentalRecordCreateRequest request);
 
-    /** 대여 상태 변경. 전이 규칙 없이 어떤 값이든 허용하며, 처리자는 호출한 관리자로 자동 기록된다. */
+    /** 대여 상태 변경. 전이 규칙 없이 어떤 값이든 허용하며, expectedStatus를 보내면 지금 상태가 같을 때만 바꾼다. 처리자는 호출한 관리자로 자동 기록된다. */
     @Operation(summary = "대여 상태 변경",
         description = "대여 기록의 상태를 직접 바꾼다. 전이 규칙은 없어 어떤 값으로도 바꿀 수 있다. RENTAL로 바뀌면 "
             + "그 시각을 실제 수령 시각으로, RETURNED로 바뀌면 그 시각을 반납 완료 시각으로 기록한다(신청 시점에 "
@@ -56,9 +56,12 @@ public interface AdminRentalApi {
             + "전이한다(신청 시점에 이미 내준 걸 승인하는 것이라 수령 단계가 없다). 재고는 상태가 재고를 "
             + "차지하는지(진행 중인 상태, 그리고 이미 내준 소모품의 RETURNED)를 바꾸기 전후로 비교해, 차지하다 놓으면 "
             + "복구하고 놓았다 다시 차지하면 차감한다. 끝난 상태끼리 바꿨다 되돌려도 재고가 어긋나지 않는다. 처리자(workerId)는 호출한 관리자로 "
-            + "자동 기록되며 운영진(ADMIN role)이어야 하고, 직전과 같은 상태로의 요청은 아무 효과가 없다(로그도 안 쌓인다).")
+            + "자동 기록되며 운영진(ADMIN role)이어야 하고, 직전과 같은 상태로의 요청은 아무 효과가 없다(로그도 안 쌓인다). "
+            + "expectedStatus(선택)에 화면에서 본 지금 상태를 보내면, 실제 지금 상태와 다를 때 RENTAL_STATUS_CHANGED(409)로 "
+            + "거절하고 아무것도 바꾸지 않는다. 알림처럼 오래된 화면에서 누른 요청이 이미 처리된 기록을 다시 바꾸지 않게 할 때 쓴다. "
+            + "보내지 않으면 지금 상태와 상관없이 바꾼다(기록 정정용).")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT", "OPTIMISTIC_LOCK_CONFLICT"})
-    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "ITEM_OUT_OF_STOCK"})
+    @ApiErrorCode(type = RentalErrorCode.class, codes = {"RENTAL_NOT_FOUND", "RENTAL_STATUS_CHANGED", "ITEM_OUT_OF_STOCK"})
     ApiResponse<AdminRentalHistoryResponse> updateStatus(
         AdminApiUser apiUser,
         Long rentalHistoryId,
