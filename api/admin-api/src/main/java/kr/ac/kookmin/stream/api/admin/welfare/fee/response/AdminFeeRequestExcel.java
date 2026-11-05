@@ -51,9 +51,9 @@ public final class AdminFeeRequestExcel {
         );
     }
 
-    // 납부일은 납부 완료로 처리한 날짜다. 다른 상태로 되돌린 요청은 처리 시각이 남아 있어도 비운다
+    // 납부일은 납부 완료로 처리한 날짜다. 납부완료가 아니면 확인 시각이 없어 빈 칸이 된다
     private static String paidDate(StudentTransferStatus transferStatus) {
-        if (transferStatus.getStatus() != TransferStatus.PAID || transferStatus.getConfirmedAt() == null) {
+        if (transferStatus.getConfirmedAt() == null) {
             return null;
         }
         return transferStatus.getConfirmedAt().toLocalDate().toString();
