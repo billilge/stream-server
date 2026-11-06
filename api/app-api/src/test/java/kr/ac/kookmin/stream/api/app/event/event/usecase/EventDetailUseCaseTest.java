@@ -20,8 +20,10 @@ class EventDetailUseCaseTest {
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 11, 4, 10, 0);
 
     private final FakeEventService eventService = new FakeEventService();
+    private final FakeEventApplicationService eventApplicationService = new FakeEventApplicationService(eventService);
     private final FakePayerService payerService = new FakePayerService();
-    private final EventDetailUseCase useCase = new EventDetailUseCase(eventService, payerService);
+    private final EventDetailUseCase useCase =
+        new EventDetailUseCase(eventService, eventApplicationService, payerService);
 
     private static Event event(boolean feePaidOnly) {
         return Event.of(

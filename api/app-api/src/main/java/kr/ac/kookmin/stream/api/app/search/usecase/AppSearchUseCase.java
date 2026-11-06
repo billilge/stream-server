@@ -15,7 +15,9 @@ import kr.ac.kookmin.stream.api.common.dto.PreviewResponse;
 import kr.ac.kookmin.stream.common.PreviewResult;
 import kr.ac.kookmin.stream.event.domain.archive.domain.ArchiveSummary;
 import kr.ac.kookmin.stream.event.domain.archive.service.ArchiveService;
+import kr.ac.kookmin.stream.event.domain.event.domain.EventApplication;
 import kr.ac.kookmin.stream.event.domain.event.domain.EventSummary;
+import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.file.domain.File;
 import kr.ac.kookmin.stream.file.service.FileService;
@@ -41,22 +43,27 @@ public class AppSearchUseCase {
     private static final int PREVIEW_LIMIT = 2;
 
     private final EventService eventService;
+    private final EventApplicationService eventApplicationService;
     private final ArchiveService archiveService;
     private final NoticeService noticeService;
     private final ItemService itemService;
     private final FeedbackService feedbackService;
     private final FileService fileService;
 
-    public SearchResponse search(String keyword) {
+    public SearchResponse search(String keyword, Long memberId) {
         PreviewResult<EventSummary> events = eventService.searchPreview(keyword, PREVIEW_LIMIT);
         PreviewResult<Notice> notices = noticeService.searchPreview(keyword, PREVIEW_LIMIT);
         PreviewResult<ArchiveSummary> archives = archiveService.searchPreview(keyword, PREVIEW_LIMIT);
 
         // 행사·공지·아카이빙 썸네일을 모아 파일을 한 번에 조회한다. 섹션마다 따로 읽으면 쿼리가 섹션 수만큼 는다
         Map<Long, File> filesById = fileService.findAllByIdIn(thumbnailIds(events, notices, archives));
+        // 행사 카드는 목록과 같은 응답이라 내 신청 식별자도 목록과 같이 채운다
+        Map<Long, EventApplication> applicationsByEventId = eventApplicationService.getAppliedApplications(
+            memberId, events.content().stream().map(EventSummary::eventId).toList());
 
         return SearchResponse.of(
-            PreviewResponse.from(events, summary -> EventListItemResponse.from(summary, filesById)),
+            PreviewResponse.from(
+                events, summary -> EventListItemResponse.of(summary, filesById, applicationsByEventId)),
             PreviewResponse.from(notices, notice -> NoticeListItemResponse.from(notice, filesById)),
             PreviewResponse.from(feedbackService.searchPreview(keyword, PREVIEW_LIMIT), FeedbackResponse::from),
             PreviewResponse.from(itemService.searchPreview(keyword, PREVIEW_LIMIT), ItemListItemResponse::from),
