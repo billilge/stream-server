@@ -33,7 +33,7 @@ public class FeedbackJpaEntity extends BaseSoftDeleteEntity {
     @Column(nullable = false)
     private int round;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 1000)
     private String question;
 
     // BaseTimeEntity의 createdAt(DB DEFAULT CURRENT_TIMESTAMP, insertable=false)에 기대지 않고 직접 값을 채운다.
