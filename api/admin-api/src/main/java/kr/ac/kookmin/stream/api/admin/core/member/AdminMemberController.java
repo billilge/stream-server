@@ -35,10 +35,11 @@ public class AdminMemberController implements AdminMemberApi {
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) String department,
         @RequestParam(required = false) String role,
+        @RequestParam(required = false, defaultValue = "false") boolean councilOnly,
         @Valid @ModelAttribute PageParams pageParams
     ) {
         PageResult<Member> result = adminMemberService.search(
-            keyword, Department.from(department), Role.from(role), pageParams.toOffset()
+            keyword, Department.from(department), Role.from(role), councilOnly, pageParams.toOffset()
         );
         Set<Long> signedUpIds = memberService.findSignedUpIds(result.content().stream().map(Member::getId).toList());
         return ApiResponse.success(
