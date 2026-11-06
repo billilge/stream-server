@@ -22,4 +22,7 @@ public interface PayerService {
 
     /** 학번이 같은 미연결 명부 행(member_id가 null)이 있으면 이 회원과 연결한다. 없으면 아무 일도 하지 않는다. */
     void linkMember(Long memberId, String studentId);
+
+    /** 이 회원과 연결된 명부 행이 있으면 연결을 끊는다(member_id를 비운다). 회원 탈퇴 때 쓴다. 없으면 아무 일도 하지 않는다. */
+    void unlinkMember(Long memberId);
 }

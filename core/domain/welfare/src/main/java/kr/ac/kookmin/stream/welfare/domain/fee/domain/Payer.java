@@ -46,4 +46,10 @@ public class Payer {
         this.memberId = memberId;
         this.registered = true;
     }
+
+    // 연결된 회원이 탈퇴하면 연결을 끊어 가입 전 명부 행으로 되돌린다. 같은 학번으로 다시 가입하면 linkMember로 새 회원과 연결된다
+    public void unlinkMember() {
+        this.memberId = null;
+        this.registered = false;
+    }
 }
