@@ -15,6 +15,8 @@ dependencies {
     implementation(platform(libs.springBootDependenciesBom))
     implementation(libs.springBootStarter)
     implementation(libs.springWeb)
+    // StreamAiChatClient가 중계 중인 학생 요청의 헤더(JWT)를 읽는다
+    implementation(libs.jakartaServletApi)
     implementation(libs.jacksonDatabind)
     implementation(libs.jackson3Databind)
 
