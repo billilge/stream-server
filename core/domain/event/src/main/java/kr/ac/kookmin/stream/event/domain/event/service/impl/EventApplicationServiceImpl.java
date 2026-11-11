@@ -103,6 +103,18 @@ class EventApplicationServiceImpl implements EventApplicationService {
     }
 
     @Override
+    public Map<Long, EventApplication> getAppliedApplications(Long memberId, Collection<Long> eventIds) {
+        // 같은 행사에 유효 신청이 둘이면 나중 것을 쓴다 — 중복 확인과 저장 사이의 경합을 DB가 막지 않으므로 둘일 수 있다
+        return eventApplicationRepository.findAppliedByMemberIdAndEventIds(memberId, eventIds)
+            .stream()
+            .collect(Collectors.toMap(
+                EventApplication::getEventId,
+                Function.identity(),
+                BinaryOperator.maxBy(Comparator.comparing(EventApplication::getId))
+            ));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public EventApplicationDetail getApplicationByIdAndMemberId(Long applicationId, Long memberId) {
         EventApplication application = getApplicationOrThrow(applicationId, memberId);
@@ -184,16 +196,9 @@ class EventApplicationServiceImpl implements EventApplicationService {
         PreviewResult<Event> events = eventRepository.findUpcomingAppliedEvents(
             memberId, LocalDate.now().atStartOfDay(), limit);
 
-        // 신청은 행사 식별자를 모아 한 번에 읽는다. 같은 행사에 유효 신청이 둘이면 나중 것을 쓴다 — 중복 확인과
-        // 저장 사이의 경합을 DB가 막지 않으므로 둘일 수 있다
-        Map<Long, EventApplication> applications = eventApplicationRepository.findAppliedByMemberIdAndEventIds(
-                memberId, events.content().stream().map(Event::getId).toList())
-            .stream()
-            .collect(Collectors.toMap(
-                EventApplication::getEventId,
-                Function.identity(),
-                BinaryOperator.maxBy(Comparator.comparing(EventApplication::getId))
-            ));
+        // 신청은 행사 식별자를 모아 한 번에 읽는다
+        Map<Long, EventApplication> applications = getAppliedApplications(
+            memberId, events.content().stream().map(Event::getId).toList());
 
         // 두 조회 사이에 취소된 신청은 상세를 열 수 없으므로 뺀다
         return new PreviewResult<>(
