@@ -21,11 +21,16 @@ public interface MemberRepository {
     /**
      * 운영진 콘솔용 회원 목록. 이름순으로 페이지 단위로 조회한다.
      *
-     * @param keyword    이름·학번·이메일 부분 일치 검색어. null이거나 공백이면 거르지 않는다
-     * @param department 학부. null이면 거르지 않는다
-     * @param role       역할. null이면 거르지 않는다
+     * @param keyword     이름·학번·이메일 부분 일치 검색어. null이거나 공백이면 거르지 않는다
+     * @param department  학부. null이면 거르지 않는다
+     * @param role        역할. null이면 거르지 않는다
+     * @param councilOnly true면 운영진이거나 학생회 부서가 있는 회원만 거른다
      */
-    PageResult<Member> search(String keyword, Department department, Role role, PageOffset pageOffset);
+    PageResult<Member> search(
+        String keyword, Department department, Role role, boolean councilOnly, PageOffset pageOffset);
+
+    // 회장단 운영진 수. 마지막 회장단이 사라지는 변경을 막을 때 쓴다
+    long countPresidencyAdmins();
 
     Member save(Member member);
     void clearFcmTokenOfOthers(Long memberId, String fcmToken);

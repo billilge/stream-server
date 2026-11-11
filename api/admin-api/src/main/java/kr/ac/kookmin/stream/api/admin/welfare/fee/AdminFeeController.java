@@ -13,7 +13,9 @@ import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeAccountResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.response.FeeStatusUpdateResponse;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeReviewUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminFeeSearchUseCase;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.AdminPayerSearchUseCase;
 import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.MemberFeeStatus;
+import kr.ac.kookmin.stream.api.admin.welfare.fee.usecase.PayerMember;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.dto.PageParams;
 import kr.ac.kookmin.stream.api.common.dto.PageResponse;
@@ -21,10 +23,8 @@ import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.common.PageResult;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.FeeAccount;
-import kr.ac.kookmin.stream.welfare.domain.fee.domain.Payer;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.StudentTransferStatus;
 import kr.ac.kookmin.stream.welfare.domain.fee.domain.TransferStatus;
-import kr.ac.kookmin.stream.welfare.domain.fee.service.PayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +45,7 @@ public class AdminFeeController implements AdminFeeApi {
     private final AdminFeeSearchUseCase adminFeeSearchUseCase;
     private final AdminFeeReviewUseCase adminFeeReviewUseCase;
     private final AdminFeeAccountProvider adminFeeAccountProvider;
-    private final PayerService payerService;
+    private final AdminPayerSearchUseCase adminPayerSearchUseCase;
 
     @Override
     @GetMapping("/requests")
@@ -97,7 +97,7 @@ public class AdminFeeController implements AdminFeeApi {
         @RequestParam(required = false) String keyword,
         @Valid @ModelAttribute PageParams pageParams
     ) {
-        PageResult<Payer> result = payerService.search(keyword, pageParams.toOffset());
+        PageResult<PayerMember> result = adminPayerSearchUseCase.search(keyword, pageParams.toOffset());
 
         return ApiResponse.success(PageResponse.from(result, AdminPayerSearchResponse::from));
     }
