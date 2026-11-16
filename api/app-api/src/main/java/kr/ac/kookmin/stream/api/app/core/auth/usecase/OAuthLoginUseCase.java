@@ -1,10 +1,13 @@
 package kr.ac.kookmin.stream.api.app.core.auth.usecase;
 
+import java.util.Arrays;
 import kr.ac.kookmin.stream.api.app.core.auth.response.OAuthLoginResponse;
 import kr.ac.kookmin.stream.auth.domain.oauth.domain.OAuthLoginCommand;
 import kr.ac.kookmin.stream.auth.domain.oauth.domain.OAuthUserInfo;
 import kr.ac.kookmin.stream.auth.domain.oauth.service.OAuthService;
+import kr.ac.kookmin.stream.internal.domain.config.service.AdminConfigValueService;
 import kr.ac.kookmin.stream.member.domain.member.domain.Member;
+import kr.ac.kookmin.stream.member.domain.member.domain.MemberConfigKeys;
 import kr.ac.kookmin.stream.member.domain.member.domain.MemberProfileCommand;
 import kr.ac.kookmin.stream.member.domain.member.service.MemberService;
 import kr.ac.kookmin.stream.security.AuthTokenIssuer;
@@ -22,6 +25,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OAuthLoginUseCase {
 
+    // 소속 검사 예외 학번에 넣어 주는 전공. 학부는 SW로 저장된다
+    private static final String BYPASS_MAJOR = "소프트웨어전공";
+
+    private final AdminConfigValueService adminConfigValueService;
     private final OAuthService oauthService;
     private final MemberService memberService;
     private final PayerService payerService;
@@ -40,12 +47,23 @@ public class OAuthLoginUseCase {
     }
 
     private Member findOrRegister(OAuthUserInfo userInfo) {
+        String major = isDepartmentCheckBypassed(userInfo.studentId()) ? BYPASS_MAJOR : userInfo.major();
         MemberProfileCommand profile = new MemberProfileCommand(
-            userInfo.studentId(), userInfo.name(), userInfo.major(), userInfo.academicStatus());
+            userInfo.studentId(), userInfo.name(), major, userInfo.academicStatus());
 
         return oauthService.findMemberId(userInfo.provider(), userInfo.providerUserId())
             .map(memberId -> memberService.updateProfile(memberId, profile))
             .orElseGet(() -> registerAndLink(userInfo, profile));
+    }
+
+    // 설정값에 등록된 학번이면 소속 검사를 건너뛴다
+    private boolean isDepartmentCheckBypassed(String studentId) {
+        if (studentId == null) {
+            return false;
+        }
+        return adminConfigValueService.getValue(MemberConfigKeys.DEPARTMENT_BYPASS_STUDENT_IDS)
+            .map(value -> Arrays.stream(value.split(",")).map(String::trim).anyMatch(studentId::equals))
+            .orElse(false);
     }
 
     // 연결된 계정이 없으면 학번 기준으로 회원을 가입·갱신한다. 이관 회원이나 연결이 누락된 회원은 여기서 다시 연결된다
