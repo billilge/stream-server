@@ -79,7 +79,10 @@ public interface AdminFeeApi {
         description = "이름·학번 검색으로 학생회비 납부자 명부를 이름순으로 조회한다. 납부가 확인(PAID)된 회원과 "
             + "앱에 가입하지 않은 레거시 이관 납부자가 함께 나오고, 레거시 납부자는 memberId가 null이다(학번도 null일 수 있다). "
             + "사물함 배정에서 학생을 고를 수 있도록 부서 제한이 없다. "
-            + "memberId가 null인 행은 배정 API에 넘길 회원 식별자가 없어 사물함 배정에 쓸 수 없으므로 화면에서 선택을 막아야 한다.")
+            + "memberId가 null인 행은 배정 API에 넘길 회원 식별자가 없어 사물함 배정과 관리자 지정에 쓸 수 없으므로 "
+            + "화면에서 선택을 막아야 한다. 이 행은 학부(department)도 null이다. "
+            + "isCouncilRegistered는 이미 관리자 관리 명단에 올라 있는지로, 앱 가입 여부인 isRegistered와 다르다 — "
+            + "관리자 추가 화면은 isCouncilRegistered가 true인 행의 선택을 막는다.")
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     ApiResponse<PageResponse<AdminPayerSearchResponse>> getPayers(
         AdminApiUser apiUser,

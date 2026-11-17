@@ -3,6 +3,7 @@ package kr.ac.kookmin.stream.db.member;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import kr.ac.kookmin.stream.common.CouncilDepartment;
 import kr.ac.kookmin.stream.common.Role;
 import kr.ac.kookmin.stream.member.domain.member.domain.Department;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,8 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
             OR m.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND (:department IS NULL OR m.department = :department)
         AND (:role IS NULL OR m.role = :role)
+        AND (:councilOnly = false OR m.role = kr.ac.kookmin.stream.common.Role.ADMIN
+            OR m.councilDepartment IS NOT NULL)
         ORDER BY m.name ASC, m.id ASC
         """,
         countQuery = """
@@ -68,13 +71,18 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
             OR m.email LIKE CONCAT('%', :keyword, '%') ESCAPE '!')
         AND (:department IS NULL OR m.department = :department)
         AND (:role IS NULL OR m.role = :role)
+        AND (:councilOnly = false OR m.role = kr.ac.kookmin.stream.common.Role.ADMIN
+            OR m.councilDepartment IS NOT NULL)
         """)
     Page<MemberJpaEntity> search(
         @Param("keyword") String keyword,
         @Param("department") Department department,
         @Param("role") Role role,
+        @Param("councilOnly") boolean councilOnly,
         Pageable pageable
     );
+
+    long countByRoleAndCouncilDepartmentAndIsDeletedFalse(Role role, CouncilDepartment councilDepartment);
 
     // 알림 설정이 없는 회원(로그인만 하고 가입을 마치지 않은 회원)과, 알림 수신 동의(NOTIFICATION_CONSENT) 약관에
     // 동의하지 않은 회원은 푸시 대상에서 빠진다. 카테고리별 설정은 그 동의 안에서의 세부 선택이다
