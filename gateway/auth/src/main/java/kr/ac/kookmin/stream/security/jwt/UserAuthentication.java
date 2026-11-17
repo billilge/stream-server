@@ -20,17 +20,20 @@ public class UserAuthentication extends AbstractAuthenticationToken {
     private final Long userId;
     private final Set<Role> roles;
     private final Set<CouncilDepartment> councilDepartments;
+    // 검증을 마친 JWT 원문. Bearer 파싱은 JwtAuthFilter 한 곳에서만 하고, 다른 모듈은 PrincipalProvider로 꺼낸다
+    private final String accessToken;
 
-    private UserAuthentication(JwtPayload payload) {
+    private UserAuthentication(JwtPayload payload, String accessToken) {
         super(toAuthorities(payload));
         this.userId = payload.userId();
         this.roles = payload.roles();
         this.councilDepartments = payload.councilDepartments();
+        this.accessToken = accessToken;
         setAuthenticated(true);
     }
 
-    public static UserAuthentication from(JwtPayload payload) {
-        return new UserAuthentication(payload);
+    public static UserAuthentication of(JwtPayload payload, String accessToken) {
+        return new UserAuthentication(payload, accessToken);
     }
 
     @Override
