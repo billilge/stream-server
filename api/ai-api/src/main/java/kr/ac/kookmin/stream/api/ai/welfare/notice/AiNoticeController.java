@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.ai.welfare.notice;
 
-import java.util.ArrayList;
 import java.util.List;
 import kr.ac.kookmin.stream.api.ai.welfare.notice.response.AiNoticeResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -30,13 +29,8 @@ public class AiNoticeController implements AiNoticeApi {
     @Override
     @GetMapping
     public ApiResponse<List<AiNoticeResponse>> getNotices() {
-        List<Notice> notices = new ArrayList<>();
-        NoticeCursor cursor = null;
-        do {
-            CursorSliceResult<Notice> page = noticeService.getNotices(null, null, cursor, PAGE_SIZE);
-            notices.addAll(page.content());
-            cursor = page.hasNext() ? NoticeCursor.from(page.nextCursor()) : null;
-        } while (cursor != null);
+        List<Notice> notices = CursorSliceResult.fetchAll(
+            NoticeCursor::from, cursor -> noticeService.getNotices(null, null, cursor, PAGE_SIZE));
 
         return ApiResponse.success(notices.stream().map(AiNoticeResponse::from).toList());
     }

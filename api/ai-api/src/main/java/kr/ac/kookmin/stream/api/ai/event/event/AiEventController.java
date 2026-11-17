@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.api.ai.event.event;
 
-import java.util.ArrayList;
 import java.util.List;
 import kr.ac.kookmin.stream.api.ai.event.event.response.AiEventResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
@@ -29,13 +28,11 @@ public class AiEventController implements AiEventApi {
     @Override
     @GetMapping
     public ApiResponse<List<AiEventResponse>> getEvents() {
-        List<Long> eventIds = new ArrayList<>();
-        EventCursor cursor = null;
-        do {
-            CursorSliceResult<EventSummary> page = eventService.getPublishedEvents(null, null, cursor, PAGE_SIZE);
-            page.content().forEach(summary -> eventIds.add(summary.eventId()));
-            cursor = page.hasNext() ? EventCursor.from(page.nextCursor()) : null;
-        } while (cursor != null);
+        List<Long> eventIds = CursorSliceResult.fetchAll(
+                EventCursor::from, cursor -> eventService.getPublishedEvents(null, null, cursor, PAGE_SIZE))
+            .stream()
+            .map(EventSummary::eventId)
+            .toList();
 
         return ApiResponse.success(
             eventService.getPublishedByIds(eventIds).stream().map(AiEventResponse::from).toList());
