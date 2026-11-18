@@ -78,4 +78,14 @@ class PayerServiceImpl implements PayerService {
                 studentTransferStatusService.createPaidForLinkedPayer(memberId);
             });
     }
+
+    // 끊지 않으면 명부 행이 탈퇴한 회원에 묶여 남아, 같은 학번으로 다시 가입해도 linkMember가 찾지 못해 납부자로 인정되지 않는다
+    @Override
+    @Transactional
+    public void unlinkMember(Long memberId) {
+        payerRepository.findByMemberId(memberId).ifPresent(payer -> {
+            payer.unlinkMember();
+            payerRepository.save(payer);
+        });
+    }
 }

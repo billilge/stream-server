@@ -43,4 +43,9 @@ class FakePayerService implements PayerService {
     public void linkMember(Long memberId, String studentId) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void unlinkMember(Long memberId) {
+        throw new UnsupportedOperationException();
+    }
 }
