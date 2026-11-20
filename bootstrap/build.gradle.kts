@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":api:common-api"))
     implementation(project(":api:admin-api"))
     implementation(project(":api:app-api"))
+    implementation(project(":api:ai-api"))
     implementation(project(":gateway:auth"))
     implementation(project(":gateway:logging"))
     implementation(project(":infrastructure:db"))
