@@ -45,4 +45,13 @@ public interface LockerPeriodJpaRepository extends JpaRepository<LockerPeriodJpa
         ORDER BY p.applyStartAt ASC, p.id ASC
         """)
     List<LockerPeriodJpaEntity> findCurrentPublished(@Param("at") LocalDateTime at, Pageable pageable);
+
+    @Query("""
+        SELECT p FROM LockerPeriodJpaEntity p
+        WHERE p.isPublished = true
+        AND p.isDeleted = false
+        AND p.applyStartAt <= :at
+        ORDER BY p.applyStartAt DESC, p.id DESC
+        """)
+    List<LockerPeriodJpaEntity> findLatestStartedPublished(@Param("at") LocalDateTime at, Pageable pageable);
 }

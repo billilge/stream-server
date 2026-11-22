@@ -87,6 +87,13 @@ public class LockerRepositoryImpl implements LockerRepository {
     }
 
     @Override
+    public Optional<LockerPeriod> findLatestStartedPublishedPeriod(LocalDateTime at) {
+        return lockerPeriodJpaRepository.findLatestStartedPublished(at, Pageable.ofSize(1)).stream()
+            .findFirst()
+            .map(LockerPeriodJpaEntity::toDomain);
+    }
+
+    @Override
     public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
         if (lockerPeriodIds.isEmpty()) {
             return List.of();

@@ -1,5 +1,6 @@
 package kr.ac.kookmin.stream.event.domain.locker.service;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,9 @@ public interface LockerService {
      * 지금 학생에게 보여줄 운영 회차. 진행 중인 회차가 있으면 그것이고, 없으면 다가오는 회차다.
      */
     Optional<LockerPeriod> getCurrentPeriod();
+
+    /** {@link #getCurrentPeriod}와 달리 신청이 끝난 회차도 잡고, 신청 시작 전인 회차는 뺀다. */
+    Optional<LockerPeriod> getLatestStartedPeriod(LocalDateTime now);
 
     /**
      * 주어진 운영 회차 중 지금 신청할 수 있는 것을 신청 마감 임박순으로 조회한다.

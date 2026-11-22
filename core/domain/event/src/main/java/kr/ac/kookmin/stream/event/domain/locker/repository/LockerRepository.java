@@ -61,6 +61,9 @@ public interface LockerRepository {
      */
     Optional<LockerPeriod> findCurrentPublishedPeriod(LocalDateTime at);
 
+    /** {@link #findCurrentPublishedPeriod}와 달리 신청이 끝난 회차도 잡고, 신청 시작 전인 회차는 뺀다. */
+    Optional<LockerPeriod> findLatestStartedPublishedPeriod(LocalDateTime at);
+
     /**
      * 게시되고 삭제되지 않은 운영 회차 중 신청 마감이 {@code at} 이후인 것. 순서는 보장하지 않는다.
      * 신청이 끝난 회차는 다시 열리지 않으므로 여기서 자르고, 실제로 신청을 받는지는 도메인이 판정한다.
