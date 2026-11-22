@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.api.app.internal.home.usecase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,7 +75,9 @@ public class AppHomeUseCase {
             toAppliedEvents(memberId),
             new HomeResponse.StudentFee(toFeeStatus(memberId)),
             new HomeResponse.OpenFeedback(feedbackService.countByMemberId(memberId)),
-            toLocker(lockerApplications, now.toLocalDate())
+            lockerService.getLatestStartedPeriod(now)
+                .map(period -> toLocker(period, lockerApplications, now))
+                .orElseGet(() -> new HomeResponse.Locker(HomeLockerStatus.NOT_APPLIED, null))
         );
     }
 
@@ -250,27 +251,28 @@ public class AppHomeUseCase {
     }
 
     /**
-     * 지금 쓰는 사물함이 있으면 그것을, 없으면 지난 배정이 있었는지만 알려준다.
-     * <p>
-     * 사용이 안 끝난 배정이 둘일 수 있다. 학생 신청은 신청 기간에만 생겨 회차가 겹치지 않지만, 운영진 배정
-     * ({@code AdminLockerServiceImpl.assignLocker})은 사용 종료만 보므로 다음 회차 칸을 미리 줄 수 있다.
-     * 그중 지금 쓰는 칸은 사용 시작이 가장 이른 것이다 — 신청 시각순으로 고르면 다음 학기 칸이 뜬다.
+     * 최근 회차 하나로만 판정한다. 회차는 겹치지 않아 최근 회차 신청이 시작됐으면 이전 회차 이용은 끝나 있다.
      * <p>
      * 배정·종료 판정은 "내 사물함" 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
      */
-    private HomeResponse.Locker toLocker(List<LockerApplicationResult> applications, LocalDate today) {
-        if (applications.isEmpty()) {
-            return new HomeResponse.Locker(HomeLockerStatus.NOT_APPLIED, null);
-        }
-
+    private HomeResponse.Locker toLocker(
+        LockerPeriod latestPeriod,
+        List<LockerApplicationResult> applications,
+        LocalDateTime now
+    ) {
         return applications.stream()
-            .filter(application -> LockerApplicationStatus.from(application.period(), today)
-                == LockerApplicationStatus.ASSIGNED)
-            .min(Comparator.comparing(application -> application.period().getUsageStartAt()))
-            .map(application -> new HomeResponse.Locker(
-                HomeLockerStatus.from(LockerApplicationStatus.ASSIGNED),
-                application.locker().getLockerLabel()))
+            .filter(application -> application.period().getId().equals(latestPeriod.getId()))
+            .findFirst()
+            .map(application -> toAppliedLocker(application, now.toLocalDate()))
             .orElseGet(() -> new HomeResponse.Locker(
-                HomeLockerStatus.from(LockerApplicationStatus.EXPIRED), null));
+                latestPeriod.isApplyOpen(now) ? HomeLockerStatus.APPLICABLE : HomeLockerStatus.NOT_APPLIED,
+                null));
+    }
+
+    private HomeResponse.Locker toAppliedLocker(LockerApplicationResult application, LocalDate today) {
+        LockerApplicationStatus status = LockerApplicationStatus.from(application.period(), today);
+        return new HomeResponse.Locker(
+            HomeLockerStatus.from(status),
+            status == LockerApplicationStatus.ASSIGNED ? application.locker().getLockerLabel() : null);
     }
 }
