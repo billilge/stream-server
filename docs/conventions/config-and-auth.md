@@ -103,6 +103,7 @@ public interface PrincipalProvider {
     Long userId();
     Set<Role> roles();
     Set<Department> departments();   // STUDENT면 빈 Set
+    String accessToken();            // 요청의 JWT 원문. AI 서버 중계처럼 학생 권한으로 대신 부를 때만 쓴다
 }
 ```
 

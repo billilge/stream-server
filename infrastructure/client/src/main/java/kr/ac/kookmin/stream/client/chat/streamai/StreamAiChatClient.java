@@ -1,6 +1,7 @@
 package kr.ac.kookmin.stream.client.chat.streamai;
 
 import java.util.List;
+import kr.ac.kookmin.stream.common.PrincipalProvider;
 import kr.ac.kookmin.stream.welfare.domain.chat.client.ChatClient;
 import kr.ac.kookmin.stream.welfare.domain.chat.client.ChatEventListener;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatTurn;
@@ -41,6 +42,7 @@ public class StreamAiChatClient implements ChatClient {
 
     private final StreamAiProperties properties;
     private final ObjectMapper objectMapper;
+    private final PrincipalProvider principalProvider;
 
     @Override
     public void stream(Long memberId, List<ChatTurn> history, ChatEventListener listener) {
@@ -51,6 +53,10 @@ public class StreamAiChatClient implements ChatClient {
                 .uri(properties.chatPath())
                 .header("X-Internal-Token", properties.internalToken())
                 .header("X-User-Id", String.valueOf(memberId))
+                // AI 서버가 이 학생 권한으로 기존 학생 API를 조회(GET)한다. 예: 빌릴게 재고, 내 대여.
+                // 토큰은 인자로 받지 않는다 — 받으면 ChatClient(도메인)가 인증 개념을 알아야 한다(config-and-auth.md 4-4절).
+                // PrincipalProvider는 요청 스레드 기준이라, 중계를 비동기로 바꾸면 토큰을 꺼낼 수 없다. 토큰 원문은 로그에 남기지 않는다
+                .header("X-User-Token", principalProvider.accessToken())
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .body(StreamAiChatRequest.from(history))
                 .exchange((request, response) -> {

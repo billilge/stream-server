@@ -29,6 +29,11 @@ public class SecurityPrincipalProvider implements PrincipalProvider {
         return currentAuthentication().councilDepartments();
     }
 
+    @Override
+    public String accessToken() {
+        return currentAuthentication().accessToken();
+    }
+
     private UserAuthentication currentAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof UserAuthentication userAuthentication)) {
