@@ -5,6 +5,7 @@ include(
     "api:common-api",
     "api:admin-api",
     "api:app-api",
+    "api:ai-api",
     "core:common",
     "core:domain:event",
     "core:domain:file",
