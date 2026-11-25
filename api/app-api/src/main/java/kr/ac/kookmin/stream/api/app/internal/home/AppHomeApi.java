@@ -22,6 +22,8 @@ public interface AppHomeApi {
             + "마감되거나 미게시된 대상은 누를 수 없는 '신청하기'가 되므로 뺀다. "
             + "사물함 배정 상태는 신청이 시작된 가장 최근 회차 하나로 정한다 — 그 회차에 신청했으면 이용 기간 중 "
             + "ASSIGNED, 이용 기간이 끝나면 EXPIRED이고, 신청하지 않았으면 신청 기간 중 APPLICABLE, 그 밖에는 "
-            + "NOT_APPLIED다. 회차가 없어도 NOT_APPLIED다.")
+            + "NOT_APPLIED다. 회차가 없어도 NOT_APPLIED다. "
+            + "단, 운영진이 신청 시작 전 회차에 미리 배정한 칸이 있으면 최근 회차가 ASSIGNED가 아닐 때 "
+            + "그 칸으로 ASSIGNED를 준다.")
     ApiResponse<HomeResponse> getHome(AppApiUser apiUser);
 }

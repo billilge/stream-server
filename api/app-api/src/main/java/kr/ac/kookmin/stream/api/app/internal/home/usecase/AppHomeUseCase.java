@@ -2,6 +2,7 @@ package kr.ac.kookmin.stream.api.app.internal.home.usecase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,9 +76,7 @@ public class AppHomeUseCase {
             toAppliedEvents(memberId),
             new HomeResponse.StudentFee(toFeeStatus(memberId)),
             new HomeResponse.OpenFeedback(feedbackService.countByMemberId(memberId)),
-            lockerService.getLatestStartedPeriod(now)
-                .map(period -> toLocker(period, lockerApplications, now))
-                .orElseGet(() -> new HomeResponse.Locker(HomeLockerStatus.NOT_APPLIED, null))
+            toLocker(lockerApplications, now)
         );
     }
 
@@ -251,11 +250,29 @@ public class AppHomeUseCase {
     }
 
     /**
-     * 최근 회차 하나로만 판정한다. 회차는 겹치지 않아 최근 회차 신청이 시작됐으면 이전 회차 이용은 끝나 있다.
+     * 운영진은 신청 시작 전 회차에도 칸을 배정할 수 있다. 알림·"내 사물함"은 이미 배정으로 보여 주므로, 최근 회차
+     * 기준으로 배정이 아니면 그 칸을 대신 보여 준다.
+     */
+    private HomeResponse.Locker toLocker(List<LockerApplicationResult> applications, LocalDateTime now) {
+        HomeResponse.Locker latestLocker = lockerService.getLatestStartedPeriod(now)
+            .map(period -> toLatestLocker(period, applications, now))
+            .orElseGet(() -> new HomeResponse.Locker(HomeLockerStatus.NOT_APPLIED, null));
+        if (latestLocker.status() == HomeLockerStatus.ASSIGNED) {
+            return latestLocker;
+        }
+        return applications.stream()
+            .filter(application -> application.period().getApplyStartAt().isAfter(now))
+            .min(Comparator.comparing(application -> application.period().getApplyStartAt()))
+            .map(application -> toAppliedLocker(application, now.toLocalDate()))
+            .orElse(latestLocker);
+    }
+
+    /**
+     * 회차는 겹치지 않아 최근 회차 신청이 시작됐으면 이전 회차 이용은 끝나 있다.
      * <p>
      * 배정·종료 판정은 "내 사물함" 화면과 같은 기준을 써야 하므로 {@link LockerApplicationStatus}에 맡긴다.
      */
-    private HomeResponse.Locker toLocker(
+    private HomeResponse.Locker toLatestLocker(
         LockerPeriod latestPeriod,
         List<LockerApplicationResult> applications,
         LocalDateTime now
