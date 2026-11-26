@@ -1,6 +1,5 @@
 package kr.ac.kookmin.stream.welfare.domain.chat.service.impl;
 
-import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatErrorCode;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatFaq;
@@ -15,11 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 class AdminChatFaqServiceImpl implements AdminChatFaqService {
 
     private final ChatFaqRepository chatFaqRepository;
-
-    @Override
-    public List<ChatFaq> getFaqs() {
-        return chatFaqRepository.findAll();
-    }
 
     @Override
     @Transactional

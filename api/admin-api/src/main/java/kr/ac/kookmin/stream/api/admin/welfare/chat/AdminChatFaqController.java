@@ -7,6 +7,7 @@ import kr.ac.kookmin.stream.api.admin.welfare.chat.request.AdminChatFaqWriteRequ
 import kr.ac.kookmin.stream.api.admin.welfare.chat.response.AdminChatFaqResponse;
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.welfare.domain.chat.service.AdminChatFaqService;
+import kr.ac.kookmin.stream.welfare.domain.chat.service.ChatFaqService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,11 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminChatFaqController implements AdminChatFaqApi {
 
     private final AdminChatFaqService adminChatFaqService;
+    private final ChatFaqService chatFaqService;
 
     @Override
     @GetMapping
     public ApiResponse<List<AdminChatFaqResponse>> getFaqs(AdminApiUser apiUser) {
-        return ApiResponse.success(adminChatFaqService.getFaqs().stream().map(AdminChatFaqResponse::from).toList());
+        return ApiResponse.success(chatFaqService.getFaqs().stream().map(AdminChatFaqResponse::from).toList());
     }
 
     @Override
