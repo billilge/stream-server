@@ -25,6 +25,15 @@ public interface LockerApplicationJpaRepository extends JpaRepository<LockerAppl
 
     List<LockerApplicationJpaEntity> findAllByMemberIdAndIsCanceledFalseOrderByAppliedAtDescIdDesc(Long memberId);
 
+    @Query("""
+        SELECT a.lockerPeriodId FROM LockerApplicationJpaEntity a
+        WHERE a.memberId = :memberId AND a.lockerPeriodId IN :lockerPeriodIds AND a.isCanceled = false
+        """)
+    List<Long> findLockerPeriodIdsByMemberId(
+        @Param("memberId") Long memberId,
+        @Param("lockerPeriodIds") Collection<Long> lockerPeriodIds
+    );
+
     /**
      * 해당 운영 회차에 신청된 사물함 식별자. 신청 여부만 필요하므로 신청 자체는 읽지 않는다.
      */

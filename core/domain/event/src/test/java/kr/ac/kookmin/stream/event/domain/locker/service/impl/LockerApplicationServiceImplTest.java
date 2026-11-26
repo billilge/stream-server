@@ -350,6 +350,11 @@ class LockerApplicationServiceImplTest {
         }
 
         @Override
+        public Optional<LockerPeriod> findLatestStartedPublishedPeriod(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public List<LockerPeriod> findPublishedPeriodsByIds(Collection<Long> lockerPeriodIds) {
             batchLookups++;
             return periods.stream()
@@ -512,6 +517,11 @@ class LockerApplicationServiceImplTest {
         @Override
         public List<LockerApplication> findByMemberId(Long memberId) {
             return memberApplications.stream().filter(value -> value.getMemberId().equals(memberId)).toList();
+        }
+
+        @Override
+        public Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
+            throw new UnsupportedOperationException();
         }
 
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다

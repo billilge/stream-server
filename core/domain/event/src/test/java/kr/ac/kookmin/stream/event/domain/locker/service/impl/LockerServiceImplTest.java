@@ -319,6 +319,11 @@ class LockerServiceImplTest {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public Optional<LockerPeriod> findLatestStartedPublishedPeriod(LocalDateTime at) {
+            throw new UnsupportedOperationException();
+        }
+
         // 아래는 회원별 신청 내역 조회용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override
@@ -423,6 +428,11 @@ class LockerServiceImplTest {
 
         @Override
         public List<LockerApplication> findByMemberId(Long memberId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
             throw new UnsupportedOperationException();
         }
     }
