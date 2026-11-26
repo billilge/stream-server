@@ -2,7 +2,6 @@ package kr.ac.kookmin.stream.db.welfare;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.db.common.ConstraintViolationUtil;
 import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatErrorCode;
@@ -30,11 +29,6 @@ public class ChatFaqRepositoryImpl implements ChatFaqRepository {
     @Override
     public Optional<ChatFaq> findById(Long id) {
         return chatFaqJpaRepository.findByIdAndIsDeletedFalse(id).map(ChatFaqJpaEntity::toDomain);
-    }
-
-    @Override
-    public Set<Integer> findUsedSlots() {
-        return Set.copyOf(chatFaqJpaRepository.findUsedSlots());
     }
 
     @Override

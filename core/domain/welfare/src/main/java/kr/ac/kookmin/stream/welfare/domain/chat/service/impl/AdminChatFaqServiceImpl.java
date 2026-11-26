@@ -18,7 +18,7 @@ class AdminChatFaqServiceImpl implements AdminChatFaqService {
     @Override
     @Transactional
     public void create(String question) {
-        chatFaqRepository.save(ChatFaq.create(question, chatFaqRepository.findUsedSlots()));
+        chatFaqRepository.save(ChatFaq.create(question, chatFaqRepository.findAll()));
     }
 
     @Override

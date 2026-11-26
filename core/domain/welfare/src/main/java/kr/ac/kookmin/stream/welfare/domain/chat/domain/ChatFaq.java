@@ -1,6 +1,8 @@
 package kr.ac.kookmin.stream.welfare.domain.chat.domain;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
@@ -15,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatFaq {
 
-    private static final int MAX_COUNT = 5;
+    public static final int MAX_COUNT = 5;
 
     private Long id;
     private String question;
@@ -25,7 +27,8 @@ public class ChatFaq {
         return new ChatFaq(id, question, slot);
     }
 
-    public static ChatFaq create(String question, Set<Integer> usedSlots) {
+    public static ChatFaq create(String question, List<ChatFaq> activeFaqs) {
+        Set<Integer> usedSlots = activeFaqs.stream().map(ChatFaq::getSlot).collect(Collectors.toSet());
         int slot = IntStream.range(0, MAX_COUNT)
             .filter(candidate -> !usedSlots.contains(candidate))
             .findFirst()
