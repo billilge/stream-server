@@ -40,6 +40,11 @@ class DisplayServiceImpl implements DisplayService {
             .toList();
     }
 
+    @Override
+    public List<DisplayCalendarSchedule> getSchedules(DisplaySchedulePeriod period) {
+        return displayCalendarScheduleRepository.findAllOverlapping(period);
+    }
+
     // schedules가 시작일 → 등록 순이라 그날의 일정명도 그 순서를 따른다
     private List<String> collectTitlesOn(List<DisplayCalendarSchedule> schedules, LocalDate date) {
         return schedules.stream()

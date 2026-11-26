@@ -1,12 +1,10 @@
 package kr.ac.kookmin.stream.internal.domain.display.service.impl;
 
-import java.util.List;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarSchedule;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarScheduleCreateCommand;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarScheduleUpdateCommand;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayErrorCode;
-import kr.ac.kookmin.stream.internal.domain.display.domain.DisplaySchedulePeriod;
 import kr.ac.kookmin.stream.internal.domain.display.repository.DisplayCalendarScheduleRepository;
 import kr.ac.kookmin.stream.internal.domain.display.service.AdminDisplayCalendarScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 class AdminDisplayCalendarScheduleServiceImpl implements AdminDisplayCalendarScheduleService {
 
     private final DisplayCalendarScheduleRepository displayCalendarScheduleRepository;
-
-    @Override
-    public List<DisplayCalendarSchedule> getSchedules(DisplaySchedulePeriod period) {
-        return displayCalendarScheduleRepository.findAllOverlapping(period);
-    }
 
     @Override
     @Transactional
