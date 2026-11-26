@@ -11,6 +11,7 @@ import kr.ac.kookmin.stream.api.admin.internal.display.response.DisplayCalendarS
 import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarSchedule;
 import kr.ac.kookmin.stream.internal.domain.display.service.AdminDisplayCalendarScheduleService;
+import kr.ac.kookmin.stream.internal.domain.display.service.DisplayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminDisplayCalendarScheduleController implements AdminDisplayCalendarScheduleApi {
 
     private final AdminDisplayCalendarScheduleService adminDisplayCalendarScheduleService;
+    private final DisplayService displayService;
 
     @Override
     @GetMapping
@@ -35,8 +37,8 @@ public class AdminDisplayCalendarScheduleController implements AdminDisplayCalen
         AdminApiUser apiUser,
         @Valid @ModelAttribute DisplayCalendarScheduleListParams params
     ) {
-        return ApiResponse.success(DisplayCalendarScheduleListResponse.from(
-            adminDisplayCalendarScheduleService.getSchedules(params.startDate(), params.endDate())));
+        return ApiResponse.success(
+            DisplayCalendarScheduleListResponse.from(displayService.getSchedules(params.toPeriod())));
     }
 
     @Override

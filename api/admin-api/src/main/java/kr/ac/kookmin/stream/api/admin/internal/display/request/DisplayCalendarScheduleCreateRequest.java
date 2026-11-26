@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarScheduleCreateCommand;
+import kr.ac.kookmin.stream.internal.domain.display.domain.DisplaySchedulePeriod;
 
 public record DisplayCalendarScheduleCreateRequest(
     @Schema(description = "일정명", example = "학생회 간담회")
@@ -23,6 +24,6 @@ public record DisplayCalendarScheduleCreateRequest(
 ) {
 
     public DisplayCalendarScheduleCreateCommand toCommand() {
-        return new DisplayCalendarScheduleCreateCommand(title, startDate, endDate);
+        return new DisplayCalendarScheduleCreateCommand(title, DisplaySchedulePeriod.of(startDate, endDate));
     }
 }

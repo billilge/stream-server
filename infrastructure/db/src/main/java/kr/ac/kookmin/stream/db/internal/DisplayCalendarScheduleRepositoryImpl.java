@@ -1,9 +1,9 @@
 package kr.ac.kookmin.stream.db.internal;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarSchedule;
+import kr.ac.kookmin.stream.internal.domain.display.domain.DisplaySchedulePeriod;
 import kr.ac.kookmin.stream.internal.domain.display.repository.DisplayCalendarScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,8 +20,8 @@ public class DisplayCalendarScheduleRepositoryImpl implements DisplayCalendarSch
     }
 
     @Override
-    public List<DisplayCalendarSchedule> findAllOverlapping(LocalDate startDate, LocalDate endDate) {
-        return displayCalendarScheduleJpaRepository.findAllOverlapping(startDate, endDate).stream()
+    public List<DisplayCalendarSchedule> findAllOverlapping(DisplaySchedulePeriod period) {
+        return displayCalendarScheduleJpaRepository.findAllOverlapping(period.startDate(), period.endDate()).stream()
             .map(DisplayCalendarScheduleJpaEntity::toDomain)
             .toList();
     }
