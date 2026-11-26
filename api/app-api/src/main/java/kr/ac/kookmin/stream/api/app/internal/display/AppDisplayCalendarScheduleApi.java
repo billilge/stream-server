@@ -18,6 +18,7 @@ import org.springdoc.core.annotations.ParameterObject;
 @Tag(name = "학사 일정", description = "학생 앱 학사 일정 조회")
 public interface AppDisplayCalendarScheduleApi {
 
+    /** 학사 일정. 홈 주간 카드는 한 주, 학사 일정 상세는 달력에 보이는 범위로 조회한다. */
     @Operation(summary = "학사 일정 조회",
         description = "기간이 startDate~endDate와 하루라도 겹치는 일정을 시작일, 등록 순으로 조회한다. 범위 밖에서 시작했어도 "
             + "범위에 걸치면 포함한다(예: 12/21~1/15 일정은 1월 조회에도 나온다). 하루 일정은 startDate와 endDate가 같다. "
