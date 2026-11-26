@@ -33,8 +33,8 @@ public class DisplayCalendarScheduleJpaEntity extends BaseTimeEntity {
     private DisplayCalendarScheduleJpaEntity(DisplayCalendarSchedule schedule) {
         this.id = schedule.getId();
         this.title = schedule.getTitle();
-        this.startDate = schedule.getStartDate();
-        this.endDate = schedule.getEndDate();
+        this.startDate = schedule.getPeriod().startDate();
+        this.endDate = schedule.getPeriod().endDate();
     }
 
     public static DisplayCalendarScheduleJpaEntity from(DisplayCalendarSchedule schedule) {

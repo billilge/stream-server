@@ -6,6 +6,7 @@ import kr.ac.kookmin.stream.common.DateUtil;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayCalendarSchedule;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayDailySchedule;
 import kr.ac.kookmin.stream.internal.domain.display.domain.DisplayPoster;
+import kr.ac.kookmin.stream.internal.domain.display.domain.DisplaySchedulePeriod;
 import kr.ac.kookmin.stream.internal.domain.display.repository.DisplayCalendarScheduleRepository;
 import kr.ac.kookmin.stream.internal.domain.display.repository.DisplayPosterRepository;
 import kr.ac.kookmin.stream.internal.domain.display.service.DisplayService;
@@ -30,11 +31,11 @@ class DisplayServiceImpl implements DisplayService {
     @Override
     public List<DisplayDailySchedule> getDailySchedulesAroundToday() {
         LocalDate today = LocalDate.now(DateUtil.KST);
-        LocalDate startDate = today.minusDays(DAYS_AROUND_TODAY);
-        LocalDate endDate = today.plusDays(DAYS_AROUND_TODAY);
-        List<DisplayCalendarSchedule> schedules = displayCalendarScheduleRepository.findAllOverlapping(startDate, endDate);
+        DisplaySchedulePeriod period = DisplaySchedulePeriod.of(
+            today.minusDays(DAYS_AROUND_TODAY), today.plusDays(DAYS_AROUND_TODAY));
+        List<DisplayCalendarSchedule> schedules = displayCalendarScheduleRepository.findAllOverlapping(period);
 
-        return startDate.datesUntil(endDate.plusDays(1))
+        return period.startDate().datesUntil(period.endDate().plusDays(1))
             .map(date -> new DisplayDailySchedule(date, collectTitlesOn(schedules, date)))
             .toList();
     }

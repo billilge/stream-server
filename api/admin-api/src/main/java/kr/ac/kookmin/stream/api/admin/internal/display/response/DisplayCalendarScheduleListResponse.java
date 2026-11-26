@@ -16,7 +16,8 @@ public record DisplayCalendarScheduleListResponse(List<Schedule> schedules) {
     public record Schedule(Long scheduleId, String title, LocalDate startDate, LocalDate endDate) {
 
         public static Schedule from(DisplayCalendarSchedule schedule) {
-            return new Schedule(schedule.getId(), schedule.getTitle(), schedule.getStartDate(), schedule.getEndDate());
+            return new Schedule(
+                schedule.getId(), schedule.getTitle(), schedule.getPeriod().startDate(), schedule.getPeriod().endDate());
         }
     }
 }

@@ -36,7 +36,7 @@ public class AdminDisplayCalendarScheduleController implements AdminDisplayCalen
         @Valid @ModelAttribute DisplayCalendarScheduleListParams params
     ) {
         return ApiResponse.success(DisplayCalendarScheduleListResponse.from(
-            adminDisplayCalendarScheduleService.getSchedules(params.startDate(), params.endDate())));
+            adminDisplayCalendarScheduleService.getSchedules(params.toPeriod())));
     }
 
     @Override
