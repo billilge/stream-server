@@ -28,6 +28,15 @@ public class DisplayCalendarSchedule {
         this.period = command.period();
     }
 
+    // 기간을 VO로 묶기 전부터 쓰던 getter다. 호출부가 VO 구조를 몰라도 되도록 남겨 둔다
+    public LocalDate getStartDate() {
+        return period.startDate();
+    }
+
+    public LocalDate getEndDate() {
+        return period.endDate();
+    }
+
     public boolean includes(LocalDate date) {
         return period.includes(date);
     }
