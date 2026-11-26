@@ -430,5 +430,10 @@ class LockerServiceImplTest {
         public List<LockerApplication> findByMemberId(Long memberId) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

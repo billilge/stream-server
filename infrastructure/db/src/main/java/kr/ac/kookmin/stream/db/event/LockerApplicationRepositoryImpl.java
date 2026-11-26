@@ -70,6 +70,14 @@ public class LockerApplicationRepositoryImpl implements LockerApplicationReposit
     }
 
     @Override
+    public Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
+        if (lockerPeriodIds.isEmpty()) {
+            return Set.of();
+        }
+        return Set.copyOf(lockerApplicationJpaRepository.findLockerPeriodIdsByMemberId(memberId, lockerPeriodIds));
+    }
+
+    @Override
     public Optional<LockerApplication> findById(Long lockerApplicationId) {
         return lockerApplicationJpaRepository.findById(lockerApplicationId)
             .map(LockerApplicationJpaEntity::toDomain);

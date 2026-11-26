@@ -519,6 +519,11 @@ class LockerApplicationServiceImplTest {
             return memberApplications.stream().filter(value -> value.getMemberId().equals(memberId)).toList();
         }
 
+        @Override
+        public Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
+            throw new UnsupportedOperationException();
+        }
+
         // 아래는 구역·배치 조회(LockerService)용 메서드라 이 테스트에서는 쓰지 않는다
 
         @Override

@@ -16,7 +16,6 @@ import kr.ac.kookmin.stream.event.domain.event.domain.Event;
 import kr.ac.kookmin.stream.event.domain.event.service.EventApplicationService;
 import kr.ac.kookmin.stream.event.domain.event.service.EventService;
 import kr.ac.kookmin.stream.event.domain.locker.domain.CurrentLocker;
-import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerPeriod;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerApplicationService;
 import kr.ac.kookmin.stream.event.domain.locker.service.LockerService;
@@ -62,19 +61,16 @@ public class AppHomeUseCase {
     private final StudentTransferStatusService studentTransferStatusService;
 
     public HomeResponse getHome(Long memberId) {
-        // 사물함 신청 내역은 배정 상태와 신청 섹션의 신청 여부가 함께 쓰므로 한 번만 읽는다
-        List<LockerApplicationResult> lockerApplications =
-            lockerApplicationService.getApplicationsByMemberId(memberId);
         LocalDateTime now = LocalDateTime.now();
 
         return new HomeResponse(
             toBanners(),
-            toApplySections(memberId, lockerApplications),
+            toApplySections(memberId),
             toRentals(memberId, now),
             toAppliedEvents(memberId),
             new HomeResponse.StudentFee(toFeeStatus(memberId)),
             new HomeResponse.OpenFeedback(feedbackService.countByMemberId(memberId)),
-            toLocker(lockerApplications, now)
+            toLocker(memberId, now)
         );
     }
 
@@ -140,10 +136,7 @@ public class AppHomeUseCase {
      * 노출로 설정된 섹션 중 지금 신청할 수 있는 것만 설정 순서대로 남긴다. 마감되거나 미게시된 대상은
      * 누를 수 없는 "신청하기"가 되므로 뺀다.
      */
-    private List<HomeResponse.ApplySection> toApplySections(
-        Long memberId,
-        List<LockerApplicationResult> lockerApplications
-    ) {
+    private List<HomeResponse.ApplySection> toApplySections(Long memberId) {
         List<HomeApplySection> sections = homeService.getExposedApplySections();
         List<Long> eventIds = targetIdsOf(sections, HomeApplyTargetType.EVENT);
         List<Long> periodIds = targetIdsOf(sections, HomeApplyTargetType.LOCKER);
@@ -154,9 +147,7 @@ public class AppHomeUseCase {
             .collect(Collectors.toMap(LockerPeriod::getId, Function.identity()));
 
         Set<Long> appliedEventIds = eventApplicationService.getAppliedEventIds(memberId, eventIds);
-        Set<Long> appliedPeriodIds = lockerApplications.stream()
-            .map(application -> application.period().getId())
-            .collect(Collectors.toSet());
+        Set<Long> appliedPeriodIds = lockerApplicationService.getAppliedPeriodIds(memberId, periodIds);
 
         return sections.stream()
             .map(section -> toApplySection(section, events, periods, appliedEventIds, appliedPeriodIds))
@@ -247,8 +238,8 @@ public class AppHomeUseCase {
             .orElse(null));
     }
 
-    private HomeResponse.Locker toLocker(List<LockerApplicationResult> applications, LocalDateTime now) {
-        CurrentLocker locker = CurrentLocker.of(lockerService.getLatestStartedPeriod(now).orElse(null), applications, now);
+    private HomeResponse.Locker toLocker(Long memberId, LocalDateTime now) {
+        CurrentLocker locker = lockerApplicationService.getCurrentLocker(memberId, now);
         return new HomeResponse.Locker(
             HomeLockerStatus.from(locker.status()),
             locker.assignedLocker() == null ? null : locker.assignedLocker().getLockerLabel());

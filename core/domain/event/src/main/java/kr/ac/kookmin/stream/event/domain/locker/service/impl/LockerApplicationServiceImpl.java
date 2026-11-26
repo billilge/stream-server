@@ -1,13 +1,16 @@
 package kr.ac.kookmin.stream.event.domain.locker.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kr.ac.kookmin.stream.common.BusinessException;
 import kr.ac.kookmin.stream.common.OutboxWriter;
 import kr.ac.kookmin.stream.common.event.LockerAssigned;
+import kr.ac.kookmin.stream.event.domain.locker.domain.CurrentLocker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.Locker;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplication;
 import kr.ac.kookmin.stream.event.domain.locker.domain.LockerApplicationResult;
@@ -67,6 +70,19 @@ class LockerApplicationServiceImpl implements LockerApplicationService {
                 publishedPeriods.get(application.getLockerPeriodId())
             ))
             .toList();
+    }
+
+    @Override
+    public Set<Long> getAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds) {
+        return lockerApplicationRepository.findAppliedPeriodIds(memberId, lockerPeriodIds);
+    }
+
+    @Override
+    public CurrentLocker getCurrentLocker(Long memberId, LocalDateTime now) {
+        return CurrentLocker.of(
+            lockerRepository.findLatestStartedPublishedPeriod(now).orElse(null),
+            getApplicationsByMemberId(memberId),
+            now);
     }
 
     /** 신청들이 속한 운영 회차 중 게시된 것. 식별자로 찾아 쓸 수 있게 묶는다. */

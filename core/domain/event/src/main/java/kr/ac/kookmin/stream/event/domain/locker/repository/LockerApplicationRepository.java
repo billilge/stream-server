@@ -50,6 +50,11 @@ public interface LockerApplicationRepository {
     List<LockerApplication> findByMemberId(Long memberId);
 
     /**
+     * 주어진 운영 회차 중 회원이 신청한 회차 식별자. 취소된 신청은 뺀다.
+     */
+    Set<Long> findAppliedPeriodIds(Long memberId, Collection<Long> lockerPeriodIds);
+
+    /**
      * 신청 한 건. 취소된 신청도 돌려준다 — 운영진이 취소 여부를 보고 판단한다.
      */
     Optional<LockerApplication> findById(Long lockerApplicationId);
