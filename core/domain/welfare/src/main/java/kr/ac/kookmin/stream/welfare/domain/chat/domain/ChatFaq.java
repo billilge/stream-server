@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import kr.ac.kookmin.stream.common.BusinessException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
@@ -14,6 +15,7 @@ import lombok.Getter;
  * 동시에 지우면 빈칸이 남아 상한까지 채우지 못하게 된다.
  */
 @Getter
+@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatFaq {
 
