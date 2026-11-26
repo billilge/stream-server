@@ -26,7 +26,7 @@ public enum HomeBannerCategory {
     /** 사물함 */
     LOCKER,
     /** 기본 (만족도조사) */
-    DEFAULT,
+    BASIC,
     /** 기타. 정해진 배경이 없어 운영진이 직접 올린 이미지를 쓴다 */
     ETC
 }
