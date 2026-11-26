@@ -4,15 +4,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import kr.ac.kookmin.stream.api.app.AppApiUser;
 import kr.ac.kookmin.stream.api.app.welfare.chat.request.ChatMessageCreateRequest;
+import kr.ac.kookmin.stream.api.app.welfare.chat.response.ChatFaqResponse;
+import kr.ac.kookmin.stream.api.common.dto.ApiResponse;
 import kr.ac.kookmin.stream.api.common.openapi.ApiErrorCode;
 import kr.ac.kookmin.stream.common.CommonErrorCode;
+import kr.ac.kookmin.stream.welfare.domain.chat.domain.ChatFaq;
 
 /**
  * 학생 앱 챗봇 API의 문서 명세. 구현은 {@link AppChatController}가 맡는다.
  * <p>
- * <b>이 API만 {@code ApiResponse} 껍데기를 쓰지 않는다.</b> 답변이 조각으로 나눠 오므로 한 번 감싸는 껍데기를 붙일 자리가 없다.
+ * <b>질문 보내기만 {@code ApiResponse} 껍데기를 쓰지 않는다.</b> 답변이 조각으로 나눠 오므로 한 번 감싸는 껍데기를 붙일 자리가 없다.
  * 그래서 에러가 두 갈래로 갈린다.
  * <ul>
  *   <li>스트림 시작 <b>전</b>(검증·인증 실패) — 다른 API와 같은 {@code ApiResponse} 에러와 상태 코드</li>
@@ -41,4 +45,9 @@ public interface AppChatApi {
     @ApiErrorCode(type = CommonErrorCode.class, codes = {"INVALID_INPUT"})
     void sendMessage(AppApiUser apiUser, ChatMessageCreateRequest request, HttpServletResponse response)
         throws IOException;
+
+    @Operation(summary = "추천 질문 목록 조회",
+        description = "챗봇 진입 화면에 보여 줄 추천 질문을 등록 순서대로 조회한다. 최대 " + ChatFaq.MAX_COUNT
+            + "개이고, 없으면 빈 목록이다. 누르면 question을 그대로 질문 보내기 API로 보내면 된다.")
+    ApiResponse<List<ChatFaqResponse>> getFaqs(AppApiUser apiUser);
 }
